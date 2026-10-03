@@ -71,6 +71,12 @@ export function createAiPackManager({ root = aiPacksDir(), version = '', now = (
       await write('README.md', readme.find(file => file.path === 'README.md').text)
       await write('README.zh.md', readme.find(file => file.path === 'README.zh.md').text)
       await write(SCENE_FILE, EXAMPLE_SCENE)
+      // Example scenes and the prompt templates (brief → storyboard → script guide → QA → iteration).
+      const extras = readme.filter(file => /^(examples|prompts)\//.test(file.path) && !/^examples\/(world-execute-me|dsh-pv)\.mv\.json$/.test(file.path))
+      for (const file of extras) {
+        await mkdir(join(packDir, ...file.path.split('/').slice(0, -1)), { recursive: true })
+        await write(join(...file.path.split('/')), file.text)
+      }
       if (lyricsFile) await write(lyricsFile, brief.lyrics.endsWith('\n') ? brief.lyrics : `${brief.lyrics}\n`)
       await write(BRIEF_FILE, json({
         title: brief.title, artist: brief.artist || undefined, style: brief.style || undefined,
@@ -81,7 +87,7 @@ export function createAiPackManager({ root = aiPacksDir(), version = '', now = (
       const manifestPath = join(packDir, MV_PACK_MANIFEST)
       await write(MV_PACK_MANIFEST, json(initialManifest(info)))
       created.set(key(packDir), { packDir, audioFile, manifestPath, info })
-      return { packDir, manifestPath, audioFile, lyricsFile, lyricsTimed, files: [MV_PACK_MANIFEST, MV_PACK_SCHEMA_FILE, 'README.md', 'README.zh.md', SCENE_FILE, BRIEF_FILE, AGENT_FILE, ...(lyricsFile ? [lyricsFile] : [])] }
+      return { packDir, manifestPath, audioFile, lyricsFile, lyricsTimed, files: [MV_PACK_MANIFEST, MV_PACK_SCHEMA_FILE, 'README.md', 'README.zh.md', SCENE_FILE, BRIEF_FILE, AGENT_FILE, ...(lyricsFile ? [lyricsFile] : []), ...extras.map(file => file.path)] }
     },
     async uploadBegin({ packDir, role, bytes }) {
       const entry = created.get(key(packDir))

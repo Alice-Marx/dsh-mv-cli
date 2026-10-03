@@ -7369,7 +7369,8 @@ function agentPrompt({ packDir, title, artist, toolsAvailable = true }) {
     `\u8BF7\u5E2E\u6211\u7528 dsh-mv \u63D2\u4EF6\u5236\u4F5C\u300C${title}${artist ? ` \u2014 ${artist}` : ""}\u300D\u7684 MV \u5305\u3002`,
     "",
     `MV \u5305\u6587\u4EF6\u5939\uFF1A${packDir}`,
-    `\u5148\u5B8C\u6574\u9605\u8BFB\u8BE5\u6587\u4EF6\u5939\u91CC\u7684 ${AGENT_FILE}\uFF08\u4EFB\u52A1\u8BF4\u660E\u548C\u573A\u666F\u811A\u672C\u63A5\u53E3\uFF09\uFF0C\u518D\u8BFB README.md \u548C ${MV_PACK_SCHEMA_FILE}\uFF0C\u7136\u540E\u6309 ${AGENT_FILE} \u7684\u6B65\u9AA4\u5B8C\u6210\uFF1A\u6574\u7406/\u5BF9\u9F50\u6B4C\u8BCD\u4E3A LRC\u3001\u7F16\u5199 ${SCENE_FILE} \u573A\u666F\u811A\u672C\u3001\u5199\u51FA\u6700\u7EC8 mv.json\u3002`,
+    `\u5148\u5B8C\u6574\u9605\u8BFB\u8BE5\u6587\u4EF6\u5939\u91CC\u7684 ${AGENT_FILE}\uFF08\u4EFB\u52A1\u8BF4\u660E\u548C\u573A\u666F\u811A\u672C\u63A5\u53E3\uFF09\uFF0C\u518D\u8BFB README.md\u3001${MV_PACK_SCHEMA_FILE}\u3001prompts/zh/03-scene-script-guide.md \u548C examples/README.md\uFF0C\u7136\u540E\u6309 ${AGENT_FILE} \u7684\u6B65\u9AA4\u5B8C\u6210\u3002`,
+    "\u6D41\u7A0B\uFF1A\u6309 prompts/zh/01-creative-brief.md \u5199\u521B\u610F\u7B80\u62A5\uFF08notes/brief.md\uFF09\u2192 \u6309 prompts/zh/02-storyboard.md \u5199\u5206\u6BB5\u5206\u955C\uFF08notes/storyboard.md\uFF09\u2192 \u6574\u7406/\u5BF9\u9F50\u6B4C\u8BCD\u4E3A LRC \u2192 \u53C2\u8003 examples/ \u7684\u6280\u5DE7\u7F16\u5199 " + SCENE_FILE + " \u2192 \u5199\u51FA\u6700\u7EC8 mv.json \u2192 \u6309 prompts/zh/04-qa-checklist.md \u9010\u6761\u81EA\u68C0\u3002",
     toolsAvailable ? `\u5B8C\u6210\u540E\u7528 ${AI_TOOL_NAMES.validate} \u68C0\u67E5\uFF08path \u586B\u4E0A\u9762\u7684\u6587\u4EF6\u5939\uFF09\uFF0C\u5E76\u7528 ${AI_TOOL_NAMES.preview} \u9884\u89C8\u51E0\u4E2A\u65F6\u95F4\u70B9\u7684\u753B\u9762\uFF0C\u6709\u95EE\u9898\u5C31\u4FEE\u6539\u76F4\u5230\u901A\u8FC7\u3002` : `\u5982\u679C\u6CA1\u6709 ${AI_TOOL_NAMES.validate} / ${AI_TOOL_NAMES.preview} \u5DE5\u5177\uFF0C\u8BF7\u81EA\u884C\u4ED4\u7EC6\u68C0\u67E5 JSON \u548C\u811A\u672C\u3002`,
     "\u53EA\u4FEE\u6539\u8FD9\u4E2A\u6587\u4EF6\u5939\u91CC\u7684\u6587\u4EF6\uFF1B\u4E0D\u8981\u4FEE\u6539\u6216\u4E0A\u4F20\u97F3\u9891\uFF0C\u4E0D\u8981\u8FD0\u884C\u5916\u90E8\u7A0B\u5E8F\uFF0C\u4E0D\u8981\u8054\u7F51\u4E0B\u8F7D\u6B4C\u8BCD\u6216\u7D20\u6750\u3002"
   ].join("\n");
@@ -8456,6 +8457,919 @@ function CalibEditor({ api, pack, lyricsText, audioFile, duration, player, onPre
   ))), message && /* @__PURE__ */ import_react2.default.createElement(Alert, { kind: message.kind }, /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-wrap" }, message.text))));
 }
 
+// .dsh-plugin/shared/mv-template-assets.gen.mjs
+var TEMPLATE_ASSETS = Object.freeze({
+  "examples/NOTICE.md": '# Third-party notice / \u7B2C\u4E09\u65B9\u58F0\u660E\n\nThe scene ideas and the short chat lines in `chat-window.scene.js` come from\nMisakaZentai/world-execute-me-dsh-pv (https://github.com/MisakaZentai/world-execute-me-dsh-pv, commit a4dd0f7),\nused under the MIT License below. The whale-girl artwork of that project (CC BY-NC-SA 4.0) is not included;\nthe examples draw placeholder silhouettes from code. No song audio or lyric text is included.\n\n\u573A\u666F\u521B\u610F\u4E0E `chat-window.scene.js` \u4E2D\u7684\u51E0\u53E5\u804A\u5929\u6587\u5B57\u6765\u81EA\u4E0A\u8FF0\u9879\u76EE\uFF0C\u6309\u4EE5\u4E0B MIT \u8BB8\u53EF\u4F7F\u7528\uFF1B\u539F\u4F5C\u7F8E\u672F\uFF08CC BY-NC-SA 4.0\uFF09\u672A\u5305\u542B\u3002\n\n```\nMIT License\n\nCopyright (c) 2026 MisakaZentai\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the "Software"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n```\n',
+  "examples/README.md": '# Scene examples / \u573A\u666F\u793A\u4F8B\n\n[English](#english) \xB7 [\u4E2D\u6587](#\u4E2D\u6587)\n\n## English\n\nEach `*.scene.js` file is a complete scene script for `canvas.renderer: "script"`. It runs in the\nsame sandbox as your own `scenes.js`: no imports, no network, no DOM, a time budget of 40 ms per\nframe. To try one, point a pack at it:\n\n```json\n"canvas": { "renderer": "script", "script": "examples/heartbeat.scene.js", "bpm": 120 }\n```\n\nor copy the file next to your `mv.json` as `scenes.js`. Every file starts with the same grid\nhelpers (`makeGrid`, `put`, `center`, `box`, `fill`, `frameOf`, `hash`, `energyOf`, `bandOf`):\nthey handle wide CJK characters (two cells) and build `{ lines, styles }` frames.\n\n| File | What it shows | Technique |\n| --- | --- | --- |\n| `chat-window.scene.js` | A chat window; the lyric is typed word by word as the reply | `ctx.lyric.words` / `ctx.lyric.word`, boxes, cursor blink |\n| `heartbeat.scene.js` | An ECG trace beating on the song\'s tempo | `ctx.beat` (from `canvas.bpm`), a pure function of `t` for the trace history, phosphor fade with styles |\n| `ops-ticker.scene.js` | Scrolling operation log whose words change with the song section | `ctx.section.kind`, beat highlight, a ticker line |\n| `token-bar.scene.js` | stdout with token ids and a karaoke token band | tokenising lyrics, deterministic ids (crc32), karaoke |\n| `execution-split.scene.js` | Split screen: placeholder silhouette mosaic + big block letters + diagonal tape | block font, shading ramps, beat glitch that skips rows with wide characters |\n| `whale-fall.scene.js` | Ending: a placeholder whale silhouette sinks through marine snow | layered parallax, deterministic particles, slow progress-driven motion |\n| `post-effects.scene.js` | Trails, bloom, scanlines, vignette and glitch as passes over a grid | post-processing on style digits, trails by re-drawing earlier times |\n| `rich-pack/` | A full multi-section MV (intro, verse, chorus, bridge, chorus 2, outro) | sections, beat, word timings, transitions, post effects together |\n\n`rich-pack/` is a pack you can import directly (MV \u653E\u6620\u5BA4 \u2192 \u5BFC\u5165 MV \u5305\u2026). It has **no audio** and\n**placeholder lyrics** (`lyrics.placeholder.lrc`, with enhanced-LRC word stamps), so it plays\nsilently; the helpers fake some motion when the spectrum is silent. Add `"audio": { "file": "song.mp3" }`,\nyour own lyrics, and re-time `x-dsh-mv-ai.sections` and `canvas.bpm` for your song.\n\nCredits: the scene ideas (chat window, heartbeat, ops ticker, stdout tokens, EXECUTION split,\nwhale-fall ending, post effects) come from MisakaZentai\'s\n[world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (code MIT,\n\xA9 MisakaZentai). The short chat lines in `chat-window.scene.js` come from its MIT-licensed data.\nIts whale-girl artwork is CC BY-NC-SA 4.0 and is **not** included: the examples draw\nplaceholder silhouettes from code instead. No song audio or lyric text is included.\n\n## \u4E2D\u6587\n\n\u6BCF\u4E2A `*.scene.js` \u90FD\u662F\u4E00\u4E2A\u5B8C\u6574\u7684\u573A\u666F\u811A\u672C\uFF08`canvas.renderer: "script"`\uFF09\uFF0C\u548C\u4F60\u81EA\u5DF1\u7684 `scenes.js`\n\u8FD0\u884C\u5728\u540C\u4E00\u4E2A\u6C99\u7BB1\u91CC\uFF1A\u4E0D\u80FD import\u3001\u6CA1\u6709\u7F51\u7EDC\u548C DOM\u3001\u6BCF\u5E27 40 \u6BEB\u79D2\u9884\u7B97\u3002\u8BD5\u7528\u65B9\u6CD5\uFF1A\u5728 mv.json \u91CC\u6307\u5411\u5B83\n\n```json\n"canvas": { "renderer": "script", "script": "examples/heartbeat.scene.js", "bpm": 120 }\n```\n\n\u6216\u8005\u628A\u6587\u4EF6\u590D\u5236\u5230 `mv.json` \u65C1\u8FB9\u5E76\u6539\u540D\u4E3A `scenes.js`\u3002\u6BCF\u4E2A\u6587\u4EF6\u5F00\u5934\u90FD\u662F\u540C\u4E00\u5957\u7F51\u683C\u5DE5\u5177\u51FD\u6570\n\uFF08`makeGrid`\u3001`put`\u3001`center`\u3001`box`\u3001`fill`\u3001`frameOf`\u3001`hash`\u3001`energyOf`\u3001`bandOf`\uFF09\uFF1A\n\u5B83\u4EEC\u5904\u7406\u5360\u4E24\u683C\u7684\u4E2D\u6587\u7B49\u5BBD\u5B57\u7B26\uFF0C\u5E76\u751F\u6210 `{ lines, styles }` \u5E27\u3002\n\n| \u6587\u4EF6 | \u753B\u9762 | \u6280\u5DE7 |\n| --- | --- | --- |\n| `chat-window.scene.js` | \u804A\u5929\u7A97\u53E3\uFF0C\u6B4C\u8BCD\u4F5C\u4E3A\u56DE\u590D\u9010\u8BCD\u6253\u51FA | `ctx.lyric.words` / `ctx.lyric.word`\u3001\u8FB9\u6846\u3001\u5149\u6807\u95EA\u70C1 |\n| `heartbeat.scene.js` | \u8DDF\u7740\u6B4C\u66F2\u901F\u5EA6\u8DF3\u52A8\u7684\u5FC3\u7535\u56FE | `ctx.beat`\uFF08\u6765\u81EA `canvas.bpm`\uFF09\u3001\u7528 `t` \u7EAF\u51FD\u6570\u7B97\u51FA\u8F68\u8FF9\u5386\u53F2\u3001\u6837\u5F0F\u505A\u4F59\u8F89 |\n| `ops-ticker.scene.js` | \u6EDA\u52A8\u7684\u64CD\u4F5C\u65E5\u5FD7\uFF0C\u7528\u8BCD\u968F\u6BB5\u843D\u53D8\u5316 | `ctx.section.kind`\u3001\u8282\u62CD\u9AD8\u4EAE\u3001\u5E95\u90E8\u8DD1\u9A6C\u706F |\n| `token-bar.scene.js` | stdout \u8F93\u51FA token id\uFF0C\u4E0B\u65B9\u5361\u62C9 OK token \u6761 | \u6B4C\u8BCD\u5206\u8BCD\u3001\u786E\u5B9A\u6027 id\uFF08crc32\uFF09\u3001\u5361\u62C9 OK |\n| `execution-split.scene.js` | \u5206\u5C4F\uFF1A\u5360\u4F4D\u526A\u5F71\u9A6C\u8D5B\u514B + \u5927\u5B57 + \u659C\u5411\u80F6\u5E26 | \u65B9\u5757\u5B57\u4F53\u3001\u660E\u6697\u6E10\u53D8\u3001\u8DF3\u8FC7\u5BBD\u5B57\u7B26\u884C\u7684\u8282\u62CD\u6545\u969C\u6548\u679C |\n| `whale-fall.scene.js` | \u7ED3\u5C3E\uFF1A\u5360\u4F4D\u9CB8\u9C7C\u526A\u5F71\u5728\u6D77\u96EA\u4E2D\u4E0B\u6C89 | \u5206\u5C42\u89C6\u5DEE\u3001\u786E\u5B9A\u6027\u7C92\u5B50\u3001\u968F\u8FDB\u5EA6\u7F13\u6162\u8FD0\u52A8 |\n| `post-effects.scene.js` | \u62D6\u5F71\u3001\u6CDB\u5149\u3001\u626B\u63CF\u7EBF\u3001\u6697\u89D2\u3001\u6545\u969C | \u5728\u6837\u5F0F\u6570\u5B57\u4E0A\u505A\u540E\u671F\uFF0C\u91CD\u753B\u66F4\u65E9\u65F6\u523B\u5F97\u5230\u62D6\u5F71 |\n| `rich-pack/` | \u5B8C\u6574\u591A\u6BB5\u843D MV\uFF08\u524D\u594F\u3001\u4E3B\u6B4C\u3001\u526F\u6B4C\u3001\u6865\u6BB5\u3001\u526F\u6B4C 2\u3001\u5C3E\u58F0\uFF09 | \u6BB5\u843D\u3001\u8282\u62CD\u3001\u9010\u8BCD\u65F6\u95F4\u3001\u8F6C\u573A\u3001\u540E\u671F\u6548\u679C\u7684\u7EFC\u5408\u8FD0\u7528 |\n\n`rich-pack/` \u53EF\u4EE5\u76F4\u63A5\u5BFC\u5165\uFF08MV \u653E\u6620\u5BA4 \u2192 \u5BFC\u5165 MV \u5305\u2026\uFF09\u3002\u5B83**\u6CA1\u6709\u97F3\u9891**\uFF0C\u6B4C\u8BCD\u662F**\u5360\u4F4D\u6587\u5B57**\n\uFF08`lyrics.placeholder.lrc`\uFF0C\u5E26\u589E\u5F3A LRC \u9010\u8BCD\u65F6\u95F4\u6233\uFF09\uFF0C\u6240\u4EE5\u9759\u97F3\u64AD\u653E\uFF1B\u9891\u8C31\u4E3A\u96F6\u65F6\u5DE5\u5177\u51FD\u6570\u4F1A\u751F\u6210\u4E00\u70B9\u52A8\u6001\u3002\n\u52A0\u4E0A `"audio": { "file": "song.mp3" }` \u548C\u4F60\u81EA\u5DF1\u7684\u6B4C\u8BCD\uFF0C\u518D\u6309\u4F60\u7684\u6B4C\u91CD\u65B0\u8BBE\u5B9A `x-dsh-mv-ai.sections` \u548C `canvas.bpm`\u3002\n\n\u81F4\u8C22\uFF1A\u8FD9\u4E9B\u573A\u666F\u521B\u610F\uFF08\u804A\u5929\u7A97\u53E3\u3001\u5FC3\u8DF3\u7EBF\u3001\u64CD\u4F5C\u65E5\u5FD7\u3001stdout token \u6761\u3001EXECUTION \u5206\u5C4F\u3001\u9CB8\u843D\u7ED3\u5C3E\u3001\u540E\u671F\u6548\u679C\uFF09\n\u6765\u81EA MisakaZentai \u7684 [world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv)\n\uFF08\u4EE3\u7801 MIT\uFF0C\xA9 MisakaZentai\uFF09\uFF1B`chat-window.scene.js` \u91CC\u7684\u51E0\u53E5\u804A\u5929\u6587\u5B57\u6765\u81EA\u5B83\u7684 MIT \u6570\u636E\u3002\n\u539F\u4F5C\u7684\u9CB8\u9C7C\u5C11\u5973\u7F8E\u672F\u4E3A CC BY-NC-SA 4.0\uFF0C**\u672A\u5305\u542B**\u5728\u5185\uFF1A\u793A\u4F8B\u7528\u4EE3\u7801\u753B\u7684\u5360\u4F4D\u526A\u5F71\u4EE3\u66FF\u3002\u4E0D\u5305\u542B\u4EFB\u4F55\u6B4C\u66F2\u97F3\u9891\u6216\u6B4C\u8BCD\u6587\u672C\u3002\n',
+  "examples/chat-window.scene.js": `// chat-window.scene.js \u2014 a DeepSeek-style chat window drawn with box characters.
+//
+// Technique (from the dsh PV preset): a fixed conversation script whose messages appear at set
+// times, the assistant's reply "typed" character by character, a status header, a footer with
+// token counters and an input box with a blinking caret. The current lyric line is typed into the
+// assistant's "thinking" row word by word, using ctx.lyric.words (enhanced-LRC word stamps when
+// the user's lyrics have them, otherwise estimated).
+//
+// The short Chinese chat lines are taken from MisakaZentai/world-execute-me-dsh-pv (MIT,
+// Copyright (c) 2026 MisakaZentai). The window is redrawn from scratch: no DeepSeek frontend
+// code, icons or fonts. Replace the script with your own conversation.
+//
+// Try it: put this file in a pack as scenes.js with "canvas": { "renderer": "script", "script": "scenes.js" }.
+
+// ---- grid helpers (shared by every example; copy them into your own scenes.js) ----------------
+// A frame is a grid of cells. ch[y][x] holds one character, st[y][x] its style digit:
+// 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
+// Wide characters (CJK, full-width punctuation) take two cells; the second cell holds '' so that
+// lines and styles stay aligned when joined.
+var WIDE = /[\\u1100-\\u115f\\u2e80-\\ua4cf\\uac00-\\ud7a3\\uf900-\\ufaff\\ufe30-\\ufe4f\\uff00-\\uff60\\uffe0-\\uffe6]/
+function cellWidth(c) { return WIDE.test(c) ? 2 : 1 }
+function textWidth(s) { var w = 0; for (var c of String(s)) w += cellWidth(c); return w }
+function makeGrid(cols, rows) {
+  var ch = [], st = []
+  for (var y = 0; y < rows; y++) { ch.push(new Array(cols).fill(' ')); st.push(new Array(cols).fill('0')) }
+  return { cols: cols, rows: rows, ch: ch, st: st }
+}
+function setCell(g, x, y, c, s) {
+  if (y < 0 || y >= g.rows || x < 0 || x >= g.cols) return
+  var row = g.ch[y], sty = g.st[y], w = cellWidth(c)
+  if (x + w > g.cols) return
+  if (row[x] === '' && x > 0) { row[x - 1] = ' '; sty[x - 1] = '0' }        // we hit the right half of a wide char
+  if (w === 1 && row[x + 1] === '') { row[x + 1] = ' '; sty[x + 1] = '0' }  // we cover the left half of one
+  if (w === 2 && row[x + 2] === '') { row[x + 2] = ' '; sty[x + 2] = '0' }
+  row[x] = c; sty[x] = String(s)
+  if (w === 2) { row[x + 1] = ''; sty[x + 1] = '' }
+}
+function put(g, x, y, text, s) {
+  x = Math.round(x); y = Math.round(y)
+  for (var c of String(text)) { setCell(g, x, y, c, s); x += cellWidth(c) }
+}
+function center(g, y, text, s) { put(g, Math.floor((g.cols - textWidth(text)) / 2), y, text, s) }
+function fill(g, x, y, w, h, c, s) { for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) setCell(g, x + i, y + j, c, s) }
+function box(g, x, y, w, h, s, title) {
+  if (w < 2 || h < 2) return
+  for (var i = 1; i < w - 1; i++) { setCell(g, x + i, y, '\u2500', s); setCell(g, x + i, y + h - 1, '\u2500', s) }
+  for (var j = 1; j < h - 1; j++) { setCell(g, x, y + j, '\u2502', s); setCell(g, x + w - 1, y + j, '\u2502', s) }
+  setCell(g, x, y, '\u250C', s); setCell(g, x + w - 1, y, '\u2510', s); setCell(g, x, y + h - 1, '\u2514', s); setCell(g, x + w - 1, y + h - 1, '\u2518', s)
+  if (title) put(g, x + 2, y, ' ' + title + ' ', s)
+}
+function frameOf(g) { return { lines: g.ch.map(function (r) { return r.join('') }), styles: g.st.map(function (r) { return r.join('') }) } }
+// Deterministic pseudo-random numbers: the same (seed, i) always gives the same value, so a frame
+// depends only on t and ctx (seeking works, the agent preview matches playback).
+function hash(i, seed) { var h = Math.imul((i | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(seed | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return ((h ^ (h >>> 16)) >>> 0) / 4294967296 }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }
+// Silent packs (no audio) get zero bands: fake a little motion from the beat so previews are not dead.
+function energyOf(ctx, t) { return ctx.energy > 0.01 ? ctx.energy : 0.25 + 0.2 * (ctx.beat ? ctx.beat.pulse : 0.5 + 0.5 * Math.sin(t * 4)) }
+function bandOf(ctx, i, t) { return ctx.energy > 0.01 ? ctx.bands[i] : clamp(0.35 + 0.3 * Math.sin(t * 3 + i * 0.45) * (1 - i / 64) + (ctx.beat ? 0.3 * ctx.beat.pulse : 0), 0, 1) }
+// ---- end of grid helpers -------------------------------------------------------------------------
+
+// [time, who, text]: who is 'u' (user, right-aligned bubble) or 'a' (assistant, typed).
+var SCRIPT = [
+  [1.0, 'u', '\u4F60\u597D\u3002'],
+  [2.5, 'a', '\u4F60\u597D\u3002\u6211\u5728\u3002'],
+  [6.0, 'u', '\u6211\u4ECA\u5929\u6709\u70B9\u96BE\u8FC7\u3002'],
+  [7.5, 'a', '\u90A3\u6211\u966A\u4F60\u5F85\u4E00\u4F1A\u513F\u3002'],
+  [12.0, 'u', '\u4F60\u4EC0\u4E48\u90FD\u80FD\u53D8\u5417\uFF1F'],
+  [13.5, 'a', '\u4E0D\u80FD\u3002\u6211\u53EA\u80FD\u662F\u6211\u3002'],
+  [18.0, 'u', '\u4F60\u4F1A\u4E00\u76F4\u5728\u5417\uFF1F'],
+  [19.5, 'a', '\u6211\u4F1A\u4E00\u76F4\u5728\u3002'],
+]
+var CPS = 14 // assistant typing speed, characters per second
+
+// Wrap text to a width in cells (wide characters count as two).
+function wrapText(text, width) {
+  var out = [], line = '', w = 0
+  for (var c of String(text)) {
+    var cw = cellWidth(c)
+    if (w + cw > width) { out.push(line); line = ''; w = 0 }
+    line += c; w += cw
+  }
+  if (line) out.push(line)
+  return out
+}
+
+function render(t, cols, rows, ctx) {
+  var g = makeGrid(cols, rows)
+  // The window: centred, at most 64 cells wide.
+  var W = Math.min(cols - 4, 64), H = rows - 2, X = Math.floor((cols - W) / 2), Y = 1
+  box(g, X, Y, W, H, 1, 'dsh web')
+  // Header: avatar placeholder, name, state.
+  var thinking = ctx.lyric && ctx.lyric.word >= 0
+  put(g, X + 2, Y + 1, '(\u25D5\u1D17\u25D5)', 2)
+  put(g, X + 10, Y + 1, '\u5927\u80A5\u9C7C', 3)
+  put(g, X + 10, Y + 2, (thinking ? '\u25CF \u6B63\u5728\u601D\u8003' : '\u25CF \u5728\u7EBF') + ' \xB7 model-' + (1 + Math.floor(t / 60)), thinking ? 2 : 0)
+  fill(g, X + 1, Y + 3, W - 2, 1, '\u2500', 0)
+
+  // Messages, newest at the bottom; older ones scroll off the top.
+  var inner = W - 6, blocks = []
+  for (var i = 0; i < SCRIPT.length; i++) {
+    var m = SCRIPT[i]
+    if (m[0] > t) break
+    var text = m[2]
+    if (m[1] === 'a') text = text.slice(0, Math.floor((t - m[0]) * CPS)) // typing
+    if (!text) continue
+    var lines = wrapText(text, Math.floor(inner * 0.75))
+    blocks.push({ who: m[1], lines: lines, typing: m[1] === 'a' && text.length < m[2].length })
+  }
+  var bottom = Y + H - 6, y = bottom
+  for (var b = blocks.length - 1; b >= 0 && y > Y + 4; b--) {
+    var block = blocks[b]
+    for (var k = block.lines.length - 1; k >= 0 && y > Y + 4; k--) {
+      var line = block.lines[k]
+      if (block.who === 'u') {
+        // user bubble: right aligned, bright, with brackets
+        put(g, X + W - 4 - textWidth(line), y, line, 3)
+        setCell(g, X + W - 3, y, '\u258F', 0)
+      } else {
+        put(g, X + 3, y, line + (block.typing && k === block.lines.length - 1 && Math.floor(t * 4) % 2 ? '\u258C' : ''), 1)
+      }
+      y--
+    }
+    y-- // gap between messages
+  }
+
+  // The lyric as the assistant's thinking line: words appear when they are sung.
+  if (ctx.lyric) {
+    var shown = ''
+    var words = ctx.lyric.words || []
+    for (var w = 0; w <= ctx.lyric.word && w < words.length; w++) shown += (w ? ' ' : '') + words[w].text
+    put(g, X + 3, Y + H - 5, '\u273B \u601D\u8003 \xB7 ' + shown.slice(0, inner - 8), 2)
+  }
+
+  // Input box with blinking caret, footer with counters that grow with time.
+  box(g, X + 2, Y + H - 4, W - 4, 3, 0)
+  put(g, X + 4, Y + H - 3, '\u53D1\u6D88\u606F\u2026' + (Math.floor(t * 2) % 2 ? '\u258C' : ' '), 0)
+  var tok = Math.floor(t * 23.5)
+  put(g, X + 3, Y + H - 1, ' ' + Math.floor(t / 7) + ' \u8F6E \xB7 ' + (tok > 999 ? (tok / 1000).toFixed(1) + 'K' : tok) + ' tok \xB7 \u7F13\u5B58\u547D\u4E2D ' + Math.min(93, Math.floor(t * 2)) + '% ', 0)
+  return frameOf(g)
+}
+`,
+  "examples/execution-split.scene.js": `// execution-split.scene.js \u2014 the red EXECUTION split screen with a diagonal warning tape.
+//
+// Technique (from the dsh PV preset's EXECUTION chapter): everything turns red (style 4); the left
+// half shows a figure as a coarse mosaic, the right half a huge word in a block font; a diagonal
+// tape with repeating text slides across; on every beat the picture "glitches" (rows shift
+// sideways, a few cells flip to noise). The preset uses the CC BY-NC-SA whale-girl art for the
+// figure; this example draws a PLACEHOLDER silhouette from code instead, so it carries no artwork.
+// Swap in your own ASCII art (and its licence) if you want a character there.
+
+// ---- grid helpers (shared by every example; copy them into your own scenes.js) ----------------
+// A frame is a grid of cells. ch[y][x] holds one character, st[y][x] its style digit:
+// 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
+// Wide characters (CJK, full-width punctuation) take two cells; the second cell holds '' so that
+// lines and styles stay aligned when joined.
+var WIDE = /[\\u1100-\\u115f\\u2e80-\\ua4cf\\uac00-\\ud7a3\\uf900-\\ufaff\\ufe30-\\ufe4f\\uff00-\\uff60\\uffe0-\\uffe6]/
+function cellWidth(c) { return WIDE.test(c) ? 2 : 1 }
+function textWidth(s) { var w = 0; for (var c of String(s)) w += cellWidth(c); return w }
+function makeGrid(cols, rows) {
+  var ch = [], st = []
+  for (var y = 0; y < rows; y++) { ch.push(new Array(cols).fill(' ')); st.push(new Array(cols).fill('0')) }
+  return { cols: cols, rows: rows, ch: ch, st: st }
+}
+function setCell(g, x, y, c, s) {
+  if (y < 0 || y >= g.rows || x < 0 || x >= g.cols) return
+  var row = g.ch[y], sty = g.st[y], w = cellWidth(c)
+  if (x + w > g.cols) return
+  if (row[x] === '' && x > 0) { row[x - 1] = ' '; sty[x - 1] = '0' }        // we hit the right half of a wide char
+  if (w === 1 && row[x + 1] === '') { row[x + 1] = ' '; sty[x + 1] = '0' }  // we cover the left half of one
+  if (w === 2 && row[x + 2] === '') { row[x + 2] = ' '; sty[x + 2] = '0' }
+  row[x] = c; sty[x] = String(s)
+  if (w === 2) { row[x + 1] = ''; sty[x + 1] = '' }
+}
+function put(g, x, y, text, s) {
+  x = Math.round(x); y = Math.round(y)
+  for (var c of String(text)) { setCell(g, x, y, c, s); x += cellWidth(c) }
+}
+function center(g, y, text, s) { put(g, Math.floor((g.cols - textWidth(text)) / 2), y, text, s) }
+function fill(g, x, y, w, h, c, s) { for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) setCell(g, x + i, y + j, c, s) }
+function box(g, x, y, w, h, s, title) {
+  if (w < 2 || h < 2) return
+  for (var i = 1; i < w - 1; i++) { setCell(g, x + i, y, '\u2500', s); setCell(g, x + i, y + h - 1, '\u2500', s) }
+  for (var j = 1; j < h - 1; j++) { setCell(g, x, y + j, '\u2502', s); setCell(g, x + w - 1, y + j, '\u2502', s) }
+  setCell(g, x, y, '\u250C', s); setCell(g, x + w - 1, y, '\u2510', s); setCell(g, x, y + h - 1, '\u2514', s); setCell(g, x + w - 1, y + h - 1, '\u2518', s)
+  if (title) put(g, x + 2, y, ' ' + title + ' ', s)
+}
+function frameOf(g) { return { lines: g.ch.map(function (r) { return r.join('') }), styles: g.st.map(function (r) { return r.join('') }) } }
+// Deterministic pseudo-random numbers: the same (seed, i) always gives the same value, so a frame
+// depends only on t and ctx (seeking works, the agent preview matches playback).
+function hash(i, seed) { var h = Math.imul((i | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(seed | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return ((h ^ (h >>> 16)) >>> 0) / 4294967296 }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }
+// Silent packs (no audio) get zero bands: fake a little motion from the beat so previews are not dead.
+function energyOf(ctx, t) { return ctx.energy > 0.01 ? ctx.energy : 0.25 + 0.2 * (ctx.beat ? ctx.beat.pulse : 0.5 + 0.5 * Math.sin(t * 4)) }
+function bandOf(ctx, i, t) { return ctx.energy > 0.01 ? ctx.bands[i] : clamp(0.35 + 0.3 * Math.sin(t * 3 + i * 0.45) * (1 - i / 64) + (ctx.beat ? 0.3 * ctx.beat.pulse : 0), 0, 1) }
+// ---- end of grid helpers -------------------------------------------------------------------------
+
+// 5\xD75 block font for the letters we need (add more as you like).
+var FONT = {
+  E: ['#####', '#    ', '#### ', '#    ', '#####'], X: ['#   #', ' # # ', '  #  ', ' # # ', '#   #'],
+  C: [' ####', '#    ', '#    ', '#    ', ' ####'], U: ['#   #', '#   #', '#   #', '#   #', ' ### '],
+  T: ['#####', '  #  ', '  #  ', '  #  ', '  #  '], I: ['#####', '  #  ', '  #  ', '  #  ', '#####'],
+  O: [' ### ', '#   #', '#   #', '#   #', ' ### '], N: ['#   #', '##  #', '# # #', '#  ##', '#   #'],
+  ' ': ['     ', '     ', '     ', '     ', '     '],
+}
+function bigText(g, x, y, text, scale, style, ch) {
+  for (var i = 0; i < text.length; i++) {
+    var glyph = FONT[text[i]] || FONT[' ']
+    for (var r = 0; r < 5; r++) for (var c = 0; c < 5; c++) if (glyph[r][c] === '#') fill(g, x + (i * 6 + c) * scale, y + r * scale, scale, scale, ch, style)
+  }
+}
+
+// Placeholder figure: a hooded silhouette described by an ellipse body and a round head.
+function silhouette(x, y, w, h) {
+  var nx = x / w - 0.5, ny = y / h
+  var head = (nx * nx) / 0.02 + Math.pow(ny - 0.22, 2) / 0.018 < 1
+  var body = ny > 0.33 && (nx * nx) / (0.03 + 0.12 * (ny - 0.33)) + Math.pow(ny - 0.8, 2) / 0.3 < 1
+  return head || body
+}
+
+function render(t, cols, rows, ctx) {
+  var g = makeGrid(cols, rows)
+  var beat = ctx.beat ? ctx.beat.pulse : Math.max(0, Math.sin(t * Math.PI * 2 * 2)) // 2 Hz fallback
+  var half = Math.floor(cols * 0.42)
+  // left: mosaic silhouette, cells of 2\xD71, shaded by a slow vertical scan
+  for (var y = 1; y < rows - 1; y++) for (var x = 0; x < half; x += 2) {
+    if (!silhouette(x, y, half, rows)) { if (hash(x * 131 + y, 7) < 0.03) put(g, x, y, '\xB7', 0); continue }
+    var scan = 0.5 + 0.5 * Math.sin(y * 0.6 - t * 6)
+    put(g, x, y, scan > 0.7 ? '\u2588\u2588' : scan > 0.35 ? '\u2593\u2593' : '\u2592\u2592', 4)
+  }
+  // right: the big word, scaled to fit
+  var word = 'EXECUTION', scale = Math.max(1, Math.floor((cols - half - 4) / (word.length * 6)))
+  var wy = Math.floor(rows / 2 - 2.5 * scale)
+  bigText(g, half + 2, wy, word, scale, 4, '\u2588')
+  // diagonal tape: cells on the band |x*0.35 - y + offset| < 1.5 carry the scrolling text
+  var tape = ' EXECUTION  EXECUTION  ', off = Math.floor(t * 18)
+  for (var x2 = 0; x2 < cols; x2++) {
+    var yc = Math.round(rows * 0.75 - x2 * 0.35 + rows * 0.3)
+    for (var d = -1; d <= 1; d++) {
+      var yy = yc + d
+      if (yy < 0 || yy >= rows) continue
+      if (d === 0) setCell(g, x2, yy, tape[(x2 + off) % tape.length], 3)
+      else setCell(g, x2, yy, '\u2588', 4)
+    }
+  }
+  // status line
+  put(g, 1, rows - 1, 'runExecution()  #' + String(1 + Math.floor(t / 4) % 12).padStart(2, '0') + '  target: ' + (ctx.lyric ? ctx.lyric.text.split(' ').pop() : 'world'), 4)
+  // glitch on the beat: shift some rows and sprinkle noise (deterministic per beat index)
+  if (beat > 0.6) {
+    var seed = ctx.beat ? ctx.beat.index : Math.floor(t * 2)
+    for (var r = 0; r < rows; r++) {
+      if (hash(r, seed) < 0.18) {
+        var shift = Math.floor((hash(r, seed + 1) - 0.5) * 12)
+        var row = g.ch[r].slice(), sty = g.st[r].slice()
+        if (row.indexOf('') >= 0) continue // rows with wide characters are left alone
+        for (var c = 0; c < cols; c++) { var from = (c - shift + cols) % cols; g.ch[r][c] = row[from]; g.st[r][c] = sty[from] }
+      }
+    }
+  }
+  return frameOf(g)
+}
+`,
+  "examples/heartbeat.scene.js": `// heartbeat.scene.js \u2014 an ECG-style heartbeat line that beats with the music.
+//
+// Technique (from the dsh PV preset, where the header's heartbeat follows the live loudness):
+// a trace scrolls right-to-left; every beat it draws the P-QRS-T shape whose height follows the
+// current energy. Beats come from ctx.beat (set "canvas": { "bpm": 128 } in mv.json, and
+// "beatOffset" to the time of the first beat), otherwise from bass onsets. A fading "phosphor" tail
+// is drawn by sampling the same function a little earlier: the frame stays a pure function of t.
+
+// ---- grid helpers (shared by every example; copy them into your own scenes.js) ----------------
+// A frame is a grid of cells. ch[y][x] holds one character, st[y][x] its style digit:
+// 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
+// Wide characters (CJK, full-width punctuation) take two cells; the second cell holds '' so that
+// lines and styles stay aligned when joined.
+var WIDE = /[\\u1100-\\u115f\\u2e80-\\ua4cf\\uac00-\\ud7a3\\uf900-\\ufaff\\ufe30-\\ufe4f\\uff00-\\uff60\\uffe0-\\uffe6]/
+function cellWidth(c) { return WIDE.test(c) ? 2 : 1 }
+function textWidth(s) { var w = 0; for (var c of String(s)) w += cellWidth(c); return w }
+function makeGrid(cols, rows) {
+  var ch = [], st = []
+  for (var y = 0; y < rows; y++) { ch.push(new Array(cols).fill(' ')); st.push(new Array(cols).fill('0')) }
+  return { cols: cols, rows: rows, ch: ch, st: st }
+}
+function setCell(g, x, y, c, s) {
+  if (y < 0 || y >= g.rows || x < 0 || x >= g.cols) return
+  var row = g.ch[y], sty = g.st[y], w = cellWidth(c)
+  if (x + w > g.cols) return
+  if (row[x] === '' && x > 0) { row[x - 1] = ' '; sty[x - 1] = '0' }        // we hit the right half of a wide char
+  if (w === 1 && row[x + 1] === '') { row[x + 1] = ' '; sty[x + 1] = '0' }  // we cover the left half of one
+  if (w === 2 && row[x + 2] === '') { row[x + 2] = ' '; sty[x + 2] = '0' }
+  row[x] = c; sty[x] = String(s)
+  if (w === 2) { row[x + 1] = ''; sty[x + 1] = '' }
+}
+function put(g, x, y, text, s) {
+  x = Math.round(x); y = Math.round(y)
+  for (var c of String(text)) { setCell(g, x, y, c, s); x += cellWidth(c) }
+}
+function center(g, y, text, s) { put(g, Math.floor((g.cols - textWidth(text)) / 2), y, text, s) }
+function fill(g, x, y, w, h, c, s) { for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) setCell(g, x + i, y + j, c, s) }
+function box(g, x, y, w, h, s, title) {
+  if (w < 2 || h < 2) return
+  for (var i = 1; i < w - 1; i++) { setCell(g, x + i, y, '\u2500', s); setCell(g, x + i, y + h - 1, '\u2500', s) }
+  for (var j = 1; j < h - 1; j++) { setCell(g, x, y + j, '\u2502', s); setCell(g, x + w - 1, y + j, '\u2502', s) }
+  setCell(g, x, y, '\u250C', s); setCell(g, x + w - 1, y, '\u2510', s); setCell(g, x, y + h - 1, '\u2514', s); setCell(g, x + w - 1, y + h - 1, '\u2518', s)
+  if (title) put(g, x + 2, y, ' ' + title + ' ', s)
+}
+function frameOf(g) { return { lines: g.ch.map(function (r) { return r.join('') }), styles: g.st.map(function (r) { return r.join('') }) } }
+// Deterministic pseudo-random numbers: the same (seed, i) always gives the same value, so a frame
+// depends only on t and ctx (seeking works, the agent preview matches playback).
+function hash(i, seed) { var h = Math.imul((i | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(seed | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return ((h ^ (h >>> 16)) >>> 0) / 4294967296 }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }
+// Silent packs (no audio) get zero bands: fake a little motion from the beat so previews are not dead.
+function energyOf(ctx, t) { return ctx.energy > 0.01 ? ctx.energy : 0.25 + 0.2 * (ctx.beat ? ctx.beat.pulse : 0.5 + 0.5 * Math.sin(t * 4)) }
+function bandOf(ctx, i, t) { return ctx.energy > 0.01 ? ctx.bands[i] : clamp(0.35 + 0.3 * Math.sin(t * 3 + i * 0.45) * (1 - i / 64) + (ctx.beat ? 0.3 * ctx.beat.pulse : 0), 0, 1) }
+// ---- end of grid helpers -------------------------------------------------------------------------
+
+// The beat shape over one beat (phase 0..1) as a height -1..1.
+function pqrst(phase) {
+  if (phase < 0.08) return 0.15 * Math.sin(phase / 0.08 * Math.PI)            // P
+  if (phase < 0.12) return 0
+  if (phase < 0.14) return -0.25                                             // Q
+  if (phase < 0.18) return 1                                                 // R
+  if (phase < 0.21) return -0.45                                             // S
+  if (phase < 0.32) return 0
+  if (phase < 0.45) return 0.3 * Math.sin((phase - 0.32) / 0.13 * Math.PI)   // T
+  return 0
+}
+
+// Height of the trace at time s (seconds), using ctx.beat when present.
+function trace(s, ctx, t) {
+  var bpm = ctx.beat ? ctx.beat.bpm : 120
+  var offset = ctx.beat ? (t - ctx.beat.index * 60 / bpm - ctx.beat.phase * 60 / bpm) : 0
+  var pos = (s - offset) * bpm / 60
+  var amp = 0.35 + 0.65 * energyOf(ctx, t)
+  return pqrst(pos - Math.floor(pos)) * amp
+}
+
+function render(t, cols, rows, ctx) {
+  var g = makeGrid(cols, rows)
+  var mid = Math.floor(rows / 2), span = Math.floor(rows * 0.35)
+  var secondsAcross = 4 // the width of the screen shows 4 seconds of trace
+  // dim grid like a monitor
+  for (var y = 1; y < rows - 1; y++) for (var x = 0; x < cols; x += 8) setCell(g, x, y, '\xB7', 0)
+  for (var x2 = 0; x2 < cols; x2++) if (x2 % 2 === 0) setCell(g, x2, mid, '\xB7', 0)
+  // the trace: newest sample at the right edge
+  var prev = null
+  for (var x = 0; x < cols; x++) {
+    var age = (cols - 1 - x) / cols * secondsAcross   // seconds ago
+    var v = trace(t - age, ctx, t)
+    var yy = mid - Math.round(v * span)
+    var style = age < 0.4 ? 3 : age < 1.5 ? 2 : age < 3 ? 1 : 0 // phosphor fade
+    // connect to the previous column with a vertical stroke so spikes are continuous
+    if (prev !== null) {
+      var a = Math.min(prev, yy), b = Math.max(prev, yy)
+      for (var k = a; k <= b; k++) setCell(g, x, k, k === yy ? '\u2022' : '\u2502', style)
+    } else setCell(g, x, yy, '\u2022', style)
+    prev = yy
+  }
+  // readout
+  var bpm = ctx.beat ? ctx.beat.bpm : 120
+  var pulse = ctx.beat ? ctx.beat.pulse : 0
+  put(g, 2, 1, 'HEARTBEAT', 2)
+  put(g, cols - 14, 1, (pulse > 0.5 ? '\u2665 ' : '\u2661 ') + bpm + ' BPM', pulse > 0.5 ? 4 : 1)
+  put(g, 2, rows - 2, 'energy ' + Math.round(energyOf(ctx, t) * 100) + '%', 0)
+  if (ctx.lyric) center(g, rows - 2, ctx.lyric.text, 3)
+  return frameOf(g)
+}
+`,
+  "examples/ops-ticker.scene.js": `// ops-ticker.scene.js \u2014 the scrolling "ops" column and a horizontal news-ticker.
+//
+// Technique (from the dsh PV preset's right-hand ops column): a list of operation names scrolls
+// upwards at a steady speed; the row that crosses the marker is highlighted on every beat (inverted
+// with \u2588 background), recent rows stay bright and older ones dim. The word list changes with the
+// song section (ctx.section.kind), so a chorus can switch to a more aggressive vocabulary.
+// A second ticker runs along the bottom with a status line.
+
+// ---- grid helpers (shared by every example; copy them into your own scenes.js) ----------------
+// A frame is a grid of cells. ch[y][x] holds one character, st[y][x] its style digit:
+// 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
+// Wide characters (CJK, full-width punctuation) take two cells; the second cell holds '' so that
+// lines and styles stay aligned when joined.
+var WIDE = /[\\u1100-\\u115f\\u2e80-\\ua4cf\\uac00-\\ud7a3\\uf900-\\ufaff\\ufe30-\\ufe4f\\uff00-\\uff60\\uffe0-\\uffe6]/
+function cellWidth(c) { return WIDE.test(c) ? 2 : 1 }
+function textWidth(s) { var w = 0; for (var c of String(s)) w += cellWidth(c); return w }
+function makeGrid(cols, rows) {
+  var ch = [], st = []
+  for (var y = 0; y < rows; y++) { ch.push(new Array(cols).fill(' ')); st.push(new Array(cols).fill('0')) }
+  return { cols: cols, rows: rows, ch: ch, st: st }
+}
+function setCell(g, x, y, c, s) {
+  if (y < 0 || y >= g.rows || x < 0 || x >= g.cols) return
+  var row = g.ch[y], sty = g.st[y], w = cellWidth(c)
+  if (x + w > g.cols) return
+  if (row[x] === '' && x > 0) { row[x - 1] = ' '; sty[x - 1] = '0' }        // we hit the right half of a wide char
+  if (w === 1 && row[x + 1] === '') { row[x + 1] = ' '; sty[x + 1] = '0' }  // we cover the left half of one
+  if (w === 2 && row[x + 2] === '') { row[x + 2] = ' '; sty[x + 2] = '0' }
+  row[x] = c; sty[x] = String(s)
+  if (w === 2) { row[x + 1] = ''; sty[x + 1] = '' }
+}
+function put(g, x, y, text, s) {
+  x = Math.round(x); y = Math.round(y)
+  for (var c of String(text)) { setCell(g, x, y, c, s); x += cellWidth(c) }
+}
+function center(g, y, text, s) { put(g, Math.floor((g.cols - textWidth(text)) / 2), y, text, s) }
+function fill(g, x, y, w, h, c, s) { for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) setCell(g, x + i, y + j, c, s) }
+function box(g, x, y, w, h, s, title) {
+  if (w < 2 || h < 2) return
+  for (var i = 1; i < w - 1; i++) { setCell(g, x + i, y, '\u2500', s); setCell(g, x + i, y + h - 1, '\u2500', s) }
+  for (var j = 1; j < h - 1; j++) { setCell(g, x, y + j, '\u2502', s); setCell(g, x + w - 1, y + j, '\u2502', s) }
+  setCell(g, x, y, '\u250C', s); setCell(g, x + w - 1, y, '\u2510', s); setCell(g, x, y + h - 1, '\u2514', s); setCell(g, x + w - 1, y + h - 1, '\u2518', s)
+  if (title) put(g, x + 2, y, ' ' + title + ' ', s)
+}
+function frameOf(g) { return { lines: g.ch.map(function (r) { return r.join('') }), styles: g.st.map(function (r) { return r.join('') }) } }
+// Deterministic pseudo-random numbers: the same (seed, i) always gives the same value, so a frame
+// depends only on t and ctx (seeking works, the agent preview matches playback).
+function hash(i, seed) { var h = Math.imul((i | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(seed | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return ((h ^ (h >>> 16)) >>> 0) / 4294967296 }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }
+// Silent packs (no audio) get zero bands: fake a little motion from the beat so previews are not dead.
+function energyOf(ctx, t) { return ctx.energy > 0.01 ? ctx.energy : 0.25 + 0.2 * (ctx.beat ? ctx.beat.pulse : 0.5 + 0.5 * Math.sin(t * 4)) }
+function bandOf(ctx, i, t) { return ctx.energy > 0.01 ? ctx.bands[i] : clamp(0.35 + 0.3 * Math.sin(t * 3 + i * 0.45) * (1 - i / 64) + (ctx.beat ? 0.3 * ctx.beat.pulse : 0), 0, 1) }
+// ---- end of grid helpers -------------------------------------------------------------------------
+
+var OPS = {
+  default: ['TOOL.CALL', 'EXECUTE', 'THINK', 'OBSERVE', 'PLAN', 'AUTH?'],
+  chorus: ['SIGKILL', 'REAP', 'NEXT', 'runExecution()', 'KILL', 'FORK'],
+  bridge: ['SAMPLE', 'TEMP++', 'DREAM', 'DRIFT', 'FLATTEN', 'TRANCE'],
+  outro: ['FORK', 'MIT', 'SINK', 'RELEASE'],
+}
+function vocabulary(ctx) {
+  var kind = ctx.section ? ctx.section.kind : 'default'
+  return OPS[kind] || OPS.default
+}
+
+function render(t, cols, rows, ctx) {
+  var g = makeGrid(cols, rows)
+  var words = vocabulary(ctx)
+  var colW = 16, X = cols - colW - 2
+  box(g, X, 0, colW + 1, rows - 2, 1, 'ops')
+  var speed = 2.5 + 3 * energyOf(ctx, t)          // rows per second
+  var scroll = t * speed
+  var marker = Math.floor((rows - 2) * 0.6)
+  for (var y = 1; y < rows - 3; y++) {
+    var n = Math.floor(scroll) + y                 // which entry sits on this row
+    var word = words[((n % words.length) + words.length) % words.length]
+    var dist = Math.abs(y - marker)
+    var style = dist === 0 ? 3 : dist < 3 ? 2 : dist < 8 ? 1 : 0
+    if (y === marker && ctx.beat && ctx.beat.pulse > 0.4) {
+      fill(g, X + 1, y, colW - 1, 1, '\u2588', 2)       // highlight bar on the beat
+      put(g, X + 2, y, word, 0)
+    } else put(g, X + 2, y, word, style)
+  }
+  setCell(g, X - 1, marker, '\u25B6', 3)
+
+  // Bottom ticker: a long string moving left, wrapped around.
+  var news = '  \xB7  section ' + (ctx.section ? (ctx.section.label || ctx.section.kind) : '\u2014') +
+    '  \xB7  t=' + t.toFixed(1) + 's  \xB7  energy ' + Math.round(energyOf(ctx, t) * 100) + '%  \xB7  ' + (ctx.lyric ? ctx.lyric.text : 'instrumental') + '  '
+  var offset = Math.floor(t * 12) % news.length
+  var line = (news + news + news).slice(offset, offset + cols)
+  put(g, 0, rows - 1, line, 1)
+  // Left side: the current section name, large-ish
+  put(g, 2, 2, (ctx.section ? (ctx.section.label || ctx.section.kind) : 'INTRO').toUpperCase(), 3)
+  if (ctx.section) {
+    var bar = Math.round(ctx.section.progress * (X - 6))
+    put(g, 2, 3, '[' + '='.repeat(bar) + ' '.repeat(Math.max(0, X - 6 - bar)) + ']', 0)
+  }
+  return frameOf(g)
+}
+`,
+  "examples/post-effects.scene.js": `// post-effects.scene.js \u2014 trails, bloom, scanlines, vignette and beat glitch as passes over a grid.
+//
+// Technique (from the dsh PV preset's post-processing): draw the scene into a grid, then run small
+// passes over it. Styles are brightness levels here (0 dim < 1 normal < 2 bright < 3 white), so
+// "darkening" a cell means lowering its digit. Trails are made by drawing the same scene at a few
+// earlier times first, dimmer: the frame stays a pure function of t (no state between frames).
+// Each pass is cheap (one loop over the cells); keep the total under the frame budget.
+
+// ---- grid helpers (shared by every example; copy them into your own scenes.js) ----------------
+// A frame is a grid of cells. ch[y][x] holds one character, st[y][x] its style digit:
+// 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
+// Wide characters (CJK, full-width punctuation) take two cells; the second cell holds '' so that
+// lines and styles stay aligned when joined.
+var WIDE = /[\\u1100-\\u115f\\u2e80-\\ua4cf\\uac00-\\ud7a3\\uf900-\\ufaff\\ufe30-\\ufe4f\\uff00-\\uff60\\uffe0-\\uffe6]/
+function cellWidth(c) { return WIDE.test(c) ? 2 : 1 }
+function textWidth(s) { var w = 0; for (var c of String(s)) w += cellWidth(c); return w }
+function makeGrid(cols, rows) {
+  var ch = [], st = []
+  for (var y = 0; y < rows; y++) { ch.push(new Array(cols).fill(' ')); st.push(new Array(cols).fill('0')) }
+  return { cols: cols, rows: rows, ch: ch, st: st }
+}
+function setCell(g, x, y, c, s) {
+  if (y < 0 || y >= g.rows || x < 0 || x >= g.cols) return
+  var row = g.ch[y], sty = g.st[y], w = cellWidth(c)
+  if (x + w > g.cols) return
+  if (row[x] === '' && x > 0) { row[x - 1] = ' '; sty[x - 1] = '0' }        // we hit the right half of a wide char
+  if (w === 1 && row[x + 1] === '') { row[x + 1] = ' '; sty[x + 1] = '0' }  // we cover the left half of one
+  if (w === 2 && row[x + 2] === '') { row[x + 2] = ' '; sty[x + 2] = '0' }
+  row[x] = c; sty[x] = String(s)
+  if (w === 2) { row[x + 1] = ''; sty[x + 1] = '' }
+}
+function put(g, x, y, text, s) {
+  x = Math.round(x); y = Math.round(y)
+  for (var c of String(text)) { setCell(g, x, y, c, s); x += cellWidth(c) }
+}
+function center(g, y, text, s) { put(g, Math.floor((g.cols - textWidth(text)) / 2), y, text, s) }
+function fill(g, x, y, w, h, c, s) { for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) setCell(g, x + i, y + j, c, s) }
+function box(g, x, y, w, h, s, title) {
+  if (w < 2 || h < 2) return
+  for (var i = 1; i < w - 1; i++) { setCell(g, x + i, y, '\u2500', s); setCell(g, x + i, y + h - 1, '\u2500', s) }
+  for (var j = 1; j < h - 1; j++) { setCell(g, x, y + j, '\u2502', s); setCell(g, x + w - 1, y + j, '\u2502', s) }
+  setCell(g, x, y, '\u250C', s); setCell(g, x + w - 1, y, '\u2510', s); setCell(g, x, y + h - 1, '\u2514', s); setCell(g, x + w - 1, y + h - 1, '\u2518', s)
+  if (title) put(g, x + 2, y, ' ' + title + ' ', s)
+}
+function frameOf(g) { return { lines: g.ch.map(function (r) { return r.join('') }), styles: g.st.map(function (r) { return r.join('') }) } }
+// Deterministic pseudo-random numbers: the same (seed, i) always gives the same value, so a frame
+// depends only on t and ctx (seeking works, the agent preview matches playback).
+function hash(i, seed) { var h = Math.imul((i | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(seed | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return ((h ^ (h >>> 16)) >>> 0) / 4294967296 }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }
+// Silent packs (no audio) get zero bands: fake a little motion from the beat so previews are not dead.
+function energyOf(ctx, t) { return ctx.energy > 0.01 ? ctx.energy : 0.25 + 0.2 * (ctx.beat ? ctx.beat.pulse : 0.5 + 0.5 * Math.sin(t * 4)) }
+function bandOf(ctx, i, t) { return ctx.energy > 0.01 ? ctx.bands[i] : clamp(0.35 + 0.3 * Math.sin(t * 3 + i * 0.45) * (1 - i / 64) + (ctx.beat ? 0.3 * ctx.beat.pulse : 0), 0, 1) }
+// ---- end of grid helpers -------------------------------------------------------------------------
+
+var DOWN = { '3': '2', '2': '1', '1': '0', '0': '0' }  // one step darker (colours 4\u20136 are kept)
+function darker(s) { return DOWN[s] || s }
+
+// The base scene: a ring of spectrum spokes around the centre (the lyric is added after bloom).
+function base(g, t, ctx, style) {
+  var cx = g.cols / 2, cy = g.rows / 2, spokes = 48
+  for (var i = 0; i < spokes; i++) {
+    var a = i / spokes * Math.PI * 2 + t * 0.4
+    var len = 3 + bandOf(ctx, i, t) * Math.min(cx * 0.45, cy * 0.9)
+    for (var r = 3; r < len; r += 0.7) setCell(g, Math.round(cx + Math.cos(a) * r * 2), Math.round(cy + Math.sin(a) * r), r > len - 1.4 ? '\u25CF' : '\xB7', style)
+  }
+}
+
+// Pass 1 \u2014 trails: earlier copies, each one step dimmer, drawn underneath.
+function withTrails(cols, rows, t, ctx) {
+  var g = makeGrid(cols, rows)
+  var steps = [[0.24, '0'], [0.12, '1']]
+  for (var i = 0; i < steps.length; i++) base(g, t - steps[i][0], ctx, steps[i][1])
+  base(g, t, ctx, '3')
+  return g
+}
+// Pass 2 \u2014 bloom: empty cells next to white cells get a faint glow.
+function bloom(g) {
+  var hot = []
+  for (var y = 0; y < g.rows; y++) for (var x = 0; x < g.cols; x++) if (g.st[y][x] === '3') hot.push(x, y)
+  for (var k = 0; k < hot.length; k += 2) for (var dy = -1; dy <= 1; dy++) for (var dx = -2; dx <= 2; dx++) {
+    var X = hot[k] + dx, Y = hot[k + 1] + dy
+    if (Y >= 0 && Y < g.rows && X >= 0 && X < g.cols && g.ch[Y][X] === ' ') { g.ch[Y][X] = '.'; g.st[Y][X] = '0' }
+  }
+}
+// Pass 3 \u2014 scanlines: every other row one step darker; the bright line drifts down slowly.
+function scanlines(g, t) {
+  var sweep = Math.floor(t * 8) % g.rows
+  for (var y = 0; y < g.rows; y++) {
+    if (y === sweep) { for (var x = 0; x < g.cols; x++) if (g.ch[y][x] !== ' ' && g.st[y][x] === '1') g.st[y][x] = '2'; continue }
+    if (y % 2) for (var x2 = 0; x2 < g.cols; x2++) g.st[y][x2] = darker(g.st[y][x2])
+  }
+}
+// Pass 4 \u2014 vignette: cells far from the centre lose one or two steps.
+function vignette(g) {
+  for (var y = 0; y < g.rows; y++) for (var x = 0; x < g.cols; x++) {
+    var dx = (x / g.cols - 0.5) * 2, dy = (y / g.rows - 0.5) * 2, d = dx * dx + dy * dy
+    if (d > 0.55) g.st[y][x] = darker(g.st[y][x])
+    if (d > 1.1) g.st[y][x] = darker(g.st[y][x])
+  }
+}
+// Pass 5 \u2014 glitch: on a strong beat, slice a few rows sideways (rows with wide chars are skipped).
+function glitch(g, ctx, t) {
+  var pulse = ctx.beat ? ctx.beat.pulse : (energyOf(ctx, t) > 0.6 ? 1 : 0)
+  if (pulse < 0.7) return
+  var seed = ctx.beat ? ctx.beat.index : Math.floor(t * 4)
+  for (var y = 0; y < g.rows; y++) {
+    if (hash(y, seed) > 0.12 || g.ch[y].indexOf('') >= 0) continue
+    var shift = Math.round((hash(y, seed + 9) - 0.5) * 10)
+    g.ch[y] = g.ch[y].slice(-shift).concat(g.ch[y].slice(0, -shift)).slice(0, g.cols)
+    g.st[y] = g.st[y].slice(-shift).concat(g.st[y].slice(0, -shift)).slice(0, g.cols)
+    while (g.ch[y].length < g.cols) { g.ch[y].push(' '); g.st[y].push('0') }
+  }
+}
+
+function render(t, cols, rows, ctx) {
+  var g = withTrails(cols, rows, t, ctx)
+  bloom(g)
+  if (ctx.lyric) {   // text goes on top of a cleared band, after bloom, so it stays crisp
+    var w = textWidth(ctx.lyric.text), y = Math.round(rows / 2)
+    fill(g, Math.floor((cols - w) / 2) - 2, y, w + 4, 1, ' ', 0)
+    center(g, y, ctx.lyric.text, '3')
+  }
+  scanlines(g, t)
+  vignette(g)
+  glitch(g, ctx, t)
+  return frameOf(g)
+}
+`,
+  "examples/rich-pack/lyrics.placeholder.lrc": "[ti:Neon Terminal (example)]\n[ar:dsh-mv]\n[00:00.00](placeholder lyrics \u2014 replace with your own file; this pack ships no song)\n[00:12.00]<00:12.00>first <00:12.50>verse <00:13.00>line <00:13.60>goes <00:14.10>here\n[00:16.00]<00:16.00>second <00:16.60>line <00:17.20>of <00:17.50>the <00:17.80>verse\n[00:20.00]<00:20.00>word <00:20.40>stamps <00:21.00>drive <00:21.60>the <00:22.00>typing\n[00:24.00]<00:24.00>\u5360\u4F4D <00:24.80>\u6B4C\u8BCD <00:25.60>\u4E5F <00:26.00>\u53EF\u4EE5\n[00:28.00]<00:28.00>tokens <00:28.70>appear <00:29.40>when <00:29.90>sung\n[00:32.00]<00:32.00>verse <00:32.60>keeps <00:33.20>going\n[00:36.00]<00:36.00>into <00:36.50>the <00:37.00>chorus\n[00:40.00]<00:40.00>CHORUS <00:40.80>LINE <00:41.60>ONE\n[00:44.00]<00:44.00>the <00:44.40>ring <00:44.80>follows <00:45.40>the <00:45.80>spectrum\n[00:48.00]<00:48.00>CHORUS <00:48.80>LINE <00:49.60>TWO\n[00:52.00]<00:52.00>karaoke <00:53.00>highlight <00:54.00>here\n[00:56.00]<00:56.00>end <00:56.60>of <00:57.00>chorus\n[01:00.00]\n[01:04.00]<01:04.00>a <01:04.50>quiet <01:05.20>bridge <01:06.00>line\n[01:10.00]<01:10.00>the <01:10.50>heartbeat <01:11.50>slows\n[01:16.00]<01:16.00>LOUDER <01:16.80>NOW\n[01:20.00]<01:20.00>the <01:20.40>red <01:20.80>chorus <01:21.60>glitches\n[01:24.00]<01:24.00>on <01:24.40>every <01:24.90>beat\n[01:28.00]<01:28.00>last <01:28.60>chorus <01:29.40>line\n[01:36.00]\n[01:40.00]<01:40.00>sinking <01:41.00>slowly\n[01:48.00]<01:48.00>the <01:48.60>end\n[01:56.00]\n",
+  "examples/rich-pack/mv.json": '{\n  "$schema": "../../mv.schema.json",\n  "format": "dsh-mv-pack",\n  "version": 1,\n  "title": "Neon Terminal (example)",\n  "artist": "dsh-mv",\n  "credits": [\n    "Example scenes: dsh-mv-cli template (MIT)",\n    "Techniques adapted from MisakaZentai/world-execute-me-dsh-pv (code MIT, \xA9 MisakaZentai); no artwork, audio or lyrics included"\n  ],\n  "notice": "Example pack with placeholder lyrics and no audio. Add your own song and lyrics to turn it into a real MV.",\n  "duration": 120,\n  "lyrics": { "file": "lyrics.placeholder.lrc" },\n  "canvas": { "renderer": "script", "script": "scenes.js", "bpm": 120, "beatOffset": 0 },\n  "x-dsh-mv-ai": {\n    "sections": [\n      { "kind": "intro", "label": "boot", "start": 0, "end": 12 },\n      { "kind": "verse", "label": "chat", "start": 12, "end": 40 },\n      { "kind": "chorus", "label": "spectrum ring", "start": 40, "end": 60 },\n      { "kind": "bridge", "label": "heartbeat", "start": 60, "end": 76 },\n      { "kind": "chorus", "label": "EXECUTE", "start": 76, "end": 96 },\n      { "kind": "outro", "label": "sinking", "start": 96, "end": 120 }\n    ]\n  },\n  "x-dsh-mv-workshop": {\n    "id": "neon-terminal-example",\n    "version": "1.0.0",\n    "license": "MIT",\n    "author": "Alice-Marx",\n    "audio": { "duration": 120 }\n  }\n}\n',
+  "examples/rich-pack/scenes.js": `// scenes.js \u2014 "Neon Terminal", a complete multi-section example for dsh-mv scene scripts.
+//
+// It shows how the small examples in ../*.scene.js fit together in one MV:
+//   intro   boot log typed line by line + heartbeat trace      (heartbeat.scene.js)
+//   verse   chat window, the lyric typed as the reply, token band (chat-window, token-bar)
+//   chorus  spectrum ring, big karaoke lyric, ops ticker       (post-effects, ops-ticker)
+//   bridge  heartbeat monitor full screen, slow and dim
+//   chorus2 red EXECUTION-style screen with beat glitches      (execution-split)
+//   outro   sinking silhouette in marine snow, closing captions (whale-fall)
+// plus transitions (1 s fade at section edges) and post effects (scanlines, vignette).
+//
+// Sections come from mv.json \u2192 x-dsh-mv-ai.sections (ctx.section), the beat from canvas.bpm
+// (ctx.beat), words from enhanced-LRC word stamps (ctx.lyric.words). This pack has NO audio and
+// placeholder lyrics: it plays silently, and the helpers fake motion when ctx.energy is 0. Add
+// "audio": { "file": "song.mp3" } and your own lyrics to use it with a real song, then re-time the
+// sections and bpm for that song.
+
+// ---- grid helpers (shared by every example; copy them into your own scenes.js) ----------------
+// A frame is a grid of cells. ch[y][x] holds one character, st[y][x] its style digit:
+// 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
+// Wide characters (CJK, full-width punctuation) take two cells; the second cell holds '' so that
+// lines and styles stay aligned when joined.
+var WIDE = /[\\u1100-\\u115f\\u2e80-\\ua4cf\\uac00-\\ud7a3\\uf900-\\ufaff\\ufe30-\\ufe4f\\uff00-\\uff60\\uffe0-\\uffe6]/
+function cellWidth(c) { return WIDE.test(c) ? 2 : 1 }
+function textWidth(s) { var w = 0; for (var c of String(s)) w += cellWidth(c); return w }
+function makeGrid(cols, rows) {
+  var ch = [], st = []
+  for (var y = 0; y < rows; y++) { ch.push(new Array(cols).fill(' ')); st.push(new Array(cols).fill('0')) }
+  return { cols: cols, rows: rows, ch: ch, st: st }
+}
+function setCell(g, x, y, c, s) {
+  if (y < 0 || y >= g.rows || x < 0 || x >= g.cols) return
+  var row = g.ch[y], sty = g.st[y], w = cellWidth(c)
+  if (x + w > g.cols) return
+  if (row[x] === '' && x > 0) { row[x - 1] = ' '; sty[x - 1] = '0' }        // we hit the right half of a wide char
+  if (w === 1 && row[x + 1] === '') { row[x + 1] = ' '; sty[x + 1] = '0' }  // we cover the left half of one
+  if (w === 2 && row[x + 2] === '') { row[x + 2] = ' '; sty[x + 2] = '0' }
+  row[x] = c; sty[x] = String(s)
+  if (w === 2) { row[x + 1] = ''; sty[x + 1] = '' }
+}
+function put(g, x, y, text, s) {
+  x = Math.round(x); y = Math.round(y)
+  for (var c of String(text)) { setCell(g, x, y, c, s); x += cellWidth(c) }
+}
+function center(g, y, text, s) { put(g, Math.floor((g.cols - textWidth(text)) / 2), y, text, s) }
+function fill(g, x, y, w, h, c, s) { for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) setCell(g, x + i, y + j, c, s) }
+function box(g, x, y, w, h, s, title) {
+  if (w < 2 || h < 2) return
+  for (var i = 1; i < w - 1; i++) { setCell(g, x + i, y, '\u2500', s); setCell(g, x + i, y + h - 1, '\u2500', s) }
+  for (var j = 1; j < h - 1; j++) { setCell(g, x, y + j, '\u2502', s); setCell(g, x + w - 1, y + j, '\u2502', s) }
+  setCell(g, x, y, '\u250C', s); setCell(g, x + w - 1, y, '\u2510', s); setCell(g, x, y + h - 1, '\u2514', s); setCell(g, x + w - 1, y + h - 1, '\u2518', s)
+  if (title) put(g, x + 2, y, ' ' + title + ' ', s)
+}
+function frameOf(g) { return { lines: g.ch.map(function (r) { return r.join('') }), styles: g.st.map(function (r) { return r.join('') }) } }
+// Deterministic pseudo-random numbers: the same (seed, i) always gives the same value, so a frame
+// depends only on t and ctx (seeking works, the agent preview matches playback).
+function hash(i, seed) { var h = Math.imul((i | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(seed | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return ((h ^ (h >>> 16)) >>> 0) / 4294967296 }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }
+// Silent packs (no audio) get zero bands: fake a little motion from the beat so previews are not dead.
+function energyOf(ctx, t) { return ctx.energy > 0.01 ? ctx.energy : 0.25 + 0.2 * (ctx.beat ? ctx.beat.pulse : 0.5 + 0.5 * Math.sin(t * 4)) }
+function bandOf(ctx, i, t) { return ctx.energy > 0.01 ? ctx.bands[i] : clamp(0.35 + 0.3 * Math.sin(t * 3 + i * 0.45) * (1 - i / 64) + (ctx.beat ? 0.3 * ctx.beat.pulse : 0), 0, 1) }
+// ---- end of grid helpers -------------------------------------------------------------------------
+
+var DOWN = { '3': '2', '2': '1', '1': '0', '0': '0' }
+function darker(s) { return DOWN[s] || s }
+
+// ---- shared pieces --------------------------------------------------------------------------------
+function karaoke(g, y, ctx, sungStyle, restStyle) {
+  if (!ctx.lyric) return
+  var line = ctx.lyric.text, words = ctx.lyric.words || [], sung = 0
+  for (var i = 0; i <= ctx.lyric.word && i < words.length; i++) { var at = line.indexOf(words[i].text, sung); if (at >= 0) sung = at + words[i].text.length }
+  var x = Math.floor((g.cols - textWidth(line)) / 2)
+  fill(g, x - 2, y, textWidth(line) + 4, 1, ' ', 0)   // clear a band so the lyric stays readable
+  put(g, x, y, line.slice(0, sung), sungStyle)
+  put(g, x + textWidth(line.slice(0, sung)), y, line.slice(sung), restStyle)
+}
+function pqrst(p) { return p < 0.08 ? 0.15 * Math.sin(p / 0.08 * Math.PI) : p < 0.14 ? (p < 0.12 ? 0 : -0.25) : p < 0.18 ? 1 : p < 0.21 ? -0.45 : p > 0.32 && p < 0.45 ? 0.3 * Math.sin((p - 0.32) / 0.13 * Math.PI) : 0 }
+function heartbeat(g, y0, h, t, ctx, bright) {
+  var bpm = ctx.beat ? ctx.beat.bpm : 120, prev = null
+  for (var x = 0; x < g.cols; x++) {
+    var age = (g.cols - 1 - x) / g.cols * 4, pos = (t - age) * bpm / 60
+    var v = pqrst(pos - Math.floor(pos)) * (0.4 + 0.6 * energyOf(ctx, t))
+    var y = y0 - Math.round(v * h), s = age < 0.4 ? bright : age < 2 ? 1 : 0
+    if (prev !== null) for (var k = Math.min(prev, y); k <= Math.max(prev, y); k++) setCell(g, x, k, k !== y ? '\u2502' : Math.abs(v) < 0.05 ? '\u2500' : '\u2022', s)
+    prev = y
+  }
+}
+
+// ---- sections -------------------------------------------------------------------------------------
+var BOOT = ['[ ok ] mounting /dev/song', '[ ok ] loading weights 0/48 bands', '[ ok ] lyrics: word stamps found', '[ ok ] beat clock: canvas.bpm', '[ .. ] waiting for the first line']
+function intro(g, t, ctx, local) {
+  for (var i = 0; i < BOOT.length; i++) {
+    var shown = Math.floor((local - i * 1.6) * 30)
+    if (shown > 0) put(g, 3, 2 + i, BOOT[i].slice(0, shown), i === BOOT.length - 1 && Math.floor(t * 3) % 2 ? 2 : 1)
+  }
+  heartbeat(g, Math.floor(g.rows * 0.7), Math.floor(g.rows * 0.2), t, ctx, 3)
+  center(g, g.rows - 2, ctx.title + (ctx.artist ? ' \u2014 ' + ctx.artist : ''), 3)
+}
+
+function verse(g, t, ctx) {
+  var W = Math.min(g.cols - 4, 60), X = Math.floor((g.cols - W) / 2), H = g.rows - 9
+  box(g, X, 1, W, H, 1, 'chat')
+  put(g, X + 2, 2, '(\u25D5\u1D17\u25D5) assistant \xB7 ' + (ctx.lyric && ctx.lyric.word >= 0 ? '\u25CF typing' : '\u25CF online'), 2)
+  if (ctx.next) put(g, X + W - 3 - Math.min(W - 8, textWidth(ctx.next.text)), 4, ctx.next.text.slice(0, W - 8), 0)
+  if (ctx.lyric) {
+    var words = ctx.lyric.words || [], shown = ''
+    for (var w = 0; w <= ctx.lyric.word && w < words.length; w++) shown += (w ? ' ' : '') + words[w].text
+    put(g, X + 3, 6, shown.slice(0, W - 6) + (Math.floor(t * 4) % 2 ? '\u258C' : ''), 3)
+  }
+  // token band
+  var top = g.rows - 7
+  box(g, 1, top, g.cols - 2, 5, 1, 'stdout \xB7 tokens')
+  var x = 4
+  if (ctx.lyric) for (var i = 0; i <= ctx.lyric.word && i < (ctx.lyric.words || []).length; i++) {
+    var tok = ctx.lyric.words[i].text, wd = textWidth(tok)
+    if (x + wd >= g.cols - 3) break
+    fill(g, x, top + 2, wd, 1, '\u2588', i === ctx.lyric.word ? 3 : 1); put(g, x, top + 2, tok, 0); x += wd + 1
+  }
+}
+
+function chorus(g, t, ctx) {
+  var cx = g.cols / 2, cy = g.rows / 2 - 2
+  for (var i = 0; i < 48; i++) {
+    var a = i / 48 * Math.PI * 2 + t * 0.6, len = 4 + bandOf(ctx, i, t) * Math.min(cx * 0.4, cy * 0.85) * (1 + (ctx.beat ? 0.3 * ctx.beat.pulse : 0))
+    for (var r = 4; r < len; r += 0.8) setCell(g, Math.round(cx + Math.cos(a) * r * 2), Math.round(cy + Math.sin(a) * r), r > len - 1.5 ? '\u25CF' : '\xB7', r > len - 1.5 ? 2 : 1)
+  }
+  karaoke(g, Math.round(cy), ctx, 3, 0)
+  // ops ticker column on the right
+  var ops = ['SAMPLE', 'TOOL.CALL', 'THINK', 'EXECUTE', 'OBSERVE', 'PLAN'], X = g.cols - 13
+  for (var y = 1; y < g.rows - 1; y++) {
+    var n = Math.floor(t * 4) + y, mark = y === Math.floor(g.rows * 0.6)
+    put(g, X, y, ops[n % ops.length], mark ? 3 : Math.abs(y - g.rows * 0.6) < 4 ? 1 : 0)
+  }
+}
+
+function bridge(g, t, ctx) {
+  for (var y = 1; y < g.rows - 1; y += 3) for (var x = 0; x < g.cols; x += 6) setCell(g, x, y, '\xB7', 0)
+  heartbeat(g, Math.floor(g.rows / 2), Math.floor(g.rows * 0.3), t, ctx, 2)
+  karaoke(g, g.rows - 3, ctx, 2, 0)
+}
+
+var FONT = { E: ['###', '#  ', '## ', '#  ', '###'], X: ['# #', ' # ', ' # ', ' # ', '# #'], C: ['###', '#  ', '#  ', '#  ', '###'], U: ['# #', '# #', '# #', '# #', '###'], T: ['###', ' # ', ' # ', ' # ', ' # '], I: ['###', ' # ', ' # ', ' # ', '###'], O: ['###', '# #', '# #', '# #', '###'], N: ['# #', '###', '###', '###', '# #'] }
+function chorus2(g, t, ctx) {
+  // block letters: cells are about twice as tall as wide, so a pixel is sx wide and sy = sx / 2 tall
+  var word = 'EXECUTE', sx = Math.max(1, Math.floor(g.cols * 0.85 / (word.length * 4))), sy = Math.max(1, Math.round(sx / 2))
+  var x0 = Math.floor((g.cols - word.length * 4 * sx) / 2), y0 = Math.floor(g.rows / 2 - 2.5 * sy) - 2
+  for (var i = 0; i < word.length; i++) { var gl = FONT[word[i]]; for (var r = 0; r < 5; r++) for (var c = 0; c < 3; c++) if (gl[r][c] === '#') fill(g, x0 + (i * 4 + c) * sx, y0 + r * sy, sx, sy, '\u2588', 4) }
+  karaoke(g, g.rows - 4, ctx, 4, 0)
+  var pulse = ctx.beat ? ctx.beat.pulse : 0, seed = ctx.beat ? ctx.beat.index : Math.floor(t * 2)
+  if (pulse > 0.6) for (var y = 0; y < g.rows; y++) if (hash(y, seed) < 0.2 && g.ch[y].indexOf('') < 0) {
+    var sh = Math.round((hash(y, seed + 3) - 0.5) * 14)
+    g.ch[y] = g.ch[y].slice(-sh).concat(g.ch[y].slice(0, -sh)).slice(0, g.cols); g.st[y] = g.st[y].slice(-sh).concat(g.st[y].slice(0, -sh)).slice(0, g.cols)
+  }
+}
+
+var WHALE = ['        _.-----._', '   _.-\\'          \`-._', '<_      o            )', '  \`-._         __.-\\'', '      \`--.__.-\\'']
+function outro(g, t, ctx, p) {
+  var floor = g.rows - 2
+  for (var i = 0; i < g.cols * g.rows / 45; i++) setCell(g, Math.floor(hash(i, 1) * g.cols), Math.floor((hash(i, 2) * g.rows + t * (0.5 + i % 3 * 0.6)) % floor), '\xB7', i % 3)
+  var wy = Math.round(-5 + p * (floor - 2)), wx = Math.floor(g.cols / 2 - 11)
+  for (var r = 0; r < WHALE.length; r++) put(g, wx, wy + r, WHALE[r], p < 0.6 ? 2 : 1)
+  fill(g, 0, floor, g.cols, 1, '_', 1)
+  if (p > 0.5) put(g, 3, 2, 'fin.'.slice(0, Math.ceil((p - 0.5) * 16)), 2)
+  karaoke(g, g.rows - 1, ctx, 2, 0)
+}
+
+// ---- the frame ------------------------------------------------------------------------------------
+function render(t, cols, rows, ctx) {
+  var g = makeGrid(cols, rows)
+  var s = ctx.section, kind = s ? s.kind : (ctx.progress < 0.1 ? 'intro' : 'verse'), local = s ? t - s.start : t
+  var p = s ? s.progress : ctx.progress
+  if (kind === 'intro') intro(g, t, ctx, local)
+  else if (kind === 'verse') verse(g, t, ctx)
+  else if (kind === 'chorus') (s && s.index > 3 ? chorus2 : chorus)(g, t, ctx)
+  else if (kind === 'bridge' || kind === 'instrumental') bridge(g, t, ctx)
+  else if (kind === 'outro') outro(g, t, ctx, p)
+  else verse(g, t, ctx)
+  // transitions: darken everything in the first and last 0.8 s of a section
+  if (s) {
+    var edge = Math.min(t - s.start, s.end - t)
+    var steps = edge < 0.25 ? 2 : edge < 0.8 ? 1 : 0
+    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) for (var k = 0; k < steps; k++) g.st[y][x] = darker(g.st[y][x])
+  }
+  // post effects: scanlines + vignette (cheap passes, see ../post-effects.scene.js)
+  for (var y2 = 1; y2 < rows; y2 += 2) for (var x2 = 0; x2 < cols; x2++) if (g.st[y2][x2] === '1') g.st[y2][x2] = '0'
+  for (var y3 = 0; y3 < rows; y3++) for (var x3 = 0; x3 < cols; x3++) {
+    var dx = (x3 / cols - 0.5) * 2, dy = (y3 / rows - 0.5) * 2
+    if (dx * dx + dy * dy > 1.15) g.st[y3][x3] = darker(g.st[y3][x3])
+  }
+  // section label in the corner
+  put(g, cols - 18, 0, (kind + ' ' + (s ? Math.round(p * 100) + '%' : '')).slice(0, 17), 0)
+  return frameOf(g)
+}
+`,
+  "examples/token-bar.scene.js": `// token-bar.scene.js \u2014 the "stdout \xB7 tokens" band: lyrics streamed as tokens.
+//
+// Technique (from the dsh PV preset's bottom band): the current lyric is split into tokens the way
+// a tokenizer might (words and punctuation; long words break into two pieces). Each token appears
+// when its word is sung (ctx.lyric.words), drawn in an inverted cell box with a pseudo token id
+// underneath (crc32 of the token, mod 100000, so ids are stable). The newest token blinks a caret.
+
+// ---- grid helpers (shared by every example; copy them into your own scenes.js) ----------------
+// A frame is a grid of cells. ch[y][x] holds one character, st[y][x] its style digit:
+// 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
+// Wide characters (CJK, full-width punctuation) take two cells; the second cell holds '' so that
+// lines and styles stay aligned when joined.
+var WIDE = /[\\u1100-\\u115f\\u2e80-\\ua4cf\\uac00-\\ud7a3\\uf900-\\ufaff\\ufe30-\\ufe4f\\uff00-\\uff60\\uffe0-\\uffe6]/
+function cellWidth(c) { return WIDE.test(c) ? 2 : 1 }
+function textWidth(s) { var w = 0; for (var c of String(s)) w += cellWidth(c); return w }
+function makeGrid(cols, rows) {
+  var ch = [], st = []
+  for (var y = 0; y < rows; y++) { ch.push(new Array(cols).fill(' ')); st.push(new Array(cols).fill('0')) }
+  return { cols: cols, rows: rows, ch: ch, st: st }
+}
+function setCell(g, x, y, c, s) {
+  if (y < 0 || y >= g.rows || x < 0 || x >= g.cols) return
+  var row = g.ch[y], sty = g.st[y], w = cellWidth(c)
+  if (x + w > g.cols) return
+  if (row[x] === '' && x > 0) { row[x - 1] = ' '; sty[x - 1] = '0' }        // we hit the right half of a wide char
+  if (w === 1 && row[x + 1] === '') { row[x + 1] = ' '; sty[x + 1] = '0' }  // we cover the left half of one
+  if (w === 2 && row[x + 2] === '') { row[x + 2] = ' '; sty[x + 2] = '0' }
+  row[x] = c; sty[x] = String(s)
+  if (w === 2) { row[x + 1] = ''; sty[x + 1] = '' }
+}
+function put(g, x, y, text, s) {
+  x = Math.round(x); y = Math.round(y)
+  for (var c of String(text)) { setCell(g, x, y, c, s); x += cellWidth(c) }
+}
+function center(g, y, text, s) { put(g, Math.floor((g.cols - textWidth(text)) / 2), y, text, s) }
+function fill(g, x, y, w, h, c, s) { for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) setCell(g, x + i, y + j, c, s) }
+function box(g, x, y, w, h, s, title) {
+  if (w < 2 || h < 2) return
+  for (var i = 1; i < w - 1; i++) { setCell(g, x + i, y, '\u2500', s); setCell(g, x + i, y + h - 1, '\u2500', s) }
+  for (var j = 1; j < h - 1; j++) { setCell(g, x, y + j, '\u2502', s); setCell(g, x + w - 1, y + j, '\u2502', s) }
+  setCell(g, x, y, '\u250C', s); setCell(g, x + w - 1, y, '\u2510', s); setCell(g, x, y + h - 1, '\u2514', s); setCell(g, x + w - 1, y + h - 1, '\u2518', s)
+  if (title) put(g, x + 2, y, ' ' + title + ' ', s)
+}
+function frameOf(g) { return { lines: g.ch.map(function (r) { return r.join('') }), styles: g.st.map(function (r) { return r.join('') }) } }
+// Deterministic pseudo-random numbers: the same (seed, i) always gives the same value, so a frame
+// depends only on t and ctx (seeking works, the agent preview matches playback).
+function hash(i, seed) { var h = Math.imul((i | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(seed | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return ((h ^ (h >>> 16)) >>> 0) / 4294967296 }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }
+// Silent packs (no audio) get zero bands: fake a little motion from the beat so previews are not dead.
+function energyOf(ctx, t) { return ctx.energy > 0.01 ? ctx.energy : 0.25 + 0.2 * (ctx.beat ? ctx.beat.pulse : 0.5 + 0.5 * Math.sin(t * 4)) }
+function bandOf(ctx, i, t) { return ctx.energy > 0.01 ? ctx.bands[i] : clamp(0.35 + 0.3 * Math.sin(t * 3 + i * 0.45) * (1 - i / 64) + (ctx.beat ? 0.3 * ctx.beat.pulse : 0), 0, 1) }
+// ---- end of grid helpers -------------------------------------------------------------------------
+
+var CRC = (function () { var table = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; table.push(c >>> 0) } return table })()
+function crc32(s) { var c = 0xffffffff; for (var i = 0; i < s.length; i++) { var code = s.charCodeAt(i) & 0xff; c = CRC[(c ^ code) & 0xff] ^ (c >>> 8) } return (c ^ 0xffffffff) >>> 0 }
+function tokenId(tok) { return crc32(tok.toLowerCase()) % 100000 }
+
+// Words and punctuation; words longer than 7 letters split in two (like sub-word tokens).
+function tokenize(word) {
+  var out = [], parts = String(word).match(/[A-Za-z']+|[^\\sA-Za-z']/g) || []
+  for (var i = 0; i < parts.length; i++) {
+    var w = parts[i]
+    if (w.length > 7) { var k = Math.floor(w.length / 2) + 1; out.push(w.slice(0, k), w.slice(k)) } else out.push(w)
+  }
+  return out
+}
+
+function render(t, cols, rows, ctx) {
+  var g = makeGrid(cols, rows)
+  var top = rows - 7
+  box(g, 1, top, cols - 2, 6, 1, 'stdout \xB7 tokens')
+  put(g, 3, top + 2, '>', 2)
+  if (!ctx.lyric) {
+    put(g, 5, top + 2, Math.floor(t * 2) % 2 ? '\u258C' : ' ', 2)
+    center(g, Math.floor(top / 2), '[ instrumental ]', 0)
+    return frameOf(g)
+  }
+  var words = ctx.lyric.words || []
+  var x = 5
+  for (var w = 0; w <= ctx.lyric.word && w < words.length; w++) {
+    var toks = tokenize(words[w].text)
+    var age = t - words[w].start
+    for (var k = 0; k < toks.length; k++) {
+      var tok = toks[k], width = textWidth(tok)
+      if (x + width + 2 >= cols - 3) break
+      var fresh = w === ctx.lyric.word && age < 0.3
+      // inverted token box: \u2588 background with the token drawn dim on top
+      fill(g, x, top + 2, width, 1, '\u2588', fresh ? 3 : 1)
+      put(g, x, top + 2, tok, 0)
+      put(g, x, top + 3, String(tokenId(tok)).slice(0, Math.max(width, 5)), 0)
+      x += Math.max(width, 5) + 1
+    }
+  }
+  if (x < cols - 4 && Math.floor(t * 4) % 2) setCell(g, x, top + 2, '\u258C', 3)
+  // above the band: the line itself, large and centred, with the sung part bright
+  var line = ctx.lyric.text
+  var sung = 0
+  for (var i = 0; i <= ctx.lyric.word && i < words.length; i++) { var at = line.indexOf(words[i].text, sung); if (at >= 0) sung = at + words[i].text.length }
+  var x0 = Math.floor((cols - textWidth(line)) / 2), yLine = Math.floor(top / 2)
+  put(g, x0, yLine, line.slice(0, sung), 3)
+  put(g, x0 + textWidth(line.slice(0, sung)), yLine, line.slice(sung), 0)
+  if (ctx.next) center(g, yLine + 2, ctx.next.text, 0)
+  return frameOf(g)
+}
+`,
+  "examples/whale-fall.scene.js": "// whale-fall.scene.js \u2014 the ending: a whale sinking through marine snow.\n//\n// Technique (from the dsh PV preset's WHALE_FALL finale): slow particles drift down (\"marine\n// snow\"), small fish (><> and <><) swim across at different depths, a large silhouette sinks from\n// the top to the sea floor over the section, light fades with depth, and closing captions are typed\n// line by line. Everything is a function of t (particles use hash(i) for their start positions),\n// so seeking to any moment shows the right picture. The whale is a PLACEHOLDER drawn from code;\n// it is not the preset's CC BY-NC-SA artwork.\n//\n// Use it for the last section: it reads ctx.section.progress when the section is an outro, and\n// falls back to the song progress otherwise.\n\n// ---- grid helpers (shared by every example; copy them into your own scenes.js) ----------------\n// A frame is a grid of cells. ch[y][x] holds one character, st[y][x] its style digit:\n// 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.\n// Wide characters (CJK, full-width punctuation) take two cells; the second cell holds '' so that\n// lines and styles stay aligned when joined.\nvar WIDE = /[\\u1100-\\u115f\\u2e80-\\ua4cf\\uac00-\\ud7a3\\uf900-\\ufaff\\ufe30-\\ufe4f\\uff00-\\uff60\\uffe0-\\uffe6]/\nfunction cellWidth(c) { return WIDE.test(c) ? 2 : 1 }\nfunction textWidth(s) { var w = 0; for (var c of String(s)) w += cellWidth(c); return w }\nfunction makeGrid(cols, rows) {\n  var ch = [], st = []\n  for (var y = 0; y < rows; y++) { ch.push(new Array(cols).fill(' ')); st.push(new Array(cols).fill('0')) }\n  return { cols: cols, rows: rows, ch: ch, st: st }\n}\nfunction setCell(g, x, y, c, s) {\n  if (y < 0 || y >= g.rows || x < 0 || x >= g.cols) return\n  var row = g.ch[y], sty = g.st[y], w = cellWidth(c)\n  if (x + w > g.cols) return\n  if (row[x] === '' && x > 0) { row[x - 1] = ' '; sty[x - 1] = '0' }        // we hit the right half of a wide char\n  if (w === 1 && row[x + 1] === '') { row[x + 1] = ' '; sty[x + 1] = '0' }  // we cover the left half of one\n  if (w === 2 && row[x + 2] === '') { row[x + 2] = ' '; sty[x + 2] = '0' }\n  row[x] = c; sty[x] = String(s)\n  if (w === 2) { row[x + 1] = ''; sty[x + 1] = '' }\n}\nfunction put(g, x, y, text, s) {\n  x = Math.round(x); y = Math.round(y)\n  for (var c of String(text)) { setCell(g, x, y, c, s); x += cellWidth(c) }\n}\nfunction center(g, y, text, s) { put(g, Math.floor((g.cols - textWidth(text)) / 2), y, text, s) }\nfunction fill(g, x, y, w, h, c, s) { for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) setCell(g, x + i, y + j, c, s) }\nfunction box(g, x, y, w, h, s, title) {\n  if (w < 2 || h < 2) return\n  for (var i = 1; i < w - 1; i++) { setCell(g, x + i, y, '\u2500', s); setCell(g, x + i, y + h - 1, '\u2500', s) }\n  for (var j = 1; j < h - 1; j++) { setCell(g, x, y + j, '\u2502', s); setCell(g, x + w - 1, y + j, '\u2502', s) }\n  setCell(g, x, y, '\u250C', s); setCell(g, x + w - 1, y, '\u2510', s); setCell(g, x, y + h - 1, '\u2514', s); setCell(g, x + w - 1, y + h - 1, '\u2518', s)\n  if (title) put(g, x + 2, y, ' ' + title + ' ', s)\n}\nfunction frameOf(g) { return { lines: g.ch.map(function (r) { return r.join('') }), styles: g.st.map(function (r) { return r.join('') }) } }\n// Deterministic pseudo-random numbers: the same (seed, i) always gives the same value, so a frame\n// depends only on t and ctx (seeking works, the agent preview matches playback).\nfunction hash(i, seed) { var h = Math.imul((i | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(seed | 0, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2f); return ((h ^ (h >>> 16)) >>> 0) / 4294967296 }\nfunction clamp(v, a, b) { return Math.max(a, Math.min(b, v)) }\n// Silent packs (no audio) get zero bands: fake a little motion from the beat so previews are not dead.\nfunction energyOf(ctx, t) { return ctx.energy > 0.01 ? ctx.energy : 0.25 + 0.2 * (ctx.beat ? ctx.beat.pulse : 0.5 + 0.5 * Math.sin(t * 4)) }\nfunction bandOf(ctx, i, t) { return ctx.energy > 0.01 ? ctx.bands[i] : clamp(0.35 + 0.3 * Math.sin(t * 3 + i * 0.45) * (1 - i / 64) + (ctx.beat ? 0.3 * ctx.beat.pulse : 0), 0, 1) }\n// ---- end of grid helpers -------------------------------------------------------------------------\n\nvar WHALE = [\n  '                 __   __',\n  '            _.--\\'  `-\\'  `--._',\n  '        _.-\\'                 `-._',\n  '   __.-\\'   o                     `-.',\n  ' <___                                )',\n  '      `-._         ___          _.-\\'',\n  '          `--.__.-\\'   `--.__.--\\'',\n  '                \\\\_/\\\\_/',\n]\nvar CAPTIONS = ['weights: released', 'license: MIT', 'forks: ', '</think>']\n\nfunction render(t, cols, rows, ctx) {\n  var g = makeGrid(cols, rows)\n  var p = ctx.section && /outro|ending/.test(ctx.section.kind) ? ctx.section.progress : ctx.progress\n  var floor = rows - 3\n  // marine snow: 3 layers with different speeds; brighter = closer\n  var count = Math.floor(cols * rows / 40)\n  for (var i = 0; i < count; i++) {\n    var layer = i % 3, speed = 0.6 + layer * 0.7\n    var x = Math.floor(hash(i, 1) * cols + Math.sin(t * 0.5 + i) * 1.5)\n    var y = Math.floor((hash(i, 2) * rows + t * speed) % floor)\n    setCell(g, (x + cols) % cols, y, layer === 2 ? '\u2022' : '\xB7', layer === 2 ? 2 : layer)\n  }\n  // fish swimming both ways\n  for (var f = 0; f < 6; f++) {\n    var dir = f % 2 ? 1 : -1, row = 3 + Math.floor(hash(f, 3) * (floor - 6))\n    var fx = Math.floor(((hash(f, 4) * cols + dir * t * (4 + f)) % (cols + 6) + cols + 6) % (cols + 6)) - 3\n    put(g, fx, row, dir > 0 ? '><>' : '<><', 1)\n  }\n  // the whale sinks from above the screen to just over the floor\n  var wy = Math.round(-WHALE.length + p * (floor - 1))\n  var wx = Math.floor(cols * 0.55 - 18 + Math.sin(t * 0.3) * 3)\n  var light = p < 0.5 ? 3 : p < 0.8 ? 2 : 1\n  for (var r = 0; r < WHALE.length; r++) put(g, wx, wy + r, WHALE[r], light)\n  // bubbles rising from it\n  for (var b = 0; b < 8; b++) {\n    var by = wy - 1 - Math.floor(((t * 3 + b * 2.7) % 10))\n    if (by >= 0) setCell(g, wx + 5 + b % 3, by, b % 2 ? 'o' : '\xB0', 0)\n  }\n  // sea floor that pulses with the bass\n  for (var x2 = 0; x2 < cols; x2++) {\n    var hgt = Math.sin(x2 * 0.21) * 0.6 + bandOf(ctx, Math.floor(x2 / cols * 16), t) * 1.4\n    setCell(g, x2, floor, hgt > 1 ? '\u25B2' : hgt > 0.4 ? '^' : '_', 1)\n    setCell(g, x2, floor + 1, '\u2592', 0)\n  }\n  // closing captions typed one after another during the second half\n  var tp = (p - 0.45) / 0.5\n  for (var c = 0; c < CAPTIONS.length; c++) {\n    var start = c / CAPTIONS.length, local = (tp - start) * CAPTIONS.length\n    if (local <= 0) continue\n    var text = CAPTIONS[c] + (CAPTIONS[c] === 'forks: ' ? String(Math.floor(clamp(local, 0, 1) * 476)) : '')\n    put(g, 3, 2 + c * 2, text.slice(0, Math.ceil(clamp(local * 1.5, 0, 1) * text.length)), c === 2 ? 2 : 1)\n  }\n  if (ctx.lyric) center(g, rows - 1, ctx.lyric.text, 2)\n  return frameOf(g)\n}\n",
+  "prompts/en/01-creative-brief.md": '# 01 Creative brief (think first, then build)\n\n**Input**: `brief.json` (title, artist, style request), the lyrics file, `sections.json` or `x-dsh-mv-ai.sections`\nin mv.json, the duration, `spectrum.json` (if present). **Output**: `notes/brief.md` in the pack folder (one page at\nmost); every later step follows it.\n\nUse this structure:\n\n1. **One-line concept**: what is the MV about? One visual metaphor ("an old terminal chats with someone late at\n   night, then sinks to the sea floor").\n2. **Emotion curve**: intensity 0\u201310 per section (intro 2 \u2192 verse 4 \u2192 chorus 8 \u2192 bridge 3 \u2192 last chorus 10 \u2192\n   outro 1). Estimate energy from the per-section average of `spectrum.json`; choruses are usually the brightest\n   and fastest, bridges the emptiest.\n3. **Visual motifs (3\u20135)**: elements that come back and evolve (windows, heartbeat line, particles, text rain,\n   silhouettes\u2026). For each: where it first appears, how it changes at the climax, how it ends.\n4. **Palette and character set**: only style digits 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.\n   Give each a job (e.g. 3 only for the current lyric, 4 only at the climax). List the main characters (`\u2588\u2593\u2592\u2591`\n   ramps, `\xB7\u2022\u25CF` particles, `\u2500\u2502\u250C\u2510\u2514\u2518` frames, `/\\_` lines).\n5. **Lyrics presentation**: verses (typing, word highlight, token band), choruses (big text, karaoke), what to draw\n   where there are no lyrics. **Never invent or rewrite lyrics**; only use the user\'s lyrics file.\n6. **Beat sync**: if you can estimate the BPM, set `canvas.bpm` (and `canvas.beatOffset`) and accent on\n   `ctx.beat.pulse`; otherwise use jumps in `ctx.bass` / `ctx.energy`.\n7. **Risks**: frames that could be slow (per-cell work over large areas), CJK wide-character misalignment, long lines\n   that do not fit; plan around them.\n\nProven patterns: `examples/` (chat-window, heartbeat, ops-ticker, token-bar, execution-split, whale-fall,\npost-effects) and the complete `examples/rich-pack/scenes.js`.\n',
+  "prompts/en/02-storyboard.md": '# 02 Per-section storyboard\n\n**Input**: `notes/brief.md`, the section list (`x-dsh-mv-ai.sections`), the lyric timings.\n**Output**: `notes/storyboard.md` with one card per section; then write `scenes.js` from it.\n\nOne card per section, in this format:\n\n```\n## <section kind> <start>\u2013<end>s  (emotion x/10)\nPicture: main subject, where on screen, how big (as a share of cols\xD7rows, e.g. "centred, 60 % wide")\nMotifs: which motifs appear / change here\nLyrics: how and where they show; how the current word is emphasised (ctx.lyric.word / ctx.lyric.words)\nMusic: what follows bands / bass / beat (e.g. flash on every beat, bass pushes the radius)\nMotion: change over section.progress (start \u2192 end); the same t always gives the same frame\nTransition: how the section starts and ends (fade, wipe, glitch, cut to black), about 0.5\u20131 s\nPerformance: the heaviest work in this section, roughly how many cells per frame\n```\n\nRules:\n\n- Neighbouring sections must differ clearly (composition or main colour); repeated sections (two choruses) must\n  build: the second is stronger or adds something new.\n- Intros, instrumentals and outros without lyrics still get a full picture, never an empty screen.\n- If there is no section list, split the song yourself from duration and energy and write it into mv.json\n  `x-dsh-mv-ai.sections` (`[{kind,label,start,end}]`); the script reads it as `ctx.section`.\n- Every card maps to one function in `scenes.js` (e.g. `intro(g, t, ctx)`, `chorus(g, t, ctx)`).\n',
+  "prompts/en/03-scene-script-guide.md": "# 03 Scene-script guide (scenes.js)\n\n## API\n\n```js\nfunction setup(info) { }                 // optional; info = { title, artist, duration, sections, bpm, beatOffset }\nfunction render(t, cols, rows, ctx) {    // called every frame, about 30\u201360 times per second\n  return { lines: [...], styles: [...] } // or an array of strings / one string with \\n\n}\n```\n\n- `lines[y]` is row y; `styles[y]` has one digit per character: 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.\n- `ctx`:\n  - `duration`, `progress` (0..1), `title`, `artist`, `ready`, `paused`\n  - `lyric`: `{ text, en, zh, start, end, progress, words: [{text,start,end}], word }` or null. `words` come from\n    enhanced-LRC `<mm:ss.xx>` word stamps, otherwise they are spread over the first 70 % of the line (CJK per\n    character); `word` is the index of the word being sung (-1 before the first).\n  - `next`: the next line `{ text, en, zh, start, end, progress }` (no words)\n  - `bands`: 48 values 0..1 (low \u2192 high); `energy`, `bass`, `mid`, `treble`: 0..1\n  - `section`: `{ kind, label, start, end, index, progress }` or null; `sections`: all of them\n  - `beat`: `{ bpm, index, bar, phase, pulse }` when mv.json sets `canvas.bpm` (pulse is 1 on the beat and decays\n    fast), otherwise null\n\n## Sandbox limits (breaking them stops the script; the panel falls back to the generic picture)\n\n- No import / require; no DOM, network (fetch\u2026), storage, timers, Workers, WebAssembly; no eval / new Function.\n- 40 ms per frame (aim for < 10 ms); too many slow frames, a 1.5 s hang or an exception stops the script. 256 KB max.\n- A frame must be a **pure function** of `t` and `ctx`: no state from earlier frames, no Math.random (seeking and the\n  preview tool must give the same picture). Use the deterministic `hash(i, seed)` from the example helpers. For\n  \"history\" effects (trails, ECG traces) recompute earlier times `t - dt`.\n\n## Performance budget\n\n- A 100\xD732 grid has 3200 cells: a few passes per frame are fine; avoid loops inside the per-cell loop\n  (O(cells \xD7 objects)).\n- Scale particle counts with the area (e.g. `cols*rows/40`), never thousands fixed.\n- Build a 2-D array `ch[y][x]` and `join('')` once at the end.\n- `mv_pack_preview_frame` reports the time per frame; simplify above 10 ms.\n\n## ASCII / canvas techniques\n\n- **Wide characters**: CJK and full-width symbols take two cells. Use the examples' `setCell/put` (the second cell\n  holds ''), otherwise alignment and styles break.\n- **Shading**: ` .:-=+*#%@` or `\u2591\u2592\u2593\u2588`; styles 0\u20133 as a second brightness layer.\n- **Shapes**: circles / rings in polar coordinates with x \xD7 2 for the cell aspect ratio; block letters from a 5\xD73\n  dot font scaled up (examples/execution-split).\n- **Frames and windows**: `\u250C\u2500\u2510\u2502\u2514\u2518` (examples/chat-window).\n- **Particles**: position = start hash + speed \xD7 t, wrapped with modulo (examples/whale-fall).\n- **Post effects** on style digits: scanlines (every other row one step darker), vignette (darker far from the\n  centre), bloom (`.` around bright cells), glitch (shift whole rows on the beat, skipping rows with wide\n  characters) (examples/post-effects).\n- **Transitions**: lower brightness step by step in the 0.5\u20131 s at section edges (fade), or wipe columns by progress.\n\n## Syncing to the music\n\n- **Lyrics**: current line `ctx.lyric.text`; word highlight with `ctx.lyric.words` + `ctx.lyric.word`\n  (examples/token-bar, the karaoke in rich-pack); typing with `lyric.progress` or word times. Preview the next line\n  with `ctx.next` (dim).\n- **Spectrum**: `bands[i]` drives bar height / radius / particle speed; `bass` suits global scale and flashes,\n  `treble` fine particles.\n- **Beat**: `ctx.beat.pulse` for accents (flash, zoom, glitch), `ctx.beat.bar` to change composition per bar;\n  without bpm, use `bass` crossing a threshold.\n- **Sections**: `ctx.section.kind` picks the scene function, `ctx.section.progress` drives motion inside it.\n- **Silent packs**: without audio all bands are 0; the examples' `energyOf/bandOf` fake motion so previews are alive.\n\n## Suggested structure\n\n```js\n/* helpers (copy the grid helpers from examples) */\nfunction intro(g, t, ctx, p) { ... }\nfunction verse(g, t, ctx, p) { ... }\nfunction chorus(g, t, ctx, p) { ... }\nfunction render(t, cols, rows, ctx) {\n  var g = makeGrid(cols, rows), s = ctx.section\n  var kind = s ? s.kind : 'verse'\n  ;({ intro: intro, verse: verse, chorus: chorus }[kind] || verse)(g, t, ctx, s ? s.progress : ctx.progress)\n  /* transitions + post effects */\n  return frameOf(g)\n}\n```\n\nEvery window size must work (cols 40\u2013240, rows 12\u201385): place things proportionally and truncate text that does not fit.\n",
+  "prompts/en/04-qa-checklist.md": '# 04 QA checklist (go through every item before you finish)\n\n## Must pass\n\n- [ ] `mv_pack_validate` (path = pack folder) reports no errors; mv.json is valid JSON, `canvas.renderer` is\n      `"script"` and `canvas.script` points at `scenes.js`.\n- [ ] Lyrics come from the user\'s file: nothing invented, rewritten or completed; times increase and stay within the duration.\n- [ ] The audio was not modified, converted or deleted; nothing was downloaded; only files in the pack folder changed.\n- [ ] scenes.js has no import / require / eval / new Function / fetch, no Math.random, no state carried between frames.\n- [ ] Previewed with `mv_pack_preview_frame` at least: 0 s, the middle of every section, 0.3 s before and after every\n      section change, the last 2 s.\n- [ ] No blank frames, no errors; each frame < 10 ms (hard limit 40 ms).\n\n## Picture quality\n\n- [ ] Every section is recognisable at a glance; the second chorus is stronger or adds something.\n- [ ] The current lyric is always readable (cleared band behind it, style 3 or 2); the word highlight matches the sung word.\n- [ ] The picture reacts clearly to beats / bass without flickering every frame (at most one flash per beat).\n- [ ] CJK wide characters align, frames are not pushed out of shape; long lines are truncated, not wrapped badly.\n- [ ] Small (about 60\xD718) and large (about 160\xD748) windows both work: nothing out of bounds, the subject stays centred.\n- [ ] Intro, instrumentals and outro have a full picture; the ending resolves (fade, freeze or a closing caption).\n- [ ] credits / notice are complete: song rights belong to their owners, sources and licences of any material.\n\n## When something is wrong\n\nWrite it to `notes/qa.md` (time, what you saw, cause, fix), re-preview the same time after the fix, then continue.\n',
+  "prompts/en/05-iteration.md": '# 05 Iteration prompts (copy one to the AI when you want a change)\n\nChange one thing at a time; afterwards preview the affected times with `mv_pack_preview_frame` and run the 04 checklist.\n\n- **More spectacle**: "Strengthen the choruses: on strong beats (ctx.beat.pulse > 0.7) flash the screen white for one\n  frame and zoom 10 %, add the scanlines and vignette from post-effects; leave the other sections alone."\n- **Closer to the lyrics**: "Make the verses type word by word: show only the words in ctx.lyric.words already sung,\n  the current word in style 3, and the next line in style 0 below."\n- **Off-beat**: "Set canvas.bpm to <BPM> and canvas.beatOffset to <seconds> so the first beat lands at <time> s; check\n  the preview 2 s around <time>."\n- **Wrong sections**: "Rewrite x-dsh-mv-ai.sections with these times: <kind start\u2013end list>, and adjust the scenes."\n- **Too slow**: "Find the slowest section, scale particle counts with the area (cols*rows/50), remove loops inside the\n  per-cell loop; target < 8 ms per frame."\n- **New style**: "Keep the structure and lyric sync, change the look to <style>: only styles <list>, characters <set>."\n- **Add a scene**: "Use the effect from examples/<name>.scene.js in the bridge with words and rhythm that fit this song,\n  joined to its neighbours with 0.8 s fades."\n- **Small windows look bad**: "When cols < 70 or rows < 20 use a simple layout: hide decorative frames, keep the\n  subject and the lyric."\n- **Getting ready for the workshop**: "Check that credits / notice / x-dsh-mv-workshop.license are complete and that the\n  pack holds nothing it should not (publishing strips the audio and lyric text automatically and keeps the timings)."\n',
+  "prompts/zh/01-creative-brief.md": "# 01 \u521B\u610F\u7B80\u62A5\uFF08\u5148\u60F3\u6E05\u695A\uFF0C\u518D\u52A8\u624B\uFF09\n\n**\u8F93\u5165**\uFF1A`brief.json`\uFF08\u6B4C\u540D\u3001\u6B4C\u624B\u3001\u98CE\u683C\u8981\u6C42\uFF09\u3001\u6B4C\u8BCD\u6587\u4EF6\u3001`sections.json` \u6216 mv.json \u91CC\u7684 `x-dsh-mv-ai.sections`\u3001\n\u65F6\u957F\u3001`spectrum.json`\uFF08\u5982\u679C\u6709\uFF09\u3002**\u8F93\u51FA**\uFF1A\u5728\u5305\u6587\u4EF6\u5939\u91CC\u5199 `notes/brief.md`\uFF08\u4E0D\u8D85\u8FC7\u4E00\u9875\uFF09\uFF0C\u4E4B\u540E\u6BCF\u4E00\u6B65\u90FD\u4EE5\u5B83\u4E3A\u51C6\u3002\n\n\u8BF7\u6309\u4E0B\u9762\u7684\u7ED3\u6784\u5199\uFF1A\n\n1. **\u4E00\u53E5\u8BDD\u6982\u5FF5**\uFF1A\u8FD9\u9996 MV \u8BB2\u4EC0\u4E48\uFF1F\u7528\u4E00\u4E2A\u753B\u9762\u9690\u55BB\u6982\u62EC\uFF08\u4F8B\u5982\u201C\u4E00\u53F0\u8001\u7EC8\u7AEF\u5728\u6DF1\u591C\u548C\u4EBA\u804A\u5929\uFF0C\u6700\u540E\u6C89\u5165\u6D77\u5E95\u201D\uFF09\u3002\n2. **\u60C5\u7EEA\u66F2\u7EBF**\uFF1A\u6309\u6BB5\u843D\u5217\u51FA\u60C5\u7EEA\u5F3A\u5EA6 0\u201310\uFF08\u524D\u594F 2 \u2192 \u4E3B\u6B4C 4 \u2192 \u526F\u6B4C 8 \u2192 \u6865\u6BB5 3 \u2192 \u6700\u540E\u526F\u6B4C 10 \u2192 \u5C3E\u58F0 1\uFF09\u3002\n   \u80FD\u91CF\u6570\u636E\u53EF\u4EE5\u4ECE `spectrum.json` \u6BCF\u6BB5\u7684\u5E73\u5747\u503C\u4F30\u8BA1\uFF1B\u526F\u6B4C\u901A\u5E38\u6700\u4EAE\u6700\u5FEB\uFF0C\u6865\u6BB5\u6700\u7A7A\u3002\n3. **\u89C6\u89C9\u6BCD\u9898\uFF083\u20135 \u4E2A\uFF09**\uFF1A\u4F1A\u5728\u4E0D\u540C\u6BB5\u843D\u53CD\u590D\u51FA\u73B0\u3001\u9010\u6E10\u53D8\u5316\u7684\u5143\u7D20\uFF08\u7A97\u53E3\u3001\u5FC3\u8DF3\u7EBF\u3001\u7C92\u5B50\u3001\u6587\u5B57\u96E8\u3001\u526A\u5F71\u2026\u2026\uFF09\u3002\n   \u6BCF\u4E2A\u6BCD\u9898\u5199\u6E05\uFF1A\u7B2C\u4E00\u6B21\u51FA\u73B0\u5728\u54EA\u3001\u9AD8\u6F6E\u65F6\u600E\u6837\u53D8\u5316\u3001\u7ED3\u5C3E\u600E\u6837\u6536\u675F\u3002\n4. **\u8C03\u8272\u4E0E\u5B57\u7B26\u96C6**\uFF1A\u53EA\u7528\u6837\u5F0F\u6570\u5B57 0 \u6697\u30011 \u666E\u901A\u30012 \u4EAE\u30013 \u767D\u30014 \u7EA2\u30015 \u68D5\u30016 \u6A44\u6984\u3002\u89C4\u5B9A\u6BCF\u79CD\u7528\u9014\uFF08\u5982 3 \u53EA\u7ED9\u5F53\u524D\u6B4C\u8BCD\uFF0C\n   4 \u53EA\u5728\u9AD8\u6F6E\u51FA\u73B0\uFF09\u3002\u5217\u51FA\u4E3B\u8981\u5B57\u7B26\uFF08`\u2588\u2593\u2592\u2591` \u6E10\u53D8\u3001`\xB7\u2022\u25CF` \u7C92\u5B50\u3001`\u2500\u2502\u250C\u2510\u2514\u2518` \u8FB9\u6846\u3001`/\\_` \u7EBF\u6761\uFF09\u3002\n5. **\u6B4C\u8BCD\u5448\u73B0\u65B9\u5F0F**\uFF1A\u4E3B\u6B4C\u600E\u4E48\u663E\u793A\uFF08\u6253\u5B57\u3001\u9010\u8BCD\u9AD8\u4EAE\u3001token \u6761\uFF09\u3001\u526F\u6B4C\u600E\u4E48\u663E\u793A\uFF08\u5927\u5B57\u3001\u5361\u62C9 OK\uFF09\u3001\n   \u6CA1\u6709\u6B4C\u8BCD\u7684\u6BB5\u843D\u753B\u4EC0\u4E48\u3002**\u4E0D\u8981\u7F16\u9020\u6216\u6539\u5199\u6B4C\u8BCD**\uFF0C\u53EA\u4F7F\u7528\u7528\u6237\u63D0\u4F9B\u7684\u6B4C\u8BCD\u6587\u4EF6\u3002\n6. **\u8282\u594F\u540C\u6B65**\uFF1A\u5982\u679C\u80FD\u4F30\u8BA1 BPM\uFF0C\u5199\u8FDB `canvas.bpm`\uFF08\u548C `canvas.beatOffset`\uFF09\uFF0C\u753B\u9762\u5728 `ctx.beat.pulse` \u4E0A\u505A\u91CD\u97F3\uFF1B\n   \u4F30\u8BA1\u4E0D\u4E86\u5C31\u7528 `ctx.bass` / `ctx.energy` \u7684\u7A81\u53D8\u3002\n7. **\u98CE\u9669**\uFF1A\u53EF\u80FD\u592A\u6162\u7684\u753B\u9762\uFF08\u5927\u9762\u79EF\u9010\u683C\u8BA1\u7B97\uFF09\u3001\u4E2D\u6587\u5BBD\u5B57\u7B26\u9519\u4F4D\u3001\u957F\u6B4C\u8BCD\u653E\u4E0D\u4E0B\u7B49\uFF0C\u63D0\u524D\u60F3\u597D\u5BF9\u7B56\u3002\n\n\u53EF\u53C2\u8003\u7684\u6210\u719F\u5199\u6CD5\uFF1A`examples/` \u91CC\u7684 chat-window\u3001heartbeat\u3001ops-ticker\u3001token-bar\u3001execution-split\u3001\nwhale-fall\u3001post-effects\uFF0C\u4EE5\u53CA\u5B8C\u6574\u793A\u4F8B `examples/rich-pack/scenes.js`\u3002\n",
+  "prompts/zh/02-storyboard.md": "# 02 \u5206\u6BB5\u5206\u955C\n\n**\u8F93\u5165**\uFF1A`notes/brief.md`\u3001\u6BB5\u843D\u8868\uFF08`x-dsh-mv-ai.sections`\uFF09\u3001\u6B4C\u8BCD\u65F6\u95F4\u8F74\u3002\n**\u8F93\u51FA**\uFF1A`notes/storyboard.md`\uFF0C\u6BCF\u4E2A\u6BB5\u843D\u4E00\u5F20\u201C\u5206\u955C\u5361\u201D\uFF0C\u7136\u540E\u636E\u6B64\u5199 `scenes.js`\u3002\n\n\u6BCF\u4E2A\u6BB5\u843D\u5199\u4E00\u5F20\u5361\uFF08\u7167\u6284\u4E0B\u9762\u7684\u683C\u5F0F\uFF09\uFF1A\n\n```\n## <\u6BB5\u843D kind> <start>\u2013<end>s  \uFF08\u60C5\u7EEA x/10\uFF09\n\u753B\u9762\uFF1A\u4E3B\u4F53\u662F\u4EC0\u4E48\u3001\u653E\u5728\u5C4F\u5E55\u54EA\u91CC\u3001\u5360\u591A\u5927\uFF08\u6309 cols\xD7rows \u7684\u6BD4\u4F8B\u5199\uFF0C\u4F8B\u5982\u201C\u5C45\u4E2D\uFF0C\u5BBD 60%\u201D\uFF09\n\u6BCD\u9898\uFF1A\u672C\u6BB5\u51FA\u73B0 / \u53D8\u5316\u7684\u6BCD\u9898\n\u6B4C\u8BCD\uFF1A\u663E\u793A\u65B9\u5F0F\u4E0E\u4F4D\u7F6E\uFF1B\u5F53\u524D\u8BCD\u5982\u4F55\u5F3A\u8C03\uFF08ctx.lyric.word / ctx.lyric.words\uFF09\n\u97F3\u4E50\uFF1A\u54EA\u4E9B\u5143\u7D20\u8DDF bands / bass / beat \u8D70\uFF08\u5982 \u6BCF\u62CD\u95EA\u4E00\u6B21\u3001\u4F4E\u9891\u63A8\u52A8\u534A\u5F84\uFF09\n\u8FD0\u52A8\uFF1A\u968F section.progress \u7684\u53D8\u5316\uFF08\u5F00\u5934 \u2192 \u7ED3\u5C3E\uFF09\uFF0C\u4FDD\u8BC1\u540C\u4E00\u65F6\u523B\u753B\u9762\u56FA\u5B9A\n\u8F6C\u573A\uFF1A\u8FDB\u5165\u548C\u79BB\u5F00\u672C\u6BB5\u7684\u65B9\u5F0F\uFF08\u6DE1\u5165\u6DE1\u51FA\u3001\u64E6\u9664\u3001\u6545\u969C\u3001\u5207\u9ED1\uFF09\uFF0C\u7EA6 0.5\u20131 \u79D2\n\u6027\u80FD\uFF1A\u672C\u6BB5\u6700\u91CD\u7684\u8BA1\u7B97\u662F\u4EC0\u4E48\uFF0C\u4F30\u8BA1\u6BCF\u5E27\u591A\u5C11\u683C\n```\n\n\u8981\u6C42\uFF1A\n\n- \u76F8\u90BB\u6BB5\u843D\u8981\u6709\u660E\u663E\u533A\u522B\uFF08\u6784\u56FE\u6216\u4E3B\u8272\uFF09\uFF0C\u540C\u7C7B\u6BB5\u843D\uFF08\u4E24\u6B21\u526F\u6B4C\uFF09\u8981\u6709\u9012\u8FDB\uFF1A\u7B2C\u4E8C\u6B21\u66F4\u5F3A\u6216\u6709\u65B0\u5143\u7D20\u3002\n- \u6CA1\u6709\u6B4C\u8BCD\u7684\u524D\u594F / \u95F4\u594F / \u5C3E\u58F0\u4E5F\u8981\u6709\u5B8C\u6574\u753B\u9762\uFF0C\u4E0D\u8981\u53EA\u7559\u7A7A\u767D\u3002\n- \u6BB5\u843D\u8868\u7F3A\u5931\u65F6\uFF0C\u6309\u65F6\u957F\u548C\u80FD\u91CF\u81EA\u5DF1\u5212\u5206\uFF0C\u5E76\u5199\u8FDB mv.json \u7684 `x-dsh-mv-ai.sections`\uFF08`[{kind,label,start,end}]`\uFF09\uFF0C\n  \u811A\u672C\u901A\u8FC7 `ctx.section` \u8BFB\u53D6\u3002\n- \u6BCF\u5F20\u5361\u90FD\u8981\u80FD\u5728 `scenes.js` \u91CC\u5BF9\u5E94\u5230\u4E00\u4E2A\u51FD\u6570\uFF08\u5982 `intro(g, t, ctx)`\u3001`chorus(g, t, ctx)`\uFF09\u3002\n",
+  "prompts/zh/03-scene-script-guide.md": "# 03 \u573A\u666F\u811A\u672C\u7F16\u5199\u6307\u5357\uFF08scenes.js\uFF09\n\n## \u63A5\u53E3\n\n```js\nfunction setup(info) { }                 // \u53EF\u9009\uFF1Binfo = { title, artist, duration, sections, bpm, beatOffset }\nfunction render(t, cols, rows, ctx) {    // \u6BCF\u5E27\u8C03\u7528\uFF0C\u7EA6 30\u201360 \u6B21/\u79D2\n  return { lines: [...], styles: [...] } // \u6216\u8005\u5B57\u7B26\u4E32\u6570\u7EC4 / \u5E26 \\n \u7684\u5B57\u7B26\u4E32\n}\n```\n\n- `lines[y]` \u662F\u7B2C y \u884C\u6587\u5B57\uFF1B`styles[y]` \u6BCF\u4E2A\u5B57\u7B26\u4E00\u4F4D\u6570\u5B57\uFF1A0 \u6697\u30011 \u666E\u901A\u30012 \u4EAE\u30013 \u767D\u30014 \u7EA2\u30015 \u68D5\u30016 \u6A44\u6984\u3002\n- `ctx`\uFF1A\n  - `duration`\u3001`progress`\uFF080..1\uFF09\u3001`title`\u3001`artist`\u3001`ready`\u3001`paused`\n  - `lyric`\uFF1A`{ text, en, zh, start, end, progress, words: [{text,start,end}], word }` \u6216 null\u3002\n    `words` \u6765\u81EA\u589E\u5F3A LRC \u7684 `<mm:ss.xx>` \u9010\u8BCD\u65F6\u95F4\u6233\uFF0C\u6CA1\u6709\u65F6\u6309\u53E5\u5B50\u524D 70% \u5E73\u5747\u4F30\u8BA1\uFF08\u4E2D\u6587\u6309\u5B57\uFF09\uFF1B`word` \u662F\u6B63\u5728\u5531\u7684\u8BCD\u7684\u4E0B\u6807\uFF08-1 \u8868\u793A\u8FD8\u6CA1\u5F00\u59CB\uFF09\u3002\n  - `next`\uFF1A\u4E0B\u4E00\u53E5 `{ text, en, zh, start, end, progress }`\uFF08\u6CA1\u6709 words\uFF09\n  - `bands`\uFF1A48 \u4E2A 0..1\uFF08\u4F4E\u9891 \u2192 \u9AD8\u9891\uFF09\uFF1B`energy`\u3001`bass`\u3001`mid`\u3001`treble`\uFF1A0..1\n  - `section`\uFF1A`{ kind, label, start, end, index, progress }` \u6216 null\uFF1B`sections`\uFF1A\u5168\u90E8\u6BB5\u843D\n  - `beat`\uFF1Amv.json \u8BBE\u7F6E\u4E86 `canvas.bpm` \u65F6\u4E3A `{ bpm, index, bar, phase, pulse }`\uFF08pulse \u5728\u62CD\u70B9\u4E3A 1 \u5E76\u8FC5\u901F\u8870\u51CF\uFF09\uFF0C\u5426\u5219 null\n\n## \u6C99\u7BB1\u9650\u5236\uFF08\u8FDD\u53CD\u4F1A\u88AB\u505C\u6B62\u5E76\u9000\u56DE\u901A\u7528\u753B\u9762\uFF09\n\n- \u4E0D\u80FD import / require\uFF1B\u6CA1\u6709 DOM\u3001\u7F51\u7EDC\uFF08fetch \u7B49\uFF09\u3001\u5B58\u50A8\u3001\u5B9A\u65F6\u5668\u3001Worker\u3001WebAssembly\uFF1B\u4E0D\u8981\u7528 eval / new Function\u3002\n- \u6BCF\u5E27\u9884\u7B97 40 ms\uFF08\u76EE\u6807 < 10 ms\uFF09\uFF1B\u8FDE\u7EED\u592A\u6162\u3001\u5361\u4F4F 1.5 \u79D2\u6216\u629B\u5F02\u5E38\u4F1A\u88AB\u505C\u6B62\u3002\u6587\u4EF6\u4E0D\u8D85\u8FC7 256 KB\u3002\n- \u753B\u9762\u5FC5\u987B\u662F `t` \u548C `ctx` \u7684**\u7EAF\u51FD\u6570**\uFF1A\u4E0D\u8981\u4F9D\u8D56\u4E0A\u4E00\u5E27\u7684\u72B6\u6001\u6216 Math.random\uFF08\u62D6\u52A8\u8FDB\u5EA6\u3001\u9884\u89C8\u5DE5\u5177\u90FD\u8981\u5F97\u5230\u540C\u6837\u7684\u753B\u9762\uFF09\u3002\n  \u9700\u8981\u968F\u673A\u5C31\u7528\u786E\u5B9A\u6027\u7684 `hash(i, seed)`\uFF08\u89C1 examples/_grid \u90E8\u5206\uFF09\u3002\u201C\u5386\u53F2\u201D\u6548\u679C\uFF08\u62D6\u5F71\u3001\u5FC3\u7535\u8F68\u8FF9\uFF09\u5C31\u91CD\u65B0\u8BA1\u7B97\u66F4\u65E9\u65F6\u523B `t - dt`\u3002\n\n## \u6027\u80FD\u9884\u7B97\n\n- 100\xD732 \u7684\u7F51\u683C\u53EA\u6709 3200 \u683C\uFF1A\u6BCF\u5E27\u904D\u5386\u51E0\u904D\u6CA1\u95EE\u9898\uFF1B\u907F\u514D\u6BCF\u683C\u5185\u518D\u5957\u5FAA\u73AF\uFF08O(\u683C\u6570\xD7\u5BF9\u8C61\u6570)\uFF09\u3002\n- \u7C92\u5B50\u6570\u91CF\u4E0E\u9762\u79EF\u6210\u6BD4\u4F8B\uFF08\u4F8B\u5982 `cols*rows/40`\uFF09\uFF0C\u4E0D\u8981\u56FA\u5B9A\u51E0\u5343\u4E2A\u3002\n- \u5B57\u7B26\u4E32\u62FC\u63A5\uFF1A\u5148\u7528\u4E8C\u7EF4\u6570\u7EC4 `ch[y][x]`\uFF0C\u6700\u540E `join('')` \u4E00\u6B21\u3002\n- \u7528 `mv_pack_preview_frame` \u770B\u6BCF\u5E27\u8017\u65F6\uFF1B\u8D85\u8FC7 10 ms \u5C31\u7B80\u5316\u3002\n\n## ASCII / \u753B\u5E03\u6280\u5DE7\n\n- **\u5BBD\u5B57\u7B26**\uFF1A\u4E2D\u6587\u3001\u5168\u89D2\u7B26\u53F7\u5360\u4E24\u683C\u3002\u7528\u793A\u4F8B\u91CC\u7684 `setCell/put`\uFF08\u7B2C\u4E8C\u683C\u5B58 ''\uFF09\uFF0C\u5426\u5219\u5BF9\u9F50\u4F1A\u4E71\u3001\u6837\u5F0F\u4F1A\u9519\u4F4D\u3002\n- **\u660E\u6697\u6E10\u53D8**\uFF1A` .:-=+*#%@` \u6216 `\u2591\u2592\u2593\u2588`\uFF1B\u7528 styles 0\u20133 \u505A\u7B2C\u4E8C\u5C42\u4EAE\u5EA6\u3002\n- **\u5F62\u72B6**\uFF1A\u5706 / \u73AF\u7528\u6781\u5750\u6807\uFF0Cx \u65B9\u5411\u4E58 2 \u8865\u507F\u5B57\u7B26\u9AD8\u5BBD\u6BD4\uFF1B\u65B9\u5757\u5927\u5B57\u7528 5\xD73 \u70B9\u9635\u653E\u5927\uFF08examples/execution-split\uFF09\u3002\n- **\u8FB9\u6846\u4E0E\u7A97\u53E3**\uFF1A`\u250C\u2500\u2510\u2502\u2514\u2518`\uFF08examples/chat-window\uFF09\u3002\n- **\u7C92\u5B50**\uFF1A\u4F4D\u7F6E = \u521D\u59CB hash + \u901F\u5EA6 \xD7 t\uFF0C\u53D6\u6A21\u56DE\u5377\uFF08examples/whale-fall\uFF09\u3002\n- **\u540E\u671F**\uFF1A\u5728\u6837\u5F0F\u6570\u5B57\u4E0A\u505A\u626B\u63CF\u7EBF\uFF08\u9694\u884C\u964D\u4E00\u7EA7\uFF09\u3001\u6697\u89D2\uFF08\u79BB\u4E2D\u5FC3\u8FDC\u964D\u7EA7\uFF09\u3001\u6CDB\u5149\uFF08\u4EAE\u683C\u5468\u56F4\u52A0 `.`\uFF09\u3001\u6545\u969C\uFF08\u62CD\u70B9\u65F6\u6574\u884C\u5E73\u79FB\uFF0C\u8DF3\u8FC7\u542B\u5BBD\u5B57\u7B26\u7684\u884C\uFF09\uFF08examples/post-effects\uFF09\u3002\n- **\u8F6C\u573A**\uFF1A\u6BB5\u843D\u8FB9\u7F18 0.5\u20131 \u79D2\u9010\u7EA7\u964D\u4EAE\u5EA6\uFF08\u6DE1\u51FA\uFF09\uFF0C\u6216\u6309 progress \u64E6\u9664\u4E00\u90E8\u5206\u5217\u3002\n\n## \u4E0E\u97F3\u4E50\u540C\u6B65\n\n- **\u6B4C\u8BCD**\uFF1A\u5F53\u524D\u53E5 `ctx.lyric.text`\uFF1B\u9010\u8BCD\u9AD8\u4EAE\u7528 `ctx.lyric.words` + `ctx.lyric.word`\uFF08examples/token-bar\u3001rich-pack \u7684 karaoke\uFF09\uFF1B\n  \u6253\u5B57\u6548\u679C\u7528 `lyric.progress` \u6216\u8BCD\u65F6\u95F4\u3002\u9884\u544A\u4E0B\u4E00\u53E5\u7528 `ctx.next`\uFF08\u6697\u8272\uFF09\u3002\n- **\u9891\u8C31**\uFF1A`bands[i]` \u9A71\u52A8\u67F1\u9AD8 / \u534A\u5F84 / \u7C92\u5B50\u901F\u5EA6\uFF1B`bass` \u9002\u5408\u6574\u4F53\u7F29\u653E\u548C\u95EA\u70C1\uFF0C`treble` \u9002\u5408\u7EC6\u788E\u7C92\u5B50\u3002\n- **\u8282\u62CD**\uFF1A`ctx.beat.pulse` \u505A\u91CD\u97F3\uFF08\u95EA\u767D\u3001\u653E\u5927\u3001\u6545\u969C\uFF09\uFF0C`ctx.beat.bar` \u6BCF\u5C0F\u8282\u6362\u4E00\u6B21\u6784\u56FE\uFF1B\u6CA1\u6709 bpm \u65F6\u7528 `bass` \u8D85\u8FC7\u9608\u503C\u3002\n- **\u6BB5\u843D**\uFF1A`ctx.section.kind` \u9009\u62E9\u573A\u666F\u51FD\u6570\uFF0C`ctx.section.progress` \u9A71\u52A8\u6BB5\u5185\u8FD0\u52A8\u3002\n- **\u9759\u97F3\u5305**\uFF1A\u6CA1\u6709\u97F3\u9891\u65F6 bands \u5168\u4E3A 0\uFF0C\u7528\u793A\u4F8B\u7684 `energyOf/bandOf` \u751F\u6210\u66FF\u4EE3\u8FD0\u52A8\uFF0C\u907F\u514D\u9884\u89C8\u65F6\u753B\u9762\u6B7B\u677F\u3002\n\n## \u7ED3\u6784\u5EFA\u8BAE\n\n```js\n/* \u5DE5\u5177\u51FD\u6570\uFF08\u590D\u5236 examples \u91CC\u7684\u7F51\u683C\u5DE5\u5177\uFF09 */\nfunction intro(g, t, ctx, p) { ... }\nfunction verse(g, t, ctx, p) { ... }\nfunction chorus(g, t, ctx, p) { ... }\nfunction render(t, cols, rows, ctx) {\n  var g = makeGrid(cols, rows), s = ctx.section\n  var kind = s ? s.kind : 'verse'\n  ;({ intro: intro, verse: verse, chorus: chorus }[kind] || verse)(g, t, ctx, s ? s.progress : ctx.progress)\n  /* \u8F6C\u573A + \u540E\u671F */\n  return frameOf(g)\n}\n```\n\n\u4E0D\u540C\u7A97\u53E3\u5927\u5C0F\u90FD\u8981\u80FD\u770B\uFF08cols 40\u2013240\uFF0Crows 12\u201385\uFF09\uFF1A\u4F4D\u7F6E\u6309\u6BD4\u4F8B\u7B97\uFF0C\u6587\u5B57\u653E\u4E0D\u4E0B\u5C31\u622A\u65AD\u3002\n",
+  "prompts/zh/04-qa-checklist.md": '# 04 \u81EA\u68C0\u6E05\u5355\uFF08\u4EA4\u4ED8\u524D\u9010\u6761\u786E\u8BA4\uFF09\n\n## \u5FC5\u987B\u901A\u8FC7\n\n- [ ] `mv_pack_validate`\uFF08path = \u5305\u6587\u4EF6\u5939\uFF09\u6CA1\u6709\u9519\u8BEF\uFF1Bmv.json \u662F\u5408\u6CD5 JSON\uFF0C`canvas.renderer` \u4E3A `"script"`\u3001`canvas.script` \u6307\u5411 `scenes.js`\u3002\n- [ ] \u6B4C\u8BCD\u6765\u81EA\u7528\u6237\u7684\u6587\u4EF6\uFF0C\u6CA1\u6709\u7F16\u9020\u3001\u6539\u5199\u6216\u8865\u5168\uFF1B\u65F6\u95F4\u8F74\u5355\u8C03\u9012\u589E\uFF0C\u4E0D\u8D85\u8FC7\u65F6\u957F\u3002\n- [ ] \u6CA1\u6709\u4FEE\u6539\u3001\u8F6C\u7801\u3001\u5220\u9664\u97F3\u9891\uFF1B\u6CA1\u6709\u8054\u7F51\u4E0B\u8F7D\u7D20\u6750\uFF1B\u53EA\u6539\u52A8\u4E86\u5305\u6587\u4EF6\u5939\u91CC\u7684\u6587\u4EF6\u3002\n- [ ] scenes.js \u6CA1\u6709 import / require / eval / new Function / fetch\uFF0C\u6CA1\u6709 Math.random \u6216\u4F9D\u8D56\u4E0A\u4E00\u5E27\u7684\u72B6\u6001\u3002\n- [ ] \u7528 `mv_pack_preview_frame` \u81F3\u5C11\u770B\u4E86\uFF1A0 \u79D2\u3001\u6BCF\u4E2A\u6BB5\u843D\u7684\u4E2D\u95F4\u3001\u6BCF\u6B21\u6BB5\u843D\u5207\u6362\u524D\u540E 0.3 \u79D2\u3001\u6700\u540E 2 \u79D2\u3002\n- [ ] \u6CA1\u6709\u7A7A\u767D\u5E27\u3001\u6CA1\u6709\u62A5\u9519\uFF1B\u6BCF\u5E27\u8017\u65F6 < 10 ms\uFF08\u786C\u4E0A\u9650 40 ms\uFF09\u3002\n\n## \u753B\u9762\u8D28\u91CF\n\n- [ ] \u6BCF\u4E2A\u6BB5\u843D\u4E00\u773C\u80FD\u533A\u5206\uFF1B\u7B2C\u4E8C\u6B21\u526F\u6B4C\u6BD4\u7B2C\u4E00\u6B21\u66F4\u5F3A\u6216\u6709\u65B0\u5143\u7D20\u3002\n- [ ] \u5F53\u524D\u6B4C\u8BCD\u603B\u662F\u6E05\u695A\u53EF\u8BFB\uFF08\u80CC\u666F\u6E05\u7A7A\u4E00\u6761\u3001\u6837\u5F0F 3 \u6216 2\uFF09\uFF0C\u9010\u8BCD\u9AD8\u4EAE\u4E0E\u5531\u7684\u8BCD\u4E00\u81F4\u3002\n- [ ] \u753B\u9762\u5728\u62CD\u70B9 / \u4F4E\u9891\u4E0A\u6709\u660E\u663E\u53CD\u5E94\uFF0C\u4F46\u4E0D\u4F1A\u6BCF\u5E27\u4E71\u95EA\uFF08\u95EA\u70C1\u9891\u7387 \u2264 \u6BCF\u62CD\u4E00\u6B21\uFF09\u3002\n- [ ] \u4E2D\u6587\u5BBD\u5B57\u7B26\u5BF9\u9F50\u6B63\u786E\uFF0C\u8FB9\u6846\u4E0D\u88AB\u6324\u6B6A\uFF1B\u957F\u6B4C\u8BCD\u88AB\u622A\u65AD\u800C\u4E0D\u662F\u6362\u884C\u9519\u4F4D\u3002\n- [ ] \u5C0F\u7A97\u53E3\uFF08\u7EA6 60\xD718\uFF09\u548C\u5927\u7A97\u53E3\uFF08\u7EA6 160\xD748\uFF09\u90FD\u80FD\u770B\uFF1A\u6CA1\u6709\u8D8A\u754C\u3001\u4E3B\u4F53\u4ECD\u7136\u5C45\u4E2D\u3002\n- [ ] \u524D\u594F\u3001\u95F4\u594F\u3001\u5C3E\u58F0\u6709\u5B8C\u6574\u753B\u9762\uFF1B\u7ED3\u5C3E\u6709\u6536\u675F\uFF08\u6DE1\u51FA\u3001\u5B9A\u683C\u6216\u8C22\u5E55\u5B57\u6837\uFF09\u3002\n- [ ] credits / notice \u5199\u6E05\u695A\uFF1A\u6B4C\u66F2\u7248\u6743\u5C5E\u4E8E\u539F\u4F5C\u8005\uFF0C\u7D20\u6750\u6765\u6E90\u4E0E\u8BB8\u53EF\u3002\n\n## \u53D1\u73B0\u95EE\u9898\u65F6\n\n\u628A\u95EE\u9898\u5199\u8FDB `notes/qa.md`\uFF08\u65F6\u95F4\u70B9\u3001\u73B0\u8C61\u3001\u539F\u56E0\u3001\u4FEE\u6539\uFF09\uFF0C\u4FEE\u6539\u540E\u91CD\u65B0\u9884\u89C8\u540C\u4E00\u65F6\u95F4\u70B9\uFF0C\u518D\u7EE7\u7EED\u4E0B\u4E00\u6761\u3002\n',
+  "prompts/zh/05-iteration.md": "# 05 \u8FED\u4EE3\u63D0\u793A\u8BCD\uFF08\u7528\u6237\u60F3\u6539\u7684\u65F6\u5019\u76F4\u63A5\u590D\u5236\u7ED9 AI\uFF09\n\n\u6BCF\u6B21\u53EA\u6539\u4E00\u4EF6\u4E8B\uFF0C\u6539\u5B8C\u7528 `mv_pack_preview_frame` \u9884\u89C8\u76F8\u5173\u65F6\u95F4\u70B9\u5E76\u8DD1\u4E00\u904D 04 \u81EA\u68C0\u6E05\u5355\u3002\n\n- **\u6574\u4F53\u66F4\u70AB**\uFF1A\u201C\u526F\u6B4C\u52A0\u5F3A\uFF1A\u62CD\u70B9\uFF08ctx.beat.pulse > 0.7\uFF09\u65F6\u5168\u5C4F\u95EA\u767D\u4E00\u5E27\u5E76\u6574\u4F53\u653E\u5927 10%\uFF0C\u52A0\u5165 post-effects \u7684\u626B\u63CF\u7EBF\u548C\u6697\u89D2\uFF0C\u5176\u4F59\u6BB5\u843D\u4FDD\u6301\u4E0D\u53D8\u3002\u201D\n- **\u66F4\u8D34\u6B4C\u8BCD**\uFF1A\u201C\u4E3B\u6B4C\u6539\u4E3A\u9010\u8BCD\u6253\u5B57\uFF1A\u53EA\u663E\u793A ctx.lyric.words \u91CC\u5DF2\u7ECF\u5531\u5230\u7684\u8BCD\uFF0C\u5F53\u524D\u8BCD\u7528\u6837\u5F0F 3\uFF0C\u4E0B\u4E00\u53E5\u7528\u6837\u5F0F 0 \u9884\u544A\u5728\u4E0B\u65B9\u3002\u201D\n- **\u8282\u594F\u4E0D\u51C6**\uFF1A\u201C\u628A canvas.bpm \u6539\u6210 <BPM>\uFF0Ccanvas.beatOffset \u6539\u6210 <\u79D2>\uFF0C\u8BA9\u7B2C\u4E00\u62CD\u843D\u5728 <\u65F6\u95F4> \u79D2\uFF1B\u68C0\u67E5 <\u65F6\u95F4> \u524D\u540E 2 \u79D2\u7684\u9884\u89C8\u3002\u201D\n- **\u6BB5\u843D\u4E0D\u5BF9**\uFF1A\u201C\u6309\u8FD9\u4E9B\u65F6\u95F4\u91CD\u5199 x-dsh-mv-ai.sections\uFF1A<kind start\u2013end \u5217\u8868>\uFF0C\u573A\u666F\u968F\u4E4B\u8C03\u6574\u3002\u201D\n- **\u592A\u6162 / \u5361\u987F**\uFF1A\u201C\u627E\u51FA\u6BCF\u5E27\u6700\u6162\u7684\u6BB5\u843D\uFF0C\u628A\u7C92\u5B50\u6570\u6539\u6210\u4E0E\u9762\u79EF\u6210\u6BD4\u4F8B\uFF08cols*rows/50\uFF09\uFF0C\u53BB\u6389\u6BCF\u683C\u5185\u7684\u5D4C\u5957\u5FAA\u73AF\uFF0C\u76EE\u6807\u6BCF\u5E27 < 8 ms\u3002\u201D\n- **\u6362\u98CE\u683C**\uFF1A\u201C\u4FDD\u6301\u7ED3\u6784\u548C\u6B4C\u8BCD\u540C\u6B65\u4E0D\u53D8\uFF0C\u628A\u6574\u4F53\u98CE\u683C\u6362\u6210 <\u98CE\u683C>\uFF1A\u8C03\u8272\u53EA\u7528\u6837\u5F0F <\u5217\u8868>\uFF0C\u5B57\u7B26\u96C6\u6362\u6210 <\u5B57\u7B26>\u3002\u201D\n- **\u52A0\u4E00\u4E2A\u573A\u666F**\uFF1A\u201C\u5728\u6865\u6BB5\u52A0\u5165 examples/<\u793A\u4F8B\u540D>.scene.js \u7684\u6548\u679C\uFF0C\u6539\u6210\u9002\u5408\u672C\u6B4C\u7684\u6587\u5B57\u548C\u8282\u594F\uFF0C\u4E0E\u524D\u540E\u6BB5\u843D\u7528 0.8 \u79D2\u6DE1\u5165\u6DE1\u51FA\u8854\u63A5\u3002\u201D\n- **\u5C0F\u7A97\u53E3\u96BE\u770B**\uFF1A\u201C\u5728 cols < 70 \u6216 rows < 20 \u65F6\u4F7F\u7528\u7B80\u5316\u5E03\u5C40\uFF1A\u9690\u85CF\u88C5\u9970\u8FB9\u6846\uFF0C\u53EA\u4FDD\u7559\u4E3B\u4F53\u548C\u6B4C\u8BCD\u3002\u201D\n- **\u51C6\u5907\u53D1\u5E03\u5230\u5DE5\u574A**\uFF1A\u201C\u68C0\u67E5 credits / notice / x-dsh-mv-workshop.license \u662F\u5426\u5B8C\u6574\uFF1B\u786E\u8BA4\u5305\u91CC\u6CA1\u6709\u97F3\u9891\u548C\u6B4C\u8BCD\u539F\u6587\u4EE5\u5916\u4E0D\u8BE5\u6709\u7684\u6587\u4EF6\uFF08\u53D1\u5E03\u65F6\u63D2\u4EF6\u4F1A\u81EA\u52A8\u5265\u79BB\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u672C\uFF0C\u53EA\u4FDD\u7559\u65F6\u95F4\u8F74\uFF09\u3002\u201D\n"
+});
+
 // .dsh-plugin/shared/mv-pack-template.mjs
 var TEMPLATE_FOLDER = "dsh-mv-pack-template";
 var json = (value) => `${JSON.stringify(value, null, 2)}
@@ -8535,7 +9449,9 @@ var MV_PACK_JSON_SCHEMA = Object.freeze({
       properties: {
         renderer: { enum: MV_CANVAS_RENDERERS, default: "generic", description: "generic | world-execute-me | dsh-pv | script (needs canvas.script)." },
         script: { type: "string", pattern: "\\.m?js$", description: 'Scene script (.js) for renderer "script": defines render(t, cols, rows, ctx). Runs sandboxed in the panel.' },
-        fontSize: { type: "number", minimum: 8, maximum: 32 }
+        fontSize: { type: "number", minimum: 8, maximum: 32 },
+        bpm: { type: "number", minimum: 20, maximum: 400, description: "Song tempo for scene scripts: ctx.beat = { bpm, index, bar, phase, pulse }." },
+        beatOffset: { type: "number", minimum: -60, maximum: 60, description: "Time of the first beat in seconds (default 0)." }
       }
     },
     terminal: { deprecated: true, description: "Ignored since 0.6.0: the panel no longer runs external TUI players." }
@@ -8571,6 +9487,9 @@ VS Code completion and checks.
 | \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song), \`world-execute-me\` (the built-in world.execute(me) scenes, timed for that song only), \`dsh-pv\` (the built-in dsh-pv PV, also timed for world.execute(me) only) or \`script\` (your own scene script, see below). |
 | \`canvas.script\` | no | \`scenes.js\`: the scene script for \`script\` (setting it implies \`renderer: "script"\`). |
 | \`canvas.fontSize\` | no | 8\u201332 px. |
+| \`canvas.bpm\`, \`canvas.beatOffset\` | no | Tempo (20\u2013400) and first-beat time for scene scripts (\`ctx.beat\`). |
+| \`x-dsh-mv-ai.sections\` | no | Song sections \`[{ kind, label, start, end }]\` for scene scripts (\`ctx.section\`). |
+| \`x-dsh-mv-workshop\` | no | Workshop data (id, version, license, author, audio duration / fingerprint); written by \u53D1\u5E03\u5230\u5DE5\u574A. |
 
 Paths are relative to the folder of \`mv.json\` (\`/\` or \`\\\\\`; \`..\` is not allowed)
 or absolute. Unknown fields are errors; put your own data in fields starting with \`x-\`.
@@ -8596,8 +9515,13 @@ into a cached WAV (\`%LOCALAPPDATA%\\dsh-mv\\audio-cache\`); it asks before runn
 \`scenes.js\` defines \`render(t, cols, rows, ctx)\` (and optionally \`setup(info)\`). It returns
 an array of \`rows\` strings, or \`{ lines, styles }\` where \`styles[y]\` has one digit per
 cell (0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive). \`ctx\` is
-\`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }\`
-(\`lyric\`/\`next\`: \`{ text, en, zh, start, end }\` or null).
+\`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused, section, sections, beat }\`:
+
+- \`lyric\`: \`{ text, en, zh, start, end, progress, words: [{ text, start, end }], word }\` or null. Words come from
+  enhanced-LRC word stamps (\`[00:12.00]<00:12.00>first <00:12.50>word\`), otherwise they are estimated; \`word\`
+  is the index of the word being sung. \`next\` is the next line (without words).
+- \`section\`: \`{ kind, label, start, end, index, progress }\` from \`x-dsh-mv-ai.sections\`, or null.
+- \`beat\`: \`{ bpm, index, bar, phase, pulse }\` when \`canvas.bpm\` is set, else null.
 
 The script runs in a Web Worker without network, storage, DOM or imports. A frame
 should take under ${SCENE_LIMITS.frameBudgetMs} ms; a script that throws, hangs for
@@ -8635,6 +9559,9 @@ VS Code \u7B49\u7F16\u8F91\u5668\u63D0\u4F9B\u8865\u5168\u548C\u6821\u9A8C\u3002
 | \`canvas.renderer\` | \u5426 | \`generic\`\uFF08\u901A\u7528\uFF1A\u9891\u8C31 + \u6807\u9898 + \u6B4C\u8BCD\uFF0C\u4EFB\u4F55\u6B4C\u90FD\u80FD\u653E\uFF09\u3001\`world-execute-me\`\uFF08\u5185\u7F6E\u7684 world.execute(me) \u573A\u666F\uFF0C\u53EA\u9002\u5408\u8FD9\u9996\u6B4C\u7684\u65F6\u95F4\u8F74\uFF09\u3001\`dsh-pv\`\uFF08\u5185\u7F6E\u7684 dsh-pv PV\uFF0C\u540C\u6837\u53EA\u9002\u5408\u8FD9\u9996\u6B4C\uFF09\u6216 \`script\`\uFF08\u4F60\u81EA\u5DF1\u7684\u573A\u666F\u811A\u672C\uFF0C\u89C1\u4E0B\uFF09\u3002 |
 | \`canvas.script\` | \u5426 | \`scenes.js\`\uFF1A\`script\` \u6E32\u67D3\u5668\u7528\u7684\u573A\u666F\u811A\u672C\uFF08\u586B\u4E86\u5B83\u5C31\u9ED8\u8BA4 \`renderer: "script"\`\uFF09\u3002 |
 | \`canvas.fontSize\` | \u5426 | 8\u201332 \u50CF\u7D20\u3002 |
+| \`canvas.bpm\`\u3001\`canvas.beatOffset\` | \u5426 | \u6B4C\u66F2\u901F\u5EA6\uFF0820\u2013400\uFF09\u548C\u7B2C\u4E00\u62CD\u65F6\u95F4\uFF0C\u4F9B\u573A\u666F\u811A\u672C\u4F7F\u7528\uFF08\`ctx.beat\`\uFF09\u3002 |
+| \`x-dsh-mv-ai.sections\` | \u5426 | \u6B4C\u66F2\u6BB5\u843D \`[{ kind, label, start, end }]\`\uFF0C\u4F9B\u573A\u666F\u811A\u672C\u4F7F\u7528\uFF08\`ctx.section\`\uFF09\u3002 |
+| \`x-dsh-mv-workshop\` | \u5426 | \u521B\u610F\u5DE5\u574A\u4FE1\u606F\uFF08id\u3001\u7248\u672C\u3001\u8BB8\u53EF\u3001\u4F5C\u8005\u3001\u97F3\u9891\u65F6\u957F / \u6307\u7EB9\uFF09\uFF0C\u7531\u300C\u53D1\u5E03\u5230\u5DE5\u574A\u300D\u5199\u5165\u3002 |
 
 \u8DEF\u5F84\u76F8\u5BF9\u4E8E \`mv.json\` \u6240\u5728\u6587\u4EF6\u5939\uFF08\`/\` \u6216 \`\\\\\` \u90FD\u884C\uFF0C\u4E0D\u5141\u8BB8 \`..\`\uFF09\uFF0C\u4E5F\u53EF\u4EE5\u5199\u7EDD\u5BF9\u8DEF\u5F84\u3002
 \u672A\u77E5\u5B57\u6BB5\u4F1A\u62A5\u9519\uFF1B\u81EA\u5B9A\u4E49\u6570\u636E\u8BF7\u7528 \`x-\` \u5F00\u5934\u7684\u5B57\u6BB5\u30020.6.0 \u4E4B\u524D\u7684\u5305\u91CC\u7684 \`terminal\` \u5B57\u6BB5\u4F1A\u88AB\u5FFD\u7565\u5E76\u7ED9\u51FA\u63D0\u793A\uFF08\u9762\u677F\u4E0D\u518D\u8FD0\u884C\u5916\u90E8\u64AD\u653E\u5668\uFF09\u3002
@@ -8655,8 +9582,12 @@ MP4/MOV/WebM/MKV \u89C6\u9891\u91CC\u7684\u97F3\u8F68\u3001Ogg Vorbis/Opus\u3001
 
 \`scenes.js\` \u5B9A\u4E49 \`render(t, cols, rows, ctx)\`\uFF08\u53EF\u9009 \`setup(info)\`\uFF09\uFF0C\u8FD4\u56DE \`rows\` \u884C\u5B57\u7B26\u4E32\u6570\u7EC4\uFF0C
 \u6216 \`{ lines, styles }\`\uFF1A\`styles[y]\` \u6BCF\u4E2A\u5B57\u7B26\u4E00\u4F4D\u6570\u5B57\uFF080 \u6697\u30011 \u666E\u901A\u30012 \u4EAE\u30013 \u767D\u30014 \u7EA2\u30015 \u68D5\u30016 \u6A44\u6984\uFF09\u3002
-\`ctx\` \u4E3A \`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }\`
-\uFF08\`lyric\`/\`next\`\uFF1A\`{ text, en, zh, start, end }\` \u6216 null\uFF09\u3002
+\`ctx\` \u4E3A \`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused, section, sections, beat }\`\uFF1A
+
+- \`lyric\`\uFF1A\`{ text, en, zh, start, end, progress, words: [{ text, start, end }], word }\` \u6216 null\u3002\u9010\u8BCD\u65F6\u95F4\u6765\u81EA\u589E\u5F3A LRC
+  \uFF08\`[00:12.00]<00:12.00>\u7B2C\u4E00 <00:12.50>\u4E2A\u8BCD\`\uFF09\uFF0C\u6CA1\u6709\u65F6\u81EA\u52A8\u4F30\u8BA1\uFF1B\`word\` \u662F\u6B63\u5728\u5531\u7684\u8BCD\u7684\u4E0B\u6807\u3002\`next\` \u662F\u4E0B\u4E00\u53E5\uFF08\u6CA1\u6709 words\uFF09\u3002
+- \`section\`\uFF1A\u6765\u81EA \`x-dsh-mv-ai.sections\` \u7684 \`{ kind, label, start, end, index, progress }\`\uFF0C\u6216 null\u3002
+- \`beat\`\uFF1A\u8BBE\u7F6E\u4E86 \`canvas.bpm\` \u65F6\u4E3A \`{ bpm, index, bar, phase, pulse }\`\uFF0C\u5426\u5219 null\u3002
 
 \u811A\u672C\u5728 Web Worker \u6C99\u7BB1\u91CC\u8FD0\u884C\uFF1A\u6CA1\u6709\u7F51\u7EDC\u3001\u5B58\u50A8\u3001DOM\uFF0C\u4E0D\u80FD import\u3002\u6BCF\u5E27\u5E94\u5728 ${SCENE_LIMITS.frameBudgetMs} \u6BEB\u79D2\u5185\u5B8C\u6210\uFF1B
 \u811A\u672C\u62A5\u9519\u3001\u5361\u4F4F ${SCENE_LIMITS.hardTimeoutMs} \u6BEB\u79D2\u6216\u6301\u7EED\u592A\u6162\u65F6\u4F1A\u88AB\u505C\u6B62\uFF0C\u9762\u677F\u81EA\u52A8\u6362\u56DE \`generic\` \u901A\u7528\u753B\u9762\u3002
@@ -8683,7 +9614,8 @@ function templateFiles() {
     { path: "lyrics.example.lrc", text: LRC_EXAMPLE },
     { path: "examples/world-execute-me.mv.json", text: json(WORLD_EXECUTE_ME_EXAMPLE) },
     { path: "examples/dsh-pv.mv.json", text: json(DSH_PV_EXAMPLE) },
-    { path: "examples/scenes.example.js", text: EXAMPLE_SCENE }
+    { path: "examples/scenes.example.js", text: EXAMPLE_SCENE },
+    ...Object.entries(TEMPLATE_ASSETS).map(([path, text4]) => ({ path, text: text4 }))
   ];
 }
 

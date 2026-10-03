@@ -1,10 +1,12 @@
 /**
  * The downloadable MV pack template: mv.json, its JSON Schema, a bilingual
- * README, three examples (world.execute(me), the dsh-pv preset as a pack, scene script) and a placeholder LRC. Generated text only — no song,
- * lyric or artwork data.
+ * README, examples (world.execute(me) and dsh-pv presets as packs, scene scripts, a full example pack), AI prompt
+ * templates (prompts/zh, prompts/en) and a placeholder LRC. Generated text only — no song, lyric or artwork data.
+ * The example scenes and prompts live in template/** and are generated into mv-template-assets.gen.mjs.
  */
 import { EXAMPLE_SCENE, SCENE_LIMITS } from './mv-scene.mjs'
 import { MV_CANVAS_RENDERERS, MV_PACK_FORMAT, MV_PACK_SCHEMA_FILE, MV_PACK_VERSION } from './mv-pack.mjs'
+import { TEMPLATE_ASSETS } from './mv-template-assets.gen.mjs'
 
 export const TEMPLATE_FOLDER = 'dsh-mv-pack-template'
 
@@ -88,6 +90,8 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
         renderer: { enum: MV_CANVAS_RENDERERS, default: 'generic', description: 'generic | world-execute-me | dsh-pv | script (needs canvas.script).' },
         script: { type: 'string', pattern: '\\.m?js$', description: 'Scene script (.js) for renderer "script": defines render(t, cols, rows, ctx). Runs sandboxed in the panel.' },
         fontSize: { type: 'number', minimum: 8, maximum: 32 },
+        bpm: { type: 'number', minimum: 20, maximum: 400, description: 'Song tempo for scene scripts: ctx.beat = { bpm, index, bar, phase, pulse }.' },
+        beatOffset: { type: 'number', minimum: -60, maximum: 60, description: 'Time of the first beat in seconds (default 0).' },
       },
     },
     terminal: { deprecated: true, description: 'Ignored since 0.6.0: the panel no longer runs external TUI players.' },
@@ -124,6 +128,9 @@ VS Code completion and checks.
 | \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song), \`world-execute-me\` (the built-in world.execute(me) scenes, timed for that song only), \`dsh-pv\` (the built-in dsh-pv PV, also timed for world.execute(me) only) or \`script\` (your own scene script, see below). |
 | \`canvas.script\` | no | \`scenes.js\`: the scene script for \`script\` (setting it implies \`renderer: "script"\`). |
 | \`canvas.fontSize\` | no | 8–32 px. |
+| \`canvas.bpm\`, \`canvas.beatOffset\` | no | Tempo (20–400) and first-beat time for scene scripts (\`ctx.beat\`). |
+| \`x-dsh-mv-ai.sections\` | no | Song sections \`[{ kind, label, start, end }]\` for scene scripts (\`ctx.section\`). |
+| \`x-dsh-mv-workshop\` | no | Workshop data (id, version, license, author, audio duration / fingerprint); written by 发布到工坊. |
 
 Paths are relative to the folder of \`mv.json\` (\`/\` or \`\\\\\`; \`..\` is not allowed)
 or absolute. Unknown fields are errors; put your own data in fields starting with \`x-\`.
@@ -149,8 +156,13 @@ into a cached WAV (\`%LOCALAPPDATA%\\dsh-mv\\audio-cache\`); it asks before runn
 \`scenes.js\` defines \`render(t, cols, rows, ctx)\` (and optionally \`setup(info)\`). It returns
 an array of \`rows\` strings, or \`{ lines, styles }\` where \`styles[y]\` has one digit per
 cell (0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive). \`ctx\` is
-\`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }\`
-(\`lyric\`/\`next\`: \`{ text, en, zh, start, end }\` or null).
+\`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused, section, sections, beat }\`:
+
+- \`lyric\`: \`{ text, en, zh, start, end, progress, words: [{ text, start, end }], word }\` or null. Words come from
+  enhanced-LRC word stamps (\`[00:12.00]<00:12.00>first <00:12.50>word\`), otherwise they are estimated; \`word\`
+  is the index of the word being sung. \`next\` is the next line (without words).
+- \`section\`: \`{ kind, label, start, end, index, progress }\` from \`x-dsh-mv-ai.sections\`, or null.
+- \`beat\`: \`{ bpm, index, bar, phase, pulse }\` when \`canvas.bpm\` is set, else null.
 
 The script runs in a Web Worker without network, storage, DOM or imports. A frame
 should take under ${SCENE_LIMITS.frameBudgetMs} ms; a script that throws, hangs for
@@ -189,6 +201,9 @@ VS Code 等编辑器提供补全和校验。
 | \`canvas.renderer\` | 否 | \`generic\`（通用：频谱 + 标题 + 歌词，任何歌都能放）、\`world-execute-me\`（内置的 world.execute(me) 场景，只适合这首歌的时间轴）、\`dsh-pv\`（内置的 dsh-pv PV，同样只适合这首歌）或 \`script\`（你自己的场景脚本，见下）。 |
 | \`canvas.script\` | 否 | \`scenes.js\`：\`script\` 渲染器用的场景脚本（填了它就默认 \`renderer: "script"\`）。 |
 | \`canvas.fontSize\` | 否 | 8–32 像素。 |
+| \`canvas.bpm\`、\`canvas.beatOffset\` | 否 | 歌曲速度（20–400）和第一拍时间，供场景脚本使用（\`ctx.beat\`）。 |
+| \`x-dsh-mv-ai.sections\` | 否 | 歌曲段落 \`[{ kind, label, start, end }]\`，供场景脚本使用（\`ctx.section\`）。 |
+| \`x-dsh-mv-workshop\` | 否 | 创意工坊信息（id、版本、许可、作者、音频时长 / 指纹），由「发布到工坊」写入。 |
 
 路径相对于 \`mv.json\` 所在文件夹（\`/\` 或 \`\\\\\` 都行，不允许 \`..\`），也可以写绝对路径。
 未知字段会报错；自定义数据请用 \`x-\` 开头的字段。0.6.0 之前的包里的 \`terminal\` 字段会被忽略并给出提示（面板不再运行外部播放器）。
@@ -209,8 +224,12 @@ MP4/MOV/WebM/MKV 视频里的音轨、Ogg Vorbis/Opus、FLAC、WAV（PCM / 浮�
 
 \`scenes.js\` 定义 \`render(t, cols, rows, ctx)\`（可选 \`setup(info)\`），返回 \`rows\` 行字符串数组，
 或 \`{ lines, styles }\`：\`styles[y]\` 每个字符一位数字（0 暗、1 普通、2 亮、3 白、4 红、5 棕、6 橄榄）。
-\`ctx\` 为 \`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }\`
-（\`lyric\`/\`next\`：\`{ text, en, zh, start, end }\` 或 null）。
+\`ctx\` 为 \`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused, section, sections, beat }\`：
+
+- \`lyric\`：\`{ text, en, zh, start, end, progress, words: [{ text, start, end }], word }\` 或 null。逐词时间来自增强 LRC
+  （\`[00:12.00]<00:12.00>第一 <00:12.50>个词\`），没有时自动估计；\`word\` 是正在唱的词的下标。\`next\` 是下一句（没有 words）。
+- \`section\`：来自 \`x-dsh-mv-ai.sections\` 的 \`{ kind, label, start, end, index, progress }\`，或 null。
+- \`beat\`：设置了 \`canvas.bpm\` 时为 \`{ bpm, index, bar, phase, pulse }\`，否则 null。
 
 脚本在 Web Worker 沙箱里运行：没有网络、存储、DOM，不能 import。每帧应在 ${SCENE_LIMITS.frameBudgetMs} 毫秒内完成；
 脚本报错、卡住 ${SCENE_LIMITS.hardTimeoutMs} 毫秒或持续太慢时会被停止，面板自动换回 \`generic\` 通用画面。
@@ -241,5 +260,6 @@ export function templateFiles() {
     { path: 'examples/world-execute-me.mv.json', text: json(WORLD_EXECUTE_ME_EXAMPLE) },
     { path: 'examples/dsh-pv.mv.json', text: json(DSH_PV_EXAMPLE) },
     { path: 'examples/scenes.example.js', text: EXAMPLE_SCENE },
+    ...Object.entries(TEMPLATE_ASSETS).map(([path, text]) => ({ path, text })),
   ]
 }

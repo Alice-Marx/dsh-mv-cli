@@ -102,23 +102,28 @@ ${bullet([
   `\`${BRIEF_FILE}\`：标题、歌手、风格说明等原始输入。`,
   `\`mv.json\`：初始清单（通用渲染器），可以通过检查；你需要把它改成最终版本。`,
   `\`${MV_PACK_SCHEMA_FILE}\`：mv.json 的 JSON Schema；\`README.md\`：格式说明。`,
-  `\`${SCENE_FILE}\`：一个能运行的示例场景脚本，可以在它的基础上改。`,
+  `\`${SCENE_FILE}\`：一个能运行的最小示例场景脚本，可以在它的基础上改。`,
+  `\`prompts/zh/\`（英文版 \`prompts/en/\`）：制作流程的提示词模板——01 创意简报、02 分段分镜、03 场景脚本编写指南、04 自检清单、05 迭代提示词。`,
+  `\`examples/\`：成熟的示例场景（聊天窗口、心跳线、操作日志、token 条、EXECUTION 分屏、鲸落结尾、后期效果）和完整多段落示例 \`examples/rich-pack/scenes.js\`，说明见 \`examples/README.md\`。可以借用其中的技巧和工具函数。`,
 ])}
 
 ## 要做的事
 
-1. 读 \`README.md\` 和 \`${MV_PACK_SCHEMA_FILE}\`，了解 mv.json 格式。
+1. 读 \`README.md\` 和 \`${MV_PACK_SCHEMA_FILE}\`，了解 mv.json 格式；读 \`prompts/zh/03-scene-script-guide.md\` 和 \`examples/README.md\`。
+   然后按 \`prompts/zh/01-creative-brief.md\` 写 \`notes/brief.md\`（创意简报），按 \`prompts/zh/02-storyboard.md\` 写 \`notes/storyboard.md\`（每个段落一张分镜卡）。
 2. 歌词：${lyricsFile
     ? lyricsTimed
       ? `检查 \`${lyricsFile}\` 的时间轴是否合理（单调递增、不超过时长）；必要时修正，保存为 \`lyrics.lrc\`。`
       : `把 \`${lyricsFile}\` 整理成 LRC（\`lyrics.lrc\`）。你听不到音频，请按时长${spectrumFile ? '和 spectrum.json 的能量变化（人声段落、间奏）' : ''}合理估计每句的时间，并在 mv.json 的 notice 里说明时间轴是估计的、可用 [ ] 键微调。中英双语可写成同一时间的两行。`
     : '用户没有歌词：做纯音乐 MV（不要编造歌词），mv.json 里不写 lyrics。'}
 3. 写场景脚本 \`${SCENE_FILE}\`：定义 \`function render(t, cols, rows, ctx)\`，返回当前时刻的 ASCII 画面（见下方接口）。
-   画面要配合歌曲结构（前奏、主歌、副歌、间奏、尾声）变化，用 ctx.bands / ctx.energy 跟随音乐，用 ctx.lyric 显示歌词。
+   画面要按分镜配合歌曲结构（ctx.section：前奏、主歌、副歌、间奏、尾声）变化，用 ctx.bands / ctx.energy / ctx.beat 跟随音乐，用 ctx.lyric（含逐词 words / word）显示歌词。
+   能估计 BPM 时在 mv.json 写 \`canvas.bpm\`（和 \`canvas.beatOffset\`）。可以复制 examples 里的网格工具函数（处理中文宽字符）。
    ${style ? `用户的风格要求：${style.replace(/\n+/g, ' ')}` : '风格自定，保持终端 ASCII 美感。'}
 4. 写最终的 \`mv.json\`：\`"canvas": { "renderer": "script", "script": "${SCENE_FILE}" }\`，保留 audio${spectrumFile ? '、spectrum' : ''}，${lyricsFile ? '加上 lyrics，' : ''}填好 title / artist / credits / duration，把 \`x-dsh-mv-ai\` 的 status 改成 "done"（保留其中的 timing / sections 字段，校准编辑器会用到）。如果文件夹里有 sections.json，按其中的段落（主歌 / 副歌 / 间奏）安排场景。
 5. 用工具检查：\`${AI_TOOL_NAMES.validate}\`（参数 path = 本文件夹）必须没有错误；用 \`${AI_TOOL_NAMES.preview}\` 看几个时间点（如 0 秒、副歌、结尾）的画面，确认好看、不空白、不越界。
    如果这两个工具不可用，就仔细自查：mv.json 是合法 JSON 且符合 schema，scenes.js 没有语法错误、没有 import/require、每帧计算量小。
+   然后逐条过一遍 \`prompts/zh/04-qa-checklist.md\`，问题记到 \`notes/qa.md\` 并修好。用户之后想调整时，可以用 \`prompts/zh/05-iteration.md\` 里的提示词。
 6. 最后用一两句话告诉用户：在「MV 放映室 → 曲库」里打开这个包（或「导入 MV 包…」选这个文件夹）即可播放。
 
 ## 场景脚本接口
@@ -127,8 +132,10 @@ ${bullet([
   '普通 JavaScript 文件，不能 import / require，没有 DOM、网络、文件、定时器。不要用 eval / new Function。',
   `render(t, cols, rows, ctx) 每帧调用一次（约 30–60 次/秒），必须在 ${SCENE_LIMITS.frameBudgetMs} ms 内返回，文件不超过 ${SCENE_LIMITS.scriptBytes / 1024} KB。`,
   '返回 rows 行字符串的数组（或含 \\n 的字符串）；超出 cols 的部分会被裁掉。也可以返回 { lines, styles }：styles[y] 每个字符一位数字，0 暗、1 正常、2 亮、3 白、4 红、5 棕、6 橄榄。',
-  'ctx = { duration, progress, title, artist, lyric, next, bands, energy, bass, mid, treble, ready, paused }；lyric / next 为 { text, en, zh, start, end } 或 null；bands 是 48 个 0..1 的频段值。',
-  '可选 function setup(info)：开始前调用一次，info = { title, artist, duration }。',
+  'ctx = { duration, progress, title, artist, lyric, next, bands, energy, bass, mid, treble, ready, paused, section, sections, beat }；bands 是 48 个 0..1 的频段值。',
+  'lyric 为 { text, en, zh, start, end, progress, words: [{ text, start, end }], word } 或 null（words 来自增强 LRC 的 <mm:ss.xx> 逐词时间，否则自动估计；word 是正在唱的词的下标）；next 为下一句（没有 words）。',
+  'section 为 { kind, label, start, end, index, progress }（来自 x-dsh-mv-ai.sections）或 null；beat 在 mv.json 设置 canvas.bpm 时为 { bpm, index, bar, phase, pulse }，否则 null。',
+  '可选 function setup(info)：开始前调用一次，info = { title, artist, duration, sections, bpm, beatOffset }。',
   '画面完全由 t 和 ctx 决定（同一时刻画面相同），这样拖动进度时也正确。',
   '不要在画面里放音乐或歌词以外的版权内容；只用 ASCII / 常见符号，中文字符占两格。',
 ])}
@@ -141,7 +148,8 @@ export function agentPrompt({ packDir, title, artist, toolsAvailable = true }) {
     `请帮我用 dsh-mv 插件制作「${title}${artist ? ` — ${artist}` : ''}」的 MV 包。`,
     '',
     `MV 包文件夹：${packDir}`,
-    `先完整阅读该文件夹里的 ${AGENT_FILE}（任务说明和场景脚本接口），再读 README.md 和 ${MV_PACK_SCHEMA_FILE}，然后按 ${AGENT_FILE} 的步骤完成：整理/对齐歌词为 LRC、编写 ${SCENE_FILE} 场景脚本、写出最终 mv.json。`,
+    `先完整阅读该文件夹里的 ${AGENT_FILE}（任务说明和场景脚本接口），再读 README.md、${MV_PACK_SCHEMA_FILE}、prompts/zh/03-scene-script-guide.md 和 examples/README.md，然后按 ${AGENT_FILE} 的步骤完成。`,
+    '流程：按 prompts/zh/01-creative-brief.md 写创意简报（notes/brief.md）→ 按 prompts/zh/02-storyboard.md 写分段分镜（notes/storyboard.md）→ 整理/对齐歌词为 LRC → 参考 examples/ 的技巧编写 ' + SCENE_FILE + ' → 写出最终 mv.json → 按 prompts/zh/04-qa-checklist.md 逐条自检。',
     toolsAvailable
       ? `完成后用 ${AI_TOOL_NAMES.validate} 检查（path 填上面的文件夹），并用 ${AI_TOOL_NAMES.preview} 预览几个时间点的画面，有问题就修改直到通过。`
       : `如果没有 ${AI_TOOL_NAMES.validate} / ${AI_TOOL_NAMES.preview} 工具，请自行仔细检查 JSON 和脚本。`,
