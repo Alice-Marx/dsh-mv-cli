@@ -1,0 +1,74 @@
+{
+  "name": "@ljwei-stak/dsh-mv-cli",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Terminal-style music video player for DeepSeek Harness Desktop: a canvas ASCII MV synced to your own audio file, and an embedded terminal that runs a local TUI player. Unofficial fan work; no audio, video or lyrics are bundled.",
+  "keywords": ["deepseek-harness", "dsh-plugin", "ascii", "terminal", "music-video", "xterm"],
+  "repository": { "type": "git", "url": "git+https://github.com/Alice-Marx/dsh-mv-cli.git" },
+  "homepage": "https://github.com/Alice-Marx/dsh-mv-cli#readme",
+  "bugs": { "url": "https://github.com/Alice-Marx/dsh-mv-cli/issues" },
+  "publishConfig": { "access": "public" },
+  "main": "./.dsh-plugin/index.mjs",
+  "exports": {
+    ".": "./.dsh-plugin/index.mjs",
+    "./client": "./.dsh-plugin/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
+      ]
+    }
+  },
+  "files": [
+    ".dsh-plugin/index.mjs",
+    ".dsh-plugin/remote-service.mjs",
+    ".dsh-plugin/client.js",
+    ".dsh-plugin/shared/mv-remote.mjs",
+    ".dsh-plugin/shared/mv-terminal-protocol.mjs",
+    ".dsh-plugin/shared/mv-terminal.mjs",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "NOTICE.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build:client": "node scripts/build-client.mjs",
+    "check:client": "node scripts/build-client.mjs --check",
+    "gen:scenes": "python3 tools/py2js.py \"$REF_ASCII_DIR/scenes.py\" .dsh-plugin/client/mv/scenes.gen.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "prepack": "node scripts/prepack.mjs",
+    "pack:local": "npm pack --pack-destination dist"
+  },
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.0-rc.1 || 0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "~3.18.4"
+  },
+  "optionalDependencies": {
+    "@lydell/node-pty": "1.2.0-beta.15"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "3.18.4",
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/addon-webgl": "0.19.0",
+    "@xterm/xterm": "6.0.0",
+    "esbuild": "0.28.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

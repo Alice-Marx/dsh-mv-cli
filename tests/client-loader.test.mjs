@@ -1,0 +1,70 @@
+// The committed client.js is what Harness loads: run it in a VM with a stub
+// module loader and React, then drive its apply() with fake Desktop services.
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import vm from 'node:vm'
+import { generate } from '../scripts/build-client.mjs'
+
+const plain = value => JSON.parse(JSON.stringify(value))
+const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+const bundle = readFileSync(new URL('../.dsh-plugin/client.js', import.meta.url), 'utf8')
+
+function load() {
+  let registration
+  const React = { createElement: (type, props, ...children) => ({ type, props, children }), Fragment: 'Fragment', useState: () => [], useRef: () => ({}), useEffect() {}, useCallback: f => f }
+  // xterm reads navigator.userAgent / platform at module load, as in the Harness renderer.
+  vm.runInNewContext(bundle, { window: { __ModuleLoader__: { load(entry) { registration = entry } } }, navigator: { userAgent: 'Mozilla/5.0 (Windows NT 10.0) Electron', platform: 'Win32', language: 'zh-CN', maxTouchPoints: 0 }, document: {}, queueMicrotask, setTimeout, clearTimeout, setInterval, clearInterval, console, TextEncoder, TextDecoder, URL }, { timeout: 5000 })
+  const exports = registration.factory(name => {
+    if (name === 'react') return React
+    if (name === 'react-dom') return {}
+    throw new Error(`unexpected require ${name}`)
+  })
+  return { registration, exports }
+}
+
+test('client.js is up to date with the sources', async () => {
+  const result = await generate({ check: true })
+  assert.deepEqual(result.errors ?? [], [])
+  assert.equal(result.ok, true)
+})
+
+test('client bundle registers under the npm package name and embeds the version', () => {
+  const { registration, exports } = load()
+  assert.equal(registration.id, pkg.name)
+  assert.deepEqual(plain(exports.inject), ['remote'])
+  assert.ok(bundle.includes(JSON.stringify(pkg.version)))
+  assert.doesNotMatch(bundle, /Switch on the power line|接通电源/, 'no lyric text in the bundle')
+})
+
+test('client apply mounts the remote and registers panel, sidebar and open action while served', async () => {
+  const { exports } = load()
+  const mounted = [], slots = [], effects = []
+  let injected
+  const ctx = {
+    remote: { $mount: async contribution => { mounted.push(contribution); return async () => {} }, dshMv: { info: async () => ({ ok: true }) } },
+    inject(names, fn) { injected = names; const promise = Promise.resolve(fn(ctx)); promise.dispose = async () => {}; return promise },
+    effect: (fn, label) => { effects.push(label); fn() },
+    configForms: { whileServed: (names, fn) => { assert.deepEqual(plain(names), ['dsh-mv']); return fn() } },
+    slots: { inject: (name, fn) => fn(), register: (item, component) => { slots.push({ item, component }); return () => {} } },
+    layout: { selectPanel: id => slots.push({ selected: id }) },
+  }
+  const dispose = await exports.apply(ctx)
+  assert.equal(typeof dispose, 'function')
+  assert.equal(mounted[0].package, pkg.name)
+  assert.equal(mounted[0].descriptors.length, 7)
+  assert.deepEqual(plain(injected), ['slots', 'configForms', 'remote', 'remote.dshMv', 'layout'])
+  assert.deepEqual(slots.map(s => s.item.name), ['main', 'sidebar.panellist', 'plugins.detail.actions'])
+  assert.equal(slots[0].item.key, 'dsh-mv.main')
+  assert.equal(typeof slots[0].item.inject().api.terminalStart, 'function')
+  slots[2].item.inject().openPanel()
+  assert.equal(slots.at(-1).selected, 'dsh-mv.main')
+})
+
+test('package metadata', () => {
+  assert.equal(pkg.name, '@ljwei-stak/dsh-mv-cli')
+  const patch = readFileSync(new URL('../cordis.patch.yml', import.meta.url), 'utf8')
+  assert.match(patch, /id: dsh-mv\n\s+name: '@ljwei-stak\/dsh-mv-cli'/)
+  for (const file of ['NOTICE.md', 'LICENSE', 'README.md', 'README.zh.md']) assert.ok(pkg.files.includes(file))
+  assert.ok(!pkg.files.some(f => /client\/mv|ref|lyrics|spectrum|\.mp3/.test(f)), 'only the built bundle ships client code')
+})

@@ -1,0 +1,50 @@
+# NOTICE / 声明
+
+`@ljwei-stak/dsh-mv-cli`（dsh-mv）是**非官方的同人工具**，与 Mili、DeepSeek 及下列项目的作者均无隶属关系。
+This is an **unofficial fan work**, not affiliated with Mili, DeepSeek, or the authors listed below.
+
+## 1. 歌曲与歌词 / Song and lyrics
+
+《world.execute(me);》的作曲、作词、录音及其歌词文本的一切权利归 **Mili** 及其权利人所有。
+本插件**不包含**任何音频、视频、歌词文本、频谱数据或鲸鱼等美术素材；用户需自行提供合法取得的音频与歌词文件，
+文件只在用户本机的 Harness 里读取，不会上传。
+
+All rights in "world.execute(me);" (composition, lyrics, recordings) belong to Mili and the respective rights
+holders. The package ships **no** audio, video, lyric text, spectrum data or artwork; users supply their own files.
+
+## 2. 场景与时间轴：world.execute-me-ascii（经作者许可移植）/ Scenes and timing (ported with permission)
+
+- 原项目：<https://github.com/yym8224961/world.execute-me-ascii>，作者 **yym8224961**（Bilibili UP 主「野生大K」）。
+- `.dsh-plugin/client/mv/scenes.gen.mjs`、`film.mjs`、`canvas.mjs` 是该项目 `scenes.py` / `player.py`
+  （`Film.render(t, w, h)`、Canvas、字体、章节与时间轴）的 JavaScript 移植（`scenes.gen.mjs` 由 `tools/py2js.py`
+  从用户本机的 `scenes.py` 机械转译后再手工修正）。
+- **许可情况**：
+  1. 作者在其 Bilibili 视频的置顶评论中表示该项目已开源、可以在各种终端中播放，并给出了上面的 GitHub 链接；
+  2. 作者于 **2026-10-03** 直接向本插件作者 **Alice-Marx** 表示同意修改和使用该项目。
+- **注意**：截至 2026-10-03，该仓库**没有 LICENSE 文件**。「开源」的口头表述和私下同意都不等同于明确的开源许可证，
+  其效力和范围（例如是否允许他人再分发本移植）并不确定。建议：
+  - 把作者的同意**保存为书面记录**（截图/私信/邮件，注明日期和许可范围）；
+  - 请作者在原仓库**添加 LICENSE**（例如 MIT），届时本项目将按该许可证更新本声明。
+- 如果作者撤回同意或提出其他要求，本项目会按其要求修改或移除移植部分。
+- 第三方如需复用上述移植文件，请先自行取得原作者许可；本仓库的 MIT 许可证**不覆盖**这些文件（见 LICENSE 末尾）。
+
+The scene/timing code is a port of world.execute-me-ascii by yym8224961 (Bilibili: 野生大K). The author's pinned
+comment describes the project as open source and playable in various terminals, and the author directly granted
+Alice-Marx permission to modify and use it on 2026-10-03. The repository has **no LICENSE file**, so this is a
+permission, not an open-source licence: get it in writing and ask the author to add a LICENSE. The MIT licence of
+this repository does not cover the ported files.
+
+## 3. MV 终端启动的外部播放器（不随包分发）/ External players (not bundled)
+
+- **world_execute_me**（「用五亿 token 在 cmd 上演出大肥鱼的 world.execute(me)」，作者 林原林海 / MisakaZentai
+  等，见其目录内说明）：MV 终端以用户本机的 `python.exe _tools\tui_live.py` 方式启动它。本插件不包含其任何文件。
+- **world-execute-me-ascii-rust**（<https://github.com/bilixxb/world-execute-me-ascii-rust>，作者 **bilixxb**，
+  2026-09-28 创建）：world.execute-me-ascii 的 Rust 重写版（crossterm + rodio，有 Windows 发布版）。
+  该仓库同样**没有 LICENSE 文件**（Cargo.toml 声明 `license = "MIT"`，但没有许可证文本），且其二进制内嵌了歌曲与歌词。
+  本插件**没有复制其任何代码**，只在开发时用它的公开说明做对照参考；MV 终端可以启动**用户自己下载的**可执行文件。
+  bilixxb 与 yym8224961 是不同的作者，上面第 2 节的许可不覆盖该 Rust 项目。
+
+## 4. 相关作品 / Related work
+
+- world-execute-me-dsh-pv（DeepSeek Harness 风格 PV）——本插件的音频版本识别表里包含其音频文件的 sha256（只存哈希）。
+- xterm.js（MIT）、@lydell/node-pty（MIT）、React（MIT）随客户端/宿主依赖使用，许可证见各自包内。

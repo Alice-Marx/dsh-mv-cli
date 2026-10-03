@@ -1,0 +1,73 @@
+/**
+ * Desktop client entry of @ljwei-stak/dsh-mv-cli: mounts the Typert remote
+ * contribution and registers the "MV 放映室" workbench panel.
+ */
+import React from 'react'
+import { MvPanel } from './mv-panel.jsx'
+import { MV_CLIENT_REMOTE, MV_REMOTE_NAMESPACE, MV_REMOTE_PACKAGE } from '../shared/mv-remote.mjs'
+
+export const PLUGIN_NAME = 'dsh-mv'
+export const PANEL = 'dsh-mv.main'
+export const inject = ['remote']
+
+function MvIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="1.5" y="2.5" width="13" height="11" rx="2" stroke="currentColor" />
+      <path d="M4 6l2 2-2 2M7.5 10.5H11" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/** Methods the panel calls; each returns the double-wrapped remote result. */
+export function panelApi(remote) {
+  const service = remote[MV_REMOTE_NAMESPACE]
+  return {
+    info: () => service.info(),
+    terminalCheck: request => service.terminalCheck(request),
+    terminalStart: request => service.terminalStart(request),
+    terminalRead: request => service.terminalRead(request),
+    terminalWrite: request => service.terminalWrite(request),
+    terminalResize: request => service.terminalResize(request),
+    terminalStop: request => service.terminalStop(request),
+  }
+}
+
+const OPEN_BUTTON = Object.freeze({ border: '1px solid #ffaf5f', background: 'transparent', color: 'inherit', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', font: 'inherit', fontSize: 12 })
+
+function OpenMvPanel({ subject, openPanel }) {
+  if (subject?.kind !== 'bundle' || subject.pkg?.name !== MV_REMOTE_PACKAGE) return null
+  return <button type="button" style={OPEN_BUTTON} onClick={openPanel}>打开 MV 放映室</button>
+}
+
+const UI_INJECT = ['slots', 'configForms', 'remote', `remote.${MV_REMOTE_NAMESPACE}`, 'layout']
+
+/** Registrations live only while the Host serves this plugin's Config namespace. */
+export function registerUi(ctx) {
+  const api = Object.freeze(panelApi(ctx.remote))
+  const served = (slot, item, component, label) => ctx.effect(() => ctx.configForms.whileServed([PLUGIN_NAME],
+    () => ctx.slots.inject(slot, () => ctx.slots.register(item, component))), `dsh-mv: ${label}`)
+  served('main', { name: 'main', key: PANEL, inject: () => ({ api }) }, MvPanel, 'main workspace')
+  served('sidebar.panellist', { name: 'sidebar.panellist', id: PANEL, order: 60, label: 'MV 放映室' }, MvIcon, 'sidebar entry')
+  served('plugins.detail.actions', {
+    name: 'plugins.detail.actions', id: 'dsh-mv-open-panel', order: 40,
+    inject: () => ({ openPanel: () => ctx.layout.selectPanel(PANEL) }),
+  }, OpenMvPanel, 'bundle open action')
+}
+
+export async function apply(ctx) {
+  // Mount first; the namespace becomes injectable only after its descriptors are registered.
+  const disposeRemote = await ctx.remote.$mount(MV_CLIENT_REMOTE)
+  const ui = ctx.inject(UI_INJECT, registerUi)
+  try {
+    await ui
+  } catch (error) {
+    await ui.dispose?.()
+    await disposeRemote?.()
+    throw error
+  }
+  return async () => {
+    await ui.dispose?.()
+    await disposeRemote?.()
+  }
+}
