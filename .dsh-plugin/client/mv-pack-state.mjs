@@ -23,6 +23,31 @@ export const BUILTIN_PACK = Object.freeze({
   }),
 })
 
+export const DSH_PV_ID = 'builtin:dsh-pv'
+
+/**
+ * The built-in dsh-pv preset: MisakaZentai's world.execute(me) PV
+ * (world-execute-me-dsh-pv) ported to a real-time canvas renderer. Same song,
+ * so it shares the audio and lyric files you picked for the other preset.
+ */
+export const DSH_PV_PACK = Object.freeze({
+  id: DSH_PV_ID,
+  builtin: true,
+  pack: Object.freeze({
+    title: 'world.execute(me); · 大肥鱼眼中的 world.execute(me)', artist: 'Mili',
+    credits: [
+      'Song and lyrics © Mili',
+      'PV: MisakaZentai / world-execute-me-dsh-pv (code MIT), ported to a real-time canvas renderer',
+      'Whale-girl artwork CC BY-NC-SA 4.0: 溟月 © 上善无形 → maid design ZipZipPipe → sprite Small-tailqwq / dsh-deep-whale → expressions dsh-whale-galgame (adapted)',
+    ],
+    duration: 211.913,
+    canvas: Object.freeze({ renderer: 'dsh-pv' }),
+  }),
+})
+
+/** Built-in presets by id. */
+export const BUILTINS = Object.freeze({ [BUILTIN_ID]: BUILTIN_PACK, [DSH_PV_ID]: DSH_PV_PACK })
+
 export function loadRecent(storage = globalThis.localStorage) {
   try {
     const list = JSON.parse(storage?.getItem(RECENT_KEY) ?? '[]')

@@ -4,7 +4,7 @@
  * reads mv.json; nothing is ever run from here.
  */
 import React from 'react'
-import { errorText } from './mv-terminal-state.mjs'
+import { errorText } from './mv-info.mjs'
 import { unwrapRemote } from './remote-state.mjs'
 import { Alert, Icon } from './mv-ui.jsx'
 import { AiPackDialog } from './mv-ai.jsx'

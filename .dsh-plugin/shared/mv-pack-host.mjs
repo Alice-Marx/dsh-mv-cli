@@ -1,23 +1,18 @@
 /**
  * Host side of MV packs: read an mv.json from disk, resolve and check its
- * files, serve the pack's audio to the panel in chunks, build the external
- * renderer's launch, and write the template folder.
- *
- * Every launch re-reads the manifest from disk (the client only sends the
- * manifest path and two numbers), and a start whose freshly resolved command
- * differs from the one the user confirmed is refused.
+ * files, serve the pack's files to the panel in chunks (each read re-reads
+ * the manifest, so only files it names can be requested), and write the
+ * template folder. Nothing here runs a program.
  */
 import { mkdir, open, readFile, stat, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
-import {
-  MV_PACK_LIMITS, MV_PACK_MANIFEST, MvPackError, REFUSED_PROGRAM_EXTENSIONS,
-  basenameOf, expandPackArgs, isAbsolutePackPath, parseMvPack,
-} from './mv-pack.mjs'
-import { displayCommand } from './mv-terminal-protocol.mjs'
+import { MV_PACK_LIMITS, MV_PACK_MANIFEST, MvPackError, basenameOf, isAbsolutePackPath, parseMvPack } from './mv-pack.mjs'
 import { TEMPLATE_FOLDER, templateFiles } from './mv-pack-template.mjs'
 
 const info = async (statPath, path) => { try { return await statPath(path) } catch { return null } }
 const extOf = path => { const name = basenameOf(path); const at = name.lastIndexOf('.'); return at > 0 ? name.slice(at).toLowerCase() : '' }
+
+export const TERMINAL_IGNORED = '这个 mv.json 里的 "terminal"（外部 TUI 程序）已被忽略：0.6.0 起插件只在画布上播放，不再运行外部播放器。'
 
 /** mv.json path for a file or folder path. */
 export async function locateManifest(path, { statPath = stat } = {}) {
@@ -52,9 +47,9 @@ async function fileState(statPath, path, maxBytes) {
 }
 
 /**
- * Load a pack for the panel: metadata, resolved file states, the lyric and
- * spectrum texts (small), and whether the external renderer's files exist.
- * Missing media files are reported as warnings, not errors.
+ * Load a pack for the panel: metadata and resolved file states. Missing
+ * media files (and an ignored pre-0.6.0 "terminal" section) are reported as
+ * warnings, not errors.
  */
 export async function loadPack(path, { statPath = stat, readText = p => readFile(p, 'utf8') } = {}) {
   const { manifestPath, packDir, pack } = await readPack(path, { statPath, readText })
@@ -69,14 +64,8 @@ export async function loadPack(path, { statPath = stat, readText = p => readFile
     if (!state.exists) warnings.push(`${role} 文件不存在：${state.path}`)
     else if (state.tooLarge) warnings.push(`${role} 文件太大（上限 ${Math.round(max / 1048576)} MB）：${state.path}`)
   }
-  let terminal = null
-  if (pack.terminal) {
-    terminal = { label: pack.terminal.label ?? basenameOf(pack.terminal.program), program: packFilePath(packDir, pack.terminal.program) }
-    if (pack.terminal.script) terminal.script = packFilePath(packDir, pack.terminal.script)
-  }
-  return {
-    manifestPath, packDir, pack, files, terminal, warnings,
-  }
+  if (pack.ignored?.includes('terminal')) warnings.push(TERMINAL_IGNORED)
+  return { manifestPath, packDir, pack, files, warnings }
 }
 
 /** The manifest's file reference for a readable role ('scene' = canvas.script). */
@@ -105,43 +94,6 @@ export async function readPackFile({ manifestPath, role, offset, length }, { sta
     try { ({ bytesRead: bytes } = await handle.read(buffer, 0, want, offset)) } finally { await handle.close() }
   }
   return { name: basenameOf(path), size, offset, bytes, done: offset + bytes >= size, base64: buffer.subarray(0, bytes).toString('base64') }
-}
-
-/**
- * Resolve the external renderer of a pack into { file, args, cwd, display }.
- * Checks that the program, script and every configured media file exist.
- */
-export async function resolvePackLaunch(launch, { statPath = stat, readText = p => readFile(p, 'utf8'), platform = process.platform } = {}) {
-  const { manifestPath, packDir, pack } = await readPack(launch.manifestPath, { statPath, readText })
-  if (!pack.terminal) throw new MvPackError([`这个 MV 包没有 terminal（外部渲染程序）配置：${manifestPath}`])
-  const problems = []
-  const program = packFilePath(packDir, pack.terminal.program)
-  const programInfo = await info(statPath, program)
-  if (!programInfo?.isFile?.()) problems.push(`找不到渲染程序，或它不是文件：${program}`)
-  const ext = extOf(program)
-  if (REFUSED_PROGRAM_EXTENSIONS.includes(ext)) problems.push(`渲染程序不能是 ${ext} 文件：${program}`)
-  if (platform === 'win32' && ext !== '.exe' && ext !== '.com') problems.push(`Windows 上渲染程序必须是 .exe（解释器写成 program，脚本写成 script）：${program}`)
-  const values = { packDir, start: launch.start ?? 0, offset: (launch.offset ?? 0) + (pack.audio?.offset ?? 0) }
-  if (pack.terminal.script) {
-    values.script = packFilePath(packDir, pack.terminal.script)
-    const scriptInfo = await info(statPath, values.script)
-    if (!scriptInfo?.isFile?.()) problems.push(`找不到脚本文件：${values.script}`)
-  }
-  for (const role of ['audio', 'lyrics', 'spectrum']) {
-    if (!pack[role]) continue
-    const path = packFilePath(packDir, pack[role].file)
-    const entry = await info(statPath, path)
-    if (!entry?.isFile?.()) problems.push(`${role} 文件不存在：${path}`)
-    values[role] = path
-  }
-  if (problems.length) throw new MvPackError(problems)
-  const args = expandPackArgs(pack.terminal.args, values)
-  const cwd = pack.terminal.cwd === 'program' ? dirname(program) : pack.terminal.cwd === 'script' ? dirname(values.script) : packDir
-  const display = displayCommand(program, args)
-  if (launch.expectDisplay !== undefined && launch.expectDisplay !== display) {
-    throw new Error(`MV 包在你确认之后发生了变化，没有启动。请重新检查并确认新命令：\n${display}`)
-  }
-  return { file: program, args, cwd, script: values.script ?? program, display, pack: { title: pack.title, manifestPath, label: pack.terminal.label ?? basenameOf(program) } }
 }
 
 /** Write the template into a new subfolder of dir (never overwrites). */

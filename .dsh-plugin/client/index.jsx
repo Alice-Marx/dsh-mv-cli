@@ -24,22 +24,9 @@ export function panelApi(remote) {
   const service = remote[MV_REMOTE_NAMESPACE]
   return {
     info: () => service.info(),
-    terminalCheck: request => service.terminalCheck(request),
-    terminalStart: request => service.terminalStart(request),
-    terminalRead: request => service.terminalRead(request),
-    terminalWrite: request => service.terminalWrite(request),
-    terminalResize: request => service.terminalResize(request),
-    terminalStop: request => service.terminalStop(request),
-    consoleInfo: request => service.consoleInfo(request),
-    consoleStart: request => service.consoleStart(request),
-    consoleStop: request => service.consoleStop(request),
     packLoad: request => service.packLoad(request),
     packRead: request => service.packRead(request),
     packTemplate: request => service.packTemplate(request),
-    audioProbe: request => service.audioProbe(request),
-    wavBegin: request => service.wavBegin(request),
-    wavWrite: request => service.wavWrite(request),
-    wavFinish: request => service.wavFinish(request),
     audioRead: request => service.audioRead(request),
     ffmpegInfo: request => service.ffmpegInfo(request),
     audioConvert: request => service.audioConvert(request),
@@ -57,6 +44,7 @@ export function panelApi(remote) {
     jobCancel: request => service.jobCancel(request),
     packWriteText: request => service.packWriteText(request),
     analysisRead: request => service.analysisRead(request),
+    dshpvAsset: request => service.dshpvAsset(request),
   }
 }
 

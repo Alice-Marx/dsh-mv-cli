@@ -17,8 +17,7 @@ import { CalibEditor } from './mv-calib.jsx'
 import { BUILTIN_PACK, fetchPackAudio, fetchPackText } from './mv-pack-state.mjs'
 import { readHostAudio } from './mv-wav.mjs'
 import { unwrapRemote } from './remote-state.mjs'
-import { audioMimeOf, ffmpegArgs, sniffAudio } from '../shared/mv-audio-protocol.mjs'
-import { displayCommand } from '../shared/mv-terminal-protocol.mjs'
+import { audioMimeOf, displayCommand, ffmpegArgs, sniffAudio } from '../shared/mv-audio-protocol.mjs'
 import { Alert, Icon, KeyHelp, Popover } from './mv-ui.jsx'
 
 /** Everything the panel's Chromium can decode; the content decides, not the extension. */

@@ -1,16 +1,9 @@
 /**
- * Host side of the audio handling: content sniffing of user-chosen files, the
- * plugin-owned WAV cache for the MV terminal, chunked reads of a chosen audio
- * file for the panel's own decoder, and the optional ffmpeg conversion.
- *
- * world_execute_me's tui_live.py plays sound through Windows MCI
- * (`open "<file>" type mpegvideo`), which opens real MP3 and PCM WAV files
- * only. On anything else (for example the fragmented "DASH" MP4 that video
- * sites hand out and people rename to .mp3) MCI answers error 277 and the film
- * plays silently. So before such a launch the panel decodes the file with its
- * own Chromium and uploads a 16-bit PCM WAV into a cache folder owned by this
- * plugin, keyed by the source's sha256; the player then gets that WAV. The
- * user's files and folders are only read.
+ * Host side of the audio handling: content sniffing of user-chosen files,
+ * chunked reads of a chosen audio file for the panel's own decoder, and the
+ * optional, confirmed ffmpeg conversion into a plugin-owned WAV cache
+ * (keyed by the source's sha256) for pack audio the panel cannot decode.
+ * The user's files and folders are only read.
  */
 import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -20,14 +13,10 @@ import { homedir, tmpdir } from 'node:os'
 import { delimiter, join } from 'node:path'
 
 import {
-  AUDIO_LIMITS, MCI_FORMATS, WAV_LIMITS, audioExtensionOf, audioMimeOf, ffmpegArgs, mciNote, mciWarning,
-  parseAudioConvert, parseAudioProbe, parseAudioRead, parseFfmpegInfo, parseWavBegin, parseWavFinish, parseWavWrite, sniffAudio,
+  AUDIO_LIMITS, WAV_LIMITS, audioExtensionOf, audioMimeOf, ffmpegArgs, parseAudioConvert, parseAudioRead, parseFfmpegInfo, sniffAudio,
 } from './mv-audio-protocol.mjs'
 
-export {
-  AUDIO_LIMITS, MCI_FORMATS, WAV_LIMITS, audioExtensionOf, audioMimeOf, ffmpegArgs, mciNote, mciWarning,
-  parseAudioConvert, parseAudioProbe, parseAudioRead, parseFfmpegInfo, parseWavBegin, parseWavFinish, parseWavWrite, sniffAudio,
-}
+export { AUDIO_LIMITS, WAV_LIMITS, audioExtensionOf, audioMimeOf, ffmpegArgs, parseAudioConvert, parseAudioRead, parseFfmpegInfo, sniffAudio }
 
 const SHA_NAME = /^[0-9a-f]{64}\.wav$/
 
@@ -59,20 +48,8 @@ export function wavCacheDir(env = process.env, platform = process.platform) {
   return join(env.XDG_CACHE_HOME || (homedir() ? join(homedir(), '.cache') : tmpdir()), 'dsh-mv', 'audio-cache')
 }
 
-/** Check that bytes start with the exact 44-byte PCM WAV header the panel writes. */
-export function checkWavHeader(bytes, total) {
-  const b = Buffer.from(bytes)
-  if (b.length < 44 || b.toString('latin1', 0, 4) !== 'RIFF' || b.toString('latin1', 8, 12) !== 'WAVE' || b.toString('latin1', 12, 16) !== 'fmt ') return 'not a WAV header'
-  if (b.readUInt32LE(4) !== total - 8) return 'RIFF size does not match'
-  if (b.readUInt16LE(20) !== 1) return 'not PCM'
-  const channels = b.readUInt16LE(22), rate = b.readUInt32LE(24), bits = b.readUInt16LE(34)
-  if (channels < 1 || channels > 2 || rate < 8000 || rate > 192000 || bits !== 16) return 'unsupported WAV layout'
-  if (b.toString('latin1', 36, 40) !== 'data' || b.readUInt32LE(40) !== total - 44) return 'data size does not match'
-  return ''
-}
-
 /**
- * Lenient check of a finished cache file (panel-made or ffmpeg-made): RIFF
+ * Lenient check of a finished (ffmpeg-made) cache file: RIFF
  * size matches, PCM fmt, and a data chunk that fits in the file.
  */
 export function checkCachedWav(bytes, total) {
@@ -90,13 +67,10 @@ export function checkCachedWav(bytes, total) {
 }
 
 /**
- * The plugin's WAV cache. Panel uploads arrive one at a time: begin → write
- * (sequential chunks) → finish. Files are named <source sha256>.wav; the
- * newest few are kept.
+ * The plugin's WAV cache, written only by the confirmed ffmpeg conversion.
+ * Files are named <source sha256>.wav; the newest few are kept.
  */
-export function createWavCache({ dir = wavCacheDir(), random = () => createHash('sha1').update(String(Math.random()) + Date.now()).digest('hex').slice(0, 20), fs = { mkdir, open, readdir, rename, rm, stat } } = {}) {
-  let upload = null
-
+export function createWavCache({ dir = wavCacheDir(), fs = { open, readdir, rm, stat } } = {}) {
   const finalPath = sha => join(dir, `${sha}.wav`)
 
   const prune = async keep => {
@@ -106,14 +80,6 @@ export function createWavCache({ dir = wavCacheDir(), random = () => createHash(
     for (const name of names) { try { items.push({ name, mtime: (await fs.stat(join(dir, name))).mtimeMs }) } catch { /* gone */ } }
     items.sort((a, b) => b.mtime - a.mtime)
     for (const item of items.slice(WAV_LIMITS.keepFiles)) if (item.name !== keep) await fs.rm(join(dir, item.name), { force: true })
-  }
-
-  const abort = async () => {
-    if (!upload) return
-    const current = upload
-    upload = null
-    try { await current.handle.close() } catch { /* closed */ }
-    await fs.rm(current.part, { force: true }).catch(() => {})
   }
 
   /** Path of a valid cached WAV for this source sha256, or null. */
@@ -130,64 +96,7 @@ export function createWavCache({ dir = wavCacheDir(), random = () => createHash(
     } catch { return null } finally { await handle?.close().catch(() => {}) }
   }
 
-  return {
-    dir,
-    finalPath,
-    lookup,
-    prune,
-    async begin({ sourceSha256, bytes }) {
-      const path = finalPath(sourceSha256)
-      const cached = await lookup(sourceSha256)
-      if (cached) return { exists: true, path }
-      await abort()
-      await fs.mkdir(dir, { recursive: true })
-      const uploadId = `wav-${random()}`
-      const part = join(dir, `${sourceSha256}.${uploadId}.part`)
-      const handle = await fs.open(part, 'w')
-      upload = { uploadId, part, path, bytes, written: 0, handle, header: null }
-      return { exists: false, uploadId, path, chunkBytes: WAV_LIMITS.chunkBytes }
-    },
-    async write({ uploadId, offset, base64 }) {
-      if (!upload || upload.uploadId !== uploadId) throw new Error('没有进行中的 WAV 上传（可能已被新的上传取代）。')
-      if (offset !== upload.written) throw new Error(`WAV 分块顺序错误：期望偏移 ${upload.written}，收到 ${offset}`)
-      const chunk = Buffer.from(base64, 'base64')
-      if (upload.written + chunk.length > upload.bytes) { await abort(); throw new Error('WAV 数据超出声明的大小。') }
-      if (offset === 0) upload.header = chunk.subarray(0, 44)
-      await upload.handle.write(chunk, 0, chunk.length, offset)
-      upload.written += chunk.length
-      return { written: upload.written }
-    },
-    async finish({ uploadId }) {
-      if (!upload || upload.uploadId !== uploadId) throw new Error('没有进行中的 WAV 上传。')
-      const current = upload
-      if (current.written !== current.bytes) { await abort(); throw new Error(`WAV 不完整：${current.written}/${current.bytes} 字节`) }
-      const problem = checkWavHeader(current.header ?? Buffer.alloc(0), current.bytes)
-      if (problem) { await abort(); throw new Error(`WAV 无效：${problem}`) }
-      upload = null
-      await current.handle.close()
-      await fs.rm(current.path, { force: true })
-      await fs.rename(current.part, current.path)
-      await prune(current.path.split(/[\\/]/).pop())
-      return { path: current.path, bytes: current.bytes }
-    },
-    abort,
-  }
-}
-
-/**
- * Probe for the panel: real format, whether tui_live.py can play it as is,
- * and (hash: true) the source sha256 plus an existing cached WAV.
- */
-export async function probeForPanel({ path, hash }, { cache = null, probe = probeAudioFile, hasher = hashFile } = {}) {
-  const sniff = await probe(path)
-  const result = { ...sniff, path, mciPlayable: Boolean(sniff.mci), note: mciNote(sniff), warning: '' }
-  if (hash && !sniff.mci) {
-    if (sniff.size > AUDIO_LIMITS.maxSourceBytes) throw new Error(`音频文件太大（上限 ${AUDIO_LIMITS.maxSourceBytes / 1048576} MB）：${path}`)
-    result.sha256 = await hasher(path)
-    const cached = cache ? await cache.lookup(result.sha256) : null
-    if (cached) result.cachedWav = cached.path
-  }
-  return result
+  return { dir, finalPath, lookup, prune }
 }
 
 /**

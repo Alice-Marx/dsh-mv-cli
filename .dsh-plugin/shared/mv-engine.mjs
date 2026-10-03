@@ -8,13 +8,15 @@ import { spawn, spawnSync } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
 import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { delimiter, dirname, join } from 'node:path'
+import { delimiter, dirname, join, win32 } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { systemTool } from './mv-console.mjs'
 import {
   DEMUCS_MB, ENGINE_LIMITS, ENGINE_MODELS, ENGINE_PACKAGES, ENGINE_PYTHON, ENGINE_SCRIPT, ENGINE_TORCH, ENGINE_VERSION,
   engineArgs, installEstimate, uvInstallSteps,
 } from './mv-engine-protocol.mjs'
+
+/** Absolute path of a Windows system tool (never looked up on PATH). */
+const systemTool = (name, env = process.env) => win32.join(env.SystemRoot || env.SYSTEMROOT || env.windir || 'C:\\Windows', 'System32', name)
 
 export const ENGINE_SCRIPT_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', 'engine', ENGINE_SCRIPT)
 

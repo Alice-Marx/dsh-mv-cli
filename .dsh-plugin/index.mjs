@@ -1,41 +1,25 @@
 /**
  * Host plugin of @ljwei-stak/dsh-mv-cli for DeepSeek Harness Desktop.
  *
- * The canvas MV runs entirely in the client panel. The Host serves the
- * "MV 终端" (a pseudo terminal running the user's own local TUI player with a
- * fixed, validated launch), MV packs, the plugin's WAV cache, the folders of
- * AI-made packs, and two read-only agent tools (mv_pack_validate,
- * mv_pack_preview_frame) when Harness provides the `tools` service. Nothing is
- * uploaded anywhere: all files stay on this machine.
+ * The MV plays entirely on the client panel's canvas. The Host serves MV
+ * packs (read-only, nothing in a pack is ever run), chunked reads of the
+ * user's audio, the optional confirmed ffmpeg conversion, the folders of
+ * AI-made packs, the lyrics engine jobs, LRCLIB lookups and two read-only
+ * agent tools (mv_pack_validate, mv_pack_preview_frame) when Harness provides
+ * the `tools` service. Audio and lyrics never leave this machine.
  */
 import z from '@deepseek-ai/schemastery'
 import { HOST_PLUGIN_VERSION, registerMvRemote } from './remote-service.mjs'
-import { spawnSync } from 'node:child_process'
-import { createMvConsoleManager } from './shared/mv-console.mjs'
-import { createMvTerminalManager } from './shared/mv-terminal.mjs'
-import {
-  parseMvConsoleInfo,
-  parseMvConsoleStart,
-  parseMvConsoleStop,
-  parseMvTerminalCheck,
-  parseMvTerminalRead,
-  parseMvTerminalResize,
-  parseMvTerminalStart,
-  parseMvTerminalStop,
-  parseMvTerminalWrite,
-} from './shared/mv-terminal-protocol.mjs'
 import { parsePackLoad, parsePackRead, parseTemplateWrite } from './shared/mv-pack.mjs'
 import { loadPack, readPackFile, writeTemplate } from './shared/mv-pack-host.mjs'
-import {
-  createFfmpegConverter, createWavCache, parseAudioConvert, parseAudioProbe, parseAudioRead, parseFfmpegInfo,
-  parseWavBegin, parseWavFinish, parseWavWrite, probeForPanel, readAudioChunk,
-} from './shared/mv-audio.mjs'
+import { createFfmpegConverter, createWavCache, parseAudioConvert, parseAudioRead, parseFfmpegInfo, readAudioChunk } from './shared/mv-audio.mjs'
 import { createAiPackManager, parsePackUploadBegin, parsePackUploadFinish, parsePackUploadWrite } from './shared/mv-ai-pack.mjs'
 import { buildMvAgentTools } from './shared/mv-agent-tools.mjs'
 import { createEngineManager, createJobManager } from './shared/mv-engine.mjs'
 import { parseEngineInfo, parseEngineInstall, parseEngineModel, parseEngineTranscribe, parseJobCancel, parseJobRead } from './shared/mv-engine-protocol.mjs'
 import { createLrclibClient, parseLyricsLookup } from './shared/mv-lrclib.mjs'
 import { parseAnalysisRead, parsePackWriteText, readAnalysis, writePackText } from './shared/mv-pack-edit.mjs'
+import { parseDshPvAsset, readDshPvAsset } from './shared/mv-dshpv-assets.mjs'
 
 /** Cordis plugin name; equals the profile entry id in cordis.patch.yml. */
 export const name = 'dsh-mv'
@@ -63,28 +47,16 @@ export function optionalService(ctx, serviceName) {
 
 export const defaultPackOps = Object.freeze({ load: loadPack, readFile: readPackFile, writeTemplate })
 
-export function mvRemoteServices(terminals, config = {}, consoles = null, packs = defaultPackOps, wavCache = null, extras = {}) {
-  const noConsoles = async () => { throw new Error('独立窗口功能未加载。') }
-  const noWav = () => { throw new Error('WAV 缓存未加载。') }
+export function mvRemoteServices(config = {}, packs = defaultPackOps, extras = {}) {
   const noAi = () => { throw new Error('AI 制作 MV 功能未加载。') }
   const noFfmpeg = () => { throw new Error('ffmpeg 功能未加载。') }
   const noEngine = () => { throw new Error('歌词引擎功能未加载。') }
   const { aiPacks = null, ffmpeg = null, toolsState = () => ({ registered: false }), engine = null, lrclib = null, packEdit = { write: writePackText, read: readAnalysis } } = extras
   return {
-    info: async () => ({ ...terminals.info(), canvasFontSize: config.canvasFontSize ?? 14, aiPacksDir: aiPacks?.root ?? null, agentTools: toolsState(), lrclib: config.lrclib !== false }),
-    terminalCheck: async request => terminals.check(parseMvTerminalCheck(request)),
-    terminalStart: async request => terminals.start(parseMvTerminalStart(request)),
-    terminalRead: async request => terminals.read(parseMvTerminalRead(request)),
-    terminalWrite: async request => terminals.write(parseMvTerminalWrite(request)),
-    terminalResize: async request => terminals.resize(parseMvTerminalResize(request)),
-    terminalStop: async request => terminals.stop(parseMvTerminalStop(request)),
-    consoleInfo: async request => { parseMvConsoleInfo(request); return consoles ? consoles.info() : noConsoles() },
-    consoleStart: async request => consoles ? consoles.start(parseMvConsoleStart(request)) : noConsoles(),
-    consoleStop: async request => consoles ? consoles.stop(parseMvConsoleStop(request)) : noConsoles(),
+    info: async () => ({ platform: process.platform, canvasFontSize: config.canvasFontSize ?? 14, aiPacksDir: aiPacks?.root ?? null, agentTools: toolsState(), lrclib: config.lrclib !== false }),
     packLoad: async request => packs.load(parsePackLoad(request).path),
     packRead: async request => packs.readFile(parsePackRead(request)),
     packTemplate: async request => packs.writeTemplate(parseTemplateWrite(request)),
-    audioProbe: async request => probeForPanel(parseAudioProbe(request), { cache: wavCache }),
     audioRead: async request => readAudioChunk(parseAudioRead(request)),
     ffmpegInfo: async request => { parseFfmpegInfo(request); return ffmpeg ? ffmpeg.info() : { available: false } },
     audioConvert: async request => (ffmpeg ?? noFfmpeg()).convert(parseAudioConvert(request)),
@@ -107,9 +79,7 @@ export function mvRemoteServices(terminals, config = {}, consoles = null, packs 
     jobCancel: async request => (engine ?? noEngine()).cancel(parseJobCancel(request)),
     packWriteText: async request => packEdit.write(parsePackWriteText(request)),
     analysisRead: async request => packEdit.read(parseAnalysisRead(request)),
-    wavBegin: async request => (wavCache ?? noWav()).begin(parseWavBegin(request)),
-    wavWrite: async request => (wavCache ?? noWav()).write(parseWavWrite(request)),
-    wavFinish: async request => (wavCache ?? noWav()).finish(parseWavFinish(request)),
+    dshpvAsset: async request => readDshPvAsset(parseDshPvAsset(request)),
   }
 }
 
@@ -131,17 +101,7 @@ export function registerAgentTools(ctx, state = {}, definitions = buildMvAgentTo
 }
 
 export function apply(ctx, config = {}) {
-  const terminals = createMvTerminalManager()
-  const consoles = createMvConsoleManager()
-  // Plugin unload, patch reload or Host exit kills every MV terminal and
-  // every separate console window this plugin opened.
-  ctx.effect(() => {
-    const onExit = () => { terminals.disposeAll('dispose'); consoles.disposeAllSync(spawnSync) }
-    process.once('exit', onExit)
-    return () => { process.off('exit', onExit); terminals.disposeAll('dispose'); return consoles.disposeAll('dispose') }
-  }, 'dsh-mv: terminals')
   const wavCache = createWavCache()
-  ctx.effect(() => () => wavCache.abort(), 'dsh-mv: wav cache')
   const ffmpeg = createFfmpegConverter({ cache: wavCache, configured: () => String(config.ffmpegPath ?? '').trim() })
   const aiPacks = createAiPackManager({ version: HOST_PLUGIN_VERSION ?? '' })
   ctx.effect(() => () => aiPacks.abort(), 'dsh-mv: ai packs')
@@ -150,7 +110,7 @@ export function apply(ctx, config = {}) {
   const engine = createEngineManager({ jobs: createJobManager(), config: () => config, loadPack })
   ctx.effect(() => () => engine.disposeAll(), 'dsh-mv: lyrics engine jobs')
   const lrclib = createLrclibClient({ userAgent: `dsh-mv-cli/${HOST_PLUGIN_VERSION ?? ''} (https://github.com/Alice-Marx/dsh-mv-cli)` })
-  registerMvRemote(ctx, mvRemoteServices(terminals, config, consoles, defaultPackOps, wavCache, { aiPacks, ffmpeg, toolsState: () => ({ ...tools }), engine, lrclib }))
+  registerMvRemote(ctx, mvRemoteServices(config, defaultPackOps, { aiPacks, ffmpeg, toolsState: () => ({ ...tools }), engine, lrclib }))
   const logger = optionalService(ctx, 'logger')
   logger?.info?.(`dsh-mv ${HOST_PLUGIN_VERSION ?? ''} loaded`)
 }

@@ -1,19 +1,17 @@
 /**
  * Pure (browser-safe) part of the audio handling: format sniffing by content
- * (never by file extension), which players can open what, and the strict
- * request parsers of the audio endpoints.
+ * (never by file extension) and the strict request parsers of the audio
+ * endpoints.
  *
- *  - Canvas MV and AI-made packs play through the panel's Chromium, which
- *    decodes MP3, AAC / M4A / MP4 (also fragmented "DASH" MP4 and the audio
- *    track of MP4 / MOV videos), WebM / Matroska (Opus, Vorbis), Ogg (Opus,
- *    Vorbis, FLAC), FLAC and WAV.
- *  - tui_live.py plays sound through Windows MCI (`type mpegvideo`), which on
- *    a stock system opens real MP3 and PCM WAV files only. Everything else is
- *    turned into a cached 16-bit PCM WAV automatically before the player starts.
- *  - Formats Chromium cannot decode (WMA, AIFF, AMR, CAF, AC-3, …) can be
- *    converted with the user's own ffmpeg, if one is installed.
+ *  - Everything plays through the panel's Chromium, which decodes MP3, AAC /
+ *    M4A / MP4 (also fragmented "DASH" MP4 and the audio track of MP4 / MOV
+ *    videos), WebM / Matroska (Opus, Vorbis), Ogg (Opus, Vorbis, FLAC), FLAC
+ *    and WAV.
+ *  - A pack's audio in a format Chromium cannot decode (WMA, AIFF, AMR, CAF,
+ *    AC-3, …) can be converted with the user's own ffmpeg, if one is
+ *    installed, into a cached 16-bit PCM WAV (always after a confirmation).
  */
-export const WAV_LIMITS = Object.freeze({ maxBytes: 1536 * 1024 * 1024, chunkBytes: 512 * 1024, keepFiles: 8 })
+export const WAV_LIMITS = Object.freeze({ chunkBytes: 512 * 1024, keepFiles: 8 })
 export const AUDIO_LIMITS = Object.freeze({ sniffBytes: 4096, maxSourceBytes: 1024 * 1024 * 1024, readChunkBytes: 512 * 1024 })
 
 const ascii = (b, from, to) => {
@@ -56,13 +54,12 @@ function sniffWav(b) {
 
 /**
  * Classify a file by its first bytes (4 KB is plenty). Returns
- * { format, label, kind: 'audio'|'video'|'unknown', chromium, mci, ... }.
- * `chromium` = the panel can very likely decode it, `mci` = tui_live.py can
- * play it as is.
+ * { format, label, kind: 'audio'|'video'|'unknown', chromium, ... }.
+ * `chromium` = the panel can very likely decode it.
  */
 export function sniffAudio(bytes) {
   const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
-  const result = info => ({ kind: 'audio', chromium: true, mci: false, ...info })
+  const result = info => ({ kind: 'audio', chromium: true, ...info })
   if (b.length >= 12 && ascii(b, 4, 8) === 'ftyp') {
     const brand = ascii(b, 8, 12)
     const head = ascii(b, 8, Math.min(b.length, 64))
@@ -76,7 +73,7 @@ export function sniffAudio(bytes) {
   if (b.length >= 8 && ['moov', 'moof', 'styp', 'sidx'].includes(ascii(b, 4, 8))) return result({ format: 'mp4', brand: '', fragmented: true, label: 'MP4/AAC（无 ftyp 分片）' })
   if (b.length >= 12 && ascii(b, 0, 4) === 'RIFF' && ascii(b, 8, 12) === 'WAVE') {
     const wav = sniffWav(b)
-    return result({ ...wav, mci: wav.pcm })
+    return result(wav)
   }
   if (b.length >= 12 && (ascii(b, 0, 4) === 'RF64' || ascii(b, 0, 4) === 'BW64') && ascii(b, 8, 12) === 'WAVE') return result({ format: 'wav', label: 'WAV（RF64 大文件）', chromium: false })
   if (b.length >= 4 && b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3) {
@@ -96,16 +93,16 @@ export function sniffAudio(bytes) {
     const next = 10 + size + ((b[5] & 0x10) ? 10 : 0)
     if (next + 2 <= b.length && b[next] === 0xff && (b[next + 1] & 0xf6) === 0xf0) return result({ format: 'aac', label: 'AAC（ADTS，带 ID3）' })
     if (next + 4 <= b.length && ascii(b, next, next + 4) === 'fLaC') return result({ format: 'flac', label: 'FLAC（带 ID3）' })
-    return result({ format: 'mp3', label: 'MP3', mci: true })
+    return result({ format: 'mp3', label: 'MP3' })
   }
   if (b.length >= 2 && b[0] === 0xff && (b[1] & 0xe0) === 0xe0) {
     // MPEG audio frame sync. Layer bits 00 = ADTS AAC (0xFFF1 / 0xFFF9); 01/10/11 = MPEG layer III/II/I.
     if ((b[1] & 0x06) === 0x00) return result({ format: 'aac', label: 'AAC（ADTS）' })
     const layer = (b[1] & 0x06) === 0x02 ? 'MP3' : (b[1] & 0x06) === 0x04 ? 'MP2' : 'MP1'
-    return result({ format: layer === 'MP3' ? 'mp3' : 'mp2', label: layer, mci: true })
+    return result({ format: layer === 'MP3' ? 'mp3' : 'mp2', label: layer })
   }
   if (b.length >= 12 && ascii(b, 0, 4) === 'FORM' && /^AIF[FC]$/.test(ascii(b, 8, 12))) return result({ format: 'aiff', label: 'AIFF', chromium: false })
-  if (b.length >= 16 && b[0] === 0x30 && b[1] === 0x26 && b[2] === 0xb2 && b[3] === 0x75 && b[4] === 0x8e && b[5] === 0x66 && b[6] === 0xcf && b[7] === 0x11) return result({ format: 'asf', label: 'WMA / WMV（ASF）', chromium: false, mci: false })
+  if (b.length >= 16 && b[0] === 0x30 && b[1] === 0x26 && b[2] === 0xb2 && b[3] === 0x75 && b[4] === 0x8e && b[5] === 0x66 && b[6] === 0xcf && b[7] === 0x11) return result({ format: 'asf', label: 'WMA / WMV（ASF）', chromium: false })
   if (b.length >= 4 && ascii(b, 0, 4) === 'caff') return result({ format: 'caf', label: 'CAF（Apple Core Audio）', chromium: false })
   if (b.length >= 5 && ascii(b, 0, 5) === '#!AMR') return result({ format: 'amr', label: 'AMR', chromium: false })
   if (b.length >= 2 && b[0] === 0x0b && b[1] === 0x77) return result({ format: 'ac3', label: 'AC-3', chromium: false })
@@ -115,11 +112,8 @@ export function sniffAudio(bytes) {
   if (b.length >= 188 * 2 && b[0] === 0x47 && b[188] === 0x47) return result({ format: 'mpegts', label: 'MPEG-TS（用其中的音轨）', kind: 'video', chromium: false })
   if (b.length >= 4 && b[0] === 0 && b[1] === 0 && b[2] === 1 && b[3] === 0xba) return result({ format: 'mpeg', label: 'MPEG-PS 视频', kind: 'video', chromium: false })
   if (b.length >= 3 && ascii(b, 0, 3) === 'FLV') return result({ format: 'flv', label: 'FLV 视频', kind: 'video', chromium: false })
-  return { format: 'unknown', label: '未知格式', kind: 'unknown', chromium: false, mci: false }
+  return { format: 'unknown', label: '未知格式', kind: 'unknown', chromium: false }
 }
-
-/** Formats tui_live.py (Windows MCI, mpegvideo) opens as is on a stock system. */
-export const MCI_FORMATS = Object.freeze(['mp3', 'mp2', 'wav'])
 
 /** Content-based MIME type for a Blob / <audio> element. */
 export function audioMimeOf(sniff) {
@@ -143,20 +137,6 @@ export function audioExtensionOf(sniff) {
   return map[sniff?.format] ?? '.bin'
 }
 
-/** Short note for a file tui_live.py cannot open as is ('' when it can). */
-export function mciNote(sniff) {
-  if (sniff?.mci) return ''
-  return `音频实际是 ${sniff?.label ?? '未知格式'}（看内容，不看扩展名）。tui_live.py 用 Windows MCI 放音，只能直接播放 MP3 和 PCM WAV；播放前会自动转换成 WAV 缓存，原文件不变。`
-}
-
-/** Back-compat name used by older code paths and tests. */
-export const mciWarning = (sniff, path = '') => {
-  const note = mciNote(sniff)
-  return note ? `${note}${path ? ` ${path}` : ''}` : ''
-}
-
-const SHA = /^[0-9a-f]{64}$/
-const UPLOAD = /^wav-[0-9a-f]{16,40}$/
 
 function plain(value, subject) {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new TypeError(`${subject} must be an object`)
@@ -173,37 +153,9 @@ export function parseAbsolutePath(value, subject = 'path') {
   return path
 }
 
-export function parseWavBegin(value) {
-  plain(value, 'wav request'); onlyKeys(value, ['sourceSha256', 'bytes'], 'wav request')
-  if (typeof value.sourceSha256 !== 'string' || !SHA.test(value.sourceSha256)) throw new TypeError('sourceSha256 must be 64 hex characters')
-  if (!Number.isInteger(value.bytes) || value.bytes < 44 || value.bytes > WAV_LIMITS.maxBytes) throw new TypeError(`bytes must be 44..${WAV_LIMITS.maxBytes}`)
-  return { sourceSha256: value.sourceSha256, bytes: value.bytes }
-}
-
 export function parseBase64Chunk(value, max = WAV_LIMITS.chunkBytes) {
   if (typeof value !== 'string' || value.length === 0 || value.length > Math.ceil(max / 3) * 4 || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) throw new TypeError('base64 chunk is invalid')
   return value
-}
-
-export function parseWavWrite(value) {
-  plain(value, 'wav write'); onlyKeys(value, ['uploadId', 'offset', 'base64'], 'wav write')
-  if (typeof value.uploadId !== 'string' || !UPLOAD.test(value.uploadId)) throw new TypeError('uploadId is invalid')
-  if (!Number.isInteger(value.offset) || value.offset < 0 || value.offset > WAV_LIMITS.maxBytes) throw new TypeError('offset is invalid')
-  return { uploadId: value.uploadId, offset: value.offset, base64: parseBase64Chunk(value.base64) }
-}
-
-export function parseWavFinish(value) {
-  plain(value, 'wav finish'); onlyKeys(value, ['uploadId'], 'wav finish')
-  if (typeof value.uploadId !== 'string' || !UPLOAD.test(value.uploadId)) throw new TypeError('uploadId is invalid')
-  return { uploadId: value.uploadId }
-}
-
-/** { path, hash? }: hash=true also computes sha256 and looks up the WAV cache. */
-export function parseAudioProbe(value) {
-  plain(value, 'probe request'); onlyKeys(value, ['path', 'hash', 'player'], 'probe request')
-  if (value.hash !== undefined && typeof value.hash !== 'boolean') throw new TypeError('hash must be a boolean')
-  // `player` is accepted (and ignored) so a panel of 0.3.x does not break mid-upgrade.
-  return { path: parseAbsolutePath(value.path), hash: value.hash === true }
 }
 
 /** One chunk of a user-chosen audio file (only files that sniff as media). */
@@ -215,7 +167,7 @@ export function parseAudioRead(value) {
   return { path: parseAbsolutePath(value.path), offset, length }
 }
 
-/** Convert with the user's ffmpeg into the WAV cache (always after a confirmation). */
+/** Convert with the user's ffmpeg into the plugin's WAV cache (always after a confirmation). */
 export function parseAudioConvert(value) {
   plain(value, 'convert request'); onlyKeys(value, ['path', 'confirmed'], 'convert request')
   if (value.confirmed !== true) throw new TypeError('ffmpeg conversion needs confirmed: true')
@@ -231,4 +183,10 @@ export function parseFfmpegInfo(value) {
 /** The fixed ffmpeg argument vector: decode the first audio stream into 16-bit PCM WAV. */
 export function ffmpegArgs(source, target) {
   return ['-nostdin', '-hide_banner', '-loglevel', 'error', '-y', '-i', source, '-map', '0:a:0', '-vn', '-sn', '-dn', '-map_metadata', '-1', '-ac', '2', '-ar', '44100', '-c:a', 'pcm_s16le', '-bitexact', '-f', 'wav', target]
+}
+
+/** A command line for display only (it is never parsed or run from this text). */
+export function displayCommand(file, args) {
+  const quote = text => /[\s"]/.test(text) ? `"${text}"` : text
+  return [file, ...args].map(quote).join(' ')
 }

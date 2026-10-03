@@ -31,33 +31,8 @@ export class MvRemoteService extends TypertRemoteService {
     this.services = services
   }
 
-  /** Host version, PTY backend, limits and live sessions. */
+  /** Host version, platform and settings the panel needs. */
   info() { return settled(async () => ({ hostVersion: HOST_PLUGIN_VERSION, ...(await (this.services.info ?? unavailable)()) })) }
-
-  /** Validate the launch on disk; runs nothing. */
-  terminalCheck(request) { return settled(() => (this.services.terminalCheck ?? unavailable)(request)) }
-
-  /** Start one confirmed session of the fixed MV terminal launch. */
-  terminalStart(request) { return settled(() => (this.services.terminalStart ?? unavailable)(request)) }
-
-  /** Long-poll new output from a cursor. */
-  terminalRead(request) { return settled(() => (this.services.terminalRead ?? unavailable)(request)) }
-
-  /** Forward keystrokes verbatim; never logged. */
-  terminalWrite(request) { return settled(() => (this.services.terminalWrite ?? unavailable)(request)) }
-
-  terminalResize(request) { return settled(() => (this.services.terminalResize ?? unavailable)(request)) }
-
-  /** Separate Windows console windows opened by this plugin. */
-  consoleInfo(request) { return settled(() => (this.services.consoleInfo ?? unavailable)(request ?? {})) }
-
-  /** Open the fixed player in a new console window (confirmed launches only). */
-  consoleStart(request) { return settled(() => (this.services.consoleStart ?? unavailable)(request)) }
-
-  /** taskkill /T the tracked player of one console window. */
-  consoleStop(request) { return settled(() => (this.services.consoleStop ?? unavailable)(request)) }
-
-  terminalStop(request) { return settled(() => (this.services.terminalStop ?? unavailable)(request)) }
 
   /** Read and check an MV pack (mv.json); runs nothing. */
   packLoad(request) { return settled(() => (this.services.packLoad ?? unavailable)(request)) }
@@ -68,21 +43,13 @@ export class MvRemoteService extends TypertRemoteService {
   /** Write the MV pack template into a new subfolder of a chosen folder. */
   packTemplate(request) { return settled(() => (this.services.packTemplate ?? unavailable)(request)) }
 
-  /** Sniff an audio file's real format by content; hash: true also looks up the WAV cache. */
-  audioProbe(request) { return settled(() => (this.services.audioProbe ?? unavailable)(request)) }
-
-  /** Start / continue / finish uploading a panel-made WAV into the plugin cache. */
-  wavBegin(request) { return settled(() => (this.services.wavBegin ?? unavailable)(request)) }
-  wavWrite(request) { return settled(() => (this.services.wavWrite ?? unavailable)(request)) }
-  wavFinish(request) { return settled(() => (this.services.wavFinish ?? unavailable)(request)) }
-
   /** One chunk of a user-chosen audio / video file (media files only), for the panel's decoder. */
   audioRead(request) { return settled(() => (this.services.audioRead ?? unavailable)(request)) }
 
   /** Whether the user's ffmpeg was found (it is never run here). */
   ffmpegInfo(request) { return settled(() => (this.services.ffmpegInfo ?? unavailable)(request ?? {})) }
 
-  /** Confirmed conversion with the user's ffmpeg into the WAV cache. */
+  /** Confirmed conversion with the user's ffmpeg into the plugin's WAV cache. */
   audioConvert(request) { return settled(() => (this.services.audioConvert ?? unavailable)(request)) }
 
   /** Create the folder of a new AI-made MV pack. */
@@ -104,6 +71,7 @@ export class MvRemoteService extends TypertRemoteService {
   jobCancel(request) { return settled(() => (this.services.jobCancel ?? unavailable)(request ?? {})) }
   packWriteText(request) { return settled(() => (this.services.packWriteText ?? unavailable)(request ?? {})) }
   analysisRead(request) { return settled(() => (this.services.analysisRead ?? unavailable)(request ?? {})) }
+  dshpvAsset(request) { return settled(() => (this.services.dshpvAsset ?? unavailable)(request ?? {})) }
 }
 
 /** Registration follows the Host plugin fiber; unload withdraws all endpoints. */

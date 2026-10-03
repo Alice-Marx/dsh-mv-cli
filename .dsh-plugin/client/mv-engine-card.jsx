@@ -6,7 +6,7 @@
 import React from 'react'
 import { Alert } from './mv-ui.jsx'
 import { unwrapRemote } from './remote-state.mjs'
-import { errorText } from './mv-terminal-state.mjs'
+import { errorText } from './mv-info.mjs'
 import { followJob } from './mv-auto.mjs'
 
 const GB = mb => `${(mb / 1024).toFixed(mb >= 1024 ? 1 : 2)} GB`

@@ -6,7 +6,7 @@
  */
 import React from 'react'
 import { Alert, Icon } from './mv-ui.jsx'
-import { errorText } from './mv-terminal-state.mjs'
+import { errorText } from './mv-info.mjs'
 import { AUDIO_ACCEPT } from './canvas-mv.jsx'
 import { createAiPack, inspectAiAudio, openBlankSession, sessionSupport, startAgentSession } from './mv-ai-state.mjs'
 import { directoryPicker, loadPackFromHost, rememberPack } from './mv-pack-state.mjs'
