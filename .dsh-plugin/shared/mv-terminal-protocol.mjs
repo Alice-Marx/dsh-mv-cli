@@ -15,6 +15,8 @@
  * with the executable's folder as working directory.
  */
 
+import { parsePackLaunch } from './mv-pack.mjs'
+
 export const MV_TERMINAL_SCRIPT = ['_tools', 'tui_live.py']
 export const MV_TERMINAL_LABEL = 'MV 终端'
 
@@ -39,10 +41,10 @@ export const MV_TERMINAL_LIMITS = Object.freeze({
   maxOffsetSeconds: 30,
 })
 
-export const MV_PLAYERS = Object.freeze(['python', 'rust'])
+export const MV_PLAYERS = Object.freeze(['python', 'rust', 'pack'])
 /** Rust release binary name, optionally with a version / target suffix. */
 export const RUST_BASENAME = /^world-execute-me(?:-rust)?(?:[-_.][\w.-]{0,60})?(?:\.exe)?$/i
-export const MV_PLAYER_LABELS = Object.freeze({ python: 'world_execute_me（tui_live.py）', rust: 'world-execute-me-ascii-rust（用户自备可执行文件）' })
+export const MV_PLAYER_LABELS = Object.freeze({ python: 'world_execute_me（tui_live.py）', rust: 'world-execute-me-ascii-rust（用户自备可执行文件）', pack: '当前 MV 包的外部渲染程序' })
 
 /** python, python3, python3.13, pythonw, py — with or without .exe. */
 export const PYTHON_BASENAME = /^(?:python(?:3(?:\.\d{1,2})?)?w?|py)(?:\.exe)?$/i
@@ -113,8 +115,9 @@ function parseRustLaunch(request) {
 
 export function parseMvLaunch(value) {
   const request = plainObject(value, 'launch')
-  if (request.player !== undefined && !MV_PLAYERS.includes(request.player)) throw new TypeError('player must be python or rust')
+  if (request.player !== undefined && !MV_PLAYERS.includes(request.player)) throw new TypeError('player must be python, rust or pack')
   if (request.player === 'rust') return parseRustLaunch(request)
+  if (request.player === 'pack') return parsePackLaunch(request)
   const allowed = new Set(['player', 'pythonPath', 'packageDir', 'audioFile', 'noAudio', 'start', 'audioLatency'])
   const extra = Object.keys(request).filter(key => !allowed.has(key))
   if (extra.length) throw new TypeError(`launch has unexpected fields: ${extra.join(', ')}`)

@@ -15,6 +15,7 @@ import {
   parseMvTerminalStop,
   parseMvTerminalWrite,
 } from './mv-terminal-protocol.mjs'
+import { parsePackLoad, parsePackRead, parseTemplateWrite } from './mv-pack.mjs'
 
 export const MV_REMOTE_PACKAGE = '@ljwei-stak/dsh-mv-cli'
 export const MV_REMOTE_NAMESPACE = 'dshMv'
@@ -64,6 +65,9 @@ export const MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor('consoleStart', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleStart`, parseMvConsoleStart))], anyObjectCodec('MvConsoleStarted')),
   descriptor('consoleStop', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleStop`, parseMvConsoleStop))], anyObjectCodec('MvConsoleStopped')),
   descriptor('terminalStop', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalStop`, parseMvTerminalStop))], anyObjectCodec('MvTerminalStopped')),
+  descriptor('packLoad', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackLoad`, parsePackLoad))], anyObjectCodec('MvPackLoaded')),
+  descriptor('packRead', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackRead`, parsePackRead))], anyObjectCodec('MvPackChunk')),
+  descriptor('packTemplate', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackTemplate`, parseTemplateWrite))], anyObjectCodec('MvPackTemplateWritten')),
 ])
 
 export const MV_CLIENT_REMOTE = Object.freeze({ package: MV_REMOTE_PACKAGE, descriptors: MV_REMOTE_DESCRIPTORS })

@@ -11,6 +11,8 @@ import { LiveSpectrum, spectrumFromJson, silentEnergy } from './mv/spectrum.mjs'
 import { KNOWN_AUDIO, formatOffset, loadOffsets, saveOffsets, resetOffsets, sha256Hex, roundOffset } from './mv/sync.mjs'
 import { openMediaStore, getMedia, putMedia, deleteMedia } from './mv/media-store.mjs'
 import { FilmClock, frameTime, keyAction, stepCue, stepOffset } from './mv/player-state.mjs'
+import { GenericFilm, genericChapters, timeText } from './mv/generic-film.mjs'
+import { BUILTIN_PACK, fetchPackAudio, fetchPackText } from './mv-pack-state.mjs'
 
 const FONT_KEY = 'dsh-mv.canvas.fontSize'
 const readFont = fallback => { try { const v = Number(globalThis.localStorage?.getItem(FONT_KEY)); return v >= 8 && v <= 32 ? v : fallback } catch { return fallback } }
@@ -18,7 +20,9 @@ const storeFont = v => { try { globalThis.localStorage?.setItem(FONT_KEY, String
 
 const HINT = 'SPACE 播放/暂停  ←/→ 5s  [ ] 字幕  Alt+[ ] 音频同步  1-5 章节  F 全屏  H 帮助'
 
-export function CanvasMv({ defaultFontSize = 14 }) {
+const isGeneric = pack => pack?.pack?.canvas?.renderer !== 'world-execute-me'
+
+export function CanvasMv({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null }) {
   const wrap = React.useRef(null)
   const stage = React.useRef(null)
   const canvas = React.useRef(null)
@@ -35,17 +39,24 @@ export function CanvasMv({ defaultFontSize = 14 }) {
   const offsetsRef = React.useRef(offsets)
   offsetsRef.current = offsets
   const dbRef = React.useRef(null)
+  const packRef = React.useRef(pack)
+  packRef.current = pack
+  const [duration, setDuration] = React.useState(DURATION)
+  const [packStatus, setPackStatus] = React.useState('')
 
   // Engine setup and the render loop.
   React.useEffect(() => {
     const live = new LiveSpectrum(audio.current)
     const state = {
-      film: new Film({ energy: t => state.energy(t) }),
+      wem: new Film({ energy: t => state.energy(t) }),
+      generic: new GenericFilm({ energy: t => state.energy(t) }),
+      film: null,
       renderer: new GridRenderer(canvas.current, { fontSize }),
       clock: new FilmClock({ audio: audio.current }),
       live, energy: silentEnergy, fileEnergy: null, started: false, help: false, sha: '',
     }
     state.energy = () => live.energy()
+    state.film = state.wem
     engine.current = state
     let raf = 0, lastStatus = 0
     const frame = now => {
@@ -54,7 +65,7 @@ export function CanvasMv({ defaultFontSize = 14 }) {
       if (!box) return
       const { cols, rows } = state.renderer.fit(box.clientWidth, box.clientHeight)
       const raw = state.clock.time()
-      const { t, ready } = frameTime(raw, state.started)
+      const { t, ready } = frameTime(raw, state.started, state.clock.duration)
       const playing = state.clock.playing
       const picture = state.film.render(t, cols, rows, {
         paused: !playing, ready, offset: offsetsRef.current.subtitleOffset, hintText: HINT, help: state.help,
@@ -77,7 +88,7 @@ export function CanvasMv({ defaultFontSize = 14 }) {
     if (engine.current?.sha) saveOffsets(engine.current.sha, value)
   }, [])
 
-  const useAudioFile = React.useCallback(async (file, { remember = true } = {}) => {
+  const useAudioFile = React.useCallback(async (file, { remember = true, packOffset = 0 } = {}) => {
     setError('')
     const state = engine.current
     try {
@@ -87,24 +98,28 @@ export function CanvasMv({ defaultFontSize = 14 }) {
       if (old?.startsWith('blob:')) URL.revokeObjectURL(old)
       state.sha = sha
       const loaded = loadOffsets(sha, KNOWN_AUDIO)
+      // A pack's audio.offset applies until you calibrate this file yourself.
+      if (!loaded.saved && !loaded.known && packOffset) loaded.audioOffset = packOffset
       setOffsets({ audioOffset: loaded.audioOffset, subtitleOffset: loaded.subtitleOffset })
       state.clock.audioOffset = loaded.audioOffset
       state.started = false
       setAudioInfo({ name: file.name, sha, known: loaded.known, saved: loaded.saved, duration: null })
-      if (remember) await putMedia(dbRef.current, 'audio', { file, name: file.name, sha })
+      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, 'audio', { file, name: file.name, sha })
     } catch (failure) {
       setError(`无法读取音频：${failure?.message ?? failure}`)
     }
   }, [])
 
-  const useLyricsText = React.useCallback(async (name, body, { remember = true } = {}) => {
+  const useLyricsText = React.useCallback(async (name, body, { remember = true, shift = 0 } = {}) => {
     setError('')
     try {
-      const cues = parseLyrics(name, body, { duration: DURATION })
+      const generic = engine.current.film === engine.current.generic
+      const cues = parseLyrics(name, body, { duration: generic ? 1e9 : DURATION })
       if (!cues.length) throw new Error('文件里没有带时间的歌词行。')
+      if (shift) for (const cue of cues) { cue.time += shift; cue.end += shift }
       engine.current.film.setLyrics(cues)
       setLyricsInfo({ name, count: cues.length })
-      if (remember) await putMedia(dbRef.current, 'lyrics', { name, text: body })
+      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, 'lyrics', { name, text: body })
     } catch (failure) { setError(`无法解析歌词：${failure?.message ?? failure}`) }
   }, [])
 
@@ -114,42 +129,97 @@ export function CanvasMv({ defaultFontSize = 14 }) {
       const fileEnergy = spectrumFromJson(body)
       engine.current.energy = t => fileEnergy(t)
       setSpectrumInfo({ name })
-      if (remember) await putMedia(dbRef.current, 'spectrum', { name, text: body })
+      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, 'spectrum', { name, text: body })
     } catch (failure) { setError(`无法读取频谱：${failure?.message ?? failure}`) }
   }, [])
 
-  // Restore the last choices from IndexedDB.
+  // Switch renderer and media whenever the active MV pack changes. The
+  // built-in preset restores the last files from IndexedDB; a pack brings its own.
   React.useEffect(() => {
     let cancelled = false
+    const state = engine.current
     void (async () => {
-      const db = await openMediaStore()
+      dbRef.current ??= await openMediaStore()
       if (cancelled) return
-      dbRef.current = db
-      const [a, l, s] = await Promise.all([getMedia(db, 'audio'), getMedia(db, 'lyrics'), getMedia(db, 'spectrum')])
-      if (cancelled) return
-      if (a?.file) await useAudioFile(a.file, { remember: false })
-      if (l?.text) await useLyricsText(l.name, l.text, { remember: false })
-      if (s?.text) await useSpectrumText(s.name, s.text, { remember: false })
+      const db = dbRef.current
+      state.clock.pause()
+      state.started = false
+      state.help = false
+      state.wem.setLyrics([]); state.generic.setLyrics([])
+      state.energy = () => state.live.energy()
+      setLyricsInfo(null); setSpectrumInfo(null); setError(''); setPackStatus('')
+      const generic = isGeneric(pack)
+      state.film = generic ? state.generic : state.wem
+      const length = generic ? (pack.pack.duration ?? 0) : (pack.pack.duration ?? DURATION)
+      state.clock.duration = length || DURATION
+      state.generic.duration = length
+      state.generic.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? '' })
+      state.wem.duration = generic ? DURATION : (pack.pack.duration ?? DURATION)
+      setDuration(state.clock.duration)
+      if (pack.pack.canvas?.fontSize) setFontSize(pack.pack.canvas.fontSize)
+      if (pack.builtin) {
+        const [a, l, s] = await Promise.all([getMedia(db, 'audio'), getMedia(db, 'lyrics'), getMedia(db, 'spectrum')])
+        if (cancelled) return
+        if (a?.file) await useAudioFile(a.file, { remember: false })
+        else clearAudio()
+        if (l?.text) await useLyricsText(l.name, l.text, { remember: false })
+        if (s?.text) await useSpectrumText(s.name, s.text, { remember: false })
+        return
+      }
+      for (const role of ['lyrics', 'spectrum']) {
+        if (!pack.pack[role] || !pack.files?.[role]?.exists || pack.files[role].tooLarge || !api) continue
+        try {
+          const { name, text } = await fetchPackText(api, pack.manifestPath, role, { isCancelled: () => cancelled })
+          if (cancelled) return
+          if (role === 'lyrics') await useLyricsText(name, text, { remember: false, shift: pack.pack.lyrics?.offset ?? 0 })
+          else await useSpectrumText(name, text, { remember: false })
+        } catch (failure) { if (!cancelled) setError(`无法读取 MV 包的 ${role}：${failure?.message ?? failure}`) }
+      }
+      clearAudio()
+      if (pack.pack.audio && pack.files?.audio?.exists && !pack.files.audio.tooLarge && api) {
+        setPackStatus('正在从 MV 包读取音频…')
+        try {
+          const file = await fetchPackAudio(api, pack.manifestPath, {
+            isCancelled: () => cancelled,
+            onProgress: (done, total) => { if (!cancelled) setPackStatus(`正在从 MV 包读取音频… ${Math.round(done / Math.max(1, total) * 100)}%`) },
+          })
+          if (cancelled) return
+          await useAudioFile(file, { remember: false, packOffset: pack.pack.audio.offset ?? 0 })
+          setPackStatus('')
+        } catch (failure) {
+          if (!cancelled) { setPackStatus(''); setError(`无法读取 MV 包的音频：${failure?.message ?? failure}`) }
+        }
+      }
     })()
     return () => { cancelled = true }
-  }, [])
+  }, [pack.id, pack.loadedAt])
+
+  const clearAudio = () => {
+    const old = audio.current.src
+    audio.current.removeAttribute('src'); audio.current.load?.()
+    if (old?.startsWith('blob:')) URL.revokeObjectURL(old)
+    engine.current.sha = ''
+    engine.current.clock.audioOffset = 0
+    setAudioInfo(null)
+    setOffsets({ audioOffset: 0, subtitleOffset: 0 })
+  }
 
   const clearSpectrum = async () => {
     const state = engine.current
     state.energy = () => state.live.energy()
     setSpectrumInfo(null)
-    await deleteMedia(dbRef.current, 'spectrum')
+    if (packRef.current?.builtin) await deleteMedia(dbRef.current, 'spectrum')
   }
   const clearLyrics = async () => {
     engine.current.film.setLyrics([])
     setLyricsInfo(null)
-    await deleteMedia(dbRef.current, 'lyrics')
+    if (packRef.current?.builtin) await deleteMedia(dbRef.current, 'lyrics')
   }
 
   const play = async () => {
     const state = engine.current
     try { state.live.ensure() } catch { /* no Web Audio: spectrum stays flat */ }
-    if (state.clock.time() >= DURATION - 0.5) state.clock.seek(0)
+    if (state.clock.time() >= state.clock.duration - 0.5) state.clock.seek(0)
     state.started = true
     try { await state.clock.play() } catch (failure) { setError(`无法播放：${failure?.message ?? failure}`) }
   }
@@ -162,7 +232,7 @@ export function CanvasMv({ defaultFontSize = 14 }) {
       case 'toggle': if (!state.started || !state.clock.playing) void play(); else state.clock.pause(); return true
       case 'seekBy': state.clock.seek(Math.max(-60, t + action.delta)); return true
       case 'restart': state.clock.seek(0); void play(); return true
-      case 'chapter': state.clock.seek(action.at); void play(); return true
+      case 'chapter': state.clock.seek(state.film === state.generic ? genericChapters(state.clock.duration)[action.index][0] : action.at); void play(); return true
       case 'cue': { const at = stepCue(state.film.times, t, action.direction); if (at !== null) { state.clock.seek(at); state.started = true } return true }
       case 'subtitleOffset': applyOffsets({ ...offsetsRef.current, subtitleOffset: stepOffset(offsetsRef.current.subtitleOffset, action.delta) }); return true
       case 'audioOffset': applyOffsets({ ...offsetsRef.current, audioOffset: stepOffset(offsetsRef.current.audioOffset, action.delta) }); return true
@@ -199,7 +269,9 @@ export function CanvasMv({ defaultFontSize = 14 }) {
   }
 
   const known = audioInfo?.known
-  const chapter = CHAPTERS.reduce((current, item) => (item[0] <= Math.max(0, status.t) ? item : current), CHAPTERS[0])
+  const generic = isGeneric(pack)
+  const chapterList = generic ? genericChapters(duration) : CHAPTERS
+  const chapter = chapterList.reduce((current, item) => (item[0] <= Math.max(0, status.t) ? item : current), chapterList[0])
 
   return (
     <div className="mv-canvas-tab">
@@ -224,9 +296,9 @@ export function CanvasMv({ defaultFontSize = 14 }) {
       </div>
       <div className="mv-transport">
         <button type="button" className="mv-button" onClick={() => act({ type: 'toggle' })}>{status.playing ? '暂停' : '播放'}</button>
-        <input className="mv-seek" type="range" min={0} max={DURATION} step={0.1} value={Math.max(0, Math.min(DURATION, status.t))}
+        <input className="mv-seek" type="range" min={0} max={Math.max(1, duration)} step={0.1} value={Math.max(0, Math.min(duration, status.t))}
           onChange={event => { engine.current.clock.seek(Number(event.target.value)); engine.current.started = true }} aria-label="进度" />
-        <span className="mv-clock">{clockText(Math.max(0, status.t))}</span>
+        <span className="mv-clock">{generic ? `${timeText(status.t)} / ${timeText(duration)}` : clockText(Math.max(0, status.t))}</span>
         <span className="mv-chip">{chapter[1]} {chapter[2]}</span>
       </div>
       <div className="mv-transport">
@@ -235,7 +307,14 @@ export function CanvasMv({ defaultFontSize = 14 }) {
         {audioInfo && <button type="button" className="mv-link" onClick={() => { resetOffsets(audioInfo.sha); const v = loadOffsets(audioInfo.sha, KNOWN_AUDIO); applyOffsets(v); resetOffsets(audioInfo.sha) }}>恢复默认偏移</button>}
         <span className="mv-caption">网格 {status.cols}×{status.rows}（最小 64×24，最大 240×85）· 偏移按音频 sha256 记在本机</span>
       </div>
-      <audio ref={audio} preload="auto" onLoadedMetadata={event => setAudioInfo(info => info ? { ...info, duration: event.currentTarget.duration } : info)}
+      <audio ref={audio} preload="auto" onLoadedMetadata={event => {
+        const length = event.currentTarget.duration
+        setAudioInfo(info => info ? { ...info, duration: length } : info)
+        const state = engine.current
+        if (state && state.film === state.generic && !packRef.current?.pack?.duration && Number.isFinite(length) && length > 0) {
+          state.clock.duration = length; state.generic.duration = length; setDuration(length)
+        }
+      }}
         onEnded={() => { if (engine.current) engine.current.started = true }} />
     </div>
   )

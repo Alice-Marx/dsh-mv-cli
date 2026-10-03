@@ -18,8 +18,8 @@ export class SilentClock {
 
 /** Clock facade over an <audio> element (or the silent clock). */
 export class FilmClock {
-  constructor({ audio = null, silent = new SilentClock(), audioOffset = 0 } = {}) {
-    this.audio = audio; this.silent = silent; this.audioOffset = audioOffset
+  constructor({ audio = null, silent = new SilentClock(), audioOffset = 0, duration = DURATION } = {}) {
+    this.audio = audio; this.silent = silent; this.audioOffset = audioOffset; this.duration = duration
   }
   get hasAudio() { return Boolean(this.audio?.src || this.audio?.currentSrc) }
   get playing() { return this.hasAudio ? !this.audio.paused : this.silent.playing }
@@ -28,7 +28,7 @@ export class FilmClock {
   pause() { if (this.hasAudio) this.audio.pause(); else this.silent.pause() }
   /** Seek in film time. */
   seek(t) {
-    const target = Math.min(DURATION, t)
+    const target = Math.min(this.duration, t)
     if (this.hasAudio) {
       const at = target - this.audioOffset
       const end = Number.isFinite(this.audio.duration) ? this.audio.duration - 0.05 : Infinity
@@ -38,9 +38,9 @@ export class FilmClock {
 }
 
 /** Film time to render plus whether the slate shows (before start / pre-roll). */
-export function frameTime(t, started) {
+export function frameTime(t, started, duration = DURATION) {
   if (!started || t < 0) return { t: Math.max(0, t), ready: !started || t < 0 }
-  return { t: Math.min(t, DURATION - 1e-3), ready: false }
+  return { t: Math.min(t, duration - 1e-3), ready: false }
 }
 
 /** Cue index navigation as player.py `,` / `.` (bisect_right(times, t+.03) - 1 ± 1). */

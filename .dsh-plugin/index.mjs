@@ -21,6 +21,8 @@ import {
   parseMvTerminalStop,
   parseMvTerminalWrite,
 } from './shared/mv-terminal-protocol.mjs'
+import { parsePackLoad, parsePackRead, parseTemplateWrite } from './shared/mv-pack.mjs'
+import { loadPack, readPackFile, writeTemplate } from './shared/mv-pack-host.mjs'
 
 /** Cordis plugin name; equals the profile entry id in cordis.patch.yml. */
 export const name = 'dsh-mv'
@@ -40,7 +42,9 @@ export function optionalService(ctx, serviceName) {
   try { return typeof ctx?.get === 'function' ? ctx.get(serviceName) : undefined } catch { return undefined }
 }
 
-export function mvRemoteServices(terminals, config = {}, consoles = null) {
+export const defaultPackOps = Object.freeze({ load: loadPack, readFile: readPackFile, writeTemplate })
+
+export function mvRemoteServices(terminals, config = {}, consoles = null, packs = defaultPackOps) {
   const noConsoles = async () => { throw new Error('独立窗口功能未加载。') }
   return {
     info: async () => ({ ...terminals.info(), canvasFontSize: config.canvasFontSize ?? 14 }),
@@ -53,6 +57,9 @@ export function mvRemoteServices(terminals, config = {}, consoles = null) {
     consoleInfo: async request => { parseMvConsoleInfo(request); return consoles ? consoles.info() : noConsoles() },
     consoleStart: async request => consoles ? consoles.start(parseMvConsoleStart(request)) : noConsoles(),
     consoleStop: async request => consoles ? consoles.stop(parseMvConsoleStop(request)) : noConsoles(),
+    packLoad: async request => packs.load(parsePackLoad(request).path),
+    packRead: async request => packs.readFile(parsePackRead(request)),
+    packTemplate: async request => packs.writeTemplate(parseTemplateWrite(request)),
   }
 }
 

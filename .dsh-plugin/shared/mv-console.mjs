@@ -19,6 +19,7 @@ import { spawn } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
 import { win32 } from 'node:path'
 import { MV_CONSOLE_LIMIT, cmdArgv, consoleCommandDisplay, startCommandLine } from './mv-terminal-protocol.mjs'
+import { cmdSafetyProblems } from './mv-pack.mjs'
 import { resolveMvLaunch, terminalEnvironment } from './mv-terminal.mjs'
 
 export const CONSOLE_UNSUPPORTED = '独立控制台窗口只在 Windows 上可用；在其他系统上请使用面板内的 MV 终端。'
@@ -165,10 +166,16 @@ export function createMvConsoleManager({
       if (!supported) throw new Error(CONSOLE_UNSUPPORTED)
       if (disposed) throw new Error('插件正在卸载，无法启动。')
       if (confirmed !== true) throw new Error('打开独立窗口前需要你的确认。')
+      if (launch.player === 'pack' && launch.expectDisplay === undefined) throw new Error('启动 MV 包的渲染程序前，需要先检查并确认它的完整命令。')
       await Promise.all([...consoles.values()].filter(item => !item.exited).map(alive))
       const live = [...consoles.values()].filter(item => !item.exited).length
       if (live >= limit) throw new Error(`最多同时打开 ${limit} 个独立播放窗口，请先结束一个。`)
       const resolved = await resolveLaunch(launch)
+      if (resolved.pack) {
+        // Pack renderers come from a file the user imported: stricter than the fixed players.
+        const unsafe = cmdSafetyProblems(resolved.file, resolved.args, resolved.cwd)
+        if (unsafe.length) throw new Error(unsafe.join('\n'))
+      }
       startCommandLine(resolved) // throws on unsafe characters before anything runs
       let cmdPid
       try { cmdPid = await runStart(resolved) }

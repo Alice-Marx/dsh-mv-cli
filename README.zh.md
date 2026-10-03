@@ -2,7 +2,7 @@
 
 [English](README.md) · 简体中文
 
-DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`）。在工作台里放映 Mili《world.execute(me);》的**终端风格 MV**，两种模式：
+DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`）。在工作台里放映**终端风格 MV**：内置 Mili《world.execute(me);》场景；其他任何歌曲用 [MV 包](#mv-包播放任意歌曲)（`mv.json`），由通用的频谱 + 歌词渲染器或外部 TUI 程序来画。两种模式：
 
 | 模式 | 做什么 | 需要你提供 |
 | --- | --- | --- |
@@ -13,10 +13,10 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 
 ## 安装
 
-**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.1.2`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
+**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.2.0`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
 
-**用本地安装包：** 从 GitHub Release 下载 `ljwei-stak-dsh-mv-cli-0.1.2.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
-`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.1.2.tgz'`，
+**用本地安装包：** 从 GitHub Release 下载 `ljwei-stak-dsh-mv-cli-0.2.0.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
+`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.2.0.tgz'`，
 然后在 **插件 → 添加插件** 里填该 `.tgz` 的绝对路径。
 
 两种方式装好后：
@@ -24,9 +24,76 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 1. **完全退出 Harness（包括托盘图标）后重新打开**：Host 进程只有完全重启才会加载新的插件代码。界面顶部若出现「后台版本与界面不一致」，就是没有完全重启。
 2. 左侧边栏在内置入口（插件 / 自动化任务 / …）下面出现 **MV 放映室**，点它就在主区域打开面板；插件详情页（插件 → dsh-mv-cli）也有「打开 MV 放映室」按钮。
 
-> 从 0.1.1 升级：0.1.1 的侧边栏入口不会出现（原因见 CHANGELOG），请升级到 0.1.2 并完全重启。
+> 升级后请完全退出 Harness 一次（包括托盘图标），否则面板会提示「后台版本与界面不一致」。0.1.1 不会显示侧边栏入口，请使用 0.1.2 及以后的版本。
 
 MV 终端依赖可选依赖 `@lydell/node-pty`（含 Windows 预编译二进制）。若安装时它没装上，面板会提示「管道模式」，此时 tui_live.py 无法正常显示，画布 MV 不受影响。
+
+## MV 包：播放任意歌曲
+
+**MV 包** 是一个带 `mv.json` 清单的文件夹。清单写明你自己的音频、歌词和可选频谱文件（路径相对于该文件夹），以及怎么画这首歌：
+- 用内置的 **通用（generic）** 画布渲染（频谱条、标题、当前与下一句歌词、进度条），任何歌都能放；
+- 用内置的 **world-execute-me** 场景；
+- 并且/或者用一个 **外部 TUI 程序**（可执行文件或解释器 + 脚本 + 参数模板）。
+
+内置的 world.execute(me) 预设仍是列表里的默认项。
+
+在面板的 **MV 包** 栏里：
+
+1. **下载模板…**：选一个文件夹，插件在其中新建 `dsh-mv-pack-template`（不会覆盖已有文件）。里面有：
+   - `mv.json`；
+   - `mv.schema.json`（VS Code 补全与校验）；
+   - 中英文 README；
+   - 占位的 `lyrics.example.lrc`；
+   - `examples/`（Python 播放器示例，以及用 MV 包写法表示的 world.execute(me)）。
+
+   **或下载 zip** 得到同样的文件。
+2. 把你自己的 `song.mp3` 和歌词放进去，编辑 `mv.json`。
+3. **导入 MV 包…** → **选择文件夹…**，或粘贴文件夹 / `mv.json` 的路径。导入只读取清单。
+   - 最近用过的包（最多 8 个）记在本机，出现在下拉列表里。
+   - 下次打开会恢复上次的包。
+4. **画布 MV** 播放该包：音频由 Host 分块读取，歌词和频谱一起载入。包里有 `terminal` 时，**MV 终端** 的播放器列表会多出 **MV 包：…**。
+
+最小的 `mv.json`：
+
+```json
+{
+  "$schema": "./mv.schema.json",
+  "format": "dsh-mv-pack",
+  "version": 1,
+  "title": "我的歌",
+  "artist": "某人",
+  "audio": { "file": "song.mp3", "offset": 0 },
+  "lyrics": { "file": "lyrics.lrc" },
+  "canvas": { "renderer": "generic" },
+  "terminal": {
+    "program": "python/python.exe",
+    "script": "player.py",
+    "args": ["{script}", { "when": "audio", "args": ["--audio", "{audio}"] }, { "when": "start", "args": ["--start", "{start}"] }],
+    "cwd": "pack"
+  }
+}
+```
+
+字段说明：
+- 必填：`format`、`version`、`title`。
+- 可选：`artist`、`album`、`credits[]`、`notice`、`duration`、`audio {file, offset}`、`lyrics {file, offset}`（LRC/SRT/VTT/lyrics.json）、`spectrum {file}`、`canvas {renderer: generic | world-execute-me, fontSize}`、`terminal`。
+- 未知字段报错，自定义数据用 `x-…`。
+- 相对路径不允许 `..`。
+
+`terminal.args` 的占位符：
+- `{audio}` `{lyrics}` `{spectrum}` `{script}` `{packDir}` 是绝对路径。
+- `{start}` `{offset}` 是数字（`{offset}` = 面板填写值 + `audio.offset`）。
+- `{{` / `}}` 表示字面大括号。
+- `{ "when": "audio|lyrics|spectrum|start|offset", "args": [...] }` 只在条件成立时加入这些参数。
+- 数组的每一项就是一个参数，不经过 shell。
+
+**外部渲染程序的安全措施。** 包里的程序本质上是任意代码，因此：
+- 导入时不运行任何东西。
+- **检查** 会在 Host 上重新读取 `mv.json`，并核对程序、脚本和媒体文件是否存在。
+- 确认卡片显示 Host 解析出的完整命令、逐个参数和工作目录，确认后才启动。
+- 确认之后若 `mv.json` 被改动，Host 会拒绝启动。
+- `.bat`/`.cmd`/`.ps1`/`.vbs`/`.js`/`.lnk` 等文件不能作为程序；Windows 上程序必须是 `.exe`。
+- 独立窗口（cmd.exe）模式下，凡是含 `% ! " ^ & | < >` 或换行的路径和参数一律拒绝。括号可以用，因为每个参数都加了引号。
 
 ## 画布 MV
 

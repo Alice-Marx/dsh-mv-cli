@@ -22,6 +22,7 @@ import {
   mvTerminalArgs,
   rustTerminalArgs,
 } from './mv-terminal-protocol.mjs'
+import { resolvePackLaunch } from './mv-pack-host.mjs'
 
 export const PTY_PACKAGE = '@lydell/node-pty'
 export const PIPE_LIMITATION = '未能加载伪终端（PTY）组件，已改用管道模式：播放器看不到真实终端，Windows 下 tui_live.py 读取按键（msvcrt）和获取窗口大小都会失败，画面很可能无法显示。请确认插件目录里装有 @lydell/node-pty。'
@@ -70,7 +71,8 @@ export function terminalEnvironment(env = process.env) {
  * Check every path of a parsed launch on disk and build the fixed command.
  * Returns { file, args, cwd, display, script }.
  */
-export async function resolveMvLaunch(launch, { statPath = stat, joinPath = join, dirnameOf = dirname } = {}) {
+export async function resolveMvLaunch(launch, { statPath = stat, joinPath = join, dirnameOf = dirname, readText, platform } = {}) {
+  if (launch.player === 'pack') return resolvePackLaunch(launch, { statPath, ...(readText ? { readText } : {}), ...(platform ? { platform } : {}) })
   const problems = []
   const info = async path => { try { return await statPath(path) } catch { return null } }
   if (launch.player === 'rust') {
@@ -268,12 +270,13 @@ export function createMvTerminalManager({
     /** Validate a launch without starting anything; returns the exact command. */
     async check(launch) {
       const resolved = await resolveLaunch(launch)
-      return { ok: true, display: resolved.display, cwd: resolved.cwd, script: resolved.script, ...backendInfo() }
+      return { ok: true, display: resolved.display, cwd: resolved.cwd, script: resolved.script, file: resolved.file, args: resolved.args, ...(resolved.pack ? { pack: resolved.pack } : {}), ...backendInfo() }
     },
 
     async start({ launch, cols, rows, confirmed }) {
       if (disposed) throw new Error('插件正在卸载，无法启动终端。')
       if (confirmed !== true) throw new Error('启动 MV 终端前需要你的确认。')
+      if (launch.player === 'pack' && launch.expectDisplay === undefined) throw new Error('启动 MV 包的渲染程序前，需要先检查并确认它的完整命令。')
       const live = [...sessions.values()].filter(session => !session.exited).length
       if (live >= limits.maxSessions) throw new Error(`最多同时运行 ${limits.maxSessions} 个 MV 终端，请先结束一个。`)
       const resolved = await resolveLaunch(launch)

@@ -16,11 +16,12 @@ import {
   rustTerminalArgs,
   consoleCommandDisplay,
 } from '../shared/mv-terminal-protocol.mjs'
+import { MV_PACK_LIMITS, cmdSafetyProblems } from '../shared/mv-pack.mjs'
 
 const text = value => typeof value === 'string' ? value.trim() : ''
 const FORM_KEY = 'dsh-mv.terminal.form.v1'
 
-export const EMPTY_FORM = Object.freeze({ player: 'python', exePath: '', offset: '', autoplay: false, pythonPath: '', packageDir: '', audioFile: '', noAudio: false, start: '', audioLatency: '' })
+export const EMPTY_FORM = Object.freeze({ packStart: '', packOffset: '', player: 'python', exePath: '', offset: '', autoplay: false, pythonPath: '', packageDir: '', audioFile: '', noAudio: false, start: '', audioLatency: '' })
 
 export function loadForm(storage = globalThis.localStorage) {
   try { return { ...EMPTY_FORM, ...JSON.parse(storage?.getItem(FORM_KEY) ?? '{}') } } catch { return { ...EMPTY_FORM } }
@@ -40,8 +41,14 @@ export function suggestedPython(packageDir) {
   return `${dir}${sep}python${sep}python${sep === '\\' ? '.exe' : ''}`
 }
 
-/** Form → launch request (what the Host validates again). */
-export function launchFromForm(form) {
+/** Form → launch request (what the Host validates again). `ctx.pack` is the active MV pack. */
+export function launchFromForm(form, ctx = {}) {
+  if (form.player === 'pack') {
+    const launch = { player: 'pack', manifestPath: text(ctx.pack?.manifestPath) }
+    if (text(String(form.packStart ?? ''))) launch.start = Number(form.packStart)
+    if (text(String(form.packOffset ?? ''))) launch.offset = Number(form.packOffset)
+    return launch
+  }
   if (form.player === 'rust') {
     const launch = { player: 'rust', exePath: text(form.exePath), autoplay: Boolean(form.autoplay) }
     if (text(form.audioFile)) launch.audioFile = text(form.audioFile)
@@ -57,8 +64,14 @@ export function launchFromForm(form) {
 }
 
 /** First problem that keeps "检查" / "启动" disabled, '' when fine. */
-export function formProblem(form) {
-  const launch = launchFromForm(form)
+export function formProblem(form, ctx = {}) {
+  const launch = launchFromForm(form, ctx)
+  if (launch.player === 'pack') {
+    if (!ctx.pack?.terminal) return '当前 MV 包没有配置外部渲染程序（mv.json 里的 terminal）。请先导入带 terminal 的 MV 包，或选择其他播放器。'
+    if ('start' in launch && !(Number.isFinite(launch.start) && launch.start >= 0 && launch.start <= MV_PACK_LIMITS.maxStart)) return `起始秒数应在 0–${MV_PACK_LIMITS.maxStart} 之间。`
+    if ('offset' in launch && !(Number.isFinite(launch.offset) && Math.abs(launch.offset) <= MV_PACK_LIMITS.maxOffset)) return `偏移应在 ±${MV_PACK_LIMITS.maxOffset} 秒之内。`
+    return ''
+  }
   if (launch.player === 'rust') {
     if (!launch.exePath) return '请填写 world-execute-me-rust.exe 的路径（从该项目的 GitHub Release 自行下载）。'
     if (!isAbsolutePathText(launch.exePath)) return '可执行文件路径必须是绝对路径。'
@@ -80,7 +93,8 @@ export function formProblem(form) {
 }
 
 /** Preview of the exact command (the Host builds the real one the same way). */
-export function commandPreview(form) {
+export function commandPreview(form, ctx = {}) {
+  if (form.player === 'pack') return ctx.checked?.display ?? '（点「检查」后显示 Host 从 mv.json 解析出的完整命令）'
   const launch = launchFromForm(form)
   if (launch.player === 'rust') return displayCommand(launch.exePath, rustTerminalArgs(launch))
   const sep = sepOf(launch.packageDir || launch.pythonPath)
@@ -88,7 +102,21 @@ export function commandPreview(form) {
   return displayCommand(launch.pythonPath, mvTerminalArgs(launch, script))
 }
 
-export function confirmationDetails(form, checked) {
+export function confirmationDetails(form, checked, ctx = {}) {
+  if (form.player === 'pack') {
+    return {
+      title: `启动 MV 包「${ctx.pack?.pack?.title ?? ''}」的外部渲染程序？`,
+      command: checked?.display ?? '（尚未检查）',
+      cwd: checked?.cwd ?? '',
+      argv: checked?.args ?? [],
+      points: [
+        '这个程序和参数来自你导入的 mv.json。它是任意程序，会以你的权限运行，不经过 Harness 沙箱。只启动你信任的 MV 包。',
+        `清单：${ctx.pack?.manifestPath ?? ''}`,
+        '上面就是 Host 将执行的完整命令（每个参数单独传递，不经过 shell）。如果确认后 mv.json 被改动，Host 会拒绝启动。',
+        '关闭面板、结束会话或约 2 分钟无人查看时，进程会被结束。',
+      ],
+    }
+  }
   return {
     title: '启动 MV 终端？',
     command: checked?.display ?? commandPreview(form),
@@ -105,7 +133,11 @@ export function confirmationDetails(form, checked) {
 }
 
 /** The {file, args, cwd} the Host will resolve for this form (paths unverified). */
-export function plannedLaunch(form) {
+export function plannedLaunch(form, ctx = {}) {
+  if (form.player === 'pack') {
+    if (!ctx.checked) throw new Error('请先点「检查」，由 Host 解析 MV 包的命令。')
+    return { file: ctx.checked.file, args: ctx.checked.args, cwd: ctx.checked.cwd }
+  }
   const launch = launchFromForm(form)
   if (launch.player === 'rust') return { file: launch.exePath, args: rustTerminalArgs(launch), cwd: launch.exePath.replace(/[\\/][^\\/]*$/, '') }
   const sep = sepOf(launch.packageDir || launch.pythonPath)
@@ -113,13 +145,19 @@ export function plannedLaunch(form) {
 }
 
 /** Exact cmd.exe line the Host runs for a separate window. */
-export function consoleCommandPreview(form) {
-  try { return consoleCommandDisplay(plannedLaunch(form)) } catch (error) { return error.message }
+export function consoleCommandPreview(form, ctx = {}) {
+  try { return consoleCommandDisplay(plannedLaunch(form, ctx)) } catch (error) { return error.message }
 }
 
 /** Paths cmd.exe cannot carry safely (it expands %VAR% even inside quotes). */
-export function consoleProblem(form, { platform } = {}) {
+export function consoleProblem(form, { platform, pack, checked } = {}) {
   if (platform && platform !== 'win32') return '独立控制台窗口只在 Windows 上可用；当前系统请用面板内的 MV 终端。'
+  if (form.player === 'pack') {
+    const problem = formProblem(form, { pack })
+    if (problem || !checked) return problem
+    const unsafe = cmdSafetyProblems(checked.file, checked.args ?? [], checked.cwd)
+    return unsafe.length ? unsafe.join('\n') : ''
+  }
   const launch = launchFromForm(form)
   for (const value of [launch.pythonPath, launch.packageDir, launch.exePath, launch.audioFile]) {
     if (typeof value === 'string' && /%/.test(value)) return `路径里含有 %，独立窗口模式无法安全传递：${value}`
@@ -127,12 +165,17 @@ export function consoleProblem(form, { platform } = {}) {
   return formProblem(form)
 }
 
-export function consoleConfirmationDetails(form) {
+export function consoleConfirmationDetails(form, ctx = {}) {
+  const pack = form.player === 'pack'
   return {
-    title: '在独立的 Windows 控制台窗口中播放？',
-    command: consoleCommandPreview(form),
-    player: commandPreview(form),
-    points: [
+    title: pack ? `在独立的 Windows 控制台窗口中运行 MV 包「${ctx.pack?.pack?.title ?? ''}」的渲染程序？` : '在独立的 Windows 控制台窗口中播放？',
+    command: consoleCommandPreview(form, ctx),
+    player: commandPreview(form, ctx),
+    points: pack ? [
+      '这个程序和参数来自你导入的 mv.json。它是任意程序，会以你的权限运行，不经过 Harness 沙箱。只启动你信任的 MV 包。',
+      '将用 cmd.exe 的 start 打开一个新的控制台窗口。所有路径和参数都加引号；含 % ! " ^ & | < > 或换行的值一律拒绝。',
+      '如果确认后 mv.json 被改动，Host 会拒绝启动。面板里的「结束」会用 taskkill /T 结束它。',
+    ] : [
       '将用 cmd.exe 的 start 打开一个新的控制台窗口（若系统默认终端是 Windows Terminal，会在其中打开），在里面运行上面这一个固定的播放器；不经过 Harness 沙箱。',
       '所有路径都加引号传递；不能附加任何其他命令或参数。',
       '画面直接由真实控制台显示，没有面板转发的延迟；按键请在那个窗口里按。',
@@ -145,8 +188,8 @@ export async function loadConsoles(api) {
   return unwrapRemote(await api.consoleInfo({}), '无法读取独立窗口状态。')
 }
 
-export async function startConsole(api, form) {
-  const started = unwrapRemote(await api.consoleStart({ ...launchFromForm(form), confirmed: true }), '无法打开独立窗口。')
+export async function startConsole(api, form, ctx = {}) {
+  const started = unwrapRemote(await api.consoleStart({ ...launchFromForm(form, ctx), ...expectation(form, ctx), confirmed: true }), '无法打开独立窗口。')
   if (!isMvConsoleId(started?.consoleId)) throw new Error('启动结果缺少有效的窗口 ID。')
   return started
 }
@@ -173,14 +216,21 @@ export async function loadInfo(api) {
   return info
 }
 
-export async function checkLaunch(api, form) {
-  return unwrapRemote(await api.terminalCheck(launchFromForm(form)), '路径检查失败。')
+export async function checkLaunch(api, form, ctx = {}) {
+  return unwrapRemote(await api.terminalCheck(launchFromForm(form, ctx)), '路径检查失败。')
 }
 
-export async function startSession(api, form, { cols = 120, rows = 40 } = {}) {
+/** Pack launches carry the confirmed command; the Host refuses if it changed. */
+function expectation(form, ctx) {
+  if (form.player !== 'pack') return {}
+  if (typeof ctx.checked?.display !== 'string') throw new Error('请先检查并确认 MV 包的命令。')
+  return { expectDisplay: ctx.checked.display }
+}
+
+export async function startSession(api, form, { cols = 120, rows = 40 } = {}, ctx = {}) {
   const L = MV_TERMINAL_LIMITS
   const request = {
-    ...launchFromForm(form), confirmed: true,
+    ...launchFromForm(form, ctx), ...expectation(form, ctx), confirmed: true,
     cols: Math.min(L.maxCols, Math.max(L.minCols, Math.round(cols))),
     rows: Math.min(L.maxRows, Math.max(L.minRows, Math.round(rows))),
   }

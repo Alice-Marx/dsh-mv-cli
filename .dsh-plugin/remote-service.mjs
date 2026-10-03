@@ -58,6 +58,15 @@ export class MvRemoteService extends TypertRemoteService {
   consoleStop(request) { return settled(() => (this.services.consoleStop ?? unavailable)(request)) }
 
   terminalStop(request) { return settled(() => (this.services.terminalStop ?? unavailable)(request)) }
+
+  /** Read and check an MV pack (mv.json); runs nothing. */
+  packLoad(request) { return settled(() => (this.services.packLoad ?? unavailable)(request)) }
+
+  /** One base64 chunk of the pack's audio / lyrics / spectrum file. */
+  packRead(request) { return settled(() => (this.services.packRead ?? unavailable)(request)) }
+
+  /** Write the MV pack template into a new subfolder of a chosen folder. */
+  packTemplate(request) { return settled(() => (this.services.packTemplate ?? unavailable)(request)) }
 }
 
 /** Registration follows the Host plugin fiber; unload withdraws all endpoints. */

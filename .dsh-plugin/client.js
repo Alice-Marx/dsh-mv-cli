@@ -42,10 +42,10 @@ __export(index_exports, {
   registerUi: () => registerUi
 });
 module.exports = __toCommonJS(index_exports);
-var import_react4 = __toESM(require("react"), 1);
+var import_react5 = __toESM(require("react"), 1);
 
 // .dsh-plugin/client/mv-panel.jsx
-var import_react3 = __toESM(require("react"), 1);
+var import_react4 = __toESM(require("react"), 1);
 
 // .dsh-plugin/client/canvas-mv.jsx
 var import_react = __toESM(require("react"), 1);
@@ -4685,10 +4685,11 @@ var SilentClock = class {
   }
 };
 var FilmClock = class {
-  constructor({ audio = null, silent = new SilentClock(), audioOffset = 0 } = {}) {
+  constructor({ audio = null, silent = new SilentClock(), audioOffset = 0, duration = DURATION } = {}) {
     this.audio = audio;
     this.silent = silent;
     this.audioOffset = audioOffset;
+    this.duration = duration;
   }
   get hasAudio() {
     return Boolean(this.audio?.src || this.audio?.currentSrc);
@@ -4709,7 +4710,7 @@ var FilmClock = class {
   }
   /** Seek in film time. */
   seek(t) {
-    const target = Math.min(DURATION, t);
+    const target = Math.min(this.duration, t);
     if (this.hasAudio) {
       const at3 = target - this.audioOffset;
       const end = Number.isFinite(this.audio.duration) ? this.audio.duration - 0.05 : Infinity;
@@ -4717,9 +4718,9 @@ var FilmClock = class {
     } else this.silent.seek(Math.max(0, target));
   }
 };
-function frameTime(t, started) {
+function frameTime(t, started, duration = DURATION) {
   if (!started || t < 0) return { t: Math.max(0, t), ready: !started || t < 0 };
-  return { t: Math.min(t, DURATION - 1e-3), ready: false };
+  return { t: Math.min(t, duration - 1e-3), ready: false };
 }
 function stepCue(times, t, direction) {
   if (!times.length) return null;
@@ -4788,6 +4789,652 @@ function keyAction({ key, altKey = false, ctrlKey = false, metaKey = false }) {
 }
 var stepOffset = (value, delta) => roundOffset(value + delta);
 
+// .dsh-plugin/client/mv/generic-film.mjs
+var BAR_LEVELS = " .:-=+*#%@";
+var SILENT3 = Object.freeze(new Array(48).fill(0));
+var pad22 = (n) => String(n).padStart(2, "0");
+function timeText(t) {
+  const s15 = Math.max(0, Math.trunc(t));
+  return `${pad22(Math.floor(s15 / 60))}:${pad22(s15 % 60)}`;
+}
+function genericChapters(duration) {
+  const d = Number.isFinite(duration) && duration > 0 ? duration : 0;
+  return [0, 1, 2, 3, 4].map((i8) => [Math.round(d * i8 / 5 * 10) / 10, `${i8 + 1} / 5`, ""]);
+}
+var GenericFilm = class extends Film {
+  constructor({ title = "", artist = "", lyrics = [], energy = () => SILENT3, duration = 0 } = {}) {
+    super({ lyrics, energy, duration });
+    this.title = title;
+    this.artist = artist;
+  }
+  setMeta({ title, artist }) {
+    this.title = title ?? this.title;
+    this.artist = artist ?? this.artist;
+  }
+  /** Next cue starting after t (for the dim preview line). */
+  nextCue(t) {
+    let lo3 = 0, hi2 = this.times.length;
+    while (lo3 < hi2) {
+      const mid = lo3 + hi2 >> 1;
+      if (t < this.times[mid]) hi2 = mid;
+      else lo3 = mid + 1;
+    }
+    return this.lyrics[lo3] ?? null;
+  }
+  chapter(t) {
+    const chapters = genericChapters(this.duration);
+    let act = chapters[0];
+    for (const c of chapters) if (c[0] <= Math.max(0, t)) act = c;
+    return act;
+  }
+  render(t, w, h2, { paused = false, offset = 0, ready = false, hint = true, hintText = "", help = false, helpLines = HELP_LINES } = {}) {
+    const c = new Canvas(w, h2);
+    const title = (this.title || "MV").toUpperCase();
+    if (w < 40 || h2 < 14) {
+      c.center(Math.floor(h2 / 2) - 1, crop(title, w - 2), BRIGHT);
+      c.center(Math.floor(h2 / 2) + 1, "\u8BF7\u653E\u5927\u7A97\u53E3\uFF0C\u6216\u7F29\u5C0F\u5B57\u53F7", WHITE);
+      return c;
+    }
+    const state = ready ? "READY" : paused ? "PAUSED" : "PLAYING";
+    const clock = `${timeText(t)} / ${timeText(this.duration)}  ${state}`;
+    c.put(2, 0, crop(this.artist ? `${this.title} \u2014 ${this.artist}` : this.title, Math.max(4, w - width(clock) - 6)), BRIGHT);
+    c.put(w - width(clock) - 2, 0, clock, DIM);
+    c.put(2, 1, "-".repeat(Math.max(0, w - 4)), DIM);
+    const top = 3, bottom = h2 - 9;
+    const rows = Math.max(1, bottom - top + 1);
+    const spec = this.energy(t) ?? SILENT3;
+    const cols = w - 4;
+    for (let x = 0; x < cols; x++) {
+      const centre = Math.abs(x - (cols - 1) / 2) / ((cols - 1) / 2 || 1);
+      const band = Math.min(47, Math.trunc(centre * 47.999));
+      const amp = Math.max(0, Math.min(1, spec[band] ?? 0));
+      const height = amp * rows;
+      for (let r = 0; r < rows; r++) {
+        const fill = height - r;
+        if (fill <= 0) break;
+        const level = fill >= 1 ? BAR_LEVELS.length - 1 : Math.max(1, Math.round(fill * (BAR_LEVELS.length - 1)));
+        const style = r > rows * 0.75 ? WHITE : r > rows * 0.45 ? BRIGHT : r > rows * 0.15 ? NORMAL : DIM;
+        c.put(2 + x, bottom - r, BAR_LEVELS[level], style);
+      }
+    }
+    if (ready) {
+      const cy = Math.trunc((top + bottom) / 2);
+      for (let y = top; y <= bottom; y++) c.put(0, y, " ".repeat(w), DIM);
+      if (/^[A-Z0-9 ;.()\-]+$/.test(title) && title.length * 6 < w - 6) c.big(Math.max(top, cy - 3), title, BRIGHT);
+      else c.center(cy - 1, crop(this.title, w - 4), BRIGHT);
+      if (this.artist) c.center(cy + 3, crop(this.artist, w - 4), WHITE);
+      c.center(Math.min(bottom, cy + 5), "[ SPACE / ENTER TO START ]", BRIGHT);
+    }
+    const e = this.cue(t + offset);
+    if (!ready) {
+      if (e) {
+        const ens = e.en ? wrap(e.en, w - 8) : [];
+        const zhs = e.zh ? wrap(e.zh, w - 8) : [];
+        ens.slice(0, 2).forEach((line, i8) => c.center(h2 - 7 + i8, line, WHITE));
+        zhs.slice(0, 2).forEach((line, i8) => c.center(h2 - 5 + i8, line, BRIGHT));
+      } else if (this.lyrics.length) {
+        c.center(h2 - 6, "[ instrumental / \u95F4\u594F ]", DIM);
+      }
+      const next = this.nextCue(t + offset);
+      if (next && next !== e) c.center(h2 - 3, crop(next.en || next.zh, w - 8), DIM);
+    }
+    const barW = Math.max(10, w - 8);
+    const done = this.duration > 0 ? Math.max(0, Math.min(1, t / this.duration)) : 0;
+    const filled = Math.round(done * barW);
+    c.put(4, h2 - 2, "=".repeat(filled), NORMAL);
+    c.put(4 + filled, h2 - 2, "-".repeat(Math.max(0, barW - filled)), DIM);
+    if (hint && hintText) c.center(h2 - 1, crop(hintText, w - 4), DIM);
+    if (help) this.help(c, offset, helpLines);
+    return c;
+  }
+};
+
+// .dsh-plugin/client/remote-state.mjs
+var CLIENT_VERSION = true ? "0.2.0" : "";
+var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u7EC8\u7AEF\u3002";
+function isMissingRemoteMethod(message) {
+  const value = String(message ?? "");
+  return /transport failure for [^:]+: HTTP 404\b/.test(value) || /Remote method \S+ is no longer mounted/.test(value);
+}
+function remoteErrorText(message, fallback = "") {
+  if (isMissingRemoteMethod(message)) return STALE_HOST_MESSAGE;
+  return String(message ?? "").trim() || fallback;
+}
+var text = (value) => typeof value === "string" ? value.trim() : "";
+function unwrapRemote(response, fallback) {
+  if (!response?.ok) throw new Error(remoteErrorText(text(response?.error?.message) || text(response?.error), fallback));
+  const inner = response.value;
+  if (inner && typeof inner === "object" && typeof inner.ok === "boolean") {
+    if (!inner.ok) throw new Error(remoteErrorText(text(inner.error?.message) || text(inner.error), fallback));
+    return inner.value;
+  }
+  return inner;
+}
+function versionNotice({ hostVersion, clientVersion = CLIENT_VERSION, loaded = true } = {}) {
+  if (!loaded || !clientVersion) return "";
+  if (typeof hostVersion !== "string" || !hostVersion) return `${STALE_HOST_MESSAGE}\uFF08\u754C\u9762 ${clientVersion}\uFF0C\u540E\u53F0\u672A\u62A5\u544A\u7248\u672C\uFF09`;
+  if (hostVersion !== clientVersion) return `${STALE_HOST_MESSAGE}\uFF08\u754C\u9762 ${clientVersion}\uFF0C\u540E\u53F0 ${hostVersion}\uFF09`;
+  return "";
+}
+
+// .dsh-plugin/shared/mv-pack.mjs
+var MV_PACK_FORMAT = "dsh-mv-pack";
+var MV_PACK_VERSION = 1;
+var MV_PACK_SCHEMA_FILE = "mv.schema.json";
+var MV_CANVAS_RENDERERS = Object.freeze(["generic", "world-execute-me"]);
+var MV_PACK_CWD = Object.freeze(["pack", "program", "script"]);
+var MV_PACK_PLACEHOLDERS = Object.freeze(["audio", "lyrics", "spectrum", "script", "packDir", "start", "offset"]);
+var MV_PACK_CONDITIONS = Object.freeze(["audio", "lyrics", "spectrum", "start", "offset"]);
+var MV_PACK_FILE_ROLES = Object.freeze(["audio", "lyrics", "spectrum"]);
+var MV_LYRICS_EXTENSIONS = Object.freeze([".lrc", ".srt", ".vtt", ".json", ".txt"]);
+var MV_PACK_LIMITS = Object.freeze({
+  manifestBytes: 256 * 1024,
+  textFileBytes: 8 * 1024 * 1024,
+  audioBytes: 512 * 1024 * 1024,
+  readChunkBytes: 512 * 1024,
+  maxArgs: 64,
+  maxArgChars: 2048,
+  maxCredits: 50,
+  maxTextChars: 4e3,
+  maxShortChars: 200,
+  maxPathChars: 1024,
+  maxDuration: 36e3,
+  maxOffset: 30,
+  maxStart: 36e3,
+  recentPacks: 8
+});
+var REFUSED_PROGRAM_EXTENSIONS = Object.freeze([".bat", ".cmd", ".ps1", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh", ".msc", ".lnk", ".url", ".scr", ".hta", ".reg", ".sh"]);
+var isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+function isAbsolutePackPath(value) {
+  return typeof value === "string" && (value.startsWith("/") || /^[A-Za-z]:[\\/]/.test(value) || /^\\\\[^\\]+\\[^\\]+/.test(value));
+}
+var CMD_UNSAFE = /[%!"^&|<>\r\n\0]/;
+function cmdSafetyProblems(file, args, cwd) {
+  const problems = [];
+  for (const [subject, value] of [["\u7A0B\u5E8F\u8DEF\u5F84", file], ["\u5DE5\u4F5C\u76EE\u5F55", cwd], ...args.map((arg, i8) => [`\u53C2\u6570 ${i8 + 1}`, arg])]) {
+    const bad = String(value).match(CMD_UNSAFE);
+    if (bad) problems.push(`${subject} \u542B\u6709\u72EC\u7ACB\u7A97\u53E3\uFF08cmd.exe\uFF09\u6A21\u5F0F\u62D2\u7EDD\u7684\u5B57\u7B26 ${JSON.stringify(bad[0])}\uFF1A${value}`);
+  }
+  return problems;
+}
+function parsePackLaunch(request2) {
+  const allowed = /* @__PURE__ */ new Set(["player", "manifestPath", "start", "offset", "expectDisplay"]);
+  const extra = Object.keys(request2).filter((key) => !allowed.has(key));
+  if (extra.length) throw new TypeError(`launch has unexpected fields: ${extra.join(", ")}`);
+  const manifestPath = parseManifestPath(request2.manifestPath);
+  const start = request2.start === void 0 || request2.start === null ? 0 : boundedNumber(request2.start, 0, MV_PACK_LIMITS.maxStart, "start");
+  const offset = request2.offset === void 0 || request2.offset === null ? 0 : boundedNumber(request2.offset, -MV_PACK_LIMITS.maxOffset, MV_PACK_LIMITS.maxOffset, "offset");
+  if (request2.expectDisplay !== void 0 && (typeof request2.expectDisplay !== "string" || request2.expectDisplay.length > 2e4)) throw new TypeError("expectDisplay must be a string");
+  return { player: "pack", manifestPath, start, offset, ...request2.expectDisplay !== void 0 ? { expectDisplay: request2.expectDisplay } : {} };
+}
+function boundedNumber(value, min, max, subject) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max) throw new TypeError(`${subject} must be a number from ${min} to ${max}`);
+  return value;
+}
+function parseManifestPath(value) {
+  if (typeof value !== "string") throw new TypeError("MV \u5305\u8DEF\u5F84\u5FC5\u987B\u662F\u5B57\u7B26\u4E32");
+  const path = value.trim().replace(/^"(.*)"$/, "$1");
+  if (!path || path.length > MV_PACK_LIMITS.maxPathChars || /[\0\r\n"]/.test(path)) throw new TypeError("MV \u5305\u8DEF\u5F84\u65E0\u6548");
+  if (!isAbsolutePackPath(path)) throw new TypeError("MV \u5305\u8DEF\u5F84\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\uFF08mv.json \u6587\u4EF6\u6216\u5B83\u6240\u5728\u7684\u6587\u4EF6\u5939\uFF09");
+  return path;
+}
+function parsePackLoad(value) {
+  if (!isObject(value)) throw new TypeError("pack load request must be an object");
+  const extra = Object.keys(value).filter((key) => key !== "path");
+  if (extra.length) throw new TypeError(`pack load request has unexpected fields: ${extra.join(", ")}`);
+  return { path: parseManifestPath(value.path) };
+}
+function parsePackRead(value) {
+  if (!isObject(value)) throw new TypeError("pack read request must be an object");
+  const extra = Object.keys(value).filter((key) => !["manifestPath", "role", "offset", "length"].includes(key));
+  if (extra.length) throw new TypeError(`pack read request has unexpected fields: ${extra.join(", ")}`);
+  if (!MV_PACK_FILE_ROLES.includes(value.role)) throw new TypeError(`role must be ${MV_PACK_FILE_ROLES.join(" / ")}`);
+  const offset = value.offset ?? 0;
+  const length = value.length ?? MV_PACK_LIMITS.readChunkBytes;
+  if (!Number.isInteger(offset) || offset < 0 || offset > MV_PACK_LIMITS.audioBytes) throw new TypeError("offset is invalid");
+  if (!Number.isInteger(length) || length < 1 || length > MV_PACK_LIMITS.readChunkBytes) throw new TypeError(`length must be 1..${MV_PACK_LIMITS.readChunkBytes}`);
+  return { manifestPath: parseManifestPath(value.manifestPath), role: value.role, offset, length };
+}
+function parseTemplateWrite(value) {
+  if (!isObject(value)) throw new TypeError("template request must be an object");
+  const extra = Object.keys(value).filter((key) => key !== "dir");
+  if (extra.length) throw new TypeError(`template request has unexpected fields: ${extra.join(", ")}`);
+  return { dir: parseManifestPath(value.dir) };
+}
+function packSummary(pack) {
+  return [pack.title, pack.artist].filter(Boolean).join(" \u2014 ");
+}
+
+// .dsh-plugin/shared/mv-pack-template.mjs
+var TEMPLATE_FOLDER = "dsh-mv-pack-template";
+var json = (value) => `${JSON.stringify(value, null, 2)}
+`;
+var TEMPLATE_MANIFEST = Object.freeze({
+  $schema: `./${MV_PACK_SCHEMA_FILE}`,
+  format: MV_PACK_FORMAT,
+  version: MV_PACK_VERSION,
+  title: "Song title / \u6B4C\u540D",
+  artist: "Artist / \u6B4C\u624B",
+  credits: ["Music & lyrics: \u2026 (rights belong to their owners)", "Pack made by: \u2026"],
+  notice: "Personal use. The audio and lyric files are your own copies and are not redistributed.",
+  audio: { file: "song.mp3", offset: 0 },
+  lyrics: { file: "lyrics.lrc", offset: 0 },
+  canvas: { renderer: "generic" }
+});
+var TERMINAL_EXAMPLE = Object.freeze({
+  $schema: `../${MV_PACK_SCHEMA_FILE}`,
+  format: MV_PACK_FORMAT,
+  version: MV_PACK_VERSION,
+  title: "Song played by an external TUI program",
+  artist: "\u2026",
+  audio: { file: "song.mp3" },
+  lyrics: { file: "lyrics.lrc" },
+  canvas: { renderer: "generic" },
+  terminal: {
+    label: "my_player.py",
+    program: "python/python.exe",
+    script: "my_player.py",
+    args: ["{script}", { when: "audio", args: ["--audio", "{audio}"] }, { when: "lyrics", args: ["--lyrics", "{lyrics}"] }, { when: "start", args: ["--start", "{start}"] }],
+    cwd: "pack"
+  }
+});
+var WORLD_EXECUTE_ME_EXAMPLE = Object.freeze({
+  $schema: `../${MV_PACK_SCHEMA_FILE}`,
+  format: MV_PACK_FORMAT,
+  version: MV_PACK_VERSION,
+  title: "world.execute(me);",
+  artist: "Mili",
+  credits: ["Song and lyrics \xA9 Mili", "Scenes: yym8224961/world.execute-me-ascii (\u91CE\u751F\u5927K), ported with permission"],
+  duration: 211.906667,
+  audio: { file: "input/song.mp3" },
+  lyrics: { file: "input/lyrics.lrc" },
+  canvas: { renderer: "world-execute-me" },
+  terminal: {
+    label: "tui_live.py",
+    program: "python/python.exe",
+    script: "_tools/tui_live.py",
+    args: ["{script}", { when: "audio", args: ["--audio-file", "{audio}"] }, { when: "start", args: ["--start", "{start}"] }],
+    cwd: "pack"
+  }
+});
+var fileRef = (description, offset) => ({
+  oneOf: [
+    { type: "string", description },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["file"],
+      properties: { file: { type: "string", description }, ...offset ? { offset: { type: "number", minimum: -30, maximum: 30, description: offset } } : {} }
+    }
+  ]
+});
+var MV_PACK_JSON_SCHEMA = Object.freeze({
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "dsh-mv-pack/1",
+  title: "dsh-mv MV pack (mv.json)",
+  type: "object",
+  required: ["format", "version", "title"],
+  patternProperties: { "^x-": {} },
+  additionalProperties: false,
+  properties: {
+    $schema: { type: "string" },
+    format: { const: MV_PACK_FORMAT },
+    version: { const: MV_PACK_VERSION },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    artist: { type: "string", maxLength: 200 },
+    album: { type: "string", maxLength: 200 },
+    credits: { type: "array", maxItems: 50, items: { type: "string", maxLength: 500 } },
+    notice: { type: "string", maxLength: 4e3 },
+    duration: { type: "number", minimum: 1, maximum: 36e3, description: "Song length in seconds; defaults to the audio length." },
+    audio: fileRef("Audio file, relative to this mv.json (no ..) or absolute.", "Seconds added to the audio clock (sync)."),
+    lyrics: fileRef("LRC / SRT / VTT / lyrics.json ([{time,end,en,zh}]).", "Seconds added to lyric times."),
+    spectrum: fileRef("Optional spectrum.json ({fps, frames: number[48][]})."),
+    canvas: {
+      type: "object",
+      additionalProperties: false,
+      patternProperties: { "^x-": {} },
+      properties: { renderer: { enum: MV_CANVAS_RENDERERS, default: "generic" }, fontSize: { type: "number", minimum: 8, maximum: 32 } }
+    },
+    terminal: {
+      type: "object",
+      additionalProperties: false,
+      patternProperties: { "^x-": {} },
+      required: ["program", "args"],
+      properties: {
+        label: { type: "string", maxLength: 200 },
+        program: { type: "string", description: "Executable or interpreter (e.g. python/python.exe). .bat/.cmd/.ps1 and other script files are refused." },
+        script: { type: "string", description: "Optional script file passed via {script}." },
+        cwd: { enum: MV_PACK_CWD, default: "pack" },
+        args: {
+          type: "array",
+          maxItems: 64,
+          description: `One argv element per item, never parsed by a shell. Placeholders: ${MV_PACK_PLACEHOLDERS.map((n) => `{${n}}`).join(" ")}; {{ and }} are literal braces.`,
+          items: {
+            oneOf: [
+              { type: "string" },
+              { type: "object", additionalProperties: false, required: ["when", "args"], properties: { when: { enum: MV_PACK_CONDITIONS }, args: { type: "array", minItems: 1, items: { type: "string" } } } }
+            ]
+          }
+        }
+      }
+    }
+  }
+});
+var README_EN = `# dsh-mv MV pack template
+
+An MV pack is a folder with an \`mv.json\` file. It tells the **MV \u653E\u6620\u5BA4** panel of
+DeepSeek Harness which song to play and how to draw it. You provide the audio and
+lyric files. The pack is plain JSON; \`mv.schema.json\` gives editors such as
+VS Code completion and checks.
+
+## Quick start
+
+1. Copy this folder and rename it (e.g. \`My Song\`).
+2. Put your own audio file next to \`mv.json\` (e.g. \`song.mp3\`) and your lyrics
+   (\`lyrics.lrc\`, \`.srt\`, \`.vtt\` or a \`lyrics.json\`). Replace \`lyrics.example.lrc\`.
+3. Edit \`mv.json\`: title, artist, file names.
+4. Harness \u2192 MV \u653E\u6620\u5BA4 \u2192 **\u5BFC\u5165 MV \u5305\u2026** \u2192 choose the folder (or paste the path of
+   \`mv.json\`). Importing never runs anything.
+
+## Fields
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| \`format\`, \`version\` | yes | Always \`"${MV_PACK_FORMAT}"\` and \`${MV_PACK_VERSION}\`. |
+| \`title\` | yes | Song title. \`artist\`, \`album\` are optional. |
+| \`credits\`, \`notice\` | no | Shown in the panel: who made what, rights notice. |
+| \`duration\` | no | Seconds. Defaults to the audio file's length. |
+| \`audio\` | no | \`{ "file": "song.mp3", "offset": 0 }\`. Without audio the MV plays silently. \`offset\` (\xB130 s) shifts the picture against the audio. |
+| \`lyrics\` | no | \`{ "file": "lyrics.lrc", "offset": 0 }\`. Bilingual LRC: two lines with the same time stamp, or \`English / \u4E2D\u6587\` on one line. |
+| \`spectrum\` | no | \`{ "file": "spectrum.json" }\` with \`{ fps, frames }\` (48 bands per frame). Without it the panel analyses the audio live. |
+| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song) or \`world-execute-me\` (the built-in world.execute(me) scenes, timed for that song only). |
+| \`canvas.fontSize\` | no | 8\u201332 px. |
+| \`terminal\` | no | External TUI program for the **MV \u7EC8\u7AEF** tab (see below). |
+
+Paths are relative to the folder of \`mv.json\` (\`/\` or \`\\\\\`; \`..\` is not allowed)
+or absolute. Unknown fields are errors; put your own data in fields starting with \`x-\`.
+
+## External renderer (\`terminal\`)
+
+\`\`\`json
+"terminal": {
+  "label": "my_player.py",
+  "program": "python/python.exe",
+  "script": "my_player.py",
+  "args": ["{script}", { "when": "audio", "args": ["--audio", "{audio}"] }, "--start", "{start}"],
+  "cwd": "pack"
+}
+\`\`\`
+
+- \`program\`: the executable or interpreter. \`.bat\`, \`.cmd\`, \`.ps1\`, \`.vbs\`, \`.js\`,
+  \`.lnk\` \u2026 are refused. Use the interpreter as \`program\` and the file as \`script\`.
+- \`args\`: one array item = one argument. No shell parses them, so quotes and spaces
+  need no escaping. Placeholders: ${MV_PACK_PLACEHOLDERS.map((n) => `\`{${n}}\``).join(", ")}
+  (absolute paths; \`start\`/\`offset\` are numbers from the panel). \`{{\` / \`}}\` are literal braces.
+- \`{ "when": "audio" | "lyrics" | "spectrum" | "start" | "offset", "args": [...] }\` adds
+  arguments only when that file is configured, or start > 0, or offset \u2260 0.
+- \`cwd\`: \`pack\` (default), \`program\` or \`script\` folder.
+
+**Safety.** An external renderer is a program from the pack, so it can do anything
+you can. The panel never runs it on import. Before every start it checks that the
+files exist and shows the exact command for you to confirm. It refuses to start if
+mv.json changed after you confirmed. In the separate-window (cmd.exe) mode, any path or
+argument containing \`% ! " ^ & | < >\` or a line break is refused.
+
+See \`examples/\` for a python player and for the world.execute(me) preset written
+as a pack.
+`;
+var README_ZH = `# dsh-mv MV \u5305\u6A21\u677F
+
+MV \u5305\u5C31\u662F\u4E00\u4E2A\u5E26 \`mv.json\` \u7684\u6587\u4EF6\u5939\uFF0C\u544A\u8BC9 DeepSeek Harness \u7684 **MV \u653E\u6620\u5BA4**\uFF1A\u64AD\u653E\u54EA\u9996\u6B4C\u3001
+\u7528\u4EC0\u4E48\u65B9\u5F0F\u753B\u3002\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6\u7531\u4F60\u81EA\u5DF1\u63D0\u4F9B\u3002\u6E05\u5355\u662F\u666E\u901A JSON\uFF1B\`mv.schema.json\` \u8BA9
+VS Code \u7B49\u7F16\u8F91\u5668\u63D0\u4F9B\u8865\u5168\u548C\u6821\u9A8C\u3002
+
+## \u5FEB\u901F\u5F00\u59CB
+
+1. \u590D\u5236\u672C\u6587\u4EF6\u5939\u5E76\u6539\u540D\uFF08\u4F8B\u5982 \`\u6211\u7684\u6B4C\`\uFF09\u3002
+2. \u628A\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\uFF08\u5982 \`song.mp3\`\uFF09\u548C\u6B4C\u8BCD\uFF08\`lyrics.lrc\` / \`.srt\` / \`.vtt\` / \`lyrics.json\`\uFF09
+   \u653E\u5230 \`mv.json\` \u65C1\u8FB9\uFF08\u66FF\u6362 \`lyrics.example.lrc\`\uFF09\u3002
+3. \u7F16\u8F91 \`mv.json\`\uFF1A\u6B4C\u540D\u3001\u6B4C\u624B\u3001\u6587\u4EF6\u540D\u3002
+4. Harness \u2192 MV \u653E\u6620\u5BA4 \u2192 **\u5BFC\u5165 MV \u5305\u2026** \u2192 \u9009\u62E9\u8BE5\u6587\u4EF6\u5939\uFF08\u6216\u7C98\u8D34 \`mv.json\` \u7684\u8DEF\u5F84\uFF09\u3002\u5BFC\u5165\u4E0D\u4F1A\u8FD0\u884C\u4EFB\u4F55\u7A0B\u5E8F\u3002
+
+## \u5B57\u6BB5
+
+| \u5B57\u6BB5 | \u5FC5\u586B | \u542B\u4E49 |
+| --- | --- | --- |
+| \`format\`\u3001\`version\` | \u662F | \u56FA\u5B9A\u4E3A \`"${MV_PACK_FORMAT}"\` \u548C \`${MV_PACK_VERSION}\`\u3002 |
+| \`title\` | \u662F | \u6B4C\u540D\uFF1B\`artist\`\u3001\`album\` \u53EF\u9009\u3002 |
+| \`credits\`\u3001\`notice\` | \u5426 | \u9762\u677F\u91CC\u663E\u793A\u7684\u5236\u4F5C\u4FE1\u606F\u4E0E\u7248\u6743\u8BF4\u660E\u3002 |
+| \`duration\` | \u5426 | \u79D2\uFF1B\u9ED8\u8BA4\u53D6\u97F3\u9891\u957F\u5EA6\u3002 |
+| \`audio\` | \u5426 | \`{ "file": "song.mp3", "offset": 0 }\`\uFF1B\u6CA1\u6709\u97F3\u9891\u65F6\u9759\u97F3\u64AD\u653E\u753B\u9762\u3002\`offset\`\uFF08\xB130 \u79D2\uFF09\u8C03\u6574\u753B\u9762\u4E0E\u97F3\u9891\u7684\u540C\u6B65\u3002 |
+| \`lyrics\` | \u5426 | \`{ "file": "lyrics.lrc", "offset": 0 }\`\uFF1B\u53CC\u8BED LRC\uFF1A\u540C\u4E00\u65F6\u95F4\u6233\u5199\u4E24\u884C\uFF0C\u6216\u4E00\u884C\u5199 \`English / \u4E2D\u6587\`\u3002 |
+| \`spectrum\` | \u5426 | \`{ "file": "spectrum.json" }\`\uFF0C\u683C\u5F0F \`{ fps, frames }\`\uFF08\u6BCF\u5E27 48 \u4E2A\u9891\u6BB5\uFF09\uFF1B\u4E0D\u586B\u5219\u5B9E\u65F6\u5206\u6790\u97F3\u9891\u3002 |
+| \`canvas.renderer\` | \u5426 | \`generic\`\uFF08\u901A\u7528\uFF1A\u9891\u8C31 + \u6807\u9898 + \u6B4C\u8BCD\uFF0C\u4EFB\u4F55\u6B4C\u90FD\u80FD\u653E\uFF09\u6216 \`world-execute-me\`\uFF08\u5185\u7F6E\u7684 world.execute(me) \u573A\u666F\uFF0C\u53EA\u9002\u5408\u8FD9\u9996\u6B4C\u7684\u65F6\u95F4\u8F74\uFF09\u3002 |
+| \`canvas.fontSize\` | \u5426 | 8\u201332 \u50CF\u7D20\u3002 |
+| \`terminal\` | \u5426 | **MV \u7EC8\u7AEF** \u9875\u4F7F\u7528\u7684\u5916\u90E8 TUI \u7A0B\u5E8F\uFF08\u89C1\u4E0B\uFF09\u3002 |
+
+\u8DEF\u5F84\u76F8\u5BF9\u4E8E \`mv.json\` \u6240\u5728\u6587\u4EF6\u5939\uFF08\`/\` \u6216 \`\\\\\` \u90FD\u884C\uFF0C\u4E0D\u5141\u8BB8 \`..\`\uFF09\uFF0C\u4E5F\u53EF\u4EE5\u5199\u7EDD\u5BF9\u8DEF\u5F84\u3002
+\u672A\u77E5\u5B57\u6BB5\u4F1A\u62A5\u9519\uFF1B\u81EA\u5B9A\u4E49\u6570\u636E\u8BF7\u7528 \`x-\` \u5F00\u5934\u7684\u5B57\u6BB5\u3002
+
+## \u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F\uFF08\`terminal\`\uFF09
+
+\`\`\`json
+"terminal": {
+  "label": "my_player.py",
+  "program": "python/python.exe",
+  "script": "my_player.py",
+  "args": ["{script}", { "when": "audio", "args": ["--audio", "{audio}"] }, "--start", "{start}"],
+  "cwd": "pack"
+}
+\`\`\`
+
+- \`program\`\uFF1A\u53EF\u6267\u884C\u6587\u4EF6\u6216\u89E3\u91CA\u5668\u3002\u62D2\u7EDD \`.bat\`\u3001\`.cmd\`\u3001\`.ps1\`\u3001\`.vbs\`\u3001\`.js\`\u3001\`.lnk\` \u7B49\uFF1B\u8BF7\u628A\u89E3\u91CA\u5668\u5199\u6210 \`program\`\u3001\u811A\u672C\u5199\u6210 \`script\`\u3002
+- \`args\`\uFF1A\u6570\u7EC4\u7684\u6BCF\u4E00\u9879\u5C31\u662F\u4E00\u4E2A\u53C2\u6570\uFF0C\u4E0D\u7ECF\u8FC7 shell \u89E3\u6790\uFF0C\u7A7A\u683C\u548C\u5F15\u53F7\u65E0\u9700\u8F6C\u4E49\u3002\u5360\u4F4D\u7B26\uFF1A${MV_PACK_PLACEHOLDERS.map((n) => `\`{${n}}\``).join("\u3001")}
+  \uFF08\u8DEF\u5F84\u5747\u4E3A\u7EDD\u5BF9\u8DEF\u5F84\uFF1B\`start\`/\`offset\` \u662F\u9762\u677F\u91CC\u586B\u7684\u6570\u5B57\uFF09\u3002\`{{\` / \`}}\` \u8868\u793A\u5B57\u9762\u7684\u5927\u62EC\u53F7\u3002
+- \`{ "when": "audio" | "lyrics" | "spectrum" | "start" | "offset", "args": [...] }\`\uFF1A\u53EA\u6709\u914D\u7F6E\u4E86\u8BE5\u6587\u4EF6\u3001\u6216\u8D77\u59CB\u79D2\u6570 > 0\u3001\u6216\u504F\u79FB \u2260 0 \u65F6\u624D\u52A0\u5165\u8FD9\u4E9B\u53C2\u6570\u3002
+- \`cwd\`\uFF1A\`pack\`\uFF08\u9ED8\u8BA4\uFF09\u3001\`program\` \u6216 \`script\` \u6240\u5728\u6587\u4EF6\u5939\u3002
+
+**\u5B89\u5168\u8BF4\u660E\u3002** \u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F\u672C\u8D28\u4E0A\u662F\u5305\u91CC\u6307\u5B9A\u7684\u4EFB\u610F\u7A0B\u5E8F\uFF0C\u80FD\u505A\u4F60\u80FD\u505A\u7684\u4EFB\u4F55\u4E8B\u3002\u5BFC\u5165\u65F6\u4E0D\u4F1A\u8FD0\u884C\uFF1B\u6BCF\u6B21\u542F\u52A8\u524D\uFF0C
+\u9762\u677F\u4F1A\u68C0\u67E5\u6587\u4EF6\u662F\u5426\u5B58\u5728\uFF0C\u5E76\u663E\u793A\u5B8C\u6574\u547D\u4EE4\u7B49\u4F60\u786E\u8BA4\uFF1B\u786E\u8BA4\u4E4B\u540E\u82E5 mv.json \u88AB\u6539\u52A8\u5219\u62D2\u7EDD\u542F\u52A8\u3002\u72EC\u7ACB\u7A97\u53E3\uFF08cmd.exe\uFF09
+\u6A21\u5F0F\u4E0B\uFF0C\u51E1\u662F\u542B \`% ! " ^ & | < >\` \u6216\u6362\u884C\u7684\u8DEF\u5F84\u548C\u53C2\u6570\u4E00\u5F8B\u62D2\u7EDD\u3002
+
+\`examples/\` \u91CC\u6709\u4E00\u4E2A Python \u64AD\u653E\u5668\u793A\u4F8B\uFF0C\u4EE5\u53CA\u7528 MV \u5305\u5199\u6CD5\u8868\u793A\u7684 world.execute(me) \u9884\u8BBE\u3002
+`;
+var LRC_EXAMPLE = `[ti:Song title]
+[ar:Artist]
+[offset:0]
+[00:00.00]\uFF08\u8FD9\u662F\u5360\u4F4D\u6B4C\u8BCD\uFF1A\u8BF7\u66FF\u6362\u6210\u4F60\u81EA\u5DF1\u7684\u6B4C\u8BCD\u6587\u4EF6\uFF09
+[00:05.00]First line in English
+[00:05.00]\u7B2C\u4E00\u53E5\u4E2D\u6587
+[00:10.00]Second line / \u7B2C\u4E8C\u53E5
+[00:15.00]Instrumental \u2026
+`;
+function templateFiles() {
+  return [
+    { path: "mv.json", text: json(TEMPLATE_MANIFEST) },
+    { path: MV_PACK_SCHEMA_FILE, text: json(MV_PACK_JSON_SCHEMA) },
+    { path: "README.md", text: README_EN },
+    { path: "README.zh.md", text: README_ZH },
+    { path: "lyrics.example.lrc", text: LRC_EXAMPLE },
+    { path: "examples/terminal-python.mv.json", text: json(TERMINAL_EXAMPLE) },
+    { path: "examples/world-execute-me.mv.json", text: json(WORLD_EXECUTE_ME_EXAMPLE) }
+  ];
+}
+
+// .dsh-plugin/client/mv-pack-state.mjs
+var RECENT_KEY = "dsh-mv.packs.recent.v1";
+var ACTIVE_KEY = "dsh-mv.packs.active.v1";
+var BUILTIN_ID = "builtin:world-execute-me";
+var BUILTIN_PACK = Object.freeze({
+  id: BUILTIN_ID,
+  builtin: true,
+  pack: Object.freeze({
+    title: "world.execute(me);",
+    artist: "Mili",
+    credits: ["Song and lyrics \xA9 Mili", "Scenes: yym8224961/world.execute-me-ascii (\u91CE\u751F\u5927K), ported with permission"],
+    canvas: Object.freeze({ renderer: "world-execute-me" })
+  })
+});
+function loadRecent(storage = globalThis.localStorage) {
+  try {
+    const list = JSON.parse(storage?.getItem(RECENT_KEY) ?? "[]");
+    return Array.isArray(list) ? list.filter((item) => typeof item?.manifestPath === "string").slice(0, MV_PACK_LIMITS.recentPacks) : [];
+  } catch {
+    return [];
+  }
+}
+function saveRecent(list, storage) {
+  try {
+    storage?.setItem(RECENT_KEY, JSON.stringify(list.slice(0, MV_PACK_LIMITS.recentPacks)));
+  } catch {
+  }
+}
+function rememberPack(loaded, { storage = globalThis.localStorage, now = Date.now } = {}) {
+  const entry = { manifestPath: loaded.manifestPath, title: loaded.pack.title, artist: loaded.pack.artist ?? "", usedAt: now() };
+  const list = [entry, ...loadRecent(storage).filter((item) => item.manifestPath.toLowerCase() !== entry.manifestPath.toLowerCase())];
+  saveRecent(list, storage);
+  return list.slice(0, MV_PACK_LIMITS.recentPacks);
+}
+function forgetPack(manifestPath, storage = globalThis.localStorage) {
+  const list = loadRecent(storage).filter((item) => item.manifestPath !== manifestPath);
+  saveRecent(list, storage);
+  return list;
+}
+function loadActive(storage = globalThis.localStorage) {
+  try {
+    return storage?.getItem(ACTIVE_KEY) || BUILTIN_ID;
+  } catch {
+    return BUILTIN_ID;
+  }
+}
+function saveActive(id, storage = globalThis.localStorage) {
+  try {
+    storage?.setItem(ACTIVE_KEY, id);
+  } catch {
+  }
+}
+var recentLabel = (item) => `${packSummary({ title: item.title, artist: item.artist }) || item.manifestPath}`;
+async function loadPackFromHost(api, path) {
+  const manifestPath = parseManifestPath(path);
+  const loaded = unwrapRemote(await api.packLoad({ path: manifestPath }), "\u65E0\u6CD5\u8BFB\u53D6 MV \u5305\u3002");
+  if (!loaded?.pack || typeof loaded.manifestPath !== "string") throw new Error("MV \u5305\u8BFB\u53D6\u7ED3\u679C\u683C\u5F0F\u65E0\u6548\u3002");
+  return { id: `pack:${loaded.manifestPath}`, loadedAt: Date.now(), ...loaded };
+}
+var fromBase64 = (text3) => {
+  const binary = globalThis.atob(text3);
+  const bytes = new Uint8Array(binary.length);
+  for (let i8 = 0; i8 < binary.length; i8++) bytes[i8] = binary.charCodeAt(i8);
+  return bytes;
+};
+var MIME = { ".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".mp4": "audio/mp4", ".aac": "audio/aac", ".ogg": "audio/ogg", ".opus": "audio/ogg", ".flac": "audio/flac", ".wav": "audio/wav", ".webm": "audio/webm" };
+var audioMime = (name) => MIME[(String(name).match(/\.[^.]+$/)?.[0] ?? "").toLowerCase()] ?? "application/octet-stream";
+async function fetchPackBytes(api, manifestPath, role, { onProgress = () => {
+}, isCancelled = () => false, decode = fromBase64 } = {}) {
+  const parts = [];
+  let offset = 0, name = role, size = 0;
+  for (; ; ) {
+    if (isCancelled()) throw new Error("cancelled");
+    const chunk = unwrapRemote(await api.packRead({ manifestPath, role, offset, length: MV_PACK_LIMITS.readChunkBytes }), `\u65E0\u6CD5\u8BFB\u53D6 MV \u5305\u7684 ${role} \u6587\u4EF6\u3002`);
+    name = chunk.name ?? name;
+    size = chunk.size ?? size;
+    if (chunk.bytes > 0) parts.push(decode(chunk.base64));
+    offset += chunk.bytes;
+    onProgress(offset, size);
+    if (chunk.done || chunk.bytes === 0) break;
+  }
+  return { name, parts };
+}
+async function fetchPackAudio(api, manifestPath, { FileClass = globalThis.File, ...options } = {}) {
+  const { name, parts } = await fetchPackBytes(api, manifestPath, "audio", options);
+  return new FileClass(parts, name, { type: audioMime(name) });
+}
+async function fetchPackText(api, manifestPath, role, options = {}) {
+  const { name, parts } = await fetchPackBytes(api, manifestPath, role, options);
+  const total = parts.reduce((n, part) => n + part.length, 0);
+  const bytes = new Uint8Array(total);
+  let at3 = 0;
+  for (const part of parts) {
+    bytes.set(part, at3);
+    at3 += part.length;
+  }
+  return { name, text: new TextDecoder("utf-8").decode(bytes) };
+}
+function directoryPicker(scope = globalThis) {
+  const picker = scope.__DSH_DIRECTORY_PICKER__;
+  return typeof picker?.pick === "function" ? () => picker.pick() : null;
+}
+var CRC_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k2 = 0; k2 < 8; k2++) c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+function crc32(bytes) {
+  let crc = 4294967295;
+  for (let i8 = 0; i8 < bytes.length; i8++) crc = CRC_TABLE[(crc ^ bytes[i8]) & 255] ^ crc >>> 8;
+  return (crc ^ 4294967295) >>> 0;
+}
+function zipFiles(files, { date = new Date(2026, 9, 3) } = {}) {
+  const encoder = new TextEncoder();
+  const time = date.getHours() << 11 | date.getMinutes() << 5 | date.getSeconds() >> 1;
+  const day = date.getFullYear() - 1980 << 9 | date.getMonth() + 1 << 5 | date.getDate();
+  const locals = [], centrals = [];
+  let offset = 0;
+  for (const file of files) {
+    const name = encoder.encode(file.path);
+    const data = typeof file.text === "string" ? encoder.encode(file.text) : file.bytes;
+    const crc = crc32(data);
+    const local = new DataView(new ArrayBuffer(30));
+    local.setUint32(0, 67324752, true);
+    local.setUint16(4, 20, true);
+    local.setUint16(6, 2048, true);
+    local.setUint16(8, 0, true);
+    local.setUint16(10, time, true);
+    local.setUint16(12, day, true);
+    local.setUint32(14, crc, true);
+    local.setUint32(18, data.length, true);
+    local.setUint32(22, data.length, true);
+    local.setUint16(26, name.length, true);
+    local.setUint16(28, 0, true);
+    const central = new DataView(new ArrayBuffer(46));
+    central.setUint32(0, 33639248, true);
+    central.setUint16(4, 20, true);
+    central.setUint16(6, 20, true);
+    central.setUint16(8, 2048, true);
+    central.setUint16(10, 0, true);
+    central.setUint16(12, time, true);
+    central.setUint16(14, day, true);
+    central.setUint32(16, crc, true);
+    central.setUint32(20, data.length, true);
+    central.setUint32(24, data.length, true);
+    central.setUint16(28, name.length, true);
+    central.setUint32(42, offset, true);
+    locals.push(new Uint8Array(local.buffer), name, data);
+    centrals.push(new Uint8Array(central.buffer), name);
+    offset += 30 + name.length + data.length;
+  }
+  const centralSize = centrals.reduce((n, part) => n + part.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 101010256, true);
+  end.setUint16(8, files.length, true);
+  end.setUint16(10, files.length, true);
+  end.setUint32(12, centralSize, true);
+  end.setUint32(16, offset, true);
+  const parts = [...locals, ...centrals, new Uint8Array(end.buffer)];
+  const out = new Uint8Array(parts.reduce((n, part) => n + part.length, 0));
+  let at3 = 0;
+  for (const part of parts) {
+    out.set(part, at3);
+    at3 += part.length;
+  }
+  return out;
+}
+var templateZip = () => zipFiles(templateFiles().map((file) => ({ path: `${TEMPLATE_FOLDER}/${file.path}`, text: file.text })));
+var TEMPLATE_ZIP_NAME = `${TEMPLATE_FOLDER}.zip`;
+
 // .dsh-plugin/client/canvas-mv.jsx
 var FONT_KEY = "dsh-mv.canvas.fontSize";
 var readFont = (fallback) => {
@@ -4805,7 +5452,8 @@ var storeFont = (v2) => {
   }
 };
 var HINT = "SPACE \u64AD\u653E/\u6682\u505C  \u2190/\u2192 5s  [ ] \u5B57\u5E55  Alt+[ ] \u97F3\u9891\u540C\u6B65  1-5 \u7AE0\u8282  F \u5168\u5C4F  H \u5E2E\u52A9";
-function CanvasMv({ defaultFontSize = 14 }) {
+var isGeneric = (pack) => pack?.pack?.canvas?.renderer !== "world-execute-me";
+function CanvasMv({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null }) {
   const wrap2 = import_react.default.useRef(null);
   const stage = import_react.default.useRef(null);
   const canvas = import_react.default.useRef(null);
@@ -4822,10 +5470,16 @@ function CanvasMv({ defaultFontSize = 14 }) {
   const offsetsRef = import_react.default.useRef(offsets);
   offsetsRef.current = offsets;
   const dbRef = import_react.default.useRef(null);
+  const packRef = import_react.default.useRef(pack);
+  packRef.current = pack;
+  const [duration, setDuration] = import_react.default.useState(DURATION);
+  const [packStatus, setPackStatus] = import_react.default.useState("");
   import_react.default.useEffect(() => {
     const live = new LiveSpectrum(audio.current);
     const state = {
-      film: new Film({ energy: (t) => state.energy(t) }),
+      wem: new Film({ energy: (t) => state.energy(t) }),
+      generic: new GenericFilm({ energy: (t) => state.energy(t) }),
+      film: null,
       renderer: new GridRenderer(canvas.current, { fontSize }),
       clock: new FilmClock({ audio: audio.current }),
       live,
@@ -4836,6 +5490,7 @@ function CanvasMv({ defaultFontSize = 14 }) {
       sha: ""
     };
     state.energy = () => live.energy();
+    state.film = state.wem;
     engine.current = state;
     let raf = 0, lastStatus = 0;
     const frame = (now) => {
@@ -4844,7 +5499,7 @@ function CanvasMv({ defaultFontSize = 14 }) {
       if (!box) return;
       const { cols, rows } = state.renderer.fit(box.clientWidth, box.clientHeight);
       const raw = state.clock.time();
-      const { t, ready } = frameTime(raw, state.started);
+      const { t, ready } = frameTime(raw, state.started, state.clock.duration);
       const playing = state.clock.playing;
       const picture = state.film.render(t, cols, rows, {
         paused: !playing,
@@ -4878,7 +5533,7 @@ function CanvasMv({ defaultFontSize = 14 }) {
     if (engine.current) engine.current.clock.audioOffset = value.audioOffset;
     if (engine.current?.sha) saveOffsets(engine.current.sha, value);
   }, []);
-  const useAudioFile = import_react.default.useCallback(async (file, { remember = true } = {}) => {
+  const useAudioFile = import_react.default.useCallback(async (file, { remember = true, packOffset = 0 } = {}) => {
     setError("");
     const state = engine.current;
     try {
@@ -4888,23 +5543,29 @@ function CanvasMv({ defaultFontSize = 14 }) {
       if (old?.startsWith("blob:")) URL.revokeObjectURL(old);
       state.sha = sha;
       const loaded = loadOffsets(sha, KNOWN_AUDIO);
+      if (!loaded.saved && !loaded.known && packOffset) loaded.audioOffset = packOffset;
       setOffsets({ audioOffset: loaded.audioOffset, subtitleOffset: loaded.subtitleOffset });
       state.clock.audioOffset = loaded.audioOffset;
       state.started = false;
       setAudioInfo({ name: file.name, sha, known: loaded.known, saved: loaded.saved, duration: null });
-      if (remember) await putMedia(dbRef.current, "audio", { file, name: file.name, sha });
+      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, "audio", { file, name: file.name, sha });
     } catch (failure) {
       setError(`\u65E0\u6CD5\u8BFB\u53D6\u97F3\u9891\uFF1A${failure?.message ?? failure}`);
     }
   }, []);
-  const useLyricsText = import_react.default.useCallback(async (name, body, { remember = true } = {}) => {
+  const useLyricsText = import_react.default.useCallback(async (name, body, { remember = true, shift = 0 } = {}) => {
     setError("");
     try {
-      const cues = parseLyrics(name, body, { duration: DURATION });
+      const generic2 = engine.current.film === engine.current.generic;
+      const cues = parseLyrics(name, body, { duration: generic2 ? 1e9 : DURATION });
       if (!cues.length) throw new Error("\u6587\u4EF6\u91CC\u6CA1\u6709\u5E26\u65F6\u95F4\u7684\u6B4C\u8BCD\u884C\u3002");
+      if (shift) for (const cue of cues) {
+        cue.time += shift;
+        cue.end += shift;
+      }
       engine.current.film.setLyrics(cues);
       setLyricsInfo({ name, count: cues.length });
-      if (remember) await putMedia(dbRef.current, "lyrics", { name, text: body });
+      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, "lyrics", { name, text: body });
     } catch (failure) {
       setError(`\u65E0\u6CD5\u89E3\u6790\u6B4C\u8BCD\uFF1A${failure?.message ?? failure}`);
     }
@@ -4915,37 +5576,102 @@ function CanvasMv({ defaultFontSize = 14 }) {
       const fileEnergy = spectrumFromJson(body);
       engine.current.energy = (t) => fileEnergy(t);
       setSpectrumInfo({ name });
-      if (remember) await putMedia(dbRef.current, "spectrum", { name, text: body });
+      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, "spectrum", { name, text: body });
     } catch (failure) {
       setError(`\u65E0\u6CD5\u8BFB\u53D6\u9891\u8C31\uFF1A${failure?.message ?? failure}`);
     }
   }, []);
   import_react.default.useEffect(() => {
     let cancelled = false;
+    const state = engine.current;
     void (async () => {
-      const db = await openMediaStore();
+      dbRef.current ?? (dbRef.current = await openMediaStore());
       if (cancelled) return;
-      dbRef.current = db;
-      const [a, l, s15] = await Promise.all([getMedia(db, "audio"), getMedia(db, "lyrics"), getMedia(db, "spectrum")]);
-      if (cancelled) return;
-      if (a?.file) await useAudioFile(a.file, { remember: false });
-      if (l?.text) await useLyricsText(l.name, l.text, { remember: false });
-      if (s15?.text) await useSpectrumText(s15.name, s15.text, { remember: false });
+      const db = dbRef.current;
+      state.clock.pause();
+      state.started = false;
+      state.help = false;
+      state.wem.setLyrics([]);
+      state.generic.setLyrics([]);
+      state.energy = () => state.live.energy();
+      setLyricsInfo(null);
+      setSpectrumInfo(null);
+      setError("");
+      setPackStatus("");
+      const generic2 = isGeneric(pack);
+      state.film = generic2 ? state.generic : state.wem;
+      const length = generic2 ? pack.pack.duration ?? 0 : pack.pack.duration ?? DURATION;
+      state.clock.duration = length || DURATION;
+      state.generic.duration = length;
+      state.generic.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? "" });
+      state.wem.duration = generic2 ? DURATION : pack.pack.duration ?? DURATION;
+      setDuration(state.clock.duration);
+      if (pack.pack.canvas?.fontSize) setFontSize(pack.pack.canvas.fontSize);
+      if (pack.builtin) {
+        const [a, l, s15] = await Promise.all([getMedia(db, "audio"), getMedia(db, "lyrics"), getMedia(db, "spectrum")]);
+        if (cancelled) return;
+        if (a?.file) await useAudioFile(a.file, { remember: false });
+        else clearAudio();
+        if (l?.text) await useLyricsText(l.name, l.text, { remember: false });
+        if (s15?.text) await useSpectrumText(s15.name, s15.text, { remember: false });
+        return;
+      }
+      for (const role of ["lyrics", "spectrum"]) {
+        if (!pack.pack[role] || !pack.files?.[role]?.exists || pack.files[role].tooLarge || !api) continue;
+        try {
+          const { name, text: text3 } = await fetchPackText(api, pack.manifestPath, role, { isCancelled: () => cancelled });
+          if (cancelled) return;
+          if (role === "lyrics") await useLyricsText(name, text3, { remember: false, shift: pack.pack.lyrics?.offset ?? 0 });
+          else await useSpectrumText(name, text3, { remember: false });
+        } catch (failure) {
+          if (!cancelled) setError(`\u65E0\u6CD5\u8BFB\u53D6 MV \u5305\u7684 ${role}\uFF1A${failure?.message ?? failure}`);
+        }
+      }
+      clearAudio();
+      if (pack.pack.audio && pack.files?.audio?.exists && !pack.files.audio.tooLarge && api) {
+        setPackStatus("\u6B63\u5728\u4ECE MV \u5305\u8BFB\u53D6\u97F3\u9891\u2026");
+        try {
+          const file = await fetchPackAudio(api, pack.manifestPath, {
+            isCancelled: () => cancelled,
+            onProgress: (done, total) => {
+              if (!cancelled) setPackStatus(`\u6B63\u5728\u4ECE MV \u5305\u8BFB\u53D6\u97F3\u9891\u2026 ${Math.round(done / Math.max(1, total) * 100)}%`);
+            }
+          });
+          if (cancelled) return;
+          await useAudioFile(file, { remember: false, packOffset: pack.pack.audio.offset ?? 0 });
+          setPackStatus("");
+        } catch (failure) {
+          if (!cancelled) {
+            setPackStatus("");
+            setError(`\u65E0\u6CD5\u8BFB\u53D6 MV \u5305\u7684\u97F3\u9891\uFF1A${failure?.message ?? failure}`);
+          }
+        }
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pack.id, pack.loadedAt]);
+  const clearAudio = () => {
+    const old = audio.current.src;
+    audio.current.removeAttribute("src");
+    audio.current.load?.();
+    if (old?.startsWith("blob:")) URL.revokeObjectURL(old);
+    engine.current.sha = "";
+    engine.current.clock.audioOffset = 0;
+    setAudioInfo(null);
+    setOffsets({ audioOffset: 0, subtitleOffset: 0 });
+  };
   const clearSpectrum = async () => {
     const state = engine.current;
     state.energy = () => state.live.energy();
     setSpectrumInfo(null);
-    await deleteMedia(dbRef.current, "spectrum");
+    if (packRef.current?.builtin) await deleteMedia(dbRef.current, "spectrum");
   };
   const clearLyrics = async () => {
     engine.current.film.setLyrics([]);
     setLyricsInfo(null);
-    await deleteMedia(dbRef.current, "lyrics");
+    if (packRef.current?.builtin) await deleteMedia(dbRef.current, "lyrics");
   };
   const play = async () => {
     const state = engine.current;
@@ -4953,7 +5679,7 @@ function CanvasMv({ defaultFontSize = 14 }) {
       state.live.ensure();
     } catch {
     }
-    if (state.clock.time() >= DURATION - 0.5) state.clock.seek(0);
+    if (state.clock.time() >= state.clock.duration - 0.5) state.clock.seek(0);
     state.started = true;
     try {
       await state.clock.play();
@@ -4978,7 +5704,7 @@ function CanvasMv({ defaultFontSize = 14 }) {
         void play();
         return true;
       case "chapter":
-        state.clock.seek(action.at);
+        state.clock.seek(state.film === state.generic ? genericChapters(state.clock.duration)[action.index][0] : action.at);
         void play();
         return true;
       case "cue": {
@@ -5049,7 +5775,9 @@ function CanvasMv({ defaultFontSize = 14 }) {
     input.click();
   };
   const known = audioInfo?.known;
-  const chapter = CHAPTERS.reduce((current, item) => item[0] <= Math.max(0, status.t) ? item : current, CHAPTERS[0]);
+  const generic = isGeneric(pack);
+  const chapterList = generic ? genericChapters(duration) : CHAPTERS;
+  const chapter = chapterList.reduce((current, item) => item[0] <= Math.max(0, status.t) ? item : current, chapterList[0]);
   return /* @__PURE__ */ import_react.default.createElement("div", { className: "mv-canvas-tab" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "mv-toolbar" }, /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "mv-button", onClick: pickAudio }, "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "mv-button", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, "\u9009\u62E9\u6B4C\u8BCD\uFF08LRC / SRT / lyrics.json\uFF09\u2026"), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => pickText(".json", useSpectrumText) }, "\u9891\u8C31 spectrum.json\uFF08\u53EF\u9009\uFF09\u2026"), /* @__PURE__ */ import_react.default.createElement("label", { className: "mv-inline" }, "\u5B57\u53F7", /* @__PURE__ */ import_react.default.createElement("input", { type: "number", min: 8, max: 32, value: fontSize, onChange: (event) => setFontSize(Math.min(32, Math.max(8, Number(event.target.value) || 14))) })), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: toggleFullscreen }, fullscreen ? "\u9000\u51FA\u5168\u5C4F" : "\u5168\u5C4F (F)")), /* @__PURE__ */ import_react.default.createElement("div", { className: "mv-media-line" }, /* @__PURE__ */ import_react.default.createElement("span", null, "\u97F3\u9891\uFF1A", audioInfo ? /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("b", null, audioInfo.name), " ", /* @__PURE__ */ import_react.default.createElement("code", { title: audioInfo.sha }, audioInfo.sha.slice(0, 12), "\u2026"), known ? ` \xB7 \u5DF2\u8BC6\u522B\uFF1A${known.label}` : " \xB7 \u672A\u8BC6\u522B\u7684\u7248\u672C\uFF0C\u8BF7\u7528 Alt+[ / Alt+] \u6821\u51C6") : "\u672A\u9009\u62E9\uFF08\u9759\u97F3\u6A21\u5F0F\uFF0C\u753B\u9762\u7167\u5E38\u64AD\u653E\uFF09"), /* @__PURE__ */ import_react.default.createElement("span", null, "\u6B4C\u8BCD\uFF1A", lyricsInfo ? /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, lyricsInfo.name, "\uFF08", lyricsInfo.count, " \u53E5\uFF09 ", /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearLyrics() }, "\u79FB\u9664")) : "\u672A\u52A0\u8F7D\uFF08\u53EA\u663E\u793A [ \u95F4\u594F ]\uFF09"), /* @__PURE__ */ import_react.default.createElement("span", null, "\u9891\u8C31\uFF1A", spectrumInfo ? /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, spectrumInfo.name, " ", /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearSpectrum() }, "\u6539\u7528\u5B9E\u65F6")) : "\u5B9E\u65F6\u5206\u6790\uFF08AnalyserNode\uFF09")), error && /* @__PURE__ */ import_react.default.createElement("p", { className: "mv-error", role: "alert" }, error), /* @__PURE__ */ import_react.default.createElement(
     "div",
     {
@@ -5067,16 +5795,16 @@ function CanvasMv({ defaultFontSize = 14 }) {
       className: "mv-seek",
       type: "range",
       min: 0,
-      max: DURATION,
+      max: Math.max(1, duration),
       step: 0.1,
-      value: Math.max(0, Math.min(DURATION, status.t)),
+      value: Math.max(0, Math.min(duration, status.t)),
       onChange: (event) => {
         engine.current.clock.seek(Number(event.target.value));
         engine.current.started = true;
       },
       "aria-label": "\u8FDB\u5EA6"
     }
-  ), /* @__PURE__ */ import_react.default.createElement("span", { className: "mv-clock" }, clockText(Math.max(0, status.t))), /* @__PURE__ */ import_react.default.createElement("span", { className: "mv-chip" }, chapter[1], " ", chapter[2])), /* @__PURE__ */ import_react.default.createElement("div", { className: "mv-transport" }, /* @__PURE__ */ import_react.default.createElement("span", { className: "mv-chip" }, "\u5B57\u5E55\u504F\u79FB ", formatOffset(offsets.subtitleOffset), "\uFF08[ / ]\uFF09"), /* @__PURE__ */ import_react.default.createElement("span", { className: "mv-chip" }, "\u97F3\u9891\u540C\u6B65 ", formatOffset(offsets.audioOffset), "\uFF08Alt+[ / Alt+]\uFF09"), audioInfo && /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "mv-link", onClick: () => {
+  ), /* @__PURE__ */ import_react.default.createElement("span", { className: "mv-clock" }, generic ? `${timeText(status.t)} / ${timeText(duration)}` : clockText(Math.max(0, status.t))), /* @__PURE__ */ import_react.default.createElement("span", { className: "mv-chip" }, chapter[1], " ", chapter[2])), /* @__PURE__ */ import_react.default.createElement("div", { className: "mv-transport" }, /* @__PURE__ */ import_react.default.createElement("span", { className: "mv-chip" }, "\u5B57\u5E55\u504F\u79FB ", formatOffset(offsets.subtitleOffset), "\uFF08[ / ]\uFF09"), /* @__PURE__ */ import_react.default.createElement("span", { className: "mv-chip" }, "\u97F3\u9891\u540C\u6B65 ", formatOffset(offsets.audioOffset), "\uFF08Alt+[ / Alt+]\uFF09"), audioInfo && /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "mv-link", onClick: () => {
     resetOffsets(audioInfo.sha);
     const v2 = loadOffsets(audioInfo.sha, KNOWN_AUDIO);
     applyOffsets(v2);
@@ -5086,7 +5814,16 @@ function CanvasMv({ defaultFontSize = 14 }) {
     {
       ref: audio,
       preload: "auto",
-      onLoadedMetadata: (event) => setAudioInfo((info) => info ? { ...info, duration: event.currentTarget.duration } : info),
+      onLoadedMetadata: (event) => {
+        const length = event.currentTarget.duration;
+        setAudioInfo((info) => info ? { ...info, duration: length } : info);
+        const state = engine.current;
+        if (state && state.film === state.generic && !packRef.current?.pack?.duration && Number.isFinite(length) && length > 0) {
+          state.clock.duration = length;
+          state.generic.duration = length;
+          setDuration(length);
+        }
+      },
       onEnded: () => {
         if (engine.current) engine.current.started = true;
       }
@@ -18021,34 +18758,6 @@ var xterm_default = `/**
 }
 `;
 
-// .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.1.2" : "";
-var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u7EC8\u7AEF\u3002";
-function isMissingRemoteMethod(message) {
-  const value = String(message ?? "");
-  return /transport failure for [^:]+: HTTP 404\b/.test(value) || /Remote method \S+ is no longer mounted/.test(value);
-}
-function remoteErrorText(message, fallback = "") {
-  if (isMissingRemoteMethod(message)) return STALE_HOST_MESSAGE;
-  return String(message ?? "").trim() || fallback;
-}
-var text = (value) => typeof value === "string" ? value.trim() : "";
-function unwrapRemote(response, fallback) {
-  if (!response?.ok) throw new Error(remoteErrorText(text(response?.error?.message) || text(response?.error), fallback));
-  const inner = response.value;
-  if (inner && typeof inner === "object" && typeof inner.ok === "boolean") {
-    if (!inner.ok) throw new Error(remoteErrorText(text(inner.error?.message) || text(inner.error), fallback));
-    return inner.value;
-  }
-  return inner;
-}
-function versionNotice({ hostVersion, clientVersion = CLIENT_VERSION, loaded = true } = {}) {
-  if (!loaded || !clientVersion) return "";
-  if (typeof hostVersion !== "string" || !hostVersion) return `${STALE_HOST_MESSAGE}\uFF08\u754C\u9762 ${clientVersion}\uFF0C\u540E\u53F0\u672A\u62A5\u544A\u7248\u672C\uFF09`;
-  if (hostVersion !== clientVersion) return `${STALE_HOST_MESSAGE}\uFF08\u754C\u9762 ${clientVersion}\uFF0C\u540E\u53F0 ${hostVersion}\uFF09`;
-  return "";
-}
-
 // .dsh-plugin/shared/mv-terminal-protocol.mjs
 var MV_TERMINAL_SCRIPT = ["_tools", "tui_live.py"];
 var MV_TERMINAL_LIMITS = Object.freeze({
@@ -18074,9 +18783,9 @@ var MV_TERMINAL_LIMITS = Object.freeze({
   maxLatencySeconds: 5,
   maxOffsetSeconds: 30
 });
-var MV_PLAYERS = Object.freeze(["python", "rust"]);
+var MV_PLAYERS = Object.freeze(["python", "rust", "pack"]);
 var RUST_BASENAME = /^world-execute-me(?:-rust)?(?:[-_.][\w.-]{0,60})?(?:\.exe)?$/i;
-var MV_PLAYER_LABELS = Object.freeze({ python: "world_execute_me\uFF08tui_live.py\uFF09", rust: "world-execute-me-ascii-rust\uFF08\u7528\u6237\u81EA\u5907\u53EF\u6267\u884C\u6587\u4EF6\uFF09" });
+var MV_PLAYER_LABELS = Object.freeze({ python: "world_execute_me\uFF08tui_live.py\uFF09", rust: "world-execute-me-ascii-rust\uFF08\u7528\u6237\u81EA\u5907\u53EF\u6267\u884C\u6587\u4EF6\uFF09", pack: "\u5F53\u524D MV \u5305\u7684\u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F" });
 var PYTHON_BASENAME = /^(?:python(?:3(?:\.\d{1,2})?)?w?|py)(?:\.exe)?$/i;
 var SESSION_ID = /^mvterm-[a-z0-9]{6,40}$/;
 var isMvSessionId = (value) => typeof value === "string" && SESSION_ID.test(value);
@@ -18094,7 +18803,7 @@ function boundedInteger(value, min, max, subject) {
   if (!Number.isInteger(value) || value < min || value > max) throw new TypeError(`${subject} must be an integer from ${min} to ${max}`);
   return value;
 }
-function boundedNumber(value, min, max, subject) {
+function boundedNumber2(value, min, max, subject) {
   if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max) throw new TypeError(`${subject} must be a number from ${min} to ${max}`);
   return value;
 }
@@ -18119,8 +18828,8 @@ function parseRustLaunch(request2) {
   if (!RUST_BASENAME.test(basenameOf(exePath))) throw new TypeError("\u53EF\u6267\u884C\u6587\u4EF6\u5FC5\u987B\u662F world-execute-me-rust(.exe) \u8FD9\u6837\u7684\u53D1\u5E03\u6587\u4EF6\u540D");
   let audioFile;
   if (request2.audioFile !== void 0 && request2.audioFile !== null && request2.audioFile !== "") audioFile = absolutePath(request2.audioFile, "\u97F3\u9891\u6587\u4EF6");
-  const start = request2.start === void 0 || request2.start === null ? 0 : boundedNumber(request2.start, 0, MV_TERMINAL_LIMITS.maxStartSeconds, "start");
-  const offset = request2.offset === void 0 || request2.offset === null ? void 0 : boundedNumber(request2.offset, -MV_TERMINAL_LIMITS.maxOffsetSeconds, MV_TERMINAL_LIMITS.maxOffsetSeconds, "offset");
+  const start = request2.start === void 0 || request2.start === null ? 0 : boundedNumber2(request2.start, 0, MV_TERMINAL_LIMITS.maxStartSeconds, "start");
+  const offset = request2.offset === void 0 || request2.offset === null ? void 0 : boundedNumber2(request2.offset, -MV_TERMINAL_LIMITS.maxOffsetSeconds, MV_TERMINAL_LIMITS.maxOffsetSeconds, "offset");
   if (request2.autoplay !== void 0 && typeof request2.autoplay !== "boolean") throw new TypeError("autoplay must be a boolean");
   return {
     player: "rust",
@@ -18133,8 +18842,9 @@ function parseRustLaunch(request2) {
 }
 function parseMvLaunch(value) {
   const request2 = plainObject(value, "launch");
-  if (request2.player !== void 0 && !MV_PLAYERS.includes(request2.player)) throw new TypeError("player must be python or rust");
+  if (request2.player !== void 0 && !MV_PLAYERS.includes(request2.player)) throw new TypeError("player must be python, rust or pack");
   if (request2.player === "rust") return parseRustLaunch(request2);
+  if (request2.player === "pack") return parsePackLaunch(request2);
   const allowed = /* @__PURE__ */ new Set(["player", "pythonPath", "packageDir", "audioFile", "noAudio", "start", "audioLatency"]);
   const extra = Object.keys(request2).filter((key) => !allowed.has(key));
   if (extra.length) throw new TypeError(`launch has unexpected fields: ${extra.join(", ")}`);
@@ -18145,8 +18855,8 @@ function parseMvLaunch(value) {
   if (request2.noAudio !== void 0 && typeof request2.noAudio !== "boolean") throw new TypeError("noAudio must be a boolean");
   let audioFile;
   if (request2.audioFile !== void 0 && request2.audioFile !== null && request2.audioFile !== "") audioFile = absolutePath(request2.audioFile, "\u97F3\u9891\u6587\u4EF6");
-  const start = request2.start === void 0 || request2.start === null ? 0 : boundedNumber(request2.start, 0, MV_TERMINAL_LIMITS.maxStartSeconds, "start");
-  const audioLatency = request2.audioLatency === void 0 || request2.audioLatency === null ? void 0 : boundedNumber(request2.audioLatency, 0, MV_TERMINAL_LIMITS.maxLatencySeconds, "audioLatency");
+  const start = request2.start === void 0 || request2.start === null ? 0 : boundedNumber2(request2.start, 0, MV_TERMINAL_LIMITS.maxStartSeconds, "start");
+  const audioLatency = request2.audioLatency === void 0 || request2.audioLatency === null ? void 0 : boundedNumber2(request2.audioLatency, 0, MV_TERMINAL_LIMITS.maxLatencySeconds, "audioLatency");
   return {
     player: "python",
     pythonPath,
@@ -18264,7 +18974,7 @@ function cmdArgv(resolved) {
 // .dsh-plugin/client/mv-terminal-state.mjs
 var text2 = (value) => typeof value === "string" ? value.trim() : "";
 var FORM_KEY = "dsh-mv.terminal.form.v1";
-var EMPTY_FORM = Object.freeze({ player: "python", exePath: "", offset: "", autoplay: false, pythonPath: "", packageDir: "", audioFile: "", noAudio: false, start: "", audioLatency: "" });
+var EMPTY_FORM = Object.freeze({ packStart: "", packOffset: "", player: "python", exePath: "", offset: "", autoplay: false, pythonPath: "", packageDir: "", audioFile: "", noAudio: false, start: "", audioLatency: "" });
 function loadForm(storage = globalThis.localStorage) {
   try {
     return { ...EMPTY_FORM, ...JSON.parse(storage?.getItem(FORM_KEY) ?? "{}") };
@@ -18286,7 +18996,13 @@ function suggestedPython(packageDir) {
   const sep = sepOf(dir);
   return `${dir}${sep}python${sep}python${sep === "\\" ? ".exe" : ""}`;
 }
-function launchFromForm(form) {
+function launchFromForm(form, ctx = {}) {
+  if (form.player === "pack") {
+    const launch2 = { player: "pack", manifestPath: text2(ctx.pack?.manifestPath) };
+    if (text2(String(form.packStart ?? ""))) launch2.start = Number(form.packStart);
+    if (text2(String(form.packOffset ?? ""))) launch2.offset = Number(form.packOffset);
+    return launch2;
+  }
   if (form.player === "rust") {
     const launch2 = { player: "rust", exePath: text2(form.exePath), autoplay: Boolean(form.autoplay) };
     if (text2(form.audioFile)) launch2.audioFile = text2(form.audioFile);
@@ -18300,8 +19016,14 @@ function launchFromForm(form) {
   if (text2(String(form.audioLatency ?? ""))) launch.audioLatency = Number(form.audioLatency);
   return launch;
 }
-function formProblem(form) {
-  const launch = launchFromForm(form);
+function formProblem(form, ctx = {}) {
+  const launch = launchFromForm(form, ctx);
+  if (launch.player === "pack") {
+    if (!ctx.pack?.terminal) return "\u5F53\u524D MV \u5305\u6CA1\u6709\u914D\u7F6E\u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F\uFF08mv.json \u91CC\u7684 terminal\uFF09\u3002\u8BF7\u5148\u5BFC\u5165\u5E26 terminal \u7684 MV \u5305\uFF0C\u6216\u9009\u62E9\u5176\u4ED6\u64AD\u653E\u5668\u3002";
+    if ("start" in launch && !(Number.isFinite(launch.start) && launch.start >= 0 && launch.start <= MV_PACK_LIMITS.maxStart)) return `\u8D77\u59CB\u79D2\u6570\u5E94\u5728 0\u2013${MV_PACK_LIMITS.maxStart} \u4E4B\u95F4\u3002`;
+    if ("offset" in launch && !(Number.isFinite(launch.offset) && Math.abs(launch.offset) <= MV_PACK_LIMITS.maxOffset)) return `\u504F\u79FB\u5E94\u5728 \xB1${MV_PACK_LIMITS.maxOffset} \u79D2\u4E4B\u5185\u3002`;
+    return "";
+  }
   if (launch.player === "rust") {
     if (!launch.exePath) return "\u8BF7\u586B\u5199 world-execute-me-rust.exe \u7684\u8DEF\u5F84\uFF08\u4ECE\u8BE5\u9879\u76EE\u7684 GitHub Release \u81EA\u884C\u4E0B\u8F7D\uFF09\u3002";
     if (!isAbsolutePathText(launch.exePath)) return "\u53EF\u6267\u884C\u6587\u4EF6\u8DEF\u5F84\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\u3002";
@@ -18321,14 +19043,29 @@ function formProblem(form) {
   if ("audioLatency" in launch && !(Number.isFinite(launch.audioLatency) && launch.audioLatency >= 0 && launch.audioLatency <= MV_TERMINAL_LIMITS.maxLatencySeconds)) return `\u97F3\u9891\u5EF6\u8FDF\u5E94\u5728 0\u2013${MV_TERMINAL_LIMITS.maxLatencySeconds} \u79D2\u4E4B\u95F4\u3002`;
   return "";
 }
-function commandPreview(form) {
+function commandPreview(form, ctx = {}) {
+  if (form.player === "pack") return ctx.checked?.display ?? "\uFF08\u70B9\u300C\u68C0\u67E5\u300D\u540E\u663E\u793A Host \u4ECE mv.json \u89E3\u6790\u51FA\u7684\u5B8C\u6574\u547D\u4EE4\uFF09";
   const launch = launchFromForm(form);
   if (launch.player === "rust") return displayCommand(launch.exePath, rustTerminalArgs(launch));
   const sep = sepOf(launch.packageDir || launch.pythonPath);
   const script = [launch.packageDir, ...MV_TERMINAL_SCRIPT].join(sep);
   return displayCommand(launch.pythonPath, mvTerminalArgs(launch, script));
 }
-function confirmationDetails(form, checked) {
+function confirmationDetails(form, checked, ctx = {}) {
+  if (form.player === "pack") {
+    return {
+      title: `\u542F\u52A8 MV \u5305\u300C${ctx.pack?.pack?.title ?? ""}\u300D\u7684\u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F\uFF1F`,
+      command: checked?.display ?? "\uFF08\u5C1A\u672A\u68C0\u67E5\uFF09",
+      cwd: checked?.cwd ?? "",
+      argv: checked?.args ?? [],
+      points: [
+        "\u8FD9\u4E2A\u7A0B\u5E8F\u548C\u53C2\u6570\u6765\u81EA\u4F60\u5BFC\u5165\u7684 mv.json\u3002\u5B83\u662F\u4EFB\u610F\u7A0B\u5E8F\uFF0C\u4F1A\u4EE5\u4F60\u7684\u6743\u9650\u8FD0\u884C\uFF0C\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\u3002\u53EA\u542F\u52A8\u4F60\u4FE1\u4EFB\u7684 MV \u5305\u3002",
+        `\u6E05\u5355\uFF1A${ctx.pack?.manifestPath ?? ""}`,
+        "\u4E0A\u9762\u5C31\u662F Host \u5C06\u6267\u884C\u7684\u5B8C\u6574\u547D\u4EE4\uFF08\u6BCF\u4E2A\u53C2\u6570\u5355\u72EC\u4F20\u9012\uFF0C\u4E0D\u7ECF\u8FC7 shell\uFF09\u3002\u5982\u679C\u786E\u8BA4\u540E mv.json \u88AB\u6539\u52A8\uFF0CHost \u4F1A\u62D2\u7EDD\u542F\u52A8\u3002",
+        "\u5173\u95ED\u9762\u677F\u3001\u7ED3\u675F\u4F1A\u8BDD\u6216\u7EA6 2 \u5206\u949F\u65E0\u4EBA\u67E5\u770B\u65F6\uFF0C\u8FDB\u7A0B\u4F1A\u88AB\u7ED3\u675F\u3002"
+      ]
+    };
+  }
   return {
     title: "\u542F\u52A8 MV \u7EC8\u7AEF\uFF1F",
     command: checked?.display ?? commandPreview(form),
@@ -18341,33 +19078,48 @@ function confirmationDetails(form, checked) {
     ]
   };
 }
-function plannedLaunch(form) {
+function plannedLaunch(form, ctx = {}) {
+  if (form.player === "pack") {
+    if (!ctx.checked) throw new Error("\u8BF7\u5148\u70B9\u300C\u68C0\u67E5\u300D\uFF0C\u7531 Host \u89E3\u6790 MV \u5305\u7684\u547D\u4EE4\u3002");
+    return { file: ctx.checked.file, args: ctx.checked.args, cwd: ctx.checked.cwd };
+  }
   const launch = launchFromForm(form);
   if (launch.player === "rust") return { file: launch.exePath, args: rustTerminalArgs(launch), cwd: launch.exePath.replace(/[\\/][^\\/]*$/, "") };
   const sep = sepOf(launch.packageDir || launch.pythonPath);
   return { file: launch.pythonPath, args: mvTerminalArgs(launch, [launch.packageDir, ...MV_TERMINAL_SCRIPT].join(sep)), cwd: launch.packageDir };
 }
-function consoleCommandPreview(form) {
+function consoleCommandPreview(form, ctx = {}) {
   try {
-    return consoleCommandDisplay(plannedLaunch(form));
+    return consoleCommandDisplay(plannedLaunch(form, ctx));
   } catch (error) {
     return error.message;
   }
 }
-function consoleProblem(form, { platform } = {}) {
+function consoleProblem(form, { platform, pack, checked } = {}) {
   if (platform && platform !== "win32") return "\u72EC\u7ACB\u63A7\u5236\u53F0\u7A97\u53E3\u53EA\u5728 Windows \u4E0A\u53EF\u7528\uFF1B\u5F53\u524D\u7CFB\u7EDF\u8BF7\u7528\u9762\u677F\u5185\u7684 MV \u7EC8\u7AEF\u3002";
+  if (form.player === "pack") {
+    const problem = formProblem(form, { pack });
+    if (problem || !checked) return problem;
+    const unsafe = cmdSafetyProblems(checked.file, checked.args ?? [], checked.cwd);
+    return unsafe.length ? unsafe.join("\n") : "";
+  }
   const launch = launchFromForm(form);
   for (const value of [launch.pythonPath, launch.packageDir, launch.exePath, launch.audioFile]) {
     if (typeof value === "string" && /%/.test(value)) return `\u8DEF\u5F84\u91CC\u542B\u6709 %\uFF0C\u72EC\u7ACB\u7A97\u53E3\u6A21\u5F0F\u65E0\u6CD5\u5B89\u5168\u4F20\u9012\uFF1A${value}`;
   }
   return formProblem(form);
 }
-function consoleConfirmationDetails(form) {
+function consoleConfirmationDetails(form, ctx = {}) {
+  const pack = form.player === "pack";
   return {
-    title: "\u5728\u72EC\u7ACB\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u64AD\u653E\uFF1F",
-    command: consoleCommandPreview(form),
-    player: commandPreview(form),
-    points: [
+    title: pack ? `\u5728\u72EC\u7ACB\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u8FD0\u884C MV \u5305\u300C${ctx.pack?.pack?.title ?? ""}\u300D\u7684\u6E32\u67D3\u7A0B\u5E8F\uFF1F` : "\u5728\u72EC\u7ACB\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u64AD\u653E\uFF1F",
+    command: consoleCommandPreview(form, ctx),
+    player: commandPreview(form, ctx),
+    points: pack ? [
+      "\u8FD9\u4E2A\u7A0B\u5E8F\u548C\u53C2\u6570\u6765\u81EA\u4F60\u5BFC\u5165\u7684 mv.json\u3002\u5B83\u662F\u4EFB\u610F\u7A0B\u5E8F\uFF0C\u4F1A\u4EE5\u4F60\u7684\u6743\u9650\u8FD0\u884C\uFF0C\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\u3002\u53EA\u542F\u52A8\u4F60\u4FE1\u4EFB\u7684 MV \u5305\u3002",
+      '\u5C06\u7528 cmd.exe \u7684 start \u6253\u5F00\u4E00\u4E2A\u65B0\u7684\u63A7\u5236\u53F0\u7A97\u53E3\u3002\u6240\u6709\u8DEF\u5F84\u548C\u53C2\u6570\u90FD\u52A0\u5F15\u53F7\uFF1B\u542B % ! " ^ & | < > \u6216\u6362\u884C\u7684\u503C\u4E00\u5F8B\u62D2\u7EDD\u3002',
+      "\u5982\u679C\u786E\u8BA4\u540E mv.json \u88AB\u6539\u52A8\uFF0CHost \u4F1A\u62D2\u7EDD\u542F\u52A8\u3002\u9762\u677F\u91CC\u7684\u300C\u7ED3\u675F\u300D\u4F1A\u7528 taskkill /T \u7ED3\u675F\u5B83\u3002"
+    ] : [
       "\u5C06\u7528 cmd.exe \u7684 start \u6253\u5F00\u4E00\u4E2A\u65B0\u7684\u63A7\u5236\u53F0\u7A97\u53E3\uFF08\u82E5\u7CFB\u7EDF\u9ED8\u8BA4\u7EC8\u7AEF\u662F Windows Terminal\uFF0C\u4F1A\u5728\u5176\u4E2D\u6253\u5F00\uFF09\uFF0C\u5728\u91CC\u9762\u8FD0\u884C\u4E0A\u9762\u8FD9\u4E00\u4E2A\u56FA\u5B9A\u7684\u64AD\u653E\u5668\uFF1B\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\u3002",
       "\u6240\u6709\u8DEF\u5F84\u90FD\u52A0\u5F15\u53F7\u4F20\u9012\uFF1B\u4E0D\u80FD\u9644\u52A0\u4EFB\u4F55\u5176\u4ED6\u547D\u4EE4\u6216\u53C2\u6570\u3002",
       "\u753B\u9762\u76F4\u63A5\u7531\u771F\u5B9E\u63A7\u5236\u53F0\u663E\u793A\uFF0C\u6CA1\u6709\u9762\u677F\u8F6C\u53D1\u7684\u5EF6\u8FDF\uFF1B\u6309\u952E\u8BF7\u5728\u90A3\u4E2A\u7A97\u53E3\u91CC\u6309\u3002",
@@ -18378,8 +19130,8 @@ function consoleConfirmationDetails(form) {
 async function loadConsoles(api) {
   return unwrapRemote(await api.consoleInfo({}), "\u65E0\u6CD5\u8BFB\u53D6\u72EC\u7ACB\u7A97\u53E3\u72B6\u6001\u3002");
 }
-async function startConsole(api, form) {
-  const started = unwrapRemote(await api.consoleStart({ ...launchFromForm(form), confirmed: true }), "\u65E0\u6CD5\u6253\u5F00\u72EC\u7ACB\u7A97\u53E3\u3002");
+async function startConsole(api, form, ctx = {}) {
+  const started = unwrapRemote(await api.consoleStart({ ...launchFromForm(form, ctx), ...expectation(form, ctx), confirmed: true }), "\u65E0\u6CD5\u6253\u5F00\u72EC\u7ACB\u7A97\u53E3\u3002");
   if (!isMvConsoleId(started?.consoleId)) throw new Error("\u542F\u52A8\u7ED3\u679C\u7F3A\u5C11\u6709\u6548\u7684\u7A97\u53E3 ID\u3002");
   return started;
 }
@@ -18408,13 +19160,19 @@ async function loadInfo(api) {
   if (!info || typeof info !== "object") throw new Error("MV \u63D2\u4EF6\u72B6\u6001\u683C\u5F0F\u65E0\u6548\u3002");
   return info;
 }
-async function checkLaunch(api, form) {
-  return unwrapRemote(await api.terminalCheck(launchFromForm(form)), "\u8DEF\u5F84\u68C0\u67E5\u5931\u8D25\u3002");
+async function checkLaunch(api, form, ctx = {}) {
+  return unwrapRemote(await api.terminalCheck(launchFromForm(form, ctx)), "\u8DEF\u5F84\u68C0\u67E5\u5931\u8D25\u3002");
 }
-async function startSession(api, form, { cols = 120, rows = 40 } = {}) {
+function expectation(form, ctx) {
+  if (form.player !== "pack") return {};
+  if (typeof ctx.checked?.display !== "string") throw new Error("\u8BF7\u5148\u68C0\u67E5\u5E76\u786E\u8BA4 MV \u5305\u7684\u547D\u4EE4\u3002");
+  return { expectDisplay: ctx.checked.display };
+}
+async function startSession(api, form, { cols = 120, rows = 40 } = {}, ctx = {}) {
   const L2 = MV_TERMINAL_LIMITS;
   const request2 = {
-    ...launchFromForm(form),
+    ...launchFromForm(form, ctx),
+    ...expectation(form, ctx),
     confirmed: true,
     cols: Math.min(L2.maxCols, Math.max(L2.minCols, Math.round(cols))),
     rows: Math.min(L2.maxRows, Math.max(L2.minRows, Math.round(rows)))
@@ -18597,7 +19355,7 @@ function TerminalScreen({ api, session, onEnded, fontSize }) {
   }, [fontSize]);
   return /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-term-pane" }, session.limitation && /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-error" }, session.limitation, session.ptyError ? `\uFF08${session.ptyError}\uFF09` : ""), error && /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-error", role: "alert" }, error), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-term-screen", ref: host }), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u6E32\u67D3\uFF1A", renderer || "\u2026", " \xB7 \u8F93\u51FA\u7ECF\u957F\u8F6E\u8BE2\u8F6C\u53D1\uFF0C\u7EA6\u6BD4\u539F\u751F\u7EC8\u7AEF\u6162 30\u2013150 ms\u3002\u70B9\u8FDB\u7EC8\u7AEF\u540E\u6309\u952E\u76F4\u63A5\u53D1\u7ED9\u64AD\u653E\u5668\uFF08Q \u9000\u51FA\uFF09\u3002"));
 }
-function MvTerminal({ api, info, reloadInfo }) {
+function MvTerminal({ api, info, reloadInfo, pack = null }) {
   const [form, setFormState] = import_react2.default.useState(loadForm);
   const [checked, setChecked] = import_react2.default.useState(null);
   const [checking, setChecking] = import_react2.default.useState(false);
@@ -18643,29 +19401,51 @@ function MvTerminal({ api, info, reloadInfo }) {
     setConfirming(false);
     setProblemText("");
   };
-  const problem = formProblem(form);
+  const activePack = pack && !pack.builtin ? pack : null;
+  const ctx = { pack: activePack, checked };
+  const problem = formProblem(form, ctx);
   const rust = form.player === "rust";
+  const packMode = form.player === "pack";
+  import_react2.default.useEffect(() => {
+    setChecked(null);
+    setConfirming(false);
+  }, [activePack?.id, activePack?.loadedAt]);
   const check = async () => {
     setChecking(true);
     setProblemText("");
     try {
-      const value = await checkLaunch(api, form);
+      const value = await checkLaunch(api, form, ctx);
       if (mounted.current) setChecked(value);
+      return value;
     } catch (error) {
       if (mounted.current) {
         setChecked(null);
         setProblemText(errorText(error, "\u8DEF\u5F84\u68C0\u67E5\u5931\u8D25\u3002"));
       }
+      return null;
     } finally {
       if (mounted.current) setChecking(false);
     }
+  };
+  const confirmAfterCheck = async (consoleWanted) => {
+    const value = packMode ? await check() : checked;
+    if (packMode && !value) return;
+    if (packMode && consoleWanted) {
+      const blocked = consoleProblem(form, { platform: consoles.platform ?? info?.platform, pack: activePack, checked: value });
+      if (blocked) {
+        setProblemText(blocked);
+        return;
+      }
+    }
+    setConsoleMode(consoleWanted);
+    setConfirming(true);
   };
   const openConsole = async () => {
     setStarting(true);
     setProblemText("");
     setConsoleNote("");
     try {
-      const value = await startConsole(api, form);
+      const value = await startConsole(api, form, ctx);
       if (!mounted.current) return;
       setConfirming(false);
       setConsoleMode(false);
@@ -18681,7 +19461,7 @@ function MvTerminal({ api, info, reloadInfo }) {
     setStarting(true);
     setProblemText("");
     try {
-      const value = await startSession(api, form, { cols: 120, rows: 40 });
+      const value = await startSession(api, form, { cols: 120, rows: 40 }, ctx);
       if (!mounted.current) {
         void api.terminalStop({ sessionId: value.sessionId });
         return;
@@ -18701,12 +19481,12 @@ function MvTerminal({ api, info, reloadInfo }) {
       void reloadInfo?.();
     }
   }, [reloadInfo]);
-  const details = confirmationDetails(form, checked);
-  const consoleDetails = consoleConfirmationDetails(form);
+  const details = confirmationDetails(form, checked, ctx);
+  const consoleDetails = consoleConfirmationDetails(form, ctx);
   const platform = consoles.platform ?? info?.platform;
-  const consoleBlocked = consoles.supported === false ? consoles.reason || "\u72EC\u7ACB\u7A97\u53E3\u4E0D\u53EF\u7528\u3002" : consoleProblem(form, { platform });
+  const consoleBlocked = consoles.supported === false ? consoles.reason || "\u72EC\u7ACB\u7A97\u53E3\u4E0D\u53EF\u7528\u3002" : consoleProblem(form, { platform, pack: activePack, checked });
   const backendText = info ? info.backend === "pty" ? "\u4F2A\u7EC8\u7AEF\uFF08PTY\uFF09\u53EF\u7528\u3002" : `PTY \u4E0D\u53EF\u7528\uFF0C\u53EA\u80FD\u7528\u7BA1\u9053\u6A21\u5F0F\uFF08\u64AD\u653E\u5668\u591A\u534A\u65E0\u6CD5\u663E\u793A\uFF09\u3002${info.ptyError ? `\u539F\u56E0\uFF1A${info.ptyError}` : ""}` : "";
-  return /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-term-tab" }, /* @__PURE__ */ import_react2.default.createElement("style", null, xterm_default), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u5728\u9762\u677F\u91CC\u8FD0\u884C\u4F60\u672C\u673A\u5DF2\u6709\u7684\u7EC8\u7AEF\u64AD\u653E\u5668\u3002", backendText), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u64AD\u653E\u5668"), /* @__PURE__ */ import_react2.default.createElement("select", { value: form.player, onChange: (event) => setForm({ player: event.target.value }) }, /* @__PURE__ */ import_react2.default.createElement("option", { value: "python" }, MV_PLAYER_LABELS.python), /* @__PURE__ */ import_react2.default.createElement("option", { value: "rust" }, MV_PLAYER_LABELS.rust))), !rust && /* @__PURE__ */ import_react2.default.createElement(import_react2.default.Fragment, null, /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u64AD\u653E\u5668\u76EE\u5F55\uFF08\u542B _tools\\tui_live.py\uFF09"), /* @__PURE__ */ import_react2.default.createElement(
+  return /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-term-tab" }, /* @__PURE__ */ import_react2.default.createElement("style", null, xterm_default), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u5728\u9762\u677F\u91CC\u8FD0\u884C\u4F60\u672C\u673A\u5DF2\u6709\u7684\u7EC8\u7AEF\u64AD\u653E\u5668\u3002", backendText), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u64AD\u653E\u5668"), /* @__PURE__ */ import_react2.default.createElement("select", { value: form.player, onChange: (event) => setForm({ player: event.target.value }) }, /* @__PURE__ */ import_react2.default.createElement("option", { value: "python" }, MV_PLAYER_LABELS.python), /* @__PURE__ */ import_react2.default.createElement("option", { value: "rust" }, MV_PLAYER_LABELS.rust), /* @__PURE__ */ import_react2.default.createElement("option", { value: "pack" }, activePack?.terminal ? `MV \u5305\uFF1A${activePack.pack.title}\uFF08${activePack.terminal.label}\uFF09` : MV_PLAYER_LABELS.pack))), packMode && /* @__PURE__ */ import_react2.default.createElement(import_react2.default.Fragment, null, /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption mv-wide" }, activePack?.terminal ? /* @__PURE__ */ import_react2.default.createElement(import_react2.default.Fragment, null, "\u6E32\u67D3\u7A0B\u5E8F\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, activePack.terminal.program), activePack.terminal.script ? /* @__PURE__ */ import_react2.default.createElement(import_react2.default.Fragment, null, " \xB7 \u811A\u672C\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, activePack.terminal.script)) : null, " \xB7 \u6E05\u5355\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, activePack.manifestPath)) : "\u5F53\u524D\u6CA1\u6709\u5E26 terminal \u914D\u7F6E\u7684 MV \u5305\u3002\u8BF7\u5728\u4E0A\u65B9\u300CMV \u5305\u300D\u91CC\u5BFC\u5165\u4E00\u4E2A\uFF08mv.json \u7684 terminal \u5B57\u6BB5\uFF09\u3002"), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u8D77\u59CB\u79D2\u6570 ", "{start}"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.packStart, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ packStart: event.target.value }) })), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u504F\u79FB\uFF08\u79D2\uFF09", "{offset}"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.packOffset, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ packOffset: event.target.value }) }))), !rust && !packMode && /* @__PURE__ */ import_react2.default.createElement(import_react2.default.Fragment, null, /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u64AD\u653E\u5668\u76EE\u5F55\uFF08\u542B _tools\\tui_live.py\uFF09"), /* @__PURE__ */ import_react2.default.createElement(
     "input",
     {
       value: form.packageDir,
@@ -18717,44 +19497,138 @@ function MvTerminal({ api, info, reloadInfo }) {
         if (!form.pythonPath && form.packageDir) setForm({ pythonPath: suggestedPython(form.packageDir) });
       }
     }
-  )), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "Python \u89E3\u91CA\u5668"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.pythonPath, spellCheck: false, placeholder: "F:\\everyAI\\dsh-mv-cli\\world_execute_me\\python\\python.exe", onChange: (event) => setForm({ pythonPath: event.target.value }) }))), rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "world-execute-me-rust.exe\uFF08\u81EA\u884C\u4ECE\u5176 GitHub Release \u4E0B\u8F7D\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.exePath, spellCheck: false, placeholder: "D:\\tools\\world-execute-me-rust\\world-execute-me-rust.exe", onChange: (event) => setForm({ exePath: event.target.value }) })), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, rust ? "\u97F3\u9891\u6587\u4EF6\uFF08\u53EF\u9009\uFF0C\u4EC5 MP3\uFF1B\u7559\u7A7A\u64AD\u653E\u5176\u5185\u5D4C\u97F3\u4E50\uFF09" : "\u97F3\u9891\u6587\u4EF6\uFF08\u53EF\u9009\uFF1B\u7559\u7A7A\u7528\u64AD\u653E\u5668\u9ED8\u8BA4\u7684 input\\song.mp3\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.audioFile, spellCheck: false, disabled: !rust && form.noAudio, placeholder: "D:\\music\\world.execute(me).mp3", onChange: (event) => setForm({ audioFile: event.target.value }) })), !rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react2.default.createElement("input", { type: "checkbox", checked: form.noAudio, onChange: (event) => setForm({ noAudio: event.target.checked }) }), " \u4E0D\u64AD\u653E\u58F0\u97F3\uFF08--no-audio\uFF09"), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u8D77\u59CB\u79D2\u6570"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.start, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ start: event.target.value }) })), !rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u97F3\u9891\u5EF6\u8FDF\u8865\u507F\uFF08\u79D2\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.audioLatency, placeholder: "\u9ED8\u8BA4", inputMode: "decimal", onChange: (event) => setForm({ audioLatency: event.target.value }) })), rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u5B57\u5E55\u504F\u79FB\uFF08\u79D2\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.offset, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ offset: event.target.value }) })), rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react2.default.createElement("input", { type: "checkbox", checked: form.autoplay, onChange: (event) => setForm({ autoplay: event.target.checked }) }), " \u7ACB\u5373\u64AD\u653E\uFF08--autoplay\uFF09")), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u5C06\u8FD0\u884C\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, problem ? "\u2014" : checked?.display ?? commandPreview(form))), !confirming && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-actions" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(problem) || checking, onClick: () => void check() }, checking ? "\u68C0\u67E5\u4E2D\u2026" : "\u68C0\u67E5\u8DEF\u5F84"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(problem) || Boolean(session && !ended), onClick: () => {
-    setConsoleMode(false);
-    setConfirming(true);
-  } }, "\u5728\u9762\u677F\u4E2D\u542F\u52A8\u2026"), /* @__PURE__ */ import_react2.default.createElement(
+  )), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "Python \u89E3\u91CA\u5668"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.pythonPath, spellCheck: false, placeholder: "F:\\everyAI\\dsh-mv-cli\\world_execute_me\\python\\python.exe", onChange: (event) => setForm({ pythonPath: event.target.value }) }))), rust && !packMode && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "world-execute-me-rust.exe\uFF08\u81EA\u884C\u4ECE\u5176 GitHub Release \u4E0B\u8F7D\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.exePath, spellCheck: false, placeholder: "D:\\tools\\world-execute-me-rust\\world-execute-me-rust.exe", onChange: (event) => setForm({ exePath: event.target.value }) })), !packMode && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, rust ? "\u97F3\u9891\u6587\u4EF6\uFF08\u53EF\u9009\uFF0C\u4EC5 MP3\uFF1B\u7559\u7A7A\u64AD\u653E\u5176\u5185\u5D4C\u97F3\u4E50\uFF09" : "\u97F3\u9891\u6587\u4EF6\uFF08\u53EF\u9009\uFF1B\u7559\u7A7A\u7528\u64AD\u653E\u5668\u9ED8\u8BA4\u7684 input\\song.mp3\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.audioFile, spellCheck: false, disabled: !rust && form.noAudio, placeholder: "D:\\music\\world.execute(me).mp3", onChange: (event) => setForm({ audioFile: event.target.value }) })), !rust && !packMode && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react2.default.createElement("input", { type: "checkbox", checked: form.noAudio, onChange: (event) => setForm({ noAudio: event.target.checked }) }), " \u4E0D\u64AD\u653E\u58F0\u97F3\uFF08--no-audio\uFF09"), !packMode && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u8D77\u59CB\u79D2\u6570"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.start, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ start: event.target.value }) })), !rust && !packMode && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u97F3\u9891\u5EF6\u8FDF\u8865\u507F\uFF08\u79D2\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.audioLatency, placeholder: "\u9ED8\u8BA4", inputMode: "decimal", onChange: (event) => setForm({ audioLatency: event.target.value }) })), rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u5B57\u5E55\u504F\u79FB\uFF08\u79D2\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.offset, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ offset: event.target.value }) })), rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react2.default.createElement("input", { type: "checkbox", checked: form.autoplay, onChange: (event) => setForm({ autoplay: event.target.checked }) }), " \u7ACB\u5373\u64AD\u653E\uFF08--autoplay\uFF09")), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u5C06\u8FD0\u884C\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, problem ? "\u2014" : checked?.display ?? commandPreview(form, ctx))), !confirming && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-actions" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(problem) || checking, onClick: () => void check() }, checking ? "\u68C0\u67E5\u4E2D\u2026" : packMode ? "\u68C0\u67E5" : "\u68C0\u67E5\u8DEF\u5F84"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(problem) || checking || Boolean(session && !ended), onClick: () => void confirmAfterCheck(false) }, "\u5728\u9762\u677F\u4E2D\u542F\u52A8\u2026"), /* @__PURE__ */ import_react2.default.createElement(
     "button",
     {
       type: "button",
       className: "mv-button mv-button-secondary",
-      disabled: Boolean(consoleBlocked),
+      disabled: Boolean(consoleBlocked) || checking,
       title: consoleBlocked || "\u5728\u771F\u5B9E\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u64AD\u653E",
-      onClick: () => {
-        setConsoleMode(true);
-        setConfirming(true);
-      }
+      onClick: () => void confirmAfterCheck(true)
     },
     "\u5728\u72EC\u7ACB\u7A97\u53E3\u64AD\u653E\u2026"
   ), session && !ended && /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => void api.terminalStop({ sessionId: session.sessionId }) }, "\u7ED3\u675F"), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-inline" }, "\u5B57\u53F7", /* @__PURE__ */ import_react2.default.createElement("input", { type: "number", min: 8, max: 24, value: fontSize, onChange: (event) => setFontSize(Math.min(24, Math.max(8, Number(event.target.value) || 13))) })), /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-caption" }, problem || (checked ? "\u8DEF\u5F84\u68C0\u67E5\u901A\u8FC7\u3002" : ""))), !confirming && !problem && consoleBlocked && /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u72EC\u7ACB\u7A97\u53E3\uFF1A", consoleBlocked), confirming && consoleMode && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u5728\u72EC\u7ACB\u7A97\u53E3\u64AD\u653E" }, /* @__PURE__ */ import_react2.default.createElement("strong", null, consoleDetails.title), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "Host \u5C06\u6267\u884C\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, consoleDetails.command), /* @__PURE__ */ import_react2.default.createElement("br", null), "\u7A97\u53E3\u91CC\u8FD0\u884C\u7684\u64AD\u653E\u5668\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, consoleDetails.player)), /* @__PURE__ */ import_react2.default.createElement("ul", null, consoleDetails.points.map((point2) => /* @__PURE__ */ import_react2.default.createElement("li", { key: point2 }, point2))), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-actions" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", disabled: starting, onClick: () => void openConsole() }, starting ? "\u6B63\u5728\u6253\u5F00\u2026" : "\u786E\u8BA4\u6253\u5F00\u7A97\u53E3"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: starting, onClick: () => {
     setConfirming(false);
     setConsoleMode(false);
-  } }, "\u53D6\u6D88"))), confirming && !consoleMode && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u542F\u52A8 MV \u7EC8\u7AEF" }, /* @__PURE__ */ import_react2.default.createElement("strong", null, details.title), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u547D\u4EE4\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, details.command), /* @__PURE__ */ import_react2.default.createElement("br", null), "\u5DE5\u4F5C\u76EE\u5F55\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, details.cwd)), /* @__PURE__ */ import_react2.default.createElement("ul", null, details.points.map((point2) => /* @__PURE__ */ import_react2.default.createElement("li", { key: point2 }, point2))), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-actions" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", disabled: starting, onClick: () => void start() }, starting ? "\u6B63\u5728\u542F\u52A8\u2026" : "\u786E\u8BA4\u542F\u52A8"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: starting, onClick: () => setConfirming(false) }, "\u53D6\u6D88"))), problemText && /* @__PURE__ */ import_react2.default.createElement("pre", { className: "mv-error", role: "alert" }, problemText), consoleNote && /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, consoleNote), consoles.consoles.length > 0 && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-console-list", "aria-label": "\u72EC\u7ACB\u64AD\u653E\u7A97\u53E3" }, consoles.consoles.map((item) => /* @__PURE__ */ import_react2.default.createElement("div", { key: item.consoleId, className: "mv-console-item" }, /* @__PURE__ */ import_react2.default.createElement("code", { title: item.display }, item.pid ? `PID ${item.pid}` : "\u672A\u8DDF\u8E2A"), /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-caption" }, item.exited ? item.endReason === "stopped" ? "\u5DF2\u7531\u4F60\u7ED3\u675F" : item.endReason === "dispose" ? "\u63D2\u4EF6\u5378\u8F7D\u65F6\u5DF2\u7ED3\u675F" : "\u7A97\u53E3\u5DF2\u5173\u95ED" : "\u6B63\u5728\u64AD\u653E", " \xB7 ", new Date(item.startedAt).toLocaleTimeString()), !item.exited && item.tracked && /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => {
+  } }, "\u53D6\u6D88"))), confirming && !consoleMode && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u542F\u52A8 MV \u7EC8\u7AEF" }, /* @__PURE__ */ import_react2.default.createElement("strong", null, details.title), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u547D\u4EE4\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, details.command), /* @__PURE__ */ import_react2.default.createElement("br", null), "\u5DE5\u4F5C\u76EE\u5F55\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, details.cwd)), details.argv?.length > 0 && /* @__PURE__ */ import_react2.default.createElement("ol", { className: "mv-argv", "aria-label": "\u9010\u4E2A\u53C2\u6570" }, details.argv.map((arg, i8) => /* @__PURE__ */ import_react2.default.createElement("li", { key: i8 }, /* @__PURE__ */ import_react2.default.createElement("code", null, arg)))), /* @__PURE__ */ import_react2.default.createElement("ul", null, details.points.map((point2) => /* @__PURE__ */ import_react2.default.createElement("li", { key: point2 }, point2))), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-actions" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", disabled: starting, onClick: () => void start() }, starting ? "\u6B63\u5728\u542F\u52A8\u2026" : "\u786E\u8BA4\u542F\u52A8"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: starting, onClick: () => setConfirming(false) }, "\u53D6\u6D88"))), problemText && /* @__PURE__ */ import_react2.default.createElement("pre", { className: "mv-error", role: "alert" }, problemText), consoleNote && /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, consoleNote), consoles.consoles.length > 0 && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-console-list", "aria-label": "\u72EC\u7ACB\u64AD\u653E\u7A97\u53E3" }, consoles.consoles.map((item) => /* @__PURE__ */ import_react2.default.createElement("div", { key: item.consoleId, className: "mv-console-item" }, /* @__PURE__ */ import_react2.default.createElement("code", { title: item.display }, item.pid ? `PID ${item.pid}` : "\u672A\u8DDF\u8E2A"), /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-caption" }, item.exited ? item.endReason === "stopped" ? "\u5DF2\u7531\u4F60\u7ED3\u675F" : item.endReason === "dispose" ? "\u63D2\u4EF6\u5378\u8F7D\u65F6\u5DF2\u7ED3\u675F" : "\u7A97\u53E3\u5DF2\u5173\u95ED" : "\u6B63\u5728\u64AD\u653E", " \xB7 ", new Date(item.startedAt).toLocaleTimeString()), !item.exited && item.tracked && /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => {
     void stopConsole(api, item.consoleId).catch((error) => setProblemText(errorText(error, "\u65E0\u6CD5\u7ED3\u675F\u72EC\u7ACB\u7A97\u53E3\u3002"))).then(refreshConsoles);
   } }, "\u7ED3\u675F")))), session && /* @__PURE__ */ import_react2.default.createElement(TerminalScreen, { key: session.sessionId, api, session, onEnded, fontSize }), ended && /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, endDescription(ended)));
 }
 
+// .dsh-plugin/client/mv-pack-bar.jsx
+var import_react3 = __toESM(require("react"), 1);
+function downloadZip() {
+  const blob = new Blob([templateZip()], { type: "application/zip" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = TEMPLATE_ZIP_NAME;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 3e4);
+}
+function PackBar({ api, active, recent, onSelect, onLoaded, onRecent }) {
+  const [importing, setImporting] = import_react3.default.useState(false);
+  const [path, setPath] = import_react3.default.useState("");
+  const [busy, setBusy] = import_react3.default.useState("");
+  const [note, setNote] = import_react3.default.useState("");
+  const [error, setError] = import_react3.default.useState("");
+  const pick2 = directoryPicker();
+  const importPath = async (value) => {
+    setBusy("import");
+    setError("");
+    setNote("");
+    try {
+      const loaded = await loadPackFromHost(api, value);
+      onRecent(rememberPack(loaded));
+      onLoaded(loaded);
+      setImporting(false);
+      setPath("");
+      setNote(`\u5DF2\u5BFC\u5165\u300C${loaded.pack.title}\u300D\u3002\u5BFC\u5165\u53EA\u8BFB\u53D6\u6E05\u5355\uFF0C\u4E0D\u4F1A\u8FD0\u884C\u4EFB\u4F55\u7A0B\u5E8F\u3002`);
+    } catch (failure) {
+      setError(errorText(failure, "\u65E0\u6CD5\u5BFC\u5165 MV \u5305\u3002"));
+    } finally {
+      setBusy("");
+    }
+  };
+  const chooseFolder = async () => {
+    setError("");
+    try {
+      const dir = await pick2();
+      if (dir) {
+        setPath(dir);
+        await importPath(dir);
+      }
+    } catch (failure) {
+      setError(errorText(failure, "\u65E0\u6CD5\u6253\u5F00\u6587\u4EF6\u5939\u9009\u62E9\u5668\u3002"));
+    }
+  };
+  const writeTemplate = async () => {
+    setBusy("template");
+    setError("");
+    setNote("");
+    try {
+      const dir = await pick2();
+      if (!dir) return;
+      const written = unwrapRemote(await api.packTemplate({ dir }), "\u65E0\u6CD5\u5199\u5165\u6A21\u677F\u3002");
+      setNote(`\u6A21\u677F\u5DF2\u4FDD\u5B58\u5230 ${written.path}\uFF08${written.files.length} \u4E2A\u6587\u4EF6\uFF09\u3002\u7F16\u8F91\u5176\u4E2D\u7684 mv.json\uFF0C\u653E\u5165\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u518D\u7528\u300C\u5BFC\u5165 MV \u5305\u300D\u9009\u62E9\u8BE5\u6587\u4EF6\u5939\u3002`);
+    } catch (failure) {
+      setError(errorText(failure, "\u65E0\u6CD5\u5199\u5165\u6A21\u677F\u3002"));
+    } finally {
+      setBusy("");
+    }
+  };
+  const reload = async () => {
+    if (active.builtin) return;
+    await importPath(active.manifestPath);
+  };
+  const pack = active.pack;
+  const warnings = active.warnings ?? [];
+  return /* @__PURE__ */ import_react3.default.createElement("section", { className: "mv-pack", "aria-label": "MV \u5305" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-toolbar" }, /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-inline" }, "MV \u5305", /* @__PURE__ */ import_react3.default.createElement("select", { value: active.id, onChange: (event) => onSelect(event.target.value) }, /* @__PURE__ */ import_react3.default.createElement("option", { value: BUILTIN_ID }, "\u5185\u7F6E\uFF1Aworld.execute(me);\uFF08\u81EA\u9009\u97F3\u9891 / \u6B4C\u8BCD\uFF09"), recent.map((item) => /* @__PURE__ */ import_react3.default.createElement("option", { key: item.manifestPath, value: `pack:${item.manifestPath}` }, recentLabel(item))))), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => {
+    setImporting((value) => !value);
+    setError("");
+  } }, "\u5BFC\u5165 MV \u5305\u2026"), /* @__PURE__ */ import_react3.default.createElement(
+    "button",
+    {
+      type: "button",
+      className: "mv-button mv-button-secondary",
+      disabled: busy === "template",
+      onClick: () => pick2 ? void writeTemplate() : downloadZip(),
+      title: pick2 ? "\u9009\u62E9\u4E00\u4E2A\u6587\u4EF6\u5939\uFF0C\u5728\u5176\u4E2D\u65B0\u5EFA dsh-mv-pack-template\uFF08\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\uFF09" : "\u4E0B\u8F7D zip"
+    },
+    busy === "template" ? "\u6B63\u5728\u5199\u5165\u2026" : "\u4E0B\u8F7D\u6A21\u677F\u2026"
+  ), pick2 && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: downloadZip }, "\u6216\u4E0B\u8F7D zip"), !active.builtin && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", disabled: Boolean(busy), onClick: () => void reload() }, "\u91CD\u65B0\u8BFB\u53D6"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => {
+    onRecent(forgetPack(active.manifestPath));
+    onSelect(BUILTIN_ID);
+  } }, "\u4ECE\u5217\u8868\u79FB\u9664"))), importing && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "mv.json \u6216\u5B83\u6240\u5728\u6587\u4EF6\u5939\u7684\u7EDD\u5BF9\u8DEF\u5F84"), /* @__PURE__ */ import_react3.default.createElement(
+    "input",
+    {
+      value: path,
+      spellCheck: false,
+      placeholder: "D:\\MV\\My Song\\mv.json",
+      onChange: (event) => setPath(event.target.value),
+      onKeyDown: (event) => {
+        if (event.key === "Enter" && path.trim()) void importPath(path);
+      }
+    }
+  )), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-actions", style: { alignSelf: "flex-end" } }, pick2 && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void chooseFolder() }, "\u9009\u62E9\u6587\u4EF6\u5939\u2026"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: !path.trim() || Boolean(busy), onClick: () => void importPath(path) }, busy === "import" ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5BFC\u5165"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-pack-info" }, /* @__PURE__ */ import_react3.default.createElement("b", null, pack.title), pack.artist ? /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, " \u2014 ", pack.artist) : null, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-chip" }, pack.canvas?.renderer === "world-execute-me" ? "\u753B\u5E03\uFF1Aworld.execute(me) \u573A\u666F" : "\u753B\u5E03\uFF1A\u901A\u7528\uFF08\u9891\u8C31 + \u6B4C\u8BCD\uFF09"), !active.builtin && /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-chip" }, active.terminal ? `\u5916\u90E8\u6E32\u67D3\uFF1A${active.terminal.label}` : "\u65E0\u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F"), !active.builtin && /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-caption", title: active.manifestPath }, active.manifestPath)), (pack.credits?.length > 0 || pack.notice) && /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, [...pack.credits ?? [], pack.notice].filter(Boolean).join(" \xB7 ")), warnings.length > 0 && /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-error" }, warnings.join("\n")), error && /* @__PURE__ */ import_react3.default.createElement("pre", { className: "mv-error", role: "alert" }, error), note && /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, note));
+}
+
 // .dsh-plugin/client/mv.css
-var mv_default = '.mv-root { padding: 16px 20px 24px; color: var(--dsw-alias-label-primary, inherit); font-size: 13px; line-height: 20px; box-sizing: border-box; }\n.mv-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }\n.mv-title { margin: 0 0 4px; font-size: 18px; font-family: "Cascadia Mono", Consolas, monospace; }\n.mv-caption { color: var(--dsw-alias-label-secondary, #888); font-size: 12px; margin: 4px 0; }\n.mv-banner { margin: 10px 0; padding: 8px 12px; border-radius: 8px; background: rgba(255, 95, 95, .12); color: var(--dsw-alias-label-danger, #d33); }\n.mv-error { color: var(--dsw-alias-label-danger, #d33); white-space: pre-wrap; margin: 6px 0; }\n.mv-tabs { display: flex; gap: 4px; margin: 12px 0 10px; border-bottom: 1px solid var(--dsw-alias-border-l1, rgba(127,127,127,.3)); }\n.mv-tabs button { border: 0; background: transparent; color: inherit; padding: 6px 14px; cursor: pointer; font: inherit; border-bottom: 2px solid transparent; }\n.mv-tabs button[aria-selected="true"] { border-bottom-color: #ffaf5f; font-weight: 600; }\n.mv-toolbar, .mv-transport, .mv-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; }\n.mv-media-line { display: flex; flex-direction: column; gap: 2px; margin: 6px 0; font-size: 12px; }\n.mv-media-line code { font-size: 11px; }\n.mv-button { border: 1px solid #ffaf5f; background: #ffaf5f; color: #000; border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit; }\n.mv-button:disabled { opacity: .5; cursor: default; }\n.mv-button-secondary { background: transparent; color: inherit; border-color: var(--dsw-alias-border-l1, rgba(127,127,127,.5)); }\n.mv-link { border: 0; background: none; color: #d7875f; cursor: pointer; padding: 0 2px; font: inherit; text-decoration: underline; }\n.mv-inline { display: inline-flex; gap: 4px; align-items: center; font-size: 12px; }\n.mv-inline input { width: 52px; }\n.mv-chip { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; padding: 1px 8px; border-radius: 10px; background: rgba(127,127,127,.15); }\n.mv-clock { font-family: "Cascadia Mono", Consolas, monospace; min-width: 120px; }\n.mv-seek { flex: 1 1 260px; accent-color: #ffaf5f; }\n.mv-stage-wrap { background: #000; border-radius: 8px; outline: none; padding: 6px; box-sizing: border-box; }\n.mv-stage-wrap:focus-visible { box-shadow: 0 0 0 2px #ffaf5f; }\n.mv-stage { height: min(68vh, 760px); min-height: 360px; resize: vertical; overflow: hidden; display: flex; align-items: center; justify-content: center; }\n.mv-stage canvas { display: block; }\n.mv-fullscreen { border-radius: 0; padding: 0; width: 100vw; height: 100vh; }\n.mv-fullscreen .mv-stage { height: 100vh; resize: none; }\n.mv-form { display: flex; flex-wrap: wrap; gap: 10px 14px; margin: 8px 0; }\n.mv-field { display: flex; flex-direction: column; gap: 3px; font-size: 12px; min-width: 140px; }\n.mv-field input, .mv-field select { font: inherit; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--dsw-alias-border-l1, rgba(127,127,127,.4)); background: transparent; color: inherit; }\n.mv-wide { flex: 1 1 420px; }\n.mv-check { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; align-self: flex-end; }\n.mv-confirm { margin-top: 10px; padding: 12px; border: 1px solid #ffaf5f; border-radius: 8px; }\n.mv-confirm ul { margin: 6px 0; padding-left: 20px; }\n.mv-confirm code, .mv-term-tab code { word-break: break-all; }\n.mv-term-pane { margin-top: 10px; }\n.mv-term-screen { height: min(70vh, 760px); min-height: 300px; resize: vertical; overflow: hidden; padding: 4px; background: #000; border-radius: 8px; box-sizing: border-box; }\n.mv-console-list { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }\n.mv-console-item { display: flex; gap: 10px; align-items: center; font-size: 12px; }\n';
+var mv_default = '.mv-root { padding: 16px 20px 24px; color: var(--dsw-alias-label-primary, inherit); font-size: 13px; line-height: 20px; box-sizing: border-box; }\n.mv-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }\n.mv-title { margin: 0 0 4px; font-size: 18px; font-family: "Cascadia Mono", Consolas, monospace; }\n.mv-caption { color: var(--dsw-alias-label-secondary, #888); font-size: 12px; margin: 4px 0; }\n.mv-banner { margin: 10px 0; padding: 8px 12px; border-radius: 8px; background: rgba(255, 95, 95, .12); color: var(--dsw-alias-label-danger, #d33); }\n.mv-error { color: var(--dsw-alias-label-danger, #d33); white-space: pre-wrap; margin: 6px 0; }\n.mv-tabs { display: flex; gap: 4px; margin: 12px 0 10px; border-bottom: 1px solid var(--dsw-alias-border-l1, rgba(127,127,127,.3)); }\n.mv-tabs button { border: 0; background: transparent; color: inherit; padding: 6px 14px; cursor: pointer; font: inherit; border-bottom: 2px solid transparent; }\n.mv-tabs button[aria-selected="true"] { border-bottom-color: #ffaf5f; font-weight: 600; }\n.mv-toolbar, .mv-transport, .mv-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; }\n.mv-media-line { display: flex; flex-direction: column; gap: 2px; margin: 6px 0; font-size: 12px; }\n.mv-media-line code { font-size: 11px; }\n.mv-button { border: 1px solid #ffaf5f; background: #ffaf5f; color: #000; border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit; }\n.mv-button:disabled { opacity: .5; cursor: default; }\n.mv-button-secondary { background: transparent; color: inherit; border-color: var(--dsw-alias-border-l1, rgba(127,127,127,.5)); }\n.mv-link { border: 0; background: none; color: #d7875f; cursor: pointer; padding: 0 2px; font: inherit; text-decoration: underline; }\n.mv-inline { display: inline-flex; gap: 4px; align-items: center; font-size: 12px; }\n.mv-inline input { width: 52px; }\n.mv-chip { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; padding: 1px 8px; border-radius: 10px; background: rgba(127,127,127,.15); }\n.mv-clock { font-family: "Cascadia Mono", Consolas, monospace; min-width: 120px; }\n.mv-seek { flex: 1 1 260px; accent-color: #ffaf5f; }\n.mv-stage-wrap { background: #000; border-radius: 8px; outline: none; padding: 6px; box-sizing: border-box; }\n.mv-stage-wrap:focus-visible { box-shadow: 0 0 0 2px #ffaf5f; }\n.mv-stage { height: min(68vh, 760px); min-height: 360px; resize: vertical; overflow: hidden; display: flex; align-items: center; justify-content: center; }\n.mv-stage canvas { display: block; }\n.mv-fullscreen { border-radius: 0; padding: 0; width: 100vw; height: 100vh; }\n.mv-fullscreen .mv-stage { height: 100vh; resize: none; }\n.mv-form { display: flex; flex-wrap: wrap; gap: 10px 14px; margin: 8px 0; }\n.mv-field { display: flex; flex-direction: column; gap: 3px; font-size: 12px; min-width: 140px; }\n.mv-field input, .mv-field select { font: inherit; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--dsw-alias-border-l1, rgba(127,127,127,.4)); background: transparent; color: inherit; }\n.mv-wide { flex: 1 1 420px; }\n.mv-check { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; align-self: flex-end; }\n.mv-confirm { margin-top: 10px; padding: 12px; border: 1px solid #ffaf5f; border-radius: 8px; }\n.mv-confirm ul { margin: 6px 0; padding-left: 20px; }\n.mv-confirm code, .mv-term-tab code { word-break: break-all; }\n.mv-term-pane { margin-top: 10px; }\n.mv-term-screen { height: min(70vh, 760px); min-height: 300px; resize: vertical; overflow: hidden; padding: 4px; background: #000; border-radius: 8px; box-sizing: border-box; }\n.mv-console-list { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }\n.mv-console-item { display: flex; gap: 10px; align-items: center; font-size: 12px; }\n.mv-pack { margin: 10px 0 4px; padding: 8px 12px; border: 1px solid var(--dsw-alias-border-l1, rgba(127,127,127,.3)); border-radius: 8px; }\n.mv-pack select { font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--dsw-alias-border-l1, rgba(127,127,127,.4)); background: transparent; color: inherit; max-width: 420px; }\n.mv-pack-info { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0; }\n.mv-argv { margin: 4px 0 6px; padding-left: 24px; font-size: 12px; }\n';
 
 // .dsh-plugin/client/mv-panel.jsx
 var TAB_KEY = "dsh-mv.panel.tab";
 function MvPanel({ api }) {
-  const [tab, setTabState] = import_react3.default.useState(() => {
+  const [tab, setTabState] = import_react4.default.useState(() => {
     try {
       return globalThis.localStorage?.getItem(TAB_KEY) === "terminal" ? "terminal" : "canvas";
     } catch {
       return "canvas";
     }
   });
-  const [info, setInfo] = import_react3.default.useState({ status: "loading", value: null, error: "" });
+  const [info, setInfo] = import_react4.default.useState({ status: "loading", value: null, error: "" });
   const setTab = (value) => {
     setTabState(value);
     try {
@@ -18762,7 +19636,7 @@ function MvPanel({ api }) {
     } catch {
     }
   };
-  const reloadInfo = import_react3.default.useCallback(async () => {
+  const reloadInfo = import_react4.default.useCallback(async () => {
     try {
       const value = await loadInfo(api);
       setInfo({ status: "ready", value, error: "" });
@@ -18770,11 +19644,40 @@ function MvPanel({ api }) {
       setInfo({ status: "error", value: null, error: errorText(error, "\u65E0\u6CD5\u8FDE\u63A5 MV \u63D2\u4EF6\u540E\u53F0\u3002") });
     }
   }, [api]);
-  import_react3.default.useEffect(() => {
+  import_react4.default.useEffect(() => {
     void reloadInfo();
   }, [reloadInfo]);
+  const [pack, setPack] = import_react4.default.useState(BUILTIN_PACK);
+  const [recent, setRecent] = import_react4.default.useState(loadRecent);
+  const [packError, setPackError] = import_react4.default.useState("");
+  const selectPack = import_react4.default.useCallback(async (id) => {
+    setPackError("");
+    if (id === BUILTIN_ID || !id.startsWith("pack:")) {
+      setPack(BUILTIN_PACK);
+      saveActive(BUILTIN_ID);
+      return;
+    }
+    try {
+      const loaded = await loadPackFromHost(api, id.slice(5));
+      setPack(loaded);
+      saveActive(loaded.id);
+    } catch (error) {
+      setPackError(`\u65E0\u6CD5\u8BFB\u53D6 MV \u5305 ${id.slice(5)}\uFF1A${errorText(error, "")}`);
+      setPack(BUILTIN_PACK);
+      saveActive(BUILTIN_ID);
+    }
+  }, [api]);
+  import_react4.default.useEffect(() => {
+    const id = loadActive();
+    if (id !== BUILTIN_ID) void selectPack(id);
+  }, [selectPack]);
+  const onLoaded = (loaded) => {
+    setPack(loaded);
+    saveActive(loaded.id);
+    setPackError("");
+  };
   const notice = info.status === "ready" ? versionNotice({ hostVersion: info.value?.hostVersion }) : "";
-  return /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-root" }, /* @__PURE__ */ import_react3.default.createElement("style", null, mv_default), /* @__PURE__ */ import_react3.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("h1", { className: "mv-title" }, "world.execute(me); \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, "\u975E\u5B98\u65B9\u540C\u4EBA\u5DE5\u5177\u3002\u6B4C\u66F2\u4E0E\u6B4C\u8BCD\u7248\u6743\u5F52 Mili\uFF1B\u753B\u9762\u573A\u666F\u79FB\u690D\u81EA yym8224961/world.execute-me-ascii\uFF08\u7ECF\u4F5C\u8005\u8BB8\u53EF\uFF09\u3002\u63D2\u4EF6\u4E0D\u9644\u5E26\u4EFB\u4F55\u97F3\u9891\u3001\u89C6\u9891\u6216\u6B4C\u8BCD\uFF0C\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\u3002")), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "v", CLIENT_VERSION || "?")), notice && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-banner", role: "alert" }, notice), info.status === "error" && tab === "terminal" && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-banner", role: "alert" }, info.error), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-tabs", role: "tablist" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", role: "tab", "aria-selected": tab === "canvas", onClick: () => setTab("canvas") }, "\u753B\u5E03 MV"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", role: "tab", "aria-selected": tab === "terminal", onClick: () => setTab("terminal") }, "MV \u7EC8\u7AEF")), /* @__PURE__ */ import_react3.default.createElement("div", { style: { display: tab === "canvas" ? "block" : "none" } }, /* @__PURE__ */ import_react3.default.createElement(CanvasMv, { defaultFontSize: info.value?.canvasFontSize ?? 14 })), tab === "terminal" && /* @__PURE__ */ import_react3.default.createElement(MvTerminal, { api, info: info.value, reloadInfo }));
+  return /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-root" }, /* @__PURE__ */ import_react4.default.createElement("style", null, mv_default), /* @__PURE__ */ import_react4.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react4.default.createElement("div", null, /* @__PURE__ */ import_react4.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-caption" }, "\u975E\u5B98\u65B9\u540C\u4EBA\u5DE5\u5177\u3002\u63D2\u4EF6\u4E0D\u9644\u5E26\u4EFB\u4F55\u97F3\u9891\u3001\u89C6\u9891\u6216\u6B4C\u8BCD\uFF0C\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\u3002\u5185\u7F6E world.execute(me) \u9884\u8BBE\uFF1A\u6B4C\u66F2\u4E0E\u6B4C\u8BCD\u7248\u6743\u5F52 Mili\uFF1B\u753B\u9762\u573A\u666F\u79FB\u690D\u81EA yym8224961/world.execute-me-ascii\uFF08\u7ECF\u4F5C\u8005\u8BB8\u53EF\uFF09\u3002\u5176\u4ED6\u6B4C\u66F2\u8BF7\u7528\u300CMV \u5305\u300D\u3002")), /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-caption" }, "v", CLIENT_VERSION || "?")), notice && /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-banner", role: "alert" }, notice), /* @__PURE__ */ import_react4.default.createElement(PackBar, { api, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-banner", role: "alert" }, packError), info.status === "error" && tab === "terminal" && /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-banner", role: "alert" }, info.error), /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-tabs", role: "tablist" }, /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", role: "tab", "aria-selected": tab === "canvas", onClick: () => setTab("canvas") }, "\u753B\u5E03 MV"), /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", role: "tab", "aria-selected": tab === "terminal", onClick: () => setTab("terminal") }, "MV \u7EC8\u7AEF")), /* @__PURE__ */ import_react4.default.createElement("div", { style: { display: tab === "canvas" ? "block" : "none" } }, /* @__PURE__ */ import_react4.default.createElement(CanvasMv, { api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14 })), tab === "terminal" && /* @__PURE__ */ import_react4.default.createElement(MvTerminal, { api, info: info.value, reloadInfo, pack }));
 }
 
 // .dsh-plugin/shared/mv-remote.mjs
@@ -18816,7 +19719,10 @@ var MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor("consoleInfo", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleInfo`, parseMvConsoleInfo))], anyObjectCodec("MvConsoleInfo")),
   descriptor("consoleStart", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleStart`, parseMvConsoleStart))], anyObjectCodec("MvConsoleStarted")),
   descriptor("consoleStop", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleStop`, parseMvConsoleStop))], anyObjectCodec("MvConsoleStopped")),
-  descriptor("terminalStop", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalStop`, parseMvTerminalStop))], anyObjectCodec("MvTerminalStopped"))
+  descriptor("terminalStop", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalStop`, parseMvTerminalStop))], anyObjectCodec("MvTerminalStopped")),
+  descriptor("packLoad", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvPackLoad`, parsePackLoad))], anyObjectCodec("MvPackLoaded")),
+  descriptor("packRead", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvPackRead`, parsePackRead))], anyObjectCodec("MvPackChunk")),
+  descriptor("packTemplate", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvPackTemplate`, parseTemplateWrite))], anyObjectCodec("MvPackTemplateWritten"))
 ]);
 var MV_CLIENT_REMOTE = Object.freeze({ package: MV_REMOTE_PACKAGE, descriptors: MV_REMOTE_DESCRIPTORS });
 var MV_HOST_TYPERT = Object.freeze({
@@ -18832,7 +19738,7 @@ var PLUGIN_NAME = "dsh-mv";
 var PANEL = "dsh-mv.main";
 var inject = ["remote"];
 function MvIcon() {
-  return /* @__PURE__ */ import_react4.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" }, /* @__PURE__ */ import_react4.default.createElement("rect", { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2", stroke: "currentColor" }), /* @__PURE__ */ import_react4.default.createElement("path", { d: "M4 6l2 2-2 2M7.5 10.5H11", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" }));
+  return /* @__PURE__ */ import_react5.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" }, /* @__PURE__ */ import_react5.default.createElement("rect", { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2", stroke: "currentColor" }), /* @__PURE__ */ import_react5.default.createElement("path", { d: "M4 6l2 2-2 2M7.5 10.5H11", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" }));
 }
 function panelApi(remote) {
   const service = remote[MV_REMOTE_NAMESPACE];
@@ -18843,13 +19749,19 @@ function panelApi(remote) {
     terminalRead: (request2) => service.terminalRead(request2),
     terminalWrite: (request2) => service.terminalWrite(request2),
     terminalResize: (request2) => service.terminalResize(request2),
-    terminalStop: (request2) => service.terminalStop(request2)
+    terminalStop: (request2) => service.terminalStop(request2),
+    consoleInfo: (request2) => service.consoleInfo(request2),
+    consoleStart: (request2) => service.consoleStart(request2),
+    consoleStop: (request2) => service.consoleStop(request2),
+    packLoad: (request2) => service.packLoad(request2),
+    packRead: (request2) => service.packRead(request2),
+    packTemplate: (request2) => service.packTemplate(request2)
   };
 }
 var OPEN_BUTTON = Object.freeze({ border: "1px solid #ffaf5f", background: "transparent", color: "inherit", borderRadius: 6, padding: "3px 10px", cursor: "pointer", font: "inherit", fontSize: 12 });
 function OpenMvPanel({ subject, openPanel }) {
   if (subject?.kind !== "bundle" || subject.pkg?.name !== MV_REMOTE_PACKAGE) return null;
-  return /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", style: OPEN_BUTTON, onClick: openPanel }, "\u6253\u5F00 MV \u653E\u6620\u5BA4");
+  return /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", style: OPEN_BUTTON, onClick: openPanel }, "\u6253\u5F00 MV \u653E\u6620\u5BA4");
 }
 var UI_INJECT = ["slots", "remote", `remote.${MV_REMOTE_NAMESPACE}`, "layout"];
 function registerUi(ctx) {

@@ -30,6 +30,12 @@ export function panelApi(remote) {
     terminalWrite: request => service.terminalWrite(request),
     terminalResize: request => service.terminalResize(request),
     terminalStop: request => service.terminalStop(request),
+    consoleInfo: request => service.consoleInfo(request),
+    consoleStart: request => service.consoleStart(request),
+    consoleStop: request => service.consoleStop(request),
+    packLoad: request => service.packLoad(request),
+    packRead: request => service.packRead(request),
+    packTemplate: request => service.packTemplate(request),
   }
 }
 
