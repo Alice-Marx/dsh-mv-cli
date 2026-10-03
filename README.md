@@ -228,7 +228,7 @@ The format is always detected from the file's **content**, not its extension (a 
 ## Known limitations
 
 - About 2% of the 1232 reference frames differ from the Python renderer. All of them are in the 75–81 s legacy-mesh section, caused by float-ulp / z-buffer ties.
-- dsh PV: the timeline is fixed to the original song length (211.9 s); other edits need the audio sync offset, and edits of a different length drift in the second half. Upstream's raster layers are approximated; no fonts are bundled, so glyphs differ slightly between systems. The art is CC BY-NC-SA 4.0 (non-commercial). The npm package therefore grows to about 1.1 MB (5.5 MB unpacked).
+- dsh PV: the timeline is fixed to the original song length (211.9 s); other edits need the audio sync offset, and edits of a different length drift in the second half. Upstream's raster layers are approximated; no fonts are bundled, so glyphs differ slightly between systems. The art is CC BY-NC-SA 4.0 (non-commercial). The npm package therefore grows to about 1.2 MB (5.8 MB unpacked).
 - 0.6.0 removed the panel terminal / separate window: run tui_live.py in a terminal of your own if you want it.
 - 用 AI 制作新 MV needs the agent session API of the Harness client (otherwise copy & paste the prompt). Scene scripts run in a Blob Web Worker; if a Harness build forbids blob workers, script packs play with the generic renderer. The agent tools need the Host `tools` service; without it the agent checks its work by reading AGENT.md.
 - Audio files over 1 GB are refused; the WAV cache is limited to 1.5 GB per file (about 2.5 hours).

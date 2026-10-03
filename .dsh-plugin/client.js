@@ -6459,7 +6459,7 @@ function box(ctx, x0, y0, x1, y1, title, level, color, gain = 1) {
 }
 
 // .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.6.0" : "";
+var CLIENT_VERSION = true ? "0.7.0" : "";
 var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u653E\u6620\u5BA4\u3002";
 function isMissingRemoteMethod(message) {
   const value = String(message ?? "");
