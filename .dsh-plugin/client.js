@@ -6604,6 +6604,15 @@ function coverInitials(title) {
   const words = clean3.split(" ");
   return /[\u3400-\u9fff]/.test(clean3[0]) ? clean3[0] : (words[0][0] + (words[1]?.[0] ?? "")).toUpperCase();
 }
+function fmtTime(t) {
+  const s = Math.max(0, Math.floor(Number(t) || 0));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+function asciiBar(t, duration, width2 = 24) {
+  const p = duration > 0 ? Math.min(1, Math.max(0, t / duration)) : 0;
+  const n = Math.round(p * width2);
+  return `[${"\u2588".repeat(n)}${"\u2591".repeat(width2 - n)}]`;
+}
 
 // .dsh-plugin/client/mv-ui.jsx
 var import_react = __toESM(require("react"), 1);
@@ -11885,15 +11894,6 @@ var NAV = Object.freeze([
   { id: "ai", label: "AI \u5236\u4F5C", tab: "AI \u5236\u4F5C" },
   { id: "calib", label: "\u6B4C\u8BCD\u6821\u51C6", tab: "\u6821\u51C6" }
 ]);
-function fmtTime(t) {
-  const s = Math.max(0, Math.floor(Number(t) || 0));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
-function asciiBar(t, duration, width2 = 24) {
-  const p = duration > 0 ? Math.min(1, Math.max(0, t / duration)) : 0;
-  const n = Math.round(p * width2);
-  return `[${"\u2588".repeat(n)}${"\u2591".repeat(width2 - n)}]`;
-}
 function useTransport(canvasRef, enabled) {
   const [state, setState] = import_react9.default.useState({ t: 0, duration: 0, playing: false });
   import_react9.default.useEffect(() => {

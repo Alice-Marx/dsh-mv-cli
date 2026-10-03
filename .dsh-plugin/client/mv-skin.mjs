@@ -55,3 +55,14 @@ export function coverInitials(title) {
   const words = clean.split(' ')
   return /[\u3400-\u9fff]/.test(clean[0]) ? clean[0] : (words[0][0] + (words[1]?.[0] ?? '')).toUpperCase()
 }
+/** m:ss for the skins' player bar / status line. */
+export function fmtTime(t) {
+  const s = Math.max(0, Math.floor(Number(t) || 0))
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
+/** `[████░░░░]` progress for the B status line. */
+export function asciiBar(t, duration, width = 24) {
+  const p = duration > 0 ? Math.min(1, Math.max(0, t / duration)) : 0
+  const n = Math.round(p * width)
+  return `[${'█'.repeat(n)}${'░'.repeat(width - n)}]`
+}

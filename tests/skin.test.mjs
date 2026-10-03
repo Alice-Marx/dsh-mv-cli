@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { SKIN_KEY, DEFAULT_SKIN, normalizeSkin, loadSkin, saveSkin, resolveDark, skinClasses, coverHue, coverInitials } from '../.dsh-plugin/client/mv-skin.mjs'
+import { SKIN_KEY, DEFAULT_SKIN, normalizeSkin, loadSkin, saveSkin, resolveDark, skinClasses, coverHue, coverInitials, fmtTime, asciiBar, SKIN_EVENT } from '../.dsh-plugin/client/mv-skin.mjs'
 
 const memory = (init = {}) => { const m = new Map(Object.entries(init)); return { getItem: k => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), map: m } }
 
@@ -54,4 +54,22 @@ test('skin CSS ships with the panel and keeps the known fixes', () => {
   for (const s of ['a', 'b', 'c']) for (const m of ['light', 'dark']) assert.match(css, new RegExp(`\\.mv-root\\.mv-skin-${s}\\.mv-${m}\\s*\\{`))
   assert.match(css, /\.mv-ws-files li\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/)
   assert.match(css, /mv-skin-b:has\(\.mv-calib\[open\]\) \.mv-stage/)
+})
+
+test('player bar / status line helpers', () => {
+  assert.equal(fmtTime(0), '0:00'); assert.equal(fmtTime(65.9), '1:05'); assert.equal(fmtTime(-3), '0:00'); assert.equal(fmtTime(NaN), '0:00')
+  assert.equal(asciiBar(0, 0, 4), '[░░░░]'); assert.equal(asciiBar(30, 60, 4), '[██░░]'); assert.equal(asciiBar(99, 60, 4), '[████]')
+  assert.equal(typeof SKIN_EVENT, 'string')
+})
+
+test('skin structure CSS: A sidebar + bar, B tmux + status, CRT kept off the canvas', () => {
+  const css = readFileSync(new URL('../.dsh-plugin/client/mv-skins.css', import.meta.url), 'utf8')
+  assert.match(css, /\.mv-skin-a \.mv-shell \{[^}]*grid-template-areas: "side main" "bar bar"/)
+  assert.match(css, /\.mv-bar \{[^}]*position: sticky; bottom: 0/)
+  assert.match(css, /\.mv-tmux \{[^}]*top: 0/)
+  assert.match(css, /\.mv-status \{[^}]*bottom: 0/)
+  assert.match(css, /\.mv-skin-b \.mv-stage-wrap \{ z-index: 21; \}/)
+  const panel = readFileSync(new URL('../.dsh-plugin/client/mv-panel.jsx', import.meta.url), 'utf8')
+  // fixed child slots so switching skins never remounts the canvas
+  assert.match(panel, /skinId === 'a' \? <SideNav[^\n]*: null\}\n\s*\{skinId === 'b' \? <TmuxTabs[^\n]*: null\}\n\s*<div className="mv-main">/)
 })

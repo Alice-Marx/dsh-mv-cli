@@ -1,9 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 — 2026-10-04
 
-- **Skins / 外观**: three user-selectable panel skins over the same components, picked from **外观** in the panel header (top right, next to ⓘ) and stored locally (`dsh-mv.skin.v1`): **Harness 原生** (default; follows the Harness light/dark theme and its design tokens), **现代音乐应用** (big gradient covers, bold now-playing hero, sticky player bar; dark by default) and **终端 / 黑客** (monospace, neon green + amber, CRT scanlines; dark by default, light = paper terminal). Each skin remembers its own mode (跟随 / 浅色 / 深色). CSS tokens plus per-skin layout tweaks only; behaviour is unchanged. Fixes: workshop file list no longer overflows (sha column), the terminal skin keeps the calibration view compact.
-  新增三套可切换外观（Harness 原生 / 现代音乐应用 / 终端），在面板右上角「外观」里选择，各自记住浅色或深色，只保存在本机。
+- **Skins / 外观**: three user-selectable panel skins, picked from **外观** in the panel header (top right, next to ⓘ) and stored locally (`dsh-mv.skin.v1`). Each skin changes structure as well as style; every feature works the same in all three, and switching skins never interrupts playback.
+  - **Harness 原生** (default): Fluent cards with soft shadows, blue accent, workshop details drawer; follows the Harness light/dark theme and its design tokens.
+  - **现代音乐应用**: left sidebar navigation (曲库 / 正在播放 / 创意工坊 / AI 制作 / 歌词校准) with a recent list, cover grid library, blurred-cover now-playing hero, and a page-wide bottom player bar (cover thumb, title, −5 s / play / +5 s, progress, fullscreen). Dark by default; collapses to an icon rail in narrow panes.
+  - **终端 / 黑客**: tmux-style window list on top and a status line at the bottom (play state, title, ASCII progress, time, clock), monospace, neon green + amber, CRT scanlines over the UI (never over the MV canvas). Dark by default; light = paper terminal.
+  Each skin remembers its own mode (跟随 Harness / 系统 · 浅色 · 深色).
+- **Fixes**: workshop file list no longer overflows (path ellipsis, size and sha256 columns stay readable); the terminal skin keeps the calibration view compact; the calibration waveform redraws immediately when the skin or theme changes.
+- 新增三套可切换外观：Harness 原生（默认，跟随 Harness 明暗）、现代音乐应用（侧边栏导航、封面网格、模糊封面、底部播放条）和终端（tmux 标签栏和状态栏、CRT 扫描线不再盖住画面）。在面板右上角「外观」里选择，各自记住浅色或深色，只保存在本机；切换外观不会打断播放。
 
 ## 0.7.0 — 2026-10-04
 

@@ -181,10 +181,14 @@ for (const [name, scene, theme, action, extra = ''] of shots) {
   if (action === 'skinpicker') { await page.click('.mv-skin-trigger'); await sleep(500) }
   if (action === 'about') { await page.click('.mv-head .mv-icon-button'); await sleep(400) }
   fs.mkdirSync(path.dirname(`${OUT}/${name}.png`), { recursive: true })
+  if (process.env.SKINS) { // A / B: use the skin's own navigation (sidebar / tmux tabs) for the page, like a user would
+    const label = { '02': '播放', '03': 'AI 制作', '04': '校准', '05': '工坊', '06': '工坊' }[name.split('/')[1]?.slice(0, 2)]
+    if (label && await clickText(page, '.mv-side-item, .mv-tmux-tab', label)) await sleep(900)
+  }
   if (process.env.SKINS && action !== 'skinpicker') { // grow the viewport to the content so sticky bars end up at the bottom
     const h = await page.evaluate(() => document.documentElement.scrollHeight)
     await page.setViewport({ width: 1280, height: Math.min(4000, Math.max(900, h)), deviceScaleFactor: 1 }); await sleep(600)
-    if (action === 'calib' || action === 'wsdetail') await page.evaluate(() => window.scrollTo(0, 0))
+    await sleep(700); await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await sleep(200)
   }
   await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: !process.env.SKINS })
   console.log(name, errors.length ? 'ERRORS ' + errors.join(' | ').slice(0, 400) : 'ok')

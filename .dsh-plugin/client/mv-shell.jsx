@@ -9,6 +9,7 @@
  */
 import React from 'react'
 import { Icon } from './mv-ui.jsx'
+import { asciiBar, fmtTime } from './mv-skin.mjs'
 
 const svg = (children, size = 18) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
@@ -30,17 +31,6 @@ export const NAV = Object.freeze([
   { id: 'ai', label: 'AI 制作', tab: 'AI 制作' },
   { id: 'calib', label: '歌词校准', tab: '校准' },
 ])
-
-export function fmtTime(t) {
-  const s = Math.max(0, Math.floor(Number(t) || 0))
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-}
-/** `[████░░░░]` progress for the B status line. */
-export function asciiBar(t, duration, width = 24) {
-  const p = duration > 0 ? Math.min(1, Math.max(0, t / duration)) : 0
-  const n = Math.round(p * width)
-  return `[${'█'.repeat(n)}${'░'.repeat(width - n)}]`
-}
 
 /** Polls the canvas transport (4×/s) while a skin shows a player bar or status line. */
 export function useTransport(canvasRef, enabled) {
