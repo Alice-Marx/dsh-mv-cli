@@ -60,10 +60,11 @@ export async function loadPack(path, { statPath = stat, readText = p => readFile
   const { manifestPath, packDir, pack } = await readPack(path, { statPath, readText })
   const warnings = []
   const files = {}
-  const media = { audio: MV_PACK_LIMITS.audioBytes, lyrics: MV_PACK_LIMITS.textFileBytes, spectrum: MV_PACK_LIMITS.textFileBytes }
+  const media = { audio: MV_PACK_LIMITS.audioBytes, lyrics: MV_PACK_LIMITS.textFileBytes, spectrum: MV_PACK_LIMITS.textFileBytes, scene: MV_PACK_LIMITS.sceneBytes }
   for (const [role, max] of Object.entries(media)) {
-    if (!pack[role]) continue
-    const state = await fileState(statPath, packFilePath(packDir, pack[role].file), max)
+    const ref = roleFile(pack, role)
+    if (!ref) continue
+    const state = await fileState(statPath, packFilePath(packDir, ref), max)
     files[role] = state
     if (!state.exists) warnings.push(`${role} 文件不存在：${state.path}`)
     else if (state.tooLarge) warnings.push(`${role} 文件太大（上限 ${Math.round(max / 1048576)} MB）：${state.path}`)
@@ -78,15 +79,20 @@ export async function loadPack(path, { statPath = stat, readText = p => readFile
   }
 }
 
+/** The manifest's file reference for a readable role ('scene' = canvas.script). */
+export const roleFile = (pack, role) => role === 'scene' ? pack.canvas?.script : pack[role]?.file
+
 /**
- * Read one chunk of a file the pack's manifest names as audio, lyrics or
- * spectrum (the manifest is re-read; no other path can be requested).
+ * Read one chunk of a file the pack's manifest names as audio, lyrics,
+ * spectrum or scene script (the manifest is re-read; no other path can be
+ * requested).
  */
 export async function readPackFile({ manifestPath, role, offset, length }, { statPath = stat, readText, openFile = open } = {}) {
   const { packDir, pack } = await readPack(manifestPath, { statPath, ...(readText ? { readText } : {}) })
-  if (!pack[role]) throw new Error(`这个 MV 包没有配置 ${role}。`)
-  const path = packFilePath(packDir, pack[role].file)
-  const max = role === 'audio' ? MV_PACK_LIMITS.audioBytes : MV_PACK_LIMITS.textFileBytes
+  const ref = roleFile(pack, role)
+  if (!ref) throw new Error(`这个 MV 包没有配置 ${role}。`)
+  const path = packFilePath(packDir, ref)
+  const max = role === 'audio' ? MV_PACK_LIMITS.audioBytes : role === 'scene' ? MV_PACK_LIMITS.sceneBytes : MV_PACK_LIMITS.textFileBytes
   const state = await fileState(statPath, path, max)
   if (!state.exists) throw new Error(`${role} 文件不存在：${path}`)
   if (state.tooLarge) throw new Error(`${role} 文件超过 ${max / 1048576} MB`)

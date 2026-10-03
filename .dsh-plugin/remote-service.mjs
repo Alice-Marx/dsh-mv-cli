@@ -68,13 +68,30 @@ export class MvRemoteService extends TypertRemoteService {
   /** Write the MV pack template into a new subfolder of a chosen folder. */
   packTemplate(request) { return settled(() => (this.services.packTemplate ?? unavailable)(request)) }
 
-  /** Sniff an audio file's real format (first 64 bytes only). */
+  /** Sniff an audio file's real format by content; hash: true also looks up the WAV cache. */
   audioProbe(request) { return settled(() => (this.services.audioProbe ?? unavailable)(request)) }
 
   /** Start / continue / finish uploading a panel-made WAV into the plugin cache. */
   wavBegin(request) { return settled(() => (this.services.wavBegin ?? unavailable)(request)) }
   wavWrite(request) { return settled(() => (this.services.wavWrite ?? unavailable)(request)) }
   wavFinish(request) { return settled(() => (this.services.wavFinish ?? unavailable)(request)) }
+
+  /** One chunk of a user-chosen audio / video file (media files only), for the panel's decoder. */
+  audioRead(request) { return settled(() => (this.services.audioRead ?? unavailable)(request)) }
+
+  /** Whether the user's ffmpeg was found (it is never run here). */
+  ffmpegInfo(request) { return settled(() => (this.services.ffmpegInfo ?? unavailable)(request ?? {})) }
+
+  /** Confirmed conversion with the user's ffmpeg into the WAV cache. */
+  audioConvert(request) { return settled(() => (this.services.audioConvert ?? unavailable)(request)) }
+
+  /** Create the folder of a new AI-made MV pack. */
+  aiPackCreate(request) { return settled(() => (this.services.aiPackCreate ?? unavailable)(request)) }
+
+  /** Upload the audio copy / spectrum.json into a pack folder this Host created. */
+  packUploadBegin(request) { return settled(() => (this.services.packUploadBegin ?? unavailable)(request)) }
+  packUploadWrite(request) { return settled(() => (this.services.packUploadWrite ?? unavailable)(request)) }
+  packUploadFinish(request) { return settled(() => (this.services.packUploadFinish ?? unavailable)(request)) }
 }
 
 /** Registration follows the Host plugin fiber; unload withdraws all endpoints. */

@@ -16,6 +16,7 @@ export const Icon = Object.freeze({
   plus: () => svg(<path d="M12 5v14M5 12h14" />),
   folder: () => svg(<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />),
   close: () => svg(<path d="M6 6l12 12M18 6L6 18" />, 14),
+  spark: () => svg(<><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z" /><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" /></>),
 })
 
 export function Alert({ kind = 'info', children, actions = null }) {

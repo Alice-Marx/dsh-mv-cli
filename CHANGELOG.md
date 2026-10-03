@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 — 2026-10-03
+
+- **用 AI 制作新 MV**: a new library card opens a dialog (audio, optional lyrics, title/artist, style notes, save location, default `%LOCALAPPDATA%\dsh-mv\packs`). The panel decodes the audio locally and computes `spectrum.json` (48 bands, 20 fps); the Host creates a new pack folder (never overwriting) with a copy of the audio, the lyrics, a playable `mv.json`, `scenes.js`, `mv.schema.json`, README and `AGENT.md`. Then **在新会话中交给 AI** adds the folder as a Harness workspace, opens a new agent session `MV：<title>` and queues an editable prompt; when the Harness client exposes no session API the dialog offers **复制提示词** / **打开新会话** instead. The pack plays with the generic renderer right away.
+- **Agent tools** `mv_pack_validate` and `mv_pack_preview_frame` (registered through the Host `tools` service, read-only): validate a pack (manifest, files, lyric timing, scene script at sample times) and render one frame as text. Setting `agentTools` (default on).
+- **Scene scripts**: new canvas renderer `script` (`canvas.script: "scenes.js"`, ≤ 256 KB, no imports). In the panel it runs in a Blob Web Worker with network/storage/worker globals removed, a 40 ms frame budget, a 1.5 s hang timeout and a fallback to the generic renderer with a notice. The Host preview uses `node:vm` (no code generation from strings, no wasm, compile/frame time limits). The template gains `examples/scenes.example.js` and documents the API.
+- **Relaxed audio formats**: formats are detected by content (MP4/M4A/MOV/DASH, WebM/MKV incl. video, Ogg Opus/Vorbis/FLAC, FLAC, MP3/MP2, ADTS AAC, WAV codecs, RF64, AIFF, ASF/WMA, CAF, AMR, AC-3, APE, WavPack, AU, MPEG-TS/PS, FLV). Canvas and AI packs accept everything Chromium decodes, including the audio track of video files. **MV terminal converts automatically**: ▶ 播放 transparently turns non-MP3/PCM-WAV audio into a WAV cached by sha256 (progress in the 播放器 card; the manual 转换为 WAV button is gone). Optional **ffmpeg** (setting `ffmpegPath`, `PATH`, or `D:\Program Files\FFmpeg\bin\ffmpeg.exe`) converts formats Chromium cannot decode, only after a confirmation card showing the fixed command (no shell, 10-minute limit).
+- **Removed the Rust player** (world-execute-me-ascii-rust): UI, protocol, Host launch code, docs and tests. Saved forms that used it fall back to tui_live.py. NOTICE lists it as related work only.
+- New Host calls: `audioRead`, `ffmpegInfo`, `audioConvert`, `aiPackCreate`, `packUploadBegin/Write/Finish` (strict codecs; uploads only into folders created by this Host process, under fixed names).
+
 ## 0.3.0 — 2026-10-03
 
 - **Redesigned MV 放映室 panel** as a music-player flow:

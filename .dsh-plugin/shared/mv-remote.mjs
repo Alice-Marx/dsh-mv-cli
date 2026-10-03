@@ -16,7 +16,9 @@ import {
   parseMvTerminalWrite,
 } from './mv-terminal-protocol.mjs'
 import { parsePackLoad, parsePackRead, parseTemplateWrite } from './mv-pack.mjs'
-import { parseAudioProbe, parseWavBegin, parseWavFinish, parseWavWrite } from './mv-audio-protocol.mjs'
+import { parseAudioConvert, parseAudioProbe, parseAudioRead, parseFfmpegInfo, parseWavBegin, parseWavFinish, parseWavWrite } from './mv-audio-protocol.mjs'
+import { parseAiPackCreate } from './mv-ai-prompt.mjs'
+import { parsePackUploadBegin, parsePackUploadFinish, parsePackUploadWrite } from './mv-ai-upload.mjs'
 
 export const MV_REMOTE_PACKAGE = '@ljwei-stak/dsh-mv-cli'
 export const MV_REMOTE_NAMESPACE = 'dshMv'
@@ -73,6 +75,13 @@ export const MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor('wavBegin', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWavBegin`, parseWavBegin))], anyObjectCodec('MvWavBegun')),
   descriptor('wavWrite', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWavWrite`, parseWavWrite))], anyObjectCodec('MvWavWritten')),
   descriptor('wavFinish', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWavFinish`, parseWavFinish))], anyObjectCodec('MvWavFinished')),
+  descriptor('audioRead', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvAudioRead`, parseAudioRead))], anyObjectCodec('MvAudioChunk')),
+  descriptor('ffmpegInfo', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvFfmpegInfo`, parseFfmpegInfo))], anyObjectCodec('MvFfmpegInfo')),
+  descriptor('audioConvert', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvAudioConvert`, parseAudioConvert))], anyObjectCodec('MvAudioConverted')),
+  descriptor('aiPackCreate', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvAiPackCreate`, parseAiPackCreate))], anyObjectCodec('MvAiPackCreated')),
+  descriptor('packUploadBegin', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackUploadBegin`, parsePackUploadBegin))], anyObjectCodec('MvPackUploadBegun')),
+  descriptor('packUploadWrite', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackUploadWrite`, parsePackUploadWrite))], anyObjectCodec('MvPackUploadWritten')),
+  descriptor('packUploadFinish', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackUploadFinish`, parsePackUploadFinish))], anyObjectCodec('MvPackUploadFinished')),
 ])
 
 export const MV_CLIENT_REMOTE = Object.freeze({ package: MV_REMOTE_PACKAGE, descriptors: MV_REMOTE_DESCRIPTORS })

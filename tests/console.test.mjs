@@ -18,8 +18,7 @@ const DIR = 'F:\\My Stuff (old)\\world_execute_me'
 const PY = `${DIR}\\python\\python.exe`
 const SCRIPT = `${DIR}\\_tools\\tui_live.py`
 const AUDIO = 'D:\\Music & Co\\A^B (1).mp3'
-const RUST = 'D:\\tools\\wem\\world-execute-me-rust.exe'
-const FILES = { [PY]: 'file', [DIR]: 'dir', [SCRIPT]: 'file', [AUDIO]: 'file', [RUST]: 'file' }
+const FILES = { [PY]: 'file', [DIR]: 'dir', [SCRIPT]: 'file', [AUDIO]: 'file' }
 const ENV = { SystemRoot: 'C:\\Windows', PATH: 'C:\\x' }
 
 const statPath = async path => {
@@ -101,17 +100,19 @@ test('console: a closed window is noticed and a reused pid is never killed', asy
   assert.deepEqual(fake.calls.kills, [])
 })
 
-test('console: rust player, limit, failures, dispose', async () => {
-  const fake = fakeWindows({ childPath: RUST })
+test('console: limit, failures, dispose', async () => {
+  const fake = fakeWindows()
   const consoles = manager(fake)
-  const rust = await consoles.start({ launch: parseMvLaunch({ player: 'rust', exePath: RUST, autoplay: true, offset: -0.5 }), confirmed: true })
-  assert.equal(fake.calls.spawn[0].args[4], `"start "world.execute(me)" /D "D:\\tools\\wem" "${RUST}" --offset -0.5 --autoplay"`)
-  await consoles.start({ launch: parseMvLaunch({ player: 'rust', exePath: RUST }), confirmed: true })
-  await assert.rejects(consoles.start({ launch: parseMvLaunch({ player: 'rust', exePath: RUST }), confirmed: true }), /最多同时打开 2 个/)
+  const launch = () => parseMvLaunch({ pythonPath: PY, packageDir: DIR, noAudio: true, start: 5 })
+  const first = await consoles.start({ launch: launch(), confirmed: true })
+  assert.equal(fake.calls.spawn[0].args[4], `"start "world.execute(me)" /D "${DIR}" "${PY}" "${SCRIPT}" --no-audio --start 5"`)
+  await consoles.start({ launch: launch(), confirmed: true })
+  await assert.rejects(consoles.start({ launch: launch(), confirmed: true }), /最多同时打开 2 个/)
   await consoles.disposeAll()
   assert.equal(fake.calls.kills.length, 2)
-  assert.ok(fake.calls.kills.includes(rust.pid))
-  await assert.rejects(consoles.start({ launch: parseMvLaunch({ player: 'rust', exePath: RUST }), confirmed: true }), /卸载/)
+  assert.ok(fake.calls.kills.includes(first.pid))
+  await assert.rejects(consoles.start({ launch: launch(), confirmed: true }), /卸载/)
+  assert.throws(() => parseMvLaunch({ player: 'rust', exePath: 'D:\\tools\\wem\\world-execute-me-rust.exe' }), /player/)
 
   const missing = manager(fakeWindows())
   await assert.rejects(missing.start({ launch: parseMvLaunch({ pythonPath: PY, packageDir: 'F:\\gone' }), confirmed: true }), /播放器目录不存在/)

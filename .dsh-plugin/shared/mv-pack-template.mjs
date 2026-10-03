@@ -1,8 +1,9 @@
 /**
  * The downloadable MV pack template: mv.json, its JSON Schema, a bilingual
- * README, two examples and a placeholder LRC. Generated text only — no song,
+ * README, three examples (python player, world.execute(me), scene script) and a placeholder LRC. Generated text only — no song,
  * lyric or artwork data.
  */
+import { EXAMPLE_SCENE, SCENE_LIMITS } from './mv-scene.mjs'
 import { MV_CANVAS_RENDERERS, MV_PACK_CONDITIONS, MV_PACK_CWD, MV_PACK_FORMAT, MV_PACK_PLACEHOLDERS, MV_PACK_SCHEMA_FILE, MV_PACK_VERSION } from './mv-pack.mjs'
 
 export const TEMPLATE_FOLDER = 'dsh-mv-pack-template'
@@ -94,7 +95,11 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
     spectrum: fileRef('Optional spectrum.json ({fps, frames: number[48][]}).'),
     canvas: {
       type: 'object', additionalProperties: false, patternProperties: { '^x-': {} },
-      properties: { renderer: { enum: MV_CANVAS_RENDERERS, default: 'generic' }, fontSize: { type: 'number', minimum: 8, maximum: 32 } },
+      properties: {
+        renderer: { enum: MV_CANVAS_RENDERERS, default: 'generic', description: 'generic | world-execute-me | script (needs canvas.script).' },
+        script: { type: 'string', pattern: '\\.m?js$', description: 'Scene script (.js) for renderer "script": defines render(t, cols, rows, ctx). Runs sandboxed in the panel.' },
+        fontSize: { type: 'number', minimum: 8, maximum: 32 },
+      },
     },
     terminal: {
       type: 'object', additionalProperties: false, patternProperties: { '^x-': {} }, required: ['program', 'args'],
@@ -145,12 +150,42 @@ VS Code completion and checks.
 | \`audio\` | no | \`{ "file": "song.mp3", "offset": 0 }\`. Without audio the MV plays silently. \`offset\` (±30 s) shifts the picture against the audio. |
 | \`lyrics\` | no | \`{ "file": "lyrics.lrc", "offset": 0 }\`. Bilingual LRC: two lines with the same time stamp, or \`English / 中文\` on one line. |
 | \`spectrum\` | no | \`{ "file": "spectrum.json" }\` with \`{ fps, frames }\` (48 bands per frame). Without it the panel analyses the audio live. |
-| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song) or \`world-execute-me\` (the built-in world.execute(me) scenes, timed for that song only). |
+| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song), \`world-execute-me\` (the built-in world.execute(me) scenes, timed for that song only) or \`script\` (your own scene script, see below). |
+| \`canvas.script\` | no | \`scenes.js\`: the scene script for \`script\` (setting it implies \`renderer: "script"\`). |
 | \`canvas.fontSize\` | no | 8–32 px. |
 | \`terminal\` | no | External TUI program for the **MV 终端** tab (see below). |
 
 Paths are relative to the folder of \`mv.json\` (\`/\` or \`\\\\\`; \`..\` is not allowed)
 or absolute. Unknown fields are errors; put your own data in fields starting with \`x-\`.
+
+## Audio formats
+
+Anything the panel's Chromium can decode works for the canvas: MP3, M4A/AAC
+(including DASH/fragmented MP4 downloads), the audio track of MP4/MOV/WebM/MKV
+video files, Ogg Vorbis/Opus, FLAC, WAV (PCM / float / A-law / μ-law). The format
+is detected from the file's content, not its extension. tui_live.py in the
+terminal plays MP3 and PCM WAV directly; other files are converted automatically
+to a cached WAV (by sha256, in \`%LOCALAPPDATA%\\dsh-mv\\audio-cache\`) the first time you
+play them. Formats Chromium cannot decode (WMA, AIFF, AMR, AC-3, APE, …) can be
+converted with ffmpeg if it is installed (PATH or \`D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\`);
+the panel asks before running it.
+
+## Scene scripts (\`canvas.renderer: "script"\`)
+
+\`\`\`json
+"canvas": { "renderer": "script", "script": "scenes.js" }
+\`\`\`
+
+\`scenes.js\` defines \`render(t, cols, rows, ctx)\` (and optionally \`setup(info)\`). It returns
+an array of \`rows\` strings, or \`{ lines, styles }\` where \`styles[y]\` has one digit per
+cell (0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive). \`ctx\` is
+\`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }\`
+(\`lyric\`/\`next\`: \`{ text, en, zh, start, end }\` or null).
+
+The script runs in a Web Worker without network, storage, DOM or imports. A frame
+should take under ${SCENE_LIMITS.frameBudgetMs} ms; a script that throws, hangs for
+${SCENE_LIMITS.hardTimeoutMs} ms or is too slow is stopped and the panel falls back to the
+\`generic\` renderer. \`examples/scenes.example.js\` is a working example.
 
 ## External renderer (\`terminal\`)
 
@@ -208,12 +243,37 @@ VS Code 等编辑器提供补全和校验。
 | \`audio\` | 否 | \`{ "file": "song.mp3", "offset": 0 }\`；没有音频时静音播放画面。\`offset\`（±30 秒）调整画面与音频的同步。 |
 | \`lyrics\` | 否 | \`{ "file": "lyrics.lrc", "offset": 0 }\`；双语 LRC：同一时间戳写两行，或一行写 \`English / 中文\`。 |
 | \`spectrum\` | 否 | \`{ "file": "spectrum.json" }\`，格式 \`{ fps, frames }\`（每帧 48 个频段）；不填则实时分析音频。 |
-| \`canvas.renderer\` | 否 | \`generic\`（通用：频谱 + 标题 + 歌词，任何歌都能放）或 \`world-execute-me\`（内置的 world.execute(me) 场景，只适合这首歌的时间轴）。 |
+| \`canvas.renderer\` | 否 | \`generic\`（通用：频谱 + 标题 + 歌词，任何歌都能放）、\`world-execute-me\`（内置的 world.execute(me) 场景，只适合这首歌的时间轴）或 \`script\`（你自己的场景脚本，见下）。 |
+| \`canvas.script\` | 否 | \`scenes.js\`：\`script\` 渲染器用的场景脚本（填了它就默认 \`renderer: "script"\`）。 |
 | \`canvas.fontSize\` | 否 | 8–32 像素。 |
 | \`terminal\` | 否 | **MV 终端** 页使用的外部 TUI 程序（见下）。 |
 
 路径相对于 \`mv.json\` 所在文件夹（\`/\` 或 \`\\\\\` 都行，不允许 \`..\`），也可以写绝对路径。
 未知字段会报错；自定义数据请用 \`x-\` 开头的字段。
+
+## 音频格式
+
+画布模式支持面板里 Chromium 能解码的一切格式：MP3、M4A/AAC（包括 DASH / 分片 MP4 下载文件）、
+MP4/MOV/WebM/MKV 视频里的音轨、Ogg Vorbis/Opus、FLAC、WAV（PCM / 浮点 / A-law / μ-law）。
+格式按文件内容判断，不看扩展名。终端里的 tui_live.py 能直接播放 MP3 和 PCM WAV；其他格式第一次
+播放时会自动转换成 WAV 缓存（按 sha256，存放在 \`%LOCALAPPDATA%\\dsh-mv\\audio-cache\`），原文件不变。
+Chromium 解不了的格式（WMA、AIFF、AMR、AC-3、APE…）如果装了 ffmpeg（PATH 里或
+\`D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\`）可以用它转换，运行前面板会先征求你同意。
+
+## 场景脚本（\`canvas.renderer: "script"\`）
+
+\`\`\`json
+"canvas": { "renderer": "script", "script": "scenes.js" }
+\`\`\`
+
+\`scenes.js\` 定义 \`render(t, cols, rows, ctx)\`（可选 \`setup(info)\`），返回 \`rows\` 行字符串数组，
+或 \`{ lines, styles }\`：\`styles[y]\` 每个字符一位数字（0 暗、1 普通、2 亮、3 白、4 红、5 棕、6 橄榄）。
+\`ctx\` 为 \`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }\`
+（\`lyric\`/\`next\`：\`{ text, en, zh, start, end }\` 或 null）。
+
+脚本在 Web Worker 沙箱里运行：没有网络、存储、DOM，不能 import。每帧应在 ${SCENE_LIMITS.frameBudgetMs} 毫秒内完成；
+脚本报错、卡住 ${SCENE_LIMITS.hardTimeoutMs} 毫秒或持续太慢时会被停止，面板自动换回 \`generic\` 通用画面。
+\`examples/scenes.example.js\` 是一个能直接运行的示例。
 
 ## 外部渲染程序（\`terminal\`）
 
@@ -260,5 +320,6 @@ export function templateFiles() {
     { path: 'lyrics.example.lrc', text: LRC_EXAMPLE },
     { path: 'examples/terminal-python.mv.json', text: json(TERMINAL_EXAMPLE) },
     { path: 'examples/world-execute-me.mv.json', text: json(WORLD_EXECUTE_ME_EXAMPLE) },
+    { path: 'examples/scenes.example.js', text: EXAMPLE_SCENE },
   ]
 }

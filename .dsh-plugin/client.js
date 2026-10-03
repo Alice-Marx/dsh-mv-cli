@@ -37,15 +37,16 @@ __export(index_exports, {
   PANEL: () => PANEL,
   PLUGIN_NAME: () => PLUGIN_NAME,
   apply: () => apply,
+  harnessServices: () => harnessServices,
   inject: () => inject,
   panelApi: () => panelApi,
   registerUi: () => registerUi
 });
 module.exports = __toCommonJS(index_exports);
-var import_react6 = __toESM(require("react"), 1);
+var import_react7 = __toESM(require("react"), 1);
 
 // .dsh-plugin/client/mv-panel.jsx
-var import_react5 = __toESM(require("react"), 1);
+var import_react6 = __toESM(require("react"), 1);
 
 // .dsh-plugin/client/canvas-mv.jsx
 var import_react2 = __toESM(require("react"), 1);
@@ -491,11 +492,11 @@ function crop(s15, n) {
 function wrap(s15, n) {
   if (width(s15) <= n) return [s15];
   const parts = [];
-  const ascii = [...s15].every((c) => c.codePointAt(0) < 128);
+  const ascii2 = [...s15].every((c) => c.codePointAt(0) < 128);
   while (s15) {
     let line = crop(s15, n);
     if (!line) line = Array.from(s15)[0];
-    if ([...line].length < [...s15].length && line.includes(" ") && ascii) line = line.slice(0, line.lastIndexOf(" ")) || line;
+    if ([...line].length < [...s15].length && line.includes(" ") && ascii2) line = line.slice(0, line.lastIndexOf(" ")) || line;
     parts.push(line);
     s15 = s15.slice(line.length).replace(/^\s+/u, "");
   }
@@ -518,9 +519,9 @@ var Canvas = class {
     y = $int(y);
     if (!(y >= 0 && y < this.h)) return;
     if (this.clip && !(this.clip[0] <= y && y <= this.clip[1])) return;
-    const text3 = typeof s15 === "string" ? s15 : $str(s15);
+    const text4 = typeof s15 === "string" ? s15 : $str(s15);
     const row = this.cells[y];
-    for (const ch of text3) {
+    for (const ch of text4) {
       const k2 = cw(ch);
       if (k2 === 0) continue;
       if (x >= 0 && x + k2 <= this.w) {
@@ -550,16 +551,16 @@ var Canvas = class {
       this.put(x + w - 1, yy, "|", style);
     }
   }
-  big(y, text3, style = BRIGHT) {
-    text3 = text3.toUpperCase();
-    const total = text3.length * 6 - 1;
+  big(y, text4, style = BRIGHT) {
+    text4 = text4.toUpperCase();
+    const total = text4.length * 6 - 1;
     if (total > this.w - 6) {
-      this.center(y + 2, text3, style);
+      this.center(y + 2, text4, style);
       return;
     }
     const left = Math.floor((this.w - total) / 2);
     let i8 = 0;
-    for (const ch of text3) {
+    for (const ch of text4) {
       const rows = FONT.has(ch) ? FONT.get(ch) : FONT.get(" ");
       rows.forEach((row, dy) => {
         for (let dx = 0; dx < row.length; dx++) if (row[dx] === "1") this.put(left + i8 * 6 + dx, y + dy, "#", style);
@@ -1400,7 +1401,7 @@ function lyric_sine_tangent(c, t, area, elapsed) {
   }
 }
 function lyric_infinity_limit(c, t, area, elapsed) {
-  let x, yy, packet, tail, y, phase, direction, _2, char, ink, i8, strand, z3, a, points, scale, xx, side, row, text3, n, counter, radius_y, radius_x, bound_r, bound_l, locked, closing, growth, mw, mr3, ml2, rail, cx, cy, l, top, r, bt3;
+  let x, yy, packet, tail, y, phase, direction, _2, char, ink, i8, strand, z3, a, points, scale, xx, side, row, text4, n, counter, radius_y, radius_x, bound_r, bound_l, locked, closing, growth, mw, mr3, ml2, rail, cx, cy, l, top, r, bt3;
   [l, top, r, bt3] = $unpack(area, 4);
   [cx, cy] = $unpack([$add(l, r) / 2, $add(top, bt3) / 2], 2);
   rail = $max(9, $min(16, Math.floor(c.w / 8)));
@@ -1424,8 +1425,8 @@ function lyric_infinity_limit(c, t, area, elapsed) {
     for (let $t138 = $int($add(top, 4)), $t139 = $int(bt3 - 2), $t140 = 1; $t140 > 0 ? $t138 < $t139 : $t138 > $t139; $t138 += $t140) {
       row = $t138;
       n = $max(0, $add(counter, $mul(row - top, side === 0 ? 1 : -1)));
-      text3 = side === 0 ? "2^" + $fmt(n, "04d") : $fmt(hash16($mul(n, 17)), "04X") + " " + ($truth(locked) ? "CAP" : "SET");
-      c.put($add(x, 1), row, $slice(text3, null, rail - 2, null), $mod($add(row, $int($mul(elapsed, 12))), 7) === 0 ? W : side === 0 ? N : G);
+      text4 = side === 0 ? "2^" + $fmt(n, "04d") : $fmt(hash16($mul(n, 17)), "04X") + " " + ($truth(locked) ? "CAP" : "SET");
+      c.put($add(x, 1), row, $slice(text4, null, rail - 2, null), $mod($add(row, $int($mul(elapsed, 12))), 7) === 0 ? W : side === 0 ? N : G);
     }
   }
   for (let $t141 = $int($add(top, 3)), $t142 = $int(bt3 - 2), $t143 = 3; $t143 > 0 ? $t141 < $t142 : $t141 > $t142; $t141 += $t143) {
@@ -1547,10 +1548,10 @@ function lyric_ac_dc(c, t, area, elapsed) {
   label_w = $mul(11, sx);
   label_h = $mul(5, sy);
   label_y = cy - Math.floor(label_h / 2);
-  function label(x, text3, ink) {
+  function label(x, text4, ink) {
     let index2, ch, dy, row, dx, pixel, yy2;
     clear(c, x - 1, label_y - 1, $add(label_w, 2), $add(label_h, 2));
-    for (const $t170 of $iter($enumerate(text3))) {
+    for (const $t170 of $iter($enumerate(text4))) {
       [index2, ch] = $unpack($t170, 2);
       for (const $t171 of $iter($enumerate($at(glyphs, ch)))) {
         [dy, row] = $unpack($t171, 2);
@@ -1950,7 +1951,7 @@ function lyric_stimulation_satisfaction(c, t, area, elapsed) {
   c.center(bt3, "INPUT " + $fmt($int($mul(strength, 100)), "03d") + "%  /  ALL CHANNELS " + ($truth(accent) ? "ACTIVE" : "CONNECTING"), B);
 }
 function lyric_happy_execution(c, t, area, pulse) {
-  let title_y, lane, tail, xx, head_char, inside, ny, nx, ink, step, head, path, yy, wave, radius, texture, scan, py, px, dy, dx, seed, heart, morph, beat, half_w, half_h, center_y, content_bt, content_top, x, label, side, row, selected, text3, op, address, value, index2, ops, frame, mw, mid_r, mid_l, right, left, rail, executing, loading, elapsed, cx, cy, l, top, r, bt3;
+  let title_y, lane, tail, xx, head_char, inside, ny, nx, ink, step, head, path, yy, wave, radius, texture, scan, py, px, dy, dx, seed, heart, morph, beat, half_w, half_h, center_y, content_bt, content_top, x, label, side, row, selected, text4, op, address, value, index2, ops, frame, mw, mid_r, mid_l, right, left, rail, executing, loading, elapsed, cx, cy, l, top, r, bt3;
   [l, top, r, bt3] = $unpack(area, 4);
   [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt3) / 2)], 2);
   elapsed = t - 66.601;
@@ -1974,18 +1975,18 @@ function lyric_happy_execution(c, t, area, pulse) {
       value = hash16($add($mul(index2, 73), $mul(side, 911)));
       address = $band($mul(index2, 16), 65535);
       if (side === 0) {
-        text3 = $fmt(address, "04X") + " " + $fmt(value, "04X") + " " + $fmt(hash16($mul(index2, 29)), "04X");
+        text4 = $fmt(address, "04X") + " " + $fmt(value, "04X") + " " + $fmt(hash16($mul(index2, 29)), "04X");
       } else {
         op = $truth(executing && $mod(index2, 3) === 0) ? "EXEC" : $at(ops, $mod(index2, $len(ops)));
-        text3 = $fmt(op, "") + " " + $fmt(address, "04X") + " " + $fmt(value, "04X");
+        text4 = $fmt(op, "") + " " + $fmt(address, "04X") + " " + $fmt(value, "04X");
       }
       selected = $mod($add(row - top, frame), bt3 - top - 1) === 0;
-      c.put($add(x, 1), row, $add($truth(selected) ? ">" : " ", $slice(text3, null, rail - 3, null)), $truth(selected) ? W : $truth($mod(index2, 3)) ? N : G);
+      c.put($add(x, 1), row, $add($truth(selected) ? ">" : " ", $slice(text4, null, rail - 3, null)), $truth(selected) ? W : $truth($mod(index2, 3)) ? N : G);
     }
   }
-  function middle(y, text4, style = N) {
-    text4 = $slice(text4, null, mw, null);
-    c.put($add(mid_l, Math.floor((mw - $len(text4)) / 2)), y, text4, style);
+  function middle(y, text5, style = N) {
+    text5 = $slice(text5, null, mw, null);
+    c.put($add(mid_l, Math.floor((mw - $len(text5)) / 2)), y, text5, style);
   }
   middle(top, "IF (YOU.HAPPY) -> EXECUTE(ME)", $truth(loading) ? W : B);
   middle($add(top, 1), "SELF.EXECUTION / " + ($truth(executing) ? "RUNNING" : $truth(loading) ? "ARMED" : "CONDITION"), N);
@@ -2068,7 +2069,7 @@ function lyric_happy_execution(c, t, area, pulse) {
   middle(bt3, "ME -> YOU / " + ($truth(executing) ? "SELF COMMITTED" : $truth(loading) ? "COMPILING..." : "MAKE YOU HAPPY"), N);
 }
 function lyric_trapped_simulation(c, t, area, pulse) {
-  let title_y, x, name, node_y, index2, row, yy, extent, jitter, xx, by, bx, box_h, box_w, close, layer, y, corners, y1, y0, x1, x0, skew, scale, phase, ch, gy, gx, bend, label, direction, text3, value, step, frame, center_y, hh, inner_bt, inner_top, mw, mr3, ml2, rail, reveal, strange, age, cx, cy, l, top, r, bt3;
+  let title_y, x, name, node_y, index2, row, yy, extent, jitter, xx, by, bx, box_h, box_w, close, layer, y, corners, y1, y0, x1, x0, skew, scale, phase, ch, gy, gx, bend, label, direction, text4, value, step, frame, center_y, hh, inner_bt, inner_top, mw, mr3, ml2, rail, reveal, strange, age, cx, cy, l, top, r, bt3;
   [l, top, r, bt3] = $unpack(area, 4);
   [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt3) / 2)], 2);
   age = t - 70.084;
@@ -2083,9 +2084,9 @@ function lyric_trapped_simulation(c, t, area, pulse) {
   hh = $max(2, (inner_bt - inner_top) / 2);
   center_y = $add(inner_top, inner_bt) / 2;
   frame = $int($mul(age, $add(22, $mul(strange, 20))));
-  function middle(y2, text4, style = N) {
-    text4 = $slice(text4, null, mw, null);
-    c.put($add(ml2, Math.floor((mw - $len(text4)) / 2)), y2, text4, style);
+  function middle(y2, text5, style = N) {
+    text5 = $slice(text5, null, mw, null);
+    c.put($add(ml2, Math.floor((mw - $len(text5)) / 2)), y2, text5, style);
   }
   for (const $t276 of $iter([[l, "HEAP / ME", 1], [r - rail + 1, "STACK / YOU", -1]])) {
     [x, label, direction] = $unpack($t276, 3);
@@ -2095,8 +2096,8 @@ function lyric_trapped_simulation(c, t, area, pulse) {
       yy = $t277;
       step = $mod($add($mul(frame, direction), yy) - top, 256);
       value = hash16($mul(step, 53));
-      text3 = $truth($mod(step, 4)) ? $fmt($mul(step, 16), "04X") + " " + $fmt(value, "04X") : ($truth($mod(step, 8)) ? "LOOP " : "EXEC ") + $fmt(value, "04X");
-      c.put($add(x, 1), yy, $slice(text3, null, rail - 2, null), $mod(step, 13) === 0 ? W : $truth($mod(step, 3)) ? N : G);
+      text4 = $truth($mod(step, 4)) ? $fmt($mul(step, 16), "04X") + " " + $fmt(value, "04X") : ($truth($mod(step, 8)) ? "LOOP " : "EXEC ") + $fmt(value, "04X");
+      c.put($add(x, 1), yy, $slice(text4, null, rail - 2, null), $mod(step, 13) === 0 ? W : $truth($mod(step, 3)) ? N : G);
     }
   }
   for (let $t280 = $int(inner_top), $t281 = $int($add(inner_bt, 1)), $t282 = 1; $t282 > 0 ? $t280 < $t281 : $t280 > $t281; $t280 += $t282) {
@@ -2408,10 +2409,10 @@ function lyric_god_existence(c, t, area, elapsed) {
   c.center(cy, "GOD", W);
   c.center($add(cy, 2), "YOU", B);
 }
-function identity_bitmap(c, x, y, text3, sx, sy, ink, fill = 1, seed = 0) {
+function identity_bitmap(c, x, y, text4, sx, sy, ink, fill = 1, seed = 0) {
   let index2, ch, dy, row, dx, pixel, py, px, on3, yy, xx, glyphs;
   glyphs = new PyDict([["F", ["11111", "11000", "11110", "11000", "11000"]], ["M", ["10001", "11011", "10101", "10001", "10001"]], ["A", ["01110", "11011", "11111", "11011", "11011"]], ["P", ["11110", "11011", "11110", "11000", "11000"]]]);
-  for (const $t350 of $iter($enumerate(text3))) {
+  for (const $t350 of $iter($enumerate(text4))) {
     [index2, ch] = $unpack($t350, 2);
     for (const $t351 of $iter($enumerate($at(glyphs, ch)))) {
       [dy, row] = $unpack($t351, 2);
@@ -3323,7 +3324,7 @@ function lyric_execution_queue(c, t, area, elapsed) {
   }
 }
 function lyric_only_execution(c, t, area, pulse) {
-  let i8, j3, yy, length, x, bw, bx, inset, lock, tether, phase, start_y, start_x, offset, yx, my, mx, capture, ring, point_i, y, a, radius, bind, spark, py, px, distance, ang, packet, u, ny, nx, eliminated, progress, label, commands, text3, index2, frame, stage, rw, rh, plot_bt, plot_top, mw, mr3, ml2, rail, age, cx, cy, l, top, r, bt3;
+  let i8, j3, yy, length, x, bw, bx, inset, lock, tether, phase, start_y, start_x, offset, yx, my, mx, capture, ring, point_i, y, a, radius, bind, spark, py, px, distance, ang, packet, u, ny, nx, eliminated, progress, label, commands, text4, index2, frame, stage, rw, rh, plot_bt, plot_top, mw, mr3, ml2, rail, age, cx, cy, l, top, r, bt3;
   [l, top, r, bt3] = $unpack(area, 4);
   [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt3) / 2)], 2);
   age = t - 162.632;
@@ -3337,16 +3338,16 @@ function lyric_only_execution(c, t, area, pulse) {
   rw = $mul(mw, 0.43);
   stage = t < 166.016 ? 0 : t < 169.824 ? 1 : t < 173.643 ? 2 : 3;
   frame = $int($mul(age, 22));
-  function middle(y2, text4, ink = N) {
-    text4 = $slice(text4, null, mw, null);
-    c.put($add(ml2, Math.floor((mw - $len(text4)) / 2)), y2, text4, ink);
+  function middle(y2, text5, ink = N) {
+    text5 = $slice(text5, null, mw, null);
+    c.put($add(ml2, Math.floor((mw - $len(text5)) / 2)), y2, text5, ink);
   }
-  function banner(y2, text4, ink = W) {
+  function banner(y2, text5, ink = W) {
     clear(c, ml2, y2, mw, 5);
-    if ($len(text4) * 6 - 1 <= mw) {
-      c.big(y2, text4, ink);
+    if ($len(text5) * 6 - 1 <= mw) {
+      c.big(y2, text5, ink);
     } else {
-      middle($add(y2, 2), text4, ink);
+      middle($add(y2, 2), text5, ink);
     }
   }
   for (const $t547 of $iter([[l, "ONLY ME", ["SELECT ME", "KEEP ME", "DELETE ALT", "ONLY ME", "ONE OWNER", "EXECUTE"]], [r - rail + 1, "KEEP YOU", ["FIND YOU", "RESTORE YOU", "COME BACK", "STAY HERE", "EXIT DENY", "RETRY"]]])) {
@@ -3356,8 +3357,8 @@ function lyric_only_execution(c, t, area, pulse) {
     for (let $t548 = $int($add(top, 1)), $t549 = $int(bt3), $t550 = 1; $t550 > 0 ? $t548 < $t549 : $t548 > $t549; $t548 += $t550) {
       yy = $t548;
       index2 = $add(frame, yy);
-      text3 = $truth($mod(index2, 3)) ? $at(commands, $mod(index2, $len(commands))) : $fmt(hash16($mul(index2, 71)), "04X") + " LOCK";
-      c.put($add(x, 1), yy, $slice(text3, null, rail - 2, null), $mod(index2, 7) === 0 ? R : $truth($mod(index2, 3)) ? N : G);
+      text4 = $truth($mod(index2, 3)) ? $at(commands, $mod(index2, $len(commands))) : $fmt(hash16($mul(index2, 71)), "04X") + " LOCK";
+      c.put($add(x, 1), yy, $slice(text4, null, rail - 2, null), $mod(index2, 7) === 0 ? R : $truth($mod(index2, 3)) ? N : G);
     }
   }
   function heart(scale = 1, filled = false) {
@@ -3389,12 +3390,12 @@ function lyric_only_execution(c, t, area, pulse) {
       }
     }
   }
-  function node(x2, y2, text4, ink = B) {
+  function node(x2, y2, text5, ink = B) {
     x2 = $int(x2);
     y2 = $int(y2);
     clear(c, x2 - 4, y2 - 1, 9, 3);
     c.box(x2 - 4, y2 - 1, 9, 3, ink);
-    c.put(x2 - Math.floor($len(text4) / 2), y2, text4, ink);
+    c.put(x2 - Math.floor($len(text5) / 2), y2, text5, ink);
   }
   if (stage === 0) {
     progress = clamp((t - 163.315) / (165.166 - 163.315));
@@ -3767,7 +3768,7 @@ function lyric_outro_wait(c, t, area, elapsed) {
 }
 TITLE_CACHE = new PyDict([]);
 function title_pixels(w, h2, font) {
-  let text3, y0, span, yy, xx, row, left, bitmap, ink, top, total, line_h, key;
+  let text4, y0, span, yy, xx, row, left, bitmap, ink, top, total, line_h, key;
   key = [w, h2];
   if ($in(key, TITLE_CACHE)) {
     return $at(TITLE_CACHE, key);
@@ -3777,13 +3778,13 @@ function title_pixels(w, h2, font) {
   top = $max(3, Math.floor((h2 - total) / 2) - 1);
   ink = [];
   for (const $t634 of $iter([["WORLD.", top, $int($mul(w, 0.86))], ["EXECUTE(ME);", $add($add(top, line_h), 3), w - 8]])) {
-    [text3, y0, span] = $unpack($t634, 3);
+    [text4, y0, span] = $unpack($t634, 3);
     bitmap = [];
     for (let $t635 = $int(0), $t636 = $int(5), $t637 = 1; $t637 > 0 ? $t635 < $t636 : $t635 > $t636; $t635 += $t637) {
       row = $t635;
       bitmap.push($join("0", (() => {
         const $r3 = [];
-        for (const ch of $iter(text3)) {
+        for (const ch of $iter(text4)) {
           $r3.push($at($get(font, ch, $at(font, " ")), row));
         }
         return $r3;
@@ -4370,7 +4371,7 @@ var GridRenderer = class {
   }
 };
 
-// .dsh-plugin/client/mv/lyrics.mjs
+// .dsh-plugin/shared/mv-lyrics.mjs
 var CJK = /[\u3000-\u303f\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]/;
 function splitBilingual(lines) {
   const en3 = [], zh2 = [];
@@ -4399,11 +4400,11 @@ function finish(cues, duration) {
   return sorted.map(({ time, end, en: en3, zh: zh2 }) => ({ time: round3(time), end: round3(end), en: en3 ?? "", zh: zh2 ?? "" }));
 }
 var round3 = (v2) => Math.round(v2 * 1e3) / 1e3;
-function parseLrc(text3, { duration = 1e9 } = {}) {
+function parseLrc(text4, { duration = 1e9 } = {}) {
   const byTime = /* @__PURE__ */ new Map();
   let offsetMs = 0;
   const order = [];
-  for (const raw of String(text3).replace(/^\uFEFF/, "").split(/\r?\n/)) {
+  for (const raw of String(text4).replace(/^\uFEFF/, "").split(/\r?\n/)) {
     const tag = /^\s*\[offset:\s*([+-]?\d+)\s*\]/i.exec(raw);
     if (tag) {
       offsetMs = Number(tag[1]);
@@ -4450,8 +4451,8 @@ function parseLrc(text3, { duration = 1e9 } = {}) {
 }
 var SRT_TIME = /(\d{1,2}):(\d{2}):(\d{2})[,.](\d{1,3})/;
 var srtSeconds = (m) => Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number(m[4].padEnd(3, "0")) / 1e3;
-function parseSrt(text3, { duration = 1e9 } = {}) {
-  const blocks = String(text3).replace(/^\uFEFF/, "").replace(/\r/g, "").split(/\n\s*\n/);
+function parseSrt(text4, { duration = 1e9 } = {}) {
+  const blocks = String(text4).replace(/^\uFEFF/, "").replace(/\r/g, "").split(/\n\s*\n/);
   const cues = [];
   for (const block of blocks) {
     const lines = block.split("\n");
@@ -4465,8 +4466,8 @@ function parseSrt(text3, { duration = 1e9 } = {}) {
   }
   return finish(cues, duration);
 }
-function parseLyricsJson(text3, { duration = 1e9 } = {}) {
-  const data = typeof text3 === "string" ? JSON.parse(text3.replace(/^\uFEFF/, "")) : text3;
+function parseLyricsJson(text4, { duration = 1e9 } = {}) {
+  const data = typeof text4 === "string" ? JSON.parse(text4.replace(/^\uFEFF/, "")) : text4;
   const list = Array.isArray(data) ? data : Array.isArray(data?.lyrics) ? data.lyrics : null;
   if (!list) throw new Error("\u6B4C\u8BCD JSON \u5E94\u4E3A [{ time, end, en, zh }] \u6570\u7EC4\u3002");
   return finish(list.map((item) => ({
@@ -4476,9 +4477,9 @@ function parseLyricsJson(text3, { duration = 1e9 } = {}) {
     zh: typeof item?.zh === "string" ? item.zh : ""
   })), duration);
 }
-function parseLyrics(name, text3, options) {
+function parseLyrics(name, text4, options) {
   const lower = String(name ?? "").toLowerCase();
-  const body = String(text3);
+  const body = String(text4);
   if (lower.endsWith(".json")) return parseLyricsJson(body, options);
   if (lower.endsWith(".srt") || lower.endsWith(".vtt")) return parseSrt(body, options);
   if (lower.endsWith(".lrc")) return parseLrc(body, options);
@@ -4490,8 +4491,8 @@ function parseLyrics(name, text3, options) {
 // .dsh-plugin/client/mv/spectrum.mjs
 var BANDS = 48;
 var SILENT2 = Object.freeze(new Array(BANDS).fill(0));
-function spectrumFromJson(text3) {
-  const data = typeof text3 === "string" ? JSON.parse(text3.replace(/^\uFEFF/, "")) : text3;
+function spectrumFromJson(text4) {
+  const data = typeof text4 === "string" ? JSON.parse(text4.replace(/^\uFEFF/, "")) : text4;
   const fps = Number(data?.fps);
   const frames = data?.frames;
   if (!Number.isFinite(fps) || fps <= 0 || !Array.isArray(frames) || !frames.length) throw new Error("spectrum.json \u683C\u5F0F\u65E0\u6548\uFF08\u9700\u8981 fps \u4E0E frames\uFF09\u3002");
@@ -4889,8 +4890,323 @@ var GenericFilm = class extends Film {
   }
 };
 
+// .dsh-plugin/shared/mv-scene.mjs
+var SCENE_LIMITS = Object.freeze({
+  scriptBytes: 256 * 1024,
+  /** A frame slower than this counts as slow; too many slow frames stop the script. */
+  frameBudgetMs: 40,
+  slowFramesAllowed: 45,
+  /** No answer within this time: the worker is terminated. */
+  hardTimeoutMs: 1500,
+  /** Setup / first compile. */
+  setupTimeoutMs: 2e3,
+  maxCols: 240,
+  maxRows: 85
+});
+var SCENE_BLOCKED_GLOBALS = Object.freeze([
+  "fetch",
+  "XMLHttpRequest",
+  "WebSocket",
+  "WebTransport",
+  "EventSource",
+  "importScripts",
+  "indexedDB",
+  "caches",
+  "BroadcastChannel",
+  "Worker",
+  "SharedWorker",
+  "RTCPeerConnection",
+  "RTCDataChannel",
+  "Request",
+  "Response",
+  "Headers",
+  "FileReader",
+  "FileReaderSync",
+  "Notification",
+  "navigator",
+  "location",
+  "open",
+  "close",
+  "storageFoundation",
+  "WebAssembly",
+  "MessageChannel",
+  "importScripts"
+]);
+function stripModuleSyntax(source) {
+  return String(source).replace(/^\uFEFF/, "").replace(/^(\s*)export\s+default\s+(?=(?:async\s+)?function\b)/gm, "$1").replace(/^(\s*)export\s+(?=(?:async\s+)?function\b|const\b|let\b|var\b|class\b)/gm, "$1");
+}
+function sceneSourceProblems(source) {
+  const problems = [];
+  const text4 = String(source ?? "");
+  if (!text4.trim()) problems.push("\u573A\u666F\u811A\u672C\u662F\u7A7A\u7684\u3002");
+  if (new TextEncoder().encode(text4).length > SCENE_LIMITS.scriptBytes) problems.push(`\u573A\u666F\u811A\u672C\u8D85\u8FC7 ${SCENE_LIMITS.scriptBytes / 1024} KB\u3002`);
+  if (/^\s*import\s[^(]/m.test(text4) || /\bimport\s*\(/.test(text4) || /\brequire\s*\(/.test(text4)) problems.push("\u573A\u666F\u811A\u672C\u4E0D\u80FD import / require \u5176\u4ED6\u6A21\u5757\uFF08\u8FD0\u884C\u5728\u6CA1\u6709\u6587\u4EF6\u548C\u7F51\u7EDC\u7684\u6C99\u7BB1\u91CC\uFF09\u3002");
+  return problems;
+}
+var SCENE_RUNTIME_SOURCE = String.raw`
+function __mvNormalize(out, cols, rows) {
+  var lines = out, styles = null
+  if (out && typeof out === 'object' && !Array.isArray(out)) { lines = out.lines; styles = out.styles }
+  if (typeof lines === 'string') lines = lines.split('\n')
+  if (!Array.isArray(lines)) throw new TypeError('render() 必须返回字符串数组、带 \\n 的字符串，或 { lines, styles }')
+  if (styles != null && typeof styles === 'string') styles = styles.split('\n')
+  if (styles != null && !Array.isArray(styles)) throw new TypeError('styles 必须是字符串数组')
+  var outLines = [], outStyles = []
+  for (var y = 0; y < rows; y++) {
+    var line = lines[y] == null ? '' : String(lines[y])
+    if (line.length > cols * 4) line = line.slice(0, cols * 4)
+    outLines.push(line.replace(/[\u0000-\u001f\u007f]/g, ' '))
+    var style = styles && styles[y] != null ? String(styles[y]).slice(0, cols * 2).replace(/[^0-6]/g, '1') : ''
+    outStyles.push(style)
+  }
+  return { lines: outLines, styles: outStyles }
+}
+`;
+function sceneWorkerSource(userSource) {
+  const blocked = JSON.stringify(SCENE_BLOCKED_GLOBALS);
+  return `"use strict";
+const __post = self.postMessage.bind(self);
+const __listen = self.addEventListener.bind(self);
+const __now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+(() => {
+  const names = ${blocked};
+  const seen = new Set();
+  for (let o = self; o && !seen.has(o); o = Object.getPrototypeOf(o)) {
+    seen.add(o);
+    for (const name of names) { try { delete o[name] } catch (e) {} }
+  }
+  for (const name of names) { try { Object.defineProperty(self, name, { value: undefined, writable: false, configurable: false }) } catch (e) {} }
+  try { Object.defineProperty(self, 'postMessage', { value: undefined, writable: false, configurable: false }) } catch (e) {}
+})();
+${SCENE_RUNTIME_SOURCE}
+let __scene = null, __setupError = '';
+try {
+  __scene = (function () {
+${stripModuleSyntax(userSource)}
+;return { render: typeof render === 'function' ? render : null, setup: typeof setup === 'function' ? setup : null };
+  })();
+  if (!__scene.render) __setupError = '\u573A\u666F\u811A\u672C\u6CA1\u6709\u5B9A\u4E49 render(t, cols, rows, ctx) \u51FD\u6570\u3002';
+} catch (error) { __setupError = String(error && error.stack || error); }
+__listen('message', event => {
+  const msg = event.data || {};
+  if (msg.type === 'init') {
+    if (!__setupError && __scene.setup) { try { __scene.setup(msg.info || {}) } catch (error) { __setupError = String(error && error.stack || error) } }
+    __post({ type: 'ready', error: __setupError });
+    return;
+  }
+  if (msg.type !== 'frame' || __setupError) return;
+  const started = __now();
+  try {
+    const frame = __mvNormalize(__scene.render(msg.t, msg.cols, msg.rows, msg.ctx), msg.cols, msg.rows);
+    __post({ type: 'frame', id: msg.id, frame, ms: __now() - started });
+  } catch (error) {
+    __post({ type: 'error', id: msg.id, error: String(error && error.stack || error).slice(0, 2000) });
+  }
+});
+`;
+}
+var SILENT4 = new Array(48).fill(0);
+var avg = (bands, from, to) => {
+  let s15 = 0;
+  for (let i8 = from; i8 < to; i8++) s15 += bands[i8] ?? 0;
+  return s15 / Math.max(1, to - from);
+};
+var cueInfo = (cue) => cue ? { text: cue.en || cue.zh || "", en: cue.en || "", zh: cue.zh || "", start: cue.time, end: cue.end } : null;
+function sceneContext({ t = 0, duration = 0, title = "", artist = "", cue = null, next = null, bands = SILENT4, ready = false, paused = false } = {}) {
+  const b2 = Array.from({ length: 48 }, (_2, i8) => Math.max(0, Math.min(1, Number(bands?.[i8]) || 0)));
+  return {
+    duration,
+    progress: duration > 0 ? Math.max(0, Math.min(1, t / duration)) : 0,
+    title,
+    artist,
+    lyric: cueInfo(cue),
+    next: cueInfo(next),
+    bands: b2,
+    energy: avg(b2, 0, 48),
+    bass: avg(b2, 0, 8),
+    mid: avg(b2, 8, 28),
+    treble: avg(b2, 28, 48),
+    ready,
+    paused
+  };
+}
+var EXAMPLE_SCENE = String.raw`// scenes.js — scene script of a dsh-mv MV pack (canvas.renderer: "script").
+// Runs in a sandbox: no DOM, no network, no imports. Keep each frame fast (< 40 ms).
+//
+// render(t, cols, rows, ctx) returns the frame: an array of rows lines (strings),
+// or { lines, styles } where styles[y] has one digit per cell:
+// 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
+// ctx: { duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }
+//   lyric / next: { text, en, zh, start, end } or null
+
+function setup(info) {
+  // Optional, called once: info = { title, artist, duration }.
+}
+
+function centered(text, cols) {
+  const s = String(text).slice(0, cols)
+  const left = Math.max(0, Math.floor((cols - s.length) / 2))
+  return ' '.repeat(left) + s
+}
+
+function render(t, cols, rows, ctx) {
+  const lines = [], styles = []
+  for (let y = 0; y < rows; y++) {
+    let line = '', style = ''
+    for (let x = 0; x < cols; x++) {
+      // A moving wave whose height follows the music.
+      const band = ctx.bands[Math.min(47, Math.floor(x / cols * 48))]
+      const wave = Math.sin(x * 0.15 + t * 2) * 0.5 + 0.5
+      const level = rows - 1 - Math.floor((wave * 0.3 + band * 0.7) * (rows - 6))
+      const on = y >= level && y < rows - 4
+      line += on ? '#*+=-:.'[Math.min(6, y - level)] || '.' : ' '
+      style += on ? (y - level < 2 ? '3' : y - level < 4 ? '2' : '1') : '0'
+    }
+    lines.push(line); styles.push(style)
+  }
+  lines[1] = centered(ctx.title + (ctx.artist ? ' - ' + ctx.artist : ''), cols); styles[1] = '2'.repeat(cols)
+  if (ctx.lyric) { lines[rows - 3] = centered(ctx.lyric.text, cols); styles[rows - 3] = '3'.repeat(cols) }
+  if (ctx.lyric && ctx.lyric.zh && ctx.lyric.en) { lines[rows - 2] = centered(ctx.lyric.zh, cols); styles[rows - 2] = '2'.repeat(cols) }
+  return { lines, styles }
+}
+`;
+
+// .dsh-plugin/client/mv/script-film.mjs
+function blobWorkerFactory(source, { WorkerClass = globalThis.Worker, BlobClass = globalThis.Blob, url = globalThis.URL } = {}) {
+  if (typeof WorkerClass !== "function" || typeof BlobClass !== "function" || typeof url?.createObjectURL !== "function") return null;
+  const href = url.createObjectURL(new BlobClass([source], { type: "text/javascript" }));
+  try {
+    return new WorkerClass(href, { name: "dsh-mv-scene" });
+  } finally {
+    setTimeout(() => url.revokeObjectURL(href), 1e4);
+  }
+}
+var ScriptFilm = class extends GenericFilm {
+  constructor({ createWorker = blobWorkerFactory, now = () => globalThis.performance?.now?.() ?? Date.now(), onFail = () => {
+  }, ...options } = {}) {
+    super(options);
+    this.createWorker = createWorker;
+    this.now = now;
+    this.onFail = onFail;
+    this.worker = null;
+    this.state = "idle";
+    this.frame = null;
+    this.pending = null;
+    this.slow = 0;
+    this.nextId = 1;
+    this.error = "";
+  }
+  /** Start the script; resolves when it is ready, rejects with the reason. */
+  load(source) {
+    this.stop();
+    const problems = sceneSourceProblems(source);
+    if (problems.length) return Promise.reject(this.fail(problems.join(" ")));
+    let worker;
+    try {
+      worker = this.createWorker(sceneWorkerSource(source));
+    } catch (error) {
+      return Promise.reject(this.fail(`\u65E0\u6CD5\u521B\u5EFA\u573A\u666F\u6C99\u7BB1\uFF08Web Worker\uFF09\uFF1A${error?.message ?? error}`));
+    }
+    if (!worker) return Promise.reject(this.fail("\u8FD9\u4E2A\u73AF\u5883\u4E0D\u652F\u6301 Web Worker\uFF0C\u65E0\u6CD5\u8FD0\u884C\u573A\u666F\u811A\u672C\u3002"));
+    this.worker = worker;
+    this.state = "loading";
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(this.fail("\u573A\u666F\u811A\u672C\u52A0\u8F7D\u8D85\u65F6\u3002")), SCENE_LIMITS.setupTimeoutMs);
+      worker.onerror = (event) => {
+        clearTimeout(timer);
+        event?.preventDefault?.();
+        reject(this.fail(`\u573A\u666F\u811A\u672C\u51FA\u9519\uFF1A${event?.message ?? "\u672A\u77E5\u9519\u8BEF"}`));
+      };
+      worker.onmessage = (event) => {
+        const msg = event.data ?? {};
+        if (msg.type === "ready") {
+          clearTimeout(timer);
+          if (msg.error) {
+            reject(this.fail(`\u573A\u666F\u811A\u672C\u65E0\u6CD5\u52A0\u8F7D\uFF1A${String(msg.error).split("\n")[0]}`));
+            return;
+          }
+          this.state = "ready";
+          resolve();
+          return;
+        }
+        this.receive(msg);
+      };
+      worker.postMessage({ type: "init", info: { title: this.title, artist: this.artist, duration: this.duration } });
+    });
+  }
+  receive(msg) {
+    if (!this.pending || msg.id !== this.pending.id) return;
+    this.pending = null;
+    if (msg.type === "error") {
+      this.fail(`render() \u51FA\u9519\uFF1A${String(msg.error).split("\n")[0]}`);
+      return;
+    }
+    if (msg.type !== "frame" || !msg.frame || !Array.isArray(msg.frame.lines)) return;
+    this.frame = msg.frame;
+    if (msg.ms > SCENE_LIMITS.frameBudgetMs) {
+      if (++this.slow > SCENE_LIMITS.slowFramesAllowed) this.fail(`\u573A\u666F\u811A\u672C\u592A\u6162\uFF08\u4E00\u5E27 ${Math.round(msg.ms)} ms\uFF0C\u9884\u7B97 ${SCENE_LIMITS.frameBudgetMs} ms\uFF09\u3002`);
+    } else this.slow = Math.max(0, this.slow - 1);
+  }
+  fail(reason) {
+    if (this.state === "failed") return new Error(this.error);
+    this.state = "failed";
+    this.error = reason;
+    this.stop({ keepState: true });
+    this.onFail(reason);
+    return new Error(reason);
+  }
+  stop({ keepState = false } = {}) {
+    try {
+      this.worker?.terminate();
+    } catch {
+    }
+    this.worker = null;
+    this.pending = null;
+    this.frame = null;
+    this.slow = 0;
+    if (!keepState) {
+      this.state = "idle";
+      this.error = "";
+    }
+  }
+  request(t, w, h2, opts) {
+    if (this.state !== "ready" || !this.worker) return;
+    const now = this.now();
+    if (this.pending) {
+      if (now - this.pending.at > SCENE_LIMITS.hardTimeoutMs) this.fail(`\u573A\u666F\u811A\u672C ${SCENE_LIMITS.hardTimeoutMs} ms \u6CA1\u6709\u8FD4\u56DE\uFF08\u53EF\u80FD\u662F\u6B7B\u5FAA\u73AF\uFF09\uFF0C\u5DF2\u505C\u6B62\u3002`);
+      return;
+    }
+    const at3 = t + (opts.offset ?? 0);
+    const ctx = sceneContext({ t, duration: this.duration, title: this.title, artist: this.artist, cue: this.cue(at3), next: this.nextCue(at3), bands: this.energy(t), ready: Boolean(opts.ready), paused: Boolean(opts.paused) });
+    const id = this.nextId++;
+    this.pending = { id, at: now };
+    this.worker.postMessage({ type: "frame", id, t, cols: w, rows: h2, ctx });
+  }
+  /** Same interface as Film / GenericFilm: a Canvas for time t. */
+  render(t, w, h2, opts = {}) {
+    this.request(t, w, h2, opts);
+    const c = new Canvas(w, h2);
+    const frame = this.frame;
+    if (frame) {
+      for (let y = 0; y < Math.min(h2, frame.lines.length); y++) {
+        const style = frame.styles?.[y] ?? "";
+        let x = 0, i8 = 0;
+        for (const ch of frame.lines[y]) {
+          const k2 = cw(ch);
+          if (x >= w) break;
+          if (k2 > 0 && ch !== " ") c.put(x, y, ch, style ? Number(style[i8] ?? style[style.length - 1] ?? NORMAL) : NORMAL);
+          x += k2;
+          i8 += 1;
+        }
+      }
+    } else if (this.state === "loading" || this.state === "ready") c.center(Math.floor(h2 / 2), "\u2026", DIM);
+    if (opts.help) this.help(c, opts.offset ?? 0, opts.helpLines);
+    return c;
+  }
+};
+
 // .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.3.0" : "";
+var CLIENT_VERSION = true ? "0.4.0" : "";
 var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u7EC8\u7AEF\u3002";
 function isMissingRemoteMethod(message) {
   const value = String(message ?? "");
@@ -4921,16 +5237,17 @@ function versionNotice({ hostVersion, clientVersion = CLIENT_VERSION, loaded = t
 var MV_PACK_FORMAT = "dsh-mv-pack";
 var MV_PACK_VERSION = 1;
 var MV_PACK_SCHEMA_FILE = "mv.schema.json";
-var MV_CANVAS_RENDERERS = Object.freeze(["generic", "world-execute-me"]);
+var MV_CANVAS_RENDERERS = Object.freeze(["generic", "world-execute-me", "script"]);
 var MV_PACK_CWD = Object.freeze(["pack", "program", "script"]);
 var MV_PACK_PLACEHOLDERS = Object.freeze(["audio", "lyrics", "spectrum", "script", "packDir", "start", "offset"]);
 var MV_PACK_CONDITIONS = Object.freeze(["audio", "lyrics", "spectrum", "start", "offset"]);
-var MV_PACK_FILE_ROLES = Object.freeze(["audio", "lyrics", "spectrum"]);
+var MV_PACK_FILE_ROLES = Object.freeze(["audio", "lyrics", "spectrum", "scene"]);
 var MV_LYRICS_EXTENSIONS = Object.freeze([".lrc", ".srt", ".vtt", ".json", ".txt"]);
 var MV_PACK_LIMITS = Object.freeze({
   manifestBytes: 256 * 1024,
   textFileBytes: 8 * 1024 * 1024,
-  audioBytes: 512 * 1024 * 1024,
+  sceneBytes: 256 * 1024,
+  audioBytes: 1024 * 1024 * 1024,
   readChunkBytes: 512 * 1024,
   maxArgs: 64,
   maxArgChars: 2048,
@@ -5090,7 +5407,11 @@ var MV_PACK_JSON_SCHEMA = Object.freeze({
       type: "object",
       additionalProperties: false,
       patternProperties: { "^x-": {} },
-      properties: { renderer: { enum: MV_CANVAS_RENDERERS, default: "generic" }, fontSize: { type: "number", minimum: 8, maximum: 32 } }
+      properties: {
+        renderer: { enum: MV_CANVAS_RENDERERS, default: "generic", description: "generic | world-execute-me | script (needs canvas.script)." },
+        script: { type: "string", pattern: "\\.m?js$", description: 'Scene script (.js) for renderer "script": defines render(t, cols, rows, ctx). Runs sandboxed in the panel.' },
+        fontSize: { type: "number", minimum: 8, maximum: 32 }
+      }
     },
     terminal: {
       type: "object",
@@ -5144,12 +5465,42 @@ VS Code completion and checks.
 | \`audio\` | no | \`{ "file": "song.mp3", "offset": 0 }\`. Without audio the MV plays silently. \`offset\` (\xB130 s) shifts the picture against the audio. |
 | \`lyrics\` | no | \`{ "file": "lyrics.lrc", "offset": 0 }\`. Bilingual LRC: two lines with the same time stamp, or \`English / \u4E2D\u6587\` on one line. |
 | \`spectrum\` | no | \`{ "file": "spectrum.json" }\` with \`{ fps, frames }\` (48 bands per frame). Without it the panel analyses the audio live. |
-| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song) or \`world-execute-me\` (the built-in world.execute(me) scenes, timed for that song only). |
+| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song), \`world-execute-me\` (the built-in world.execute(me) scenes, timed for that song only) or \`script\` (your own scene script, see below). |
+| \`canvas.script\` | no | \`scenes.js\`: the scene script for \`script\` (setting it implies \`renderer: "script"\`). |
 | \`canvas.fontSize\` | no | 8\u201332 px. |
 | \`terminal\` | no | External TUI program for the **MV \u7EC8\u7AEF** tab (see below). |
 
 Paths are relative to the folder of \`mv.json\` (\`/\` or \`\\\\\`; \`..\` is not allowed)
 or absolute. Unknown fields are errors; put your own data in fields starting with \`x-\`.
+
+## Audio formats
+
+Anything the panel's Chromium can decode works for the canvas: MP3, M4A/AAC
+(including DASH/fragmented MP4 downloads), the audio track of MP4/MOV/WebM/MKV
+video files, Ogg Vorbis/Opus, FLAC, WAV (PCM / float / A-law / \u03BC-law). The format
+is detected from the file's content, not its extension. tui_live.py in the
+terminal plays MP3 and PCM WAV directly; other files are converted automatically
+to a cached WAV (by sha256, in \`%LOCALAPPDATA%\\dsh-mv\\audio-cache\`) the first time you
+play them. Formats Chromium cannot decode (WMA, AIFF, AMR, AC-3, APE, \u2026) can be
+converted with ffmpeg if it is installed (PATH or \`D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\`);
+the panel asks before running it.
+
+## Scene scripts (\`canvas.renderer: "script"\`)
+
+\`\`\`json
+"canvas": { "renderer": "script", "script": "scenes.js" }
+\`\`\`
+
+\`scenes.js\` defines \`render(t, cols, rows, ctx)\` (and optionally \`setup(info)\`). It returns
+an array of \`rows\` strings, or \`{ lines, styles }\` where \`styles[y]\` has one digit per
+cell (0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive). \`ctx\` is
+\`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }\`
+(\`lyric\`/\`next\`: \`{ text, en, zh, start, end }\` or null).
+
+The script runs in a Web Worker without network, storage, DOM or imports. A frame
+should take under ${SCENE_LIMITS.frameBudgetMs} ms; a script that throws, hangs for
+${SCENE_LIMITS.hardTimeoutMs} ms or is too slow is stopped and the panel falls back to the
+\`generic\` renderer. \`examples/scenes.example.js\` is a working example.
 
 ## External renderer (\`terminal\`)
 
@@ -5206,12 +5557,37 @@ VS Code \u7B49\u7F16\u8F91\u5668\u63D0\u4F9B\u8865\u5168\u548C\u6821\u9A8C\u3002
 | \`audio\` | \u5426 | \`{ "file": "song.mp3", "offset": 0 }\`\uFF1B\u6CA1\u6709\u97F3\u9891\u65F6\u9759\u97F3\u64AD\u653E\u753B\u9762\u3002\`offset\`\uFF08\xB130 \u79D2\uFF09\u8C03\u6574\u753B\u9762\u4E0E\u97F3\u9891\u7684\u540C\u6B65\u3002 |
 | \`lyrics\` | \u5426 | \`{ "file": "lyrics.lrc", "offset": 0 }\`\uFF1B\u53CC\u8BED LRC\uFF1A\u540C\u4E00\u65F6\u95F4\u6233\u5199\u4E24\u884C\uFF0C\u6216\u4E00\u884C\u5199 \`English / \u4E2D\u6587\`\u3002 |
 | \`spectrum\` | \u5426 | \`{ "file": "spectrum.json" }\`\uFF0C\u683C\u5F0F \`{ fps, frames }\`\uFF08\u6BCF\u5E27 48 \u4E2A\u9891\u6BB5\uFF09\uFF1B\u4E0D\u586B\u5219\u5B9E\u65F6\u5206\u6790\u97F3\u9891\u3002 |
-| \`canvas.renderer\` | \u5426 | \`generic\`\uFF08\u901A\u7528\uFF1A\u9891\u8C31 + \u6807\u9898 + \u6B4C\u8BCD\uFF0C\u4EFB\u4F55\u6B4C\u90FD\u80FD\u653E\uFF09\u6216 \`world-execute-me\`\uFF08\u5185\u7F6E\u7684 world.execute(me) \u573A\u666F\uFF0C\u53EA\u9002\u5408\u8FD9\u9996\u6B4C\u7684\u65F6\u95F4\u8F74\uFF09\u3002 |
+| \`canvas.renderer\` | \u5426 | \`generic\`\uFF08\u901A\u7528\uFF1A\u9891\u8C31 + \u6807\u9898 + \u6B4C\u8BCD\uFF0C\u4EFB\u4F55\u6B4C\u90FD\u80FD\u653E\uFF09\u3001\`world-execute-me\`\uFF08\u5185\u7F6E\u7684 world.execute(me) \u573A\u666F\uFF0C\u53EA\u9002\u5408\u8FD9\u9996\u6B4C\u7684\u65F6\u95F4\u8F74\uFF09\u6216 \`script\`\uFF08\u4F60\u81EA\u5DF1\u7684\u573A\u666F\u811A\u672C\uFF0C\u89C1\u4E0B\uFF09\u3002 |
+| \`canvas.script\` | \u5426 | \`scenes.js\`\uFF1A\`script\` \u6E32\u67D3\u5668\u7528\u7684\u573A\u666F\u811A\u672C\uFF08\u586B\u4E86\u5B83\u5C31\u9ED8\u8BA4 \`renderer: "script"\`\uFF09\u3002 |
 | \`canvas.fontSize\` | \u5426 | 8\u201332 \u50CF\u7D20\u3002 |
 | \`terminal\` | \u5426 | **MV \u7EC8\u7AEF** \u9875\u4F7F\u7528\u7684\u5916\u90E8 TUI \u7A0B\u5E8F\uFF08\u89C1\u4E0B\uFF09\u3002 |
 
 \u8DEF\u5F84\u76F8\u5BF9\u4E8E \`mv.json\` \u6240\u5728\u6587\u4EF6\u5939\uFF08\`/\` \u6216 \`\\\\\` \u90FD\u884C\uFF0C\u4E0D\u5141\u8BB8 \`..\`\uFF09\uFF0C\u4E5F\u53EF\u4EE5\u5199\u7EDD\u5BF9\u8DEF\u5F84\u3002
 \u672A\u77E5\u5B57\u6BB5\u4F1A\u62A5\u9519\uFF1B\u81EA\u5B9A\u4E49\u6570\u636E\u8BF7\u7528 \`x-\` \u5F00\u5934\u7684\u5B57\u6BB5\u3002
+
+## \u97F3\u9891\u683C\u5F0F
+
+\u753B\u5E03\u6A21\u5F0F\u652F\u6301\u9762\u677F\u91CC Chromium \u80FD\u89E3\u7801\u7684\u4E00\u5207\u683C\u5F0F\uFF1AMP3\u3001M4A/AAC\uFF08\u5305\u62EC DASH / \u5206\u7247 MP4 \u4E0B\u8F7D\u6587\u4EF6\uFF09\u3001
+MP4/MOV/WebM/MKV \u89C6\u9891\u91CC\u7684\u97F3\u8F68\u3001Ogg Vorbis/Opus\u3001FLAC\u3001WAV\uFF08PCM / \u6D6E\u70B9 / A-law / \u03BC-law\uFF09\u3002
+\u683C\u5F0F\u6309\u6587\u4EF6\u5185\u5BB9\u5224\u65AD\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\u3002\u7EC8\u7AEF\u91CC\u7684 tui_live.py \u80FD\u76F4\u63A5\u64AD\u653E MP3 \u548C PCM WAV\uFF1B\u5176\u4ED6\u683C\u5F0F\u7B2C\u4E00\u6B21
+\u64AD\u653E\u65F6\u4F1A\u81EA\u52A8\u8F6C\u6362\u6210 WAV \u7F13\u5B58\uFF08\u6309 sha256\uFF0C\u5B58\u653E\u5728 \`%LOCALAPPDATA%\\dsh-mv\\audio-cache\`\uFF09\uFF0C\u539F\u6587\u4EF6\u4E0D\u53D8\u3002
+Chromium \u89E3\u4E0D\u4E86\u7684\u683C\u5F0F\uFF08WMA\u3001AIFF\u3001AMR\u3001AC-3\u3001APE\u2026\uFF09\u5982\u679C\u88C5\u4E86 ffmpeg\uFF08PATH \u91CC\u6216
+\`D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\`\uFF09\u53EF\u4EE5\u7528\u5B83\u8F6C\u6362\uFF0C\u8FD0\u884C\u524D\u9762\u677F\u4F1A\u5148\u5F81\u6C42\u4F60\u540C\u610F\u3002
+
+## \u573A\u666F\u811A\u672C\uFF08\`canvas.renderer: "script"\`\uFF09
+
+\`\`\`json
+"canvas": { "renderer": "script", "script": "scenes.js" }
+\`\`\`
+
+\`scenes.js\` \u5B9A\u4E49 \`render(t, cols, rows, ctx)\`\uFF08\u53EF\u9009 \`setup(info)\`\uFF09\uFF0C\u8FD4\u56DE \`rows\` \u884C\u5B57\u7B26\u4E32\u6570\u7EC4\uFF0C
+\u6216 \`{ lines, styles }\`\uFF1A\`styles[y]\` \u6BCF\u4E2A\u5B57\u7B26\u4E00\u4F4D\u6570\u5B57\uFF080 \u6697\u30011 \u666E\u901A\u30012 \u4EAE\u30013 \u767D\u30014 \u7EA2\u30015 \u68D5\u30016 \u6A44\u6984\uFF09\u3002
+\`ctx\` \u4E3A \`{ duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }\`
+\uFF08\`lyric\`/\`next\`\uFF1A\`{ text, en, zh, start, end }\` \u6216 null\uFF09\u3002
+
+\u811A\u672C\u5728 Web Worker \u6C99\u7BB1\u91CC\u8FD0\u884C\uFF1A\u6CA1\u6709\u7F51\u7EDC\u3001\u5B58\u50A8\u3001DOM\uFF0C\u4E0D\u80FD import\u3002\u6BCF\u5E27\u5E94\u5728 ${SCENE_LIMITS.frameBudgetMs} \u6BEB\u79D2\u5185\u5B8C\u6210\uFF1B
+\u811A\u672C\u62A5\u9519\u3001\u5361\u4F4F ${SCENE_LIMITS.hardTimeoutMs} \u6BEB\u79D2\u6216\u6301\u7EED\u592A\u6162\u65F6\u4F1A\u88AB\u505C\u6B62\uFF0C\u9762\u677F\u81EA\u52A8\u6362\u56DE \`generic\` \u901A\u7528\u753B\u9762\u3002
+\`examples/scenes.example.js\` \u662F\u4E00\u4E2A\u80FD\u76F4\u63A5\u8FD0\u884C\u7684\u793A\u4F8B\u3002
 
 ## \u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F\uFF08\`terminal\`\uFF09
 
@@ -5254,8 +5630,198 @@ function templateFiles() {
     { path: "README.zh.md", text: README_ZH },
     { path: "lyrics.example.lrc", text: LRC_EXAMPLE },
     { path: "examples/terminal-python.mv.json", text: json(TERMINAL_EXAMPLE) },
-    { path: "examples/world-execute-me.mv.json", text: json(WORLD_EXECUTE_ME_EXAMPLE) }
+    { path: "examples/world-execute-me.mv.json", text: json(WORLD_EXECUTE_ME_EXAMPLE) },
+    { path: "examples/scenes.example.js", text: EXAMPLE_SCENE }
   ];
+}
+
+// .dsh-plugin/shared/mv-audio-protocol.mjs
+var WAV_LIMITS = Object.freeze({ maxBytes: 1536 * 1024 * 1024, chunkBytes: 512 * 1024, keepFiles: 8 });
+var AUDIO_LIMITS = Object.freeze({ sniffBytes: 4096, maxSourceBytes: 1024 * 1024 * 1024, readChunkBytes: 512 * 1024 });
+var ascii = (b2, from, to) => {
+  let out = "";
+  for (let i8 = from; i8 < Math.min(to, b2.length); i8 += 1) out += String.fromCharCode(b2[i8]);
+  return out;
+};
+var indexOfAscii = (b2, text4, from = 0, to = b2.length) => {
+  outer: for (let i8 = from; i8 <= Math.min(to, b2.length) - text4.length; i8 += 1) {
+    for (let j3 = 0; j3 < text4.length; j3 += 1) if (b2[i8 + j3] !== text4.charCodeAt(j3)) continue outer;
+    return i8;
+  }
+  return -1;
+};
+var WAV_CODECS = { 1: "PCM", 3: "IEEE float", 6: "A-law", 7: "\u03BC-law", 17: "IMA ADPCM", 85: "MP3", 65534: "extensible" };
+function sniffWav(b2) {
+  let at3 = 12, codec = null, bits = null, channels = null, rate = null;
+  while (at3 + 8 <= b2.length) {
+    const id = ascii(b2, at3, at3 + 4);
+    const size = b2[at3 + 4] | b2[at3 + 5] << 8 | b2[at3 + 6] << 16 | b2[at3 + 7] << 24;
+    if (id === "fmt " && at3 + 24 <= b2.length) {
+      codec = b2[at3 + 8] | b2[at3 + 9] << 8;
+      channels = b2[at3 + 10] | b2[at3 + 11] << 8;
+      rate = (b2[at3 + 12] | b2[at3 + 13] << 8 | b2[at3 + 14] << 16 | b2[at3 + 15] << 24) >>> 0;
+      bits = b2[at3 + 22] | b2[at3 + 23] << 8;
+      if (codec === 65534 && at3 + 34 <= b2.length) codec = (b2[at3 + 32] | b2[at3 + 33] << 8) === 3 ? 3 : 1;
+      break;
+    }
+    if (size < 0) break;
+    at3 += 8 + size + (size & 1);
+  }
+  const pcm = codec === 1 && (bits === 8 || bits === 16 || bits === 24) && channels >= 1 && channels <= 2;
+  const name = codec === null ? "" : `\uFF08${WAV_CODECS[codec] ?? `\u7F16\u7801 ${codec}`}${bits ? ` ${bits} bit` : ""}\uFF09`;
+  return { format: "wav", label: `WAV${name}`, codec, bits, channels, rate, pcm, chromium: codec === null || codec === 1 || codec === 3 || codec === 6 || codec === 7 };
+}
+function sniffAudio(bytes) {
+  const b2 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  const result = (info) => ({ kind: "audio", chromium: true, mci: false, ...info });
+  if (b2.length >= 12 && ascii(b2, 4, 8) === "ftyp") {
+    const brand = ascii(b2, 8, 12);
+    const head = ascii(b2, 8, Math.min(b2.length, 64));
+    const dash = /dash|iso5|iso6|msdh|msix/.test(head);
+    const quicktime = brand === "qt  ";
+    const audioBrand = /^(M4A |M4B |M4P |F4A |F4B )$/.test(brand);
+    const video = !audioBrand && (quicktime || indexOfAscii(b2, "vide", 0, Math.min(b2.length, AUDIO_LIMITS.sniffBytes)) >= 0);
+    const label = quicktime ? "MOV\uFF08QuickTime\uFF09" : audioBrand ? "M4A\uFF08AAC\uFF09" : dash ? "MP4/AAC\uFF08DASH \u5206\u7247\uFF09" : video ? "MP4 \u89C6\u9891\uFF08\u7528\u5176\u4E2D\u7684\u97F3\u8F68\uFF09" : "MP4/AAC";
+    return result({ format: "mp4", brand, fragmented: dash, label, kind: video ? "video" : "audio" });
+  }
+  if (b2.length >= 8 && ["moov", "moof", "styp", "sidx"].includes(ascii(b2, 4, 8))) return result({ format: "mp4", brand: "", fragmented: true, label: "MP4/AAC\uFF08\u65E0 ftyp \u5206\u7247\uFF09" });
+  if (b2.length >= 12 && ascii(b2, 0, 4) === "RIFF" && ascii(b2, 8, 12) === "WAVE") {
+    const wav = sniffWav(b2);
+    return result({ ...wav, mci: wav.pcm });
+  }
+  if (b2.length >= 12 && (ascii(b2, 0, 4) === "RF64" || ascii(b2, 0, 4) === "BW64") && ascii(b2, 8, 12) === "WAVE") return result({ format: "wav", label: "WAV\uFF08RF64 \u5927\u6587\u4EF6\uFF09", chromium: false });
+  if (b2.length >= 4 && b2[0] === 26 && b2[1] === 69 && b2[2] === 223 && b2[3] === 163) {
+    const webm = indexOfAscii(b2, "webm", 0, 64) >= 0;
+    const video = indexOfAscii(b2, "V_", 0, b2.length) >= 0;
+    return result({ format: webm ? "webm" : "mkv", label: `${webm ? "WebM" : "Matroska\uFF08MKV/MKA\uFF09"}${video ? " \u89C6\u9891\uFF08\u7528\u5176\u4E2D\u7684\u97F3\u8F68\uFF09" : ""}`, kind: video ? "video" : "audio" });
+  }
+  if (b2.length >= 4 && ascii(b2, 0, 4) === "OggS") {
+    const head = ascii(b2, 0, Math.min(b2.length, 128));
+    const codec = /OpusHead/.test(head) ? "Opus" : /\x01vorbis/.test(head) ? "Vorbis" : /\x7fFLAC/.test(head) ? "FLAC" : /theora/.test(head) ? "Theora" : "";
+    return result({ format: "ogg", label: codec ? `Ogg ${codec}` : "Ogg", codec, kind: codec === "Theora" ? "video" : "audio" });
+  }
+  if (b2.length >= 4 && ascii(b2, 0, 4) === "fLaC") return result({ format: "flac", label: "FLAC" });
+  if (b2.length >= 3 && ascii(b2, 0, 3) === "ID3") {
+    const size = (b2[6] & 127) << 21 | (b2[7] & 127) << 14 | (b2[8] & 127) << 7 | b2[9] & 127;
+    const next = 10 + size + (b2[5] & 16 ? 10 : 0);
+    if (next + 2 <= b2.length && b2[next] === 255 && (b2[next + 1] & 246) === 240) return result({ format: "aac", label: "AAC\uFF08ADTS\uFF0C\u5E26 ID3\uFF09" });
+    if (next + 4 <= b2.length && ascii(b2, next, next + 4) === "fLaC") return result({ format: "flac", label: "FLAC\uFF08\u5E26 ID3\uFF09" });
+    return result({ format: "mp3", label: "MP3", mci: true });
+  }
+  if (b2.length >= 2 && b2[0] === 255 && (b2[1] & 224) === 224) {
+    if ((b2[1] & 6) === 0) return result({ format: "aac", label: "AAC\uFF08ADTS\uFF09" });
+    const layer = (b2[1] & 6) === 2 ? "MP3" : (b2[1] & 6) === 4 ? "MP2" : "MP1";
+    return result({ format: layer === "MP3" ? "mp3" : "mp2", label: layer, mci: true });
+  }
+  if (b2.length >= 12 && ascii(b2, 0, 4) === "FORM" && /^AIF[FC]$/.test(ascii(b2, 8, 12))) return result({ format: "aiff", label: "AIFF", chromium: false });
+  if (b2.length >= 16 && b2[0] === 48 && b2[1] === 38 && b2[2] === 178 && b2[3] === 117 && b2[4] === 142 && b2[5] === 102 && b2[6] === 207 && b2[7] === 17) return result({ format: "asf", label: "WMA / WMV\uFF08ASF\uFF09", chromium: false, mci: false });
+  if (b2.length >= 4 && ascii(b2, 0, 4) === "caff") return result({ format: "caf", label: "CAF\uFF08Apple Core Audio\uFF09", chromium: false });
+  if (b2.length >= 5 && ascii(b2, 0, 5) === "#!AMR") return result({ format: "amr", label: "AMR", chromium: false });
+  if (b2.length >= 2 && b2[0] === 11 && b2[1] === 119) return result({ format: "ac3", label: "AC-3", chromium: false });
+  if (b2.length >= 4 && ascii(b2, 0, 4) === "MAC ") return result({ format: "ape", label: "Monkey's Audio\uFF08APE\uFF09", chromium: false });
+  if (b2.length >= 4 && ascii(b2, 0, 4) === "wvpk") return result({ format: "wavpack", label: "WavPack", chromium: false });
+  if (b2.length >= 4 && ascii(b2, 0, 4) === ".snd") return result({ format: "au", label: "Sun AU", chromium: false });
+  if (b2.length >= 188 * 2 && b2[0] === 71 && b2[188] === 71) return result({ format: "mpegts", label: "MPEG-TS\uFF08\u7528\u5176\u4E2D\u7684\u97F3\u8F68\uFF09", kind: "video", chromium: false });
+  if (b2.length >= 4 && b2[0] === 0 && b2[1] === 0 && b2[2] === 1 && b2[3] === 186) return result({ format: "mpeg", label: "MPEG-PS \u89C6\u9891", kind: "video", chromium: false });
+  if (b2.length >= 3 && ascii(b2, 0, 3) === "FLV") return result({ format: "flv", label: "FLV \u89C6\u9891", kind: "video", chromium: false });
+  return { format: "unknown", label: "\u672A\u77E5\u683C\u5F0F", kind: "unknown", chromium: false, mci: false };
+}
+var MCI_FORMATS = Object.freeze(["mp3", "mp2", "wav"]);
+function audioMimeOf(sniff) {
+  switch (sniff?.format) {
+    case "mp3":
+    case "mp2":
+      return "audio/mpeg";
+    case "aac":
+      return "audio/aac";
+    case "mp4":
+      return sniff.kind === "video" ? "video/mp4" : "audio/mp4";
+    case "webm":
+      return sniff.kind === "video" ? "video/webm" : "audio/webm";
+    case "mkv":
+      return sniff.kind === "video" ? "video/x-matroska" : "audio/x-matroska";
+    case "ogg":
+      return "audio/ogg";
+    case "flac":
+      return "audio/flac";
+    case "wav":
+      return "audio/wav";
+    default:
+      return "application/octet-stream";
+  }
+}
+function audioExtensionOf(sniff) {
+  const map = { mp3: ".mp3", mp2: ".mp2", aac: ".aac", webm: ".webm", mkv: ".mka", ogg: ".ogg", flac: ".flac", wav: ".wav", aiff: ".aiff", asf: ".wma", caf: ".caf", amr: ".amr", ac3: ".ac3", ape: ".ape", wavpack: ".wv", au: ".au" };
+  if (sniff?.format === "mp4") return sniff.kind === "video" ? ".mp4" : ".m4a";
+  return map[sniff?.format] ?? ".bin";
+}
+var SHA = /^[0-9a-f]{64}$/;
+var UPLOAD = /^wav-[0-9a-f]{16,40}$/;
+function plain(value, subject) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError(`${subject} must be an object`);
+  return value;
+}
+function onlyKeys(value, keys, subject) {
+  const extra = Object.keys(value).filter((key) => !keys.includes(key));
+  if (extra.length) throw new TypeError(`${subject} has unexpected fields: ${extra.join(", ")}`);
+}
+function parseAbsolutePath(value, subject = "path") {
+  const path = typeof value === "string" ? value.trim().replace(/^"(.*)"$/, "$1") : "";
+  if (!path || path.length > 1024 || /[\0\r\n"]/.test(path) || !(path.startsWith("/") || /^[A-Za-z]:[\\/]/.test(path) || /^\\\\[^\\]+\\[^\\]+/.test(path))) throw new TypeError(`${subject} must be an absolute path`);
+  return path;
+}
+function parseWavBegin(value) {
+  plain(value, "wav request");
+  onlyKeys(value, ["sourceSha256", "bytes"], "wav request");
+  if (typeof value.sourceSha256 !== "string" || !SHA.test(value.sourceSha256)) throw new TypeError("sourceSha256 must be 64 hex characters");
+  if (!Number.isInteger(value.bytes) || value.bytes < 44 || value.bytes > WAV_LIMITS.maxBytes) throw new TypeError(`bytes must be 44..${WAV_LIMITS.maxBytes}`);
+  return { sourceSha256: value.sourceSha256, bytes: value.bytes };
+}
+function parseBase64Chunk(value, max = WAV_LIMITS.chunkBytes) {
+  if (typeof value !== "string" || value.length === 0 || value.length > Math.ceil(max / 3) * 4 || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) throw new TypeError("base64 chunk is invalid");
+  return value;
+}
+function parseWavWrite(value) {
+  plain(value, "wav write");
+  onlyKeys(value, ["uploadId", "offset", "base64"], "wav write");
+  if (typeof value.uploadId !== "string" || !UPLOAD.test(value.uploadId)) throw new TypeError("uploadId is invalid");
+  if (!Number.isInteger(value.offset) || value.offset < 0 || value.offset > WAV_LIMITS.maxBytes) throw new TypeError("offset is invalid");
+  return { uploadId: value.uploadId, offset: value.offset, base64: parseBase64Chunk(value.base64) };
+}
+function parseWavFinish(value) {
+  plain(value, "wav finish");
+  onlyKeys(value, ["uploadId"], "wav finish");
+  if (typeof value.uploadId !== "string" || !UPLOAD.test(value.uploadId)) throw new TypeError("uploadId is invalid");
+  return { uploadId: value.uploadId };
+}
+function parseAudioProbe(value) {
+  plain(value, "probe request");
+  onlyKeys(value, ["path", "hash", "player"], "probe request");
+  if (value.hash !== void 0 && typeof value.hash !== "boolean") throw new TypeError("hash must be a boolean");
+  return { path: parseAbsolutePath(value.path), hash: value.hash === true };
+}
+function parseAudioRead(value) {
+  plain(value, "audio read");
+  onlyKeys(value, ["path", "offset", "length"], "audio read");
+  const offset = value.offset ?? 0, length = value.length ?? AUDIO_LIMITS.readChunkBytes;
+  if (!Number.isInteger(offset) || offset < 0 || offset > AUDIO_LIMITS.maxSourceBytes) throw new TypeError("offset is invalid");
+  if (!Number.isInteger(length) || length < 1 || length > AUDIO_LIMITS.readChunkBytes) throw new TypeError(`length must be 1..${AUDIO_LIMITS.readChunkBytes}`);
+  return { path: parseAbsolutePath(value.path), offset, length };
+}
+function parseAudioConvert(value) {
+  plain(value, "convert request");
+  onlyKeys(value, ["path", "confirmed"], "convert request");
+  if (value.confirmed !== true) throw new TypeError("ffmpeg conversion needs confirmed: true");
+  return { path: parseAbsolutePath(value.path), confirmed: true };
+}
+function parseFfmpegInfo(value) {
+  if (value === void 0 || value === null) return {};
+  plain(value, "ffmpeg info");
+  onlyKeys(value, [], "ffmpeg info");
+  return {};
+}
+function ffmpegArgs(source, target) {
+  return ["-nostdin", "-hide_banner", "-loglevel", "error", "-y", "-i", source, "-map", "0:a:0", "-vn", "-sn", "-dn", "-map_metadata", "-1", "-ac", "2", "-ar", "44100", "-c:a", "pcm_s16le", "-bitexact", "-f", "wav", target];
 }
 
 // .dsh-plugin/client/mv-pack-state.mjs
@@ -5316,14 +5882,13 @@ async function loadPackFromHost(api, path) {
   if (!loaded?.pack || typeof loaded.manifestPath !== "string") throw new Error("MV \u5305\u8BFB\u53D6\u7ED3\u679C\u683C\u5F0F\u65E0\u6548\u3002");
   return { id: `pack:${loaded.manifestPath}`, loadedAt: Date.now(), ...loaded };
 }
-var fromBase64 = (text3) => {
-  const binary = globalThis.atob(text3);
+var fromBase64 = (text4) => {
+  const binary = globalThis.atob(text4);
   const bytes = new Uint8Array(binary.length);
   for (let i8 = 0; i8 < binary.length; i8++) bytes[i8] = binary.charCodeAt(i8);
   return bytes;
 };
-var MIME = { ".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".mp4": "audio/mp4", ".aac": "audio/aac", ".ogg": "audio/ogg", ".opus": "audio/ogg", ".flac": "audio/flac", ".wav": "audio/wav", ".webm": "audio/webm" };
-var audioMime = (name) => MIME[(String(name).match(/\.[^.]+$/)?.[0] ?? "").toLowerCase()] ?? "application/octet-stream";
+var audioMime = (bytes) => audioMimeOf(sniffAudio(bytes ?? new Uint8Array(0)));
 async function fetchPackBytes(api, manifestPath, role, { onProgress = () => {
 }, isCancelled = () => false, decode = fromBase64 } = {}) {
   const parts = [];
@@ -5342,7 +5907,7 @@ async function fetchPackBytes(api, manifestPath, role, { onProgress = () => {
 }
 async function fetchPackAudio(api, manifestPath, { FileClass = globalThis.File, ...options } = {}) {
   const { name, parts } = await fetchPackBytes(api, manifestPath, "audio", options);
-  return new FileClass(parts, name, { type: audioMime(name) });
+  return new FileClass(parts, name, { type: audioMime(parts[0]) });
 }
 async function fetchPackText(api, manifestPath, role, options = {}) {
   const { name, parts } = await fetchPackBytes(api, manifestPath, role, options);
@@ -5431,6 +5996,620 @@ function zipFiles(files, { date = new Date(2026, 9, 3) } = {}) {
 var templateZip = () => zipFiles(templateFiles().map((file) => ({ path: `${TEMPLATE_FOLDER}/${file.path}`, text: file.text })));
 var TEMPLATE_ZIP_NAME = `${TEMPLATE_FOLDER}.zip`;
 
+// .dsh-plugin/shared/mv-terminal-protocol.mjs
+var MV_TERMINAL_SCRIPT = ["_tools", "tui_live.py"];
+var MV_TERMINAL_LIMITS = Object.freeze({
+  maxSessions: 2,
+  /** A session nobody reads (panel closed, client gone) is killed after this. */
+  orphanTimeoutMs: 12e4,
+  /** Hard lifetime of one session (the song is 3.5 minutes). */
+  maxLifetimeMs: 2 * 60 * 6e4,
+  /** Output kept per session for the client to catch up. */
+  bufferChars: 2e6,
+  /** Largest output slice returned by one read. */
+  readChars: 512e3,
+  /** Longest long-poll wait for new output. */
+  maxWaitMs: 1e3,
+  /** Largest single input write. */
+  writeChars: 4096,
+  minCols: 20,
+  maxCols: 400,
+  minRows: 8,
+  maxRows: 200,
+  maxPathChars: 1024,
+  maxStartSeconds: 3600,
+  maxLatencySeconds: 5,
+  maxOffsetSeconds: 30
+});
+var MV_PLAYERS = Object.freeze(["python", "pack"]);
+var MV_PLAYER_LABELS = Object.freeze({ python: "world_execute_me\uFF08tui_live.py\uFF09", pack: "\u5F53\u524D MV \u5305\u7684\u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F" });
+var PYTHON_BASENAME = /^(?:python(?:3(?:\.\d{1,2})?)?w?|py)(?:\.exe)?$/i;
+var SESSION_ID = /^mvterm-[a-z0-9]{6,40}$/;
+var isMvSessionId = (value) => typeof value === "string" && SESSION_ID.test(value);
+var CONSOLE_ID = /^mvcon-[a-z0-9]{6,40}$/;
+var isMvConsoleId = (value) => typeof value === "string" && CONSOLE_ID.test(value);
+function plainObject(value, subject) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError(`${subject} must be an object`);
+  return value;
+}
+function sessionIdOf(value) {
+  if (typeof value !== "string" || !SESSION_ID.test(value)) throw new TypeError("sessionId is invalid");
+  return value;
+}
+function boundedInteger(value, min, max, subject) {
+  if (!Number.isInteger(value) || value < min || value > max) throw new TypeError(`${subject} must be an integer from ${min} to ${max}`);
+  return value;
+}
+function boundedNumber2(value, min, max, subject) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max) throw new TypeError(`${subject} must be a number from ${min} to ${max}`);
+  return value;
+}
+function isAbsolutePathText(value) {
+  if (typeof value !== "string") return false;
+  const path = value.trim();
+  if (!path || path.length > MV_TERMINAL_LIMITS.maxPathChars || /[\0\r\n"]/.test(path)) return false;
+  return path.startsWith("/") || /^[A-Za-z]:[\\/]/.test(path) || /^\\\\[^\\]+\\[^\\]+/.test(path);
+}
+function absolutePath(value, subject) {
+  if (!isAbsolutePathText(value)) throw new TypeError(`${subject} \u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84`);
+  return value.trim();
+}
+function basenameOf(path) {
+  return path.split(/[\\/]/).filter(Boolean).pop() ?? "";
+}
+function parseMvLaunch(value) {
+  const request2 = plainObject(value, "launch");
+  if (request2.player !== void 0 && !MV_PLAYERS.includes(request2.player)) throw new TypeError("player must be python or pack");
+  if (request2.player === "pack") return parsePackLaunch(request2);
+  const allowed = /* @__PURE__ */ new Set(["player", "pythonPath", "packageDir", "audioFile", "noAudio", "start", "audioLatency"]);
+  const extra = Object.keys(request2).filter((key) => !allowed.has(key));
+  if (extra.length) throw new TypeError(`launch has unexpected fields: ${extra.join(", ")}`);
+  const pythonPath = absolutePath(request2.pythonPath, "Python \u8DEF\u5F84");
+  if (!PYTHON_BASENAME.test(basenameOf(pythonPath))) throw new TypeError("Python \u8DEF\u5F84\u5FC5\u987B\u6307\u5411 python.exe / python3 / pythonw.exe \u8FD9\u6837\u7684\u89E3\u91CA\u5668");
+  const packageDir = absolutePath(request2.packageDir, "\u64AD\u653E\u5668\u76EE\u5F55");
+  const noAudio = request2.noAudio === true;
+  if (request2.noAudio !== void 0 && typeof request2.noAudio !== "boolean") throw new TypeError("noAudio must be a boolean");
+  let audioFile;
+  if (request2.audioFile !== void 0 && request2.audioFile !== null && request2.audioFile !== "") audioFile = absolutePath(request2.audioFile, "\u97F3\u9891\u6587\u4EF6");
+  const start = request2.start === void 0 || request2.start === null ? 0 : boundedNumber2(request2.start, 0, MV_TERMINAL_LIMITS.maxStartSeconds, "start");
+  const audioLatency = request2.audioLatency === void 0 || request2.audioLatency === null ? void 0 : boundedNumber2(request2.audioLatency, 0, MV_TERMINAL_LIMITS.maxLatencySeconds, "audioLatency");
+  return {
+    player: "python",
+    pythonPath,
+    packageDir,
+    noAudio,
+    start,
+    ...audioFile && !noAudio ? { audioFile } : {},
+    ...audioLatency !== void 0 ? { audioLatency } : {}
+  };
+}
+function parseMvTerminalCheck(value) {
+  return parseMvLaunch(value);
+}
+function parseMvTerminalStart(value) {
+  const request2 = plainObject(value, "start request");
+  const { cols, rows, confirmed, ...launch } = request2;
+  const L2 = MV_TERMINAL_LIMITS;
+  return {
+    launch: parseMvLaunch(launch),
+    cols: boundedInteger(cols, L2.minCols, L2.maxCols, "cols"),
+    rows: boundedInteger(rows, L2.minRows, L2.maxRows, "rows"),
+    confirmed: confirmed === true
+  };
+}
+function parseMvTerminalRead(value) {
+  const request2 = plainObject(value, "read request");
+  return {
+    sessionId: sessionIdOf(request2.sessionId),
+    cursor: request2.cursor === void 0 ? 0 : boundedInteger(request2.cursor, 0, Number.MAX_SAFE_INTEGER, "cursor"),
+    waitMs: request2.waitMs === void 0 ? 0 : boundedInteger(request2.waitMs, 0, MV_TERMINAL_LIMITS.maxWaitMs, "waitMs")
+  };
+}
+function parseMvTerminalWrite(value) {
+  const request2 = plainObject(value, "write request");
+  if (typeof request2.data !== "string" || request2.data.length === 0 || request2.data.length > MV_TERMINAL_LIMITS.writeChars) {
+    throw new TypeError(`data must be a string of 1 to ${MV_TERMINAL_LIMITS.writeChars} characters`);
+  }
+  return { sessionId: sessionIdOf(request2.sessionId), data: request2.data };
+}
+function parseMvTerminalResize(value) {
+  const request2 = plainObject(value, "resize request");
+  const L2 = MV_TERMINAL_LIMITS;
+  return {
+    sessionId: sessionIdOf(request2.sessionId),
+    cols: boundedInteger(request2.cols, L2.minCols, L2.maxCols, "cols"),
+    rows: boundedInteger(request2.rows, L2.minRows, L2.maxRows, "rows")
+  };
+}
+function parseMvTerminalStop(value) {
+  const request2 = plainObject(value, "stop request");
+  return { sessionId: sessionIdOf(request2.sessionId) };
+}
+function mvTerminalArgs(launch, scriptPath) {
+  const args = [scriptPath];
+  if (launch.noAudio) args.push("--no-audio");
+  else if (launch.audioFile) args.push("--audio-file", launch.audioFile);
+  if (launch.start > 0) args.push("--start", String(launch.start));
+  if (launch.audioLatency !== void 0) args.push("--audio-latency", String(launch.audioLatency));
+  return args;
+}
+function displayCommand(file, args) {
+  const quote = (text4) => /[\s"]/.test(text4) ? `"${text4}"` : text4;
+  return [file, ...args].map(quote).join(" ");
+}
+function parseMvConsoleStart(value) {
+  const request2 = plainObject(value, "console start request");
+  const { confirmed, ...launch } = request2;
+  if (confirmed !== void 0 && typeof confirmed !== "boolean") throw new TypeError("confirmed must be a boolean");
+  return { launch: parseMvLaunch(launch), confirmed: confirmed === true };
+}
+function parseMvConsoleStop(value) {
+  const request2 = plainObject(value, "console stop request");
+  const extra = Object.keys(request2).filter((key) => key !== "consoleId");
+  if (extra.length) throw new TypeError(`console stop request has unexpected fields: ${extra.join(", ")}`);
+  if (!isMvConsoleId(request2.consoleId)) throw new TypeError("consoleId is invalid");
+  return { consoleId: request2.consoleId };
+}
+function parseMvConsoleInfo(value) {
+  if (value === void 0 || value === null) return {};
+  const request2 = plainObject(value, "console info request");
+  if (Object.keys(request2).length) throw new TypeError("console info request takes no fields");
+  return {};
+}
+var CONSOLE_TITLE = "world.execute(me)";
+var UNSAFE_FOR_CMD = /[%"\r\n\0]/;
+var SAFE_BARE_ARG = /^(?:--[a-z][a-z-]*|-?\d+(?:\.\d+)?)$/;
+function cmdQuote(text4, subject = "\u53C2\u6570") {
+  const value = String(text4);
+  if (UNSAFE_FOR_CMD.test(value)) throw new Error(`${subject}\u542B\u6709\u72EC\u7ACB\u7A97\u53E3\u6A21\u5F0F\u65E0\u6CD5\u5B89\u5168\u4F20\u9012\u7684\u5B57\u7B26\uFF08% \u6216\u6362\u884C\uFF09\uFF1A${value}`);
+  return `"${value}"`;
+}
+function consoleCwd(dir) {
+  const trimmed = String(dir).replace(/[\\/]+$/, "");
+  return /^[A-Za-z]:$/.test(trimmed) ? `${trimmed}\\.` : trimmed;
+}
+function startCommandLine(resolved) {
+  const args = resolved.args.map((arg) => SAFE_BARE_ARG.test(arg) ? arg : cmdQuote(arg, "\u8DEF\u5F84"));
+  return ["start", `"${CONSOLE_TITLE}"`, "/D", cmdQuote(consoleCwd(resolved.cwd), "\u5DE5\u4F5C\u76EE\u5F55"), cmdQuote(resolved.file, "\u7A0B\u5E8F\u8DEF\u5F84"), ...args].join(" ");
+}
+function consoleCommandDisplay(resolved, cmdPath = "cmd.exe") {
+  return `${cmdPath} ${cmdArgv(resolved).join(" ")}`;
+}
+function cmdArgv(resolved) {
+  return ["/d", "/v:off", "/s", "/c", `"${startCommandLine(resolved)}"`];
+}
+
+// .dsh-plugin/client/mv-terminal-state.mjs
+var text2 = (value) => typeof value === "string" ? value.trim() : "";
+function effectiveAudioOf(form) {
+  if (form.player === "pack" || form.noAudio) return "";
+  const explicit = text2(form.audioFile);
+  if (explicit) return explicit;
+  const dir = text2(form.packageDir).replace(/[\\/]+$/, "");
+  if (!dir) return "";
+  const sep = dir.includes("/") && !dir.includes("\\") ? "/" : "\\";
+  return `${dir}${sep}input${sep}song.mp3`;
+}
+var FORM_KEY = "dsh-mv.terminal.form.v1";
+var EMPTY_FORM = Object.freeze({ packStart: "", packOffset: "", player: "python", pythonPath: "", packageDir: "", audioFile: "", noAudio: false, start: "", audioLatency: "" });
+function loadForm(storage = globalThis.localStorage) {
+  let saved = {};
+  try {
+    saved = JSON.parse(storage?.getItem(FORM_KEY) ?? "{}") ?? {};
+  } catch {
+    saved = {};
+  }
+  const form = { ...EMPTY_FORM };
+  for (const key of Object.keys(EMPTY_FORM)) if (key in saved) form[key] = saved[key];
+  if (form.player !== "python" && form.player !== "pack") form.player = "python";
+  return form;
+}
+function saveForm(form, storage = globalThis.localStorage) {
+  try {
+    storage?.setItem(FORM_KEY, JSON.stringify(form));
+  } catch {
+  }
+}
+var basename = (value) => text2(value).split(/[\\/]/).pop();
+var sepOf = (value) => /\\/.test(value) || /^[a-z]:/i.test(value) ? "\\" : "/";
+function suggestedPython(packageDir) {
+  const dir = text2(packageDir).replace(/[\\/]+$/, "");
+  if (!dir) return "";
+  const sep = sepOf(dir);
+  return `${dir}${sep}python${sep}python${sep === "\\" ? ".exe" : ""}`;
+}
+function launchFromForm(form, ctx = {}) {
+  if (form.player === "pack") {
+    const launch2 = { player: "pack", manifestPath: text2(ctx.pack?.manifestPath) };
+    if (text2(String(form.packStart ?? ""))) launch2.start = Number(form.packStart);
+    if (text2(String(form.packOffset ?? ""))) launch2.offset = Number(form.packOffset);
+    return launch2;
+  }
+  const launch = { player: "python", pythonPath: text2(form.pythonPath), packageDir: text2(form.packageDir).replace(/(?<=.)[\\/]+$/, ""), noAudio: Boolean(form.noAudio) };
+  if (!launch.noAudio && text2(form.audioFile)) launch.audioFile = text2(form.audioFile);
+  const override = ctx.audioOverride;
+  if (!launch.noAudio && override?.path && override.source === effectiveAudioOf(form)) launch.audioFile = override.path;
+  if (text2(String(form.start ?? ""))) launch.start = Number(form.start);
+  if (text2(String(form.audioLatency ?? ""))) launch.audioLatency = Number(form.audioLatency);
+  return launch;
+}
+function formProblem(form, ctx = {}) {
+  const launch = launchFromForm(form, ctx);
+  if (launch.player === "pack") {
+    if (!ctx.pack?.terminal) return "\u5F53\u524D MV \u5305\u6CA1\u6709\u914D\u7F6E\u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F\uFF08mv.json \u91CC\u7684 terminal\uFF09\u3002\u8BF7\u5148\u5BFC\u5165\u5E26 terminal \u7684 MV \u5305\uFF0C\u6216\u9009\u62E9\u5176\u4ED6\u64AD\u653E\u5668\u3002";
+    if ("start" in launch && !(Number.isFinite(launch.start) && launch.start >= 0 && launch.start <= MV_PACK_LIMITS.maxStart)) return `\u8D77\u59CB\u79D2\u6570\u5E94\u5728 0\u2013${MV_PACK_LIMITS.maxStart} \u4E4B\u95F4\u3002`;
+    if ("offset" in launch && !(Number.isFinite(launch.offset) && Math.abs(launch.offset) <= MV_PACK_LIMITS.maxOffset)) return `\u504F\u79FB\u5E94\u5728 \xB1${MV_PACK_LIMITS.maxOffset} \u79D2\u4E4B\u5185\u3002`;
+    return "";
+  }
+  if (!launch.pythonPath) return "\u8BF7\u586B\u5199 Python \u89E3\u91CA\u5668\u8DEF\u5F84\uFF08\u4F8B\u5982 world_execute_me\\python\\python.exe\uFF09\u3002";
+  if (!isAbsolutePathText(launch.pythonPath)) return "Python \u8DEF\u5F84\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\u3002";
+  if (!PYTHON_BASENAME.test(basename(launch.pythonPath))) return "Python \u8DEF\u5F84\u5FC5\u987B\u6307\u5411 python.exe / python3 \u8FD9\u6837\u7684\u89E3\u91CA\u5668\u3002";
+  if (!launch.packageDir) return "\u8BF7\u586B\u5199\u64AD\u653E\u5668\u76EE\u5F55\uFF08\u542B _tools\\tui_live.py \u7684\u6587\u4EF6\u5939\uFF09\u3002";
+  if (!isAbsolutePathText(launch.packageDir)) return "\u64AD\u653E\u5668\u76EE\u5F55\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\u3002";
+  if (launch.audioFile && !isAbsolutePathText(launch.audioFile)) return "\u97F3\u9891\u6587\u4EF6\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\u3002";
+  if ("start" in launch && !(Number.isFinite(launch.start) && launch.start >= 0 && launch.start <= MV_TERMINAL_LIMITS.maxStartSeconds)) return `\u8D77\u59CB\u79D2\u6570\u5E94\u5728 0\u2013${MV_TERMINAL_LIMITS.maxStartSeconds} \u4E4B\u95F4\u3002`;
+  if ("audioLatency" in launch && !(Number.isFinite(launch.audioLatency) && launch.audioLatency >= 0 && launch.audioLatency <= MV_TERMINAL_LIMITS.maxLatencySeconds)) return `\u97F3\u9891\u5EF6\u8FDF\u5E94\u5728 0\u2013${MV_TERMINAL_LIMITS.maxLatencySeconds} \u79D2\u4E4B\u95F4\u3002`;
+  return "";
+}
+function commandPreview(form, ctx = {}) {
+  if (form.player === "pack") return ctx.checked?.display ?? "\uFF08\u70B9\u300C\u68C0\u67E5\u300D\u540E\u663E\u793A Host \u4ECE mv.json \u89E3\u6790\u51FA\u7684\u5B8C\u6574\u547D\u4EE4\uFF09";
+  const launch = launchFromForm(form, ctx);
+  const sep = sepOf(launch.packageDir || launch.pythonPath);
+  const script = [launch.packageDir, ...MV_TERMINAL_SCRIPT].join(sep);
+  return displayCommand(launch.pythonPath, mvTerminalArgs(launch, script));
+}
+function confirmationDetails(form, checked, ctx = {}) {
+  if (form.player === "pack") {
+    return {
+      title: `\u542F\u52A8 MV \u5305\u300C${ctx.pack?.pack?.title ?? ""}\u300D\u7684\u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F\uFF1F`,
+      command: checked?.display ?? "\uFF08\u5C1A\u672A\u68C0\u67E5\uFF09",
+      cwd: checked?.cwd ?? "",
+      argv: checked?.args ?? [],
+      points: [
+        "\u8FD9\u4E2A\u7A0B\u5E8F\u548C\u53C2\u6570\u6765\u81EA\u4F60\u5BFC\u5165\u7684 mv.json\u3002\u5B83\u662F\u4EFB\u610F\u7A0B\u5E8F\uFF0C\u4F1A\u4EE5\u4F60\u7684\u6743\u9650\u8FD0\u884C\uFF0C\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\u3002\u53EA\u542F\u52A8\u4F60\u4FE1\u4EFB\u7684 MV \u5305\u3002",
+        `\u6E05\u5355\uFF1A${ctx.pack?.manifestPath ?? ""}`,
+        "\u4E0A\u9762\u5C31\u662F Host \u5C06\u6267\u884C\u7684\u5B8C\u6574\u547D\u4EE4\uFF08\u6BCF\u4E2A\u53C2\u6570\u5355\u72EC\u4F20\u9012\uFF0C\u4E0D\u7ECF\u8FC7 shell\uFF09\u3002\u5982\u679C\u786E\u8BA4\u540E mv.json \u88AB\u6539\u52A8\uFF0CHost \u4F1A\u62D2\u7EDD\u542F\u52A8\u3002",
+        "\u5173\u95ED\u9762\u677F\u3001\u7ED3\u675F\u4F1A\u8BDD\u6216\u7EA6 2 \u5206\u949F\u65E0\u4EBA\u67E5\u770B\u65F6\uFF0C\u8FDB\u7A0B\u4F1A\u88AB\u7ED3\u675F\u3002"
+      ]
+    };
+  }
+  return {
+    title: "\u542F\u52A8 MV \u7EC8\u7AEF\uFF1F",
+    command: checked?.display ?? commandPreview(form),
+    cwd: checked?.cwd ?? launchFromForm(form, ctx).packageDir,
+    points: [
+      "\u5C06\u5728\u4F2A\u7EC8\u7AEF\u91CC\u8FD0\u884C\u4F60\u672C\u673A\u7684 Python \u548C\u64AD\u653E\u5668\u811A\u672C\uFF08\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\uFF09\uFF0C\u548C\u4F60\u81EA\u5DF1\u5728\u7EC8\u7AEF\u91CC\u8FD0\u884C\u5B83\u4E00\u6837\u3002",
+      ...ctx.audioOverride?.path ? [`\u97F3\u9891\u5DF2\u81EA\u52A8\u8F6C\u6362\u4E3A WAV \u7F13\u5B58\uFF08\u539F\u6587\u4EF6 ${ctx.audioOverride.source} \u4E0D\u53D8\uFF09\u3002`] : [],
+      "\u53EA\u80FD\u542F\u52A8\u56FA\u5B9A\u7684\u64AD\u653E\u5668\uFF1B\u9762\u677F\u4E0D\u80FD\u4F20\u4EFB\u610F\u547D\u4EE4\u6216\u53C2\u6570\u3002",
+      "\u753B\u9762\u662F\u7EC8\u7AEF\u8F93\u51FA\u7ECF Host \u957F\u8F6E\u8BE2\u8F6C\u53D1\u5230\u8FD9\u91CC\u7684\uFF0C\u6BD4\u539F\u751F\u7EC8\u7AEF\u591A\u7EA6 30\u2013150 ms \u5EF6\u8FDF\uFF1B\u5BF9\u53E3\u578B\u8BF7\u7528 --audio-latency \u6216\u753B\u5E03 MV \u6A21\u5F0F\u3002",
+      "\u5173\u95ED\u9762\u677F\u3001\u7ED3\u675F\u4F1A\u8BDD\u6216\u7EA6 2 \u5206\u949F\u65E0\u4EBA\u67E5\u770B\u65F6\uFF0C\u8FDB\u7A0B\u4F1A\u88AB\u7ED3\u675F\u3002"
+    ]
+  };
+}
+function plannedLaunch(form, ctx = {}) {
+  if (form.player === "pack") {
+    if (!ctx.checked) throw new Error("\u8BF7\u5148\u70B9\u300C\u68C0\u67E5\u300D\uFF0C\u7531 Host \u89E3\u6790 MV \u5305\u7684\u547D\u4EE4\u3002");
+    return { file: ctx.checked.file, args: ctx.checked.args, cwd: ctx.checked.cwd };
+  }
+  const launch = launchFromForm(form, ctx);
+  const sep = sepOf(launch.packageDir || launch.pythonPath);
+  return { file: launch.pythonPath, args: mvTerminalArgs(launch, [launch.packageDir, ...MV_TERMINAL_SCRIPT].join(sep)), cwd: launch.packageDir };
+}
+function consoleCommandPreview(form, ctx = {}) {
+  try {
+    return consoleCommandDisplay(plannedLaunch(form, ctx));
+  } catch (error) {
+    return error.message;
+  }
+}
+function consoleProblem(form, ctx = {}) {
+  const { platform, pack, checked } = ctx;
+  if (platform && platform !== "win32") return "\u72EC\u7ACB\u63A7\u5236\u53F0\u7A97\u53E3\u53EA\u5728 Windows \u4E0A\u53EF\u7528\uFF1B\u5F53\u524D\u7CFB\u7EDF\u8BF7\u7528\u9762\u677F\u5185\u7684 MV \u7EC8\u7AEF\u3002";
+  if (form.player === "pack") {
+    const problem = formProblem(form, { pack });
+    if (problem || !checked) return problem;
+    const unsafe = cmdSafetyProblems(checked.file, checked.args ?? [], checked.cwd);
+    return unsafe.length ? unsafe.join("\n") : "";
+  }
+  const launch = launchFromForm(form, { audioOverride: ctx.audioOverride });
+  for (const value of [launch.pythonPath, launch.packageDir, launch.audioFile]) {
+    if (typeof value === "string" && /%/.test(value)) return `\u8DEF\u5F84\u91CC\u542B\u6709 %\uFF0C\u72EC\u7ACB\u7A97\u53E3\u6A21\u5F0F\u65E0\u6CD5\u5B89\u5168\u4F20\u9012\uFF1A${value}`;
+  }
+  return formProblem(form);
+}
+function consoleConfirmationDetails(form, ctx = {}) {
+  const pack = form.player === "pack";
+  return {
+    title: pack ? `\u5728\u72EC\u7ACB\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u8FD0\u884C MV \u5305\u300C${ctx.pack?.pack?.title ?? ""}\u300D\u7684\u6E32\u67D3\u7A0B\u5E8F\uFF1F` : "\u5728\u72EC\u7ACB\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u64AD\u653E\uFF1F",
+    command: consoleCommandPreview(form, ctx),
+    player: commandPreview(form, ctx),
+    points: pack ? [
+      "\u8FD9\u4E2A\u7A0B\u5E8F\u548C\u53C2\u6570\u6765\u81EA\u4F60\u5BFC\u5165\u7684 mv.json\u3002\u5B83\u662F\u4EFB\u610F\u7A0B\u5E8F\uFF0C\u4F1A\u4EE5\u4F60\u7684\u6743\u9650\u8FD0\u884C\uFF0C\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\u3002\u53EA\u542F\u52A8\u4F60\u4FE1\u4EFB\u7684 MV \u5305\u3002",
+      '\u5C06\u7528 cmd.exe \u7684 start \u6253\u5F00\u4E00\u4E2A\u65B0\u7684\u63A7\u5236\u53F0\u7A97\u53E3\u3002\u6240\u6709\u8DEF\u5F84\u548C\u53C2\u6570\u90FD\u52A0\u5F15\u53F7\uFF1B\u542B % ! " ^ & | < > \u6216\u6362\u884C\u7684\u503C\u4E00\u5F8B\u62D2\u7EDD\u3002',
+      "\u5982\u679C\u786E\u8BA4\u540E mv.json \u88AB\u6539\u52A8\uFF0CHost \u4F1A\u62D2\u7EDD\u542F\u52A8\u3002\u9762\u677F\u91CC\u7684\u300C\u7ED3\u675F\u300D\u4F1A\u7528 taskkill /T \u7ED3\u675F\u5B83\u3002"
+    ] : [
+      "\u5C06\u7528 cmd.exe \u7684 start \u6253\u5F00\u4E00\u4E2A\u65B0\u7684\u63A7\u5236\u53F0\u7A97\u53E3\uFF08\u82E5\u7CFB\u7EDF\u9ED8\u8BA4\u7EC8\u7AEF\u662F Windows Terminal\uFF0C\u4F1A\u5728\u5176\u4E2D\u6253\u5F00\uFF09\uFF0C\u5728\u91CC\u9762\u8FD0\u884C\u4E0A\u9762\u8FD9\u4E00\u4E2A\u56FA\u5B9A\u7684\u64AD\u653E\u5668\uFF1B\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\u3002",
+      "\u6240\u6709\u8DEF\u5F84\u90FD\u52A0\u5F15\u53F7\u4F20\u9012\uFF1B\u4E0D\u80FD\u9644\u52A0\u4EFB\u4F55\u5176\u4ED6\u547D\u4EE4\u6216\u53C2\u6570\u3002",
+      "\u753B\u9762\u76F4\u63A5\u7531\u771F\u5B9E\u63A7\u5236\u53F0\u663E\u793A\uFF0C\u6CA1\u6709\u9762\u677F\u8F6C\u53D1\u7684\u5EF6\u8FDF\uFF1B\u6309\u952E\u8BF7\u5728\u90A3\u4E2A\u7A97\u53E3\u91CC\u6309\u3002",
+      "\u9762\u677F\u91CC\u7684\u300C\u7ED3\u675F\u300D\u4F1A\u7528 taskkill /T \u7ED3\u675F\u64AD\u653E\u5668\u8FDB\u7A0B\u6811\uFF1B\u63D2\u4EF6\u5378\u8F7D\u6216 Harness \u9000\u51FA\u65F6\u4E5F\u4F1A\u7ED3\u675F\u8FD9\u4E9B\u7A97\u53E3\u3002"
+    ]
+  };
+}
+async function loadConsoles(api) {
+  return unwrapRemote(await api.consoleInfo({}), "\u65E0\u6CD5\u8BFB\u53D6\u72EC\u7ACB\u7A97\u53E3\u72B6\u6001\u3002");
+}
+async function startConsole(api, form, ctx = {}) {
+  const started = unwrapRemote(await api.consoleStart({ ...launchFromForm(form, ctx), ...expectation(form, ctx), confirmed: true }), "\u65E0\u6CD5\u6253\u5F00\u72EC\u7ACB\u7A97\u53E3\u3002");
+  if (!isMvConsoleId(started?.consoleId)) throw new Error("\u542F\u52A8\u7ED3\u679C\u7F3A\u5C11\u6709\u6548\u7684\u7A97\u53E3 ID\u3002");
+  return started;
+}
+async function stopConsole(api, consoleId) {
+  return unwrapRemote(await api.consoleStop({ consoleId }), "\u65E0\u6CD5\u7ED3\u675F\u72EC\u7ACB\u7A97\u53E3\u3002");
+}
+function endDescription({ endReason, exitCode } = {}) {
+  const code = exitCode === null || exitCode === void 0 ? "" : `\uFF0C\u9000\u51FA\u7801 ${exitCode}`;
+  switch (endReason) {
+    case "stopped":
+      return `\u5DF2\u7531\u4F60\u7ED3\u675F${code}\u3002`;
+    case "orphan":
+      return "\u957F\u65F6\u95F4\u6CA1\u6709\u9762\u677F\u8BFB\u53D6\u8F93\u51FA\uFF0C\u5DF2\u81EA\u52A8\u7ED3\u675F\u3002";
+    case "lifetime":
+      return "\u4F1A\u8BDD\u8FBE\u5230\u6700\u957F\u65F6\u957F\uFF0C\u5DF2\u81EA\u52A8\u7ED3\u675F\u3002";
+    case "dispose":
+      return "\u63D2\u4EF6\u5DF2\u5378\u8F7D\u6216\u91CD\u65B0\u52A0\u8F7D\uFF0C\u4F1A\u8BDD\u5DF2\u7ED3\u675F\u3002";
+    case "lost":
+      return "\u4E0E\u540E\u53F0\u7684\u8FDE\u63A5\u4E2D\u65AD\u3002";
+    default:
+      return `\u64AD\u653E\u5668\u5DF2\u9000\u51FA${code}\u3002`;
+  }
+}
+async function loadInfo(api) {
+  const info = unwrapRemote(await api.info(), "\u65E0\u6CD5\u8BFB\u53D6 MV \u63D2\u4EF6\u72B6\u6001\u3002");
+  if (!info || typeof info !== "object") throw new Error("MV \u63D2\u4EF6\u72B6\u6001\u683C\u5F0F\u65E0\u6548\u3002");
+  return info;
+}
+async function checkLaunch(api, form, ctx = {}) {
+  return unwrapRemote(await api.terminalCheck(launchFromForm(form, ctx)), "\u8DEF\u5F84\u68C0\u67E5\u5931\u8D25\u3002");
+}
+function expectation(form, ctx) {
+  if (form.player !== "pack") return {};
+  if (typeof ctx.checked?.display !== "string") throw new Error("\u8BF7\u5148\u68C0\u67E5\u5E76\u786E\u8BA4 MV \u5305\u7684\u547D\u4EE4\u3002");
+  return { expectDisplay: ctx.checked.display };
+}
+async function startSession(api, form, { cols = 120, rows = 40 } = {}, ctx = {}) {
+  const L2 = MV_TERMINAL_LIMITS;
+  const request2 = {
+    ...launchFromForm(form, ctx),
+    ...expectation(form, ctx),
+    confirmed: true,
+    cols: Math.min(L2.maxCols, Math.max(L2.minCols, Math.round(cols))),
+    rows: Math.min(L2.maxRows, Math.max(L2.minRows, Math.round(rows)))
+  };
+  const session = unwrapRemote(await api.terminalStart(request2), "MV \u7EC8\u7AEF\u542F\u52A8\u5931\u8D25\u3002");
+  if (!isMvSessionId(session?.sessionId)) throw new Error("\u542F\u52A8\u7ED3\u679C\u7F3A\u5C11\u6709\u6548\u7684\u4F1A\u8BDD ID\u3002");
+  return session;
+}
+var TerminalConnection = class {
+  constructor({ api, sessionId, onData, onExit, onError, waitMs = 800, retryMs = 1e3, resizeDelayMs = 120, setTimer = setTimeout, clearTimer = clearTimeout }) {
+    Object.assign(this, { api, sessionId, onData, onExit, onError, waitMs, retryMs, resizeDelayMs });
+    this.setTimer = (callback, ms3) => setTimer(callback, ms3);
+    this.clearTimer = (id) => clearTimer(id);
+    this.cursor = 0;
+    this.closed = false;
+    this.pendingInput = "";
+    this.writing = null;
+    this.resizeTimer = null;
+    this.failures = 0;
+  }
+  start() {
+    if (!isMvSessionId(this.sessionId)) {
+      this.closed = true;
+      this.onError?.(new Error("\u4F1A\u8BDD ID \u65E0\u6548\u3002"));
+      this.onExit?.({ endReason: "lost", exitCode: null });
+      this.loop = Promise.resolve();
+      return this.loop;
+    }
+    this.loop = this.readLoop();
+    return this.loop;
+  }
+  async readLoop() {
+    while (!this.closed) {
+      let output;
+      try {
+        output = unwrapRemote(await this.api.terminalRead({ sessionId: this.sessionId, cursor: this.cursor, waitMs: this.waitMs }), "\u8BFB\u53D6\u7EC8\u7AEF\u8F93\u51FA\u5931\u8D25\u3002");
+        this.failures = 0;
+      } catch (error) {
+        if (this.closed) return;
+        this.failures += 1;
+        this.onError?.(error);
+        if (this.failures >= 5) {
+          this.closed = true;
+          this.onExit?.({ endReason: "lost", exitCode: null });
+          return;
+        }
+        await new Promise((resolve) => this.setTimer(resolve, this.retryMs));
+        continue;
+      }
+      if (this.closed) return;
+      if (output.dropped) this.onData?.("\r\n[\u90E8\u5206\u8F83\u65E9\u7684\u8F93\u51FA\u5DF2\u4E22\u5F03]\r\n");
+      if (output.data) this.onData?.(output.data);
+      this.cursor = output.cursor;
+      if (output.exited) {
+        this.closed = true;
+        this.onExit?.({ endReason: output.endReason, exitCode: output.exitCode });
+        return;
+      }
+    }
+  }
+  send(data) {
+    if (this.closed || !data) return;
+    this.pendingInput += data;
+    if (!this.writing) this.writing = this.flush();
+  }
+  async flush() {
+    try {
+      while (this.pendingInput && !this.closed) {
+        const chunk = this.pendingInput.slice(0, MV_TERMINAL_LIMITS.writeChars);
+        this.pendingInput = this.pendingInput.slice(chunk.length);
+        try {
+          unwrapRemote(await this.api.terminalWrite({ sessionId: this.sessionId, data: chunk }), "\u53D1\u9001\u6309\u952E\u5931\u8D25\u3002");
+        } catch (error) {
+          this.onError?.(error);
+        }
+      }
+    } finally {
+      this.writing = null;
+    }
+  }
+  resize(cols, rows) {
+    if (this.closed || !Number.isFinite(cols) || !Number.isFinite(rows)) return;
+    const L2 = MV_TERMINAL_LIMITS;
+    cols = Math.min(L2.maxCols, Math.max(L2.minCols, Math.round(cols)));
+    rows = Math.min(L2.maxRows, Math.max(L2.minRows, Math.round(rows)));
+    if (this.resizeTimer) this.clearTimer(this.resizeTimer);
+    this.resizeTimer = this.setTimer(() => {
+      this.resizeTimer = null;
+      void Promise.resolve(this.api.terminalResize({ sessionId: this.sessionId, cols, rows })).catch(() => {
+      });
+    }, this.resizeDelayMs);
+  }
+  async stop() {
+    const wasOpen = !this.closed;
+    this.closed = true;
+    if (this.resizeTimer) this.clearTimer(this.resizeTimer);
+    if (wasOpen) {
+      try {
+        await this.api.terminalStop({ sessionId: this.sessionId });
+      } catch {
+      }
+    }
+  }
+};
+var errorText = (error, fallback) => remoteErrorText(text2(error?.message), fallback);
+
+// .dsh-plugin/client/mv-wav.mjs
+var WAV_RATE = 44100;
+var WAV_CHUNK = 384 * 1024;
+function encodeWav(channels, sampleRate) {
+  const count = Math.min(2, channels.length);
+  const frames = channels[0]?.length ?? 0;
+  const dataBytes = frames * count * 2;
+  const out = new Uint8Array(44 + dataBytes);
+  const view = new DataView(out.buffer);
+  const ascii2 = (offset2, text4) => {
+    for (let i8 = 0; i8 < text4.length; i8 += 1) out[offset2 + i8] = text4.charCodeAt(i8);
+  };
+  ascii2(0, "RIFF");
+  view.setUint32(4, 36 + dataBytes, true);
+  ascii2(8, "WAVE");
+  ascii2(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, count, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * count * 2, true);
+  view.setUint16(32, count * 2, true);
+  view.setUint16(34, 16, true);
+  ascii2(36, "data");
+  view.setUint32(40, dataBytes, true);
+  let offset = 44;
+  for (let frame = 0; frame < frames; frame += 1) {
+    for (let channel = 0; channel < count; channel += 1) {
+      const sample = Math.max(-1, Math.min(1, channels[channel][frame] || 0));
+      view.setInt16(offset, sample < 0 ? Math.round(sample * 32768) : Math.round(sample * 32767), true);
+      offset += 2;
+    }
+  }
+  return out;
+}
+function bytesToBase64(bytes) {
+  let binary = "";
+  for (let i8 = 0; i8 < bytes.length; i8 += 32768) binary += String.fromCharCode.apply(null, bytes.subarray(i8, i8 + 32768));
+  return btoa(binary);
+}
+async function decodeToChannels(buffer, { OfflineContext = globalThis.OfflineAudioContext } = {}) {
+  if (typeof OfflineContext !== "function") throw new Error("\u6B64\u9762\u677F\u4E0D\u652F\u6301 WebAudio \u89E3\u7801\u3002");
+  const context = new OfflineContext(2, 1, WAV_RATE);
+  let audio;
+  try {
+    audio = await context.decodeAudioData(buffer.slice(0));
+  } catch (error) {
+    throw new Error(`\u9762\u677F\u65E0\u6CD5\u89E3\u7801\u8FD9\u4E2A\u6587\u4EF6\uFF1A${error?.message || error}`);
+  }
+  const channels = [audio.getChannelData(0)];
+  channels.push(audio.numberOfChannels > 1 ? audio.getChannelData(1) : audio.getChannelData(0));
+  return { channels, sampleRate: audio.sampleRate, duration: audio.duration };
+}
+async function uploadDecodedWav(api, source, sourceSha256, { onProgress = () => {
+}, decode = decodeToChannels } = {}) {
+  onProgress({ stage: "decode", ratio: 0 });
+  const { channels, sampleRate, duration } = await decode(source);
+  const wav = encodeWav(channels, sampleRate);
+  const begun = unwrapRemote(await api.wavBegin({ sourceSha256, bytes: wav.length }), "\u65E0\u6CD5\u5F00\u59CB\u5199\u5165 WAV\u3002");
+  if (begun.exists) {
+    onProgress({ stage: "done", ratio: 1 });
+    return { path: begun.path, bytes: wav.length, duration, cached: true };
+  }
+  const chunk = Math.min(WAV_CHUNK, begun.chunkBytes || WAV_CHUNK);
+  for (let offset = 0; offset < wav.length; offset += chunk) {
+    const part = wav.subarray(offset, Math.min(wav.length, offset + chunk));
+    unwrapRemote(await api.wavWrite({ uploadId: begun.uploadId, offset, base64: bytesToBase64(part) }), "\u5199\u5165 WAV \u5931\u8D25\u3002");
+    onProgress({ stage: "upload", ratio: Math.min(1, (offset + part.length) / wav.length) });
+  }
+  const done = unwrapRemote(await api.wavFinish({ uploadId: begun.uploadId }), "\u65E0\u6CD5\u5B8C\u6210 WAV\u3002");
+  onProgress({ stage: "done", ratio: 1 });
+  return { path: done.path, bytes: done.bytes, duration, cached: false };
+}
+var effectiveAudioPath = effectiveAudioOf;
+var fromBase642 = (text4) => {
+  const binary = globalThis.atob(text4);
+  const bytes = new Uint8Array(binary.length);
+  for (let i8 = 0; i8 < binary.length; i8++) bytes[i8] = binary.charCodeAt(i8);
+  return bytes;
+};
+async function readHostAudio(api, path, { onProgress = () => {
+}, decode = fromBase642 } = {}) {
+  let offset = 0, size = 0, buffer = null;
+  for (; ; ) {
+    const chunk = unwrapRemote(await api.audioRead({ path, offset, length: 512 * 1024 }), "\u65E0\u6CD5\u8BFB\u53D6\u97F3\u9891\u6587\u4EF6\u3002");
+    size = chunk.size;
+    buffer ?? (buffer = new Uint8Array(size));
+    if (chunk.bytes > 0) buffer.set(decode(chunk.base64), offset);
+    offset += chunk.bytes;
+    onProgress({ stage: "read", ratio: size ? offset / size : 1 });
+    if (chunk.done || chunk.bytes === 0) break;
+  }
+  return buffer ? buffer.buffer.slice(0, offset) : new ArrayBuffer(0);
+}
+var AudioPrepareError = class extends Error {
+  constructor(message, { code, probe } = {}) {
+    super(message);
+    this.name = "AudioPrepareError";
+    this.code = code;
+    this.probe = probe;
+  }
+};
+async function prepareTerminalAudio(api, path, { onProgress = () => {
+}, decode = decodeToChannels, read = readHostAudio } = {}) {
+  onProgress({ stage: "probe", ratio: 0 });
+  const probe = unwrapRemote(await api.audioProbe({ path, hash: true }), "\u65E0\u6CD5\u8BFB\u53D6\u97F3\u9891\u6587\u4EF6\u3002");
+  if (probe.mciPlayable) return { path, converted: false, cached: false, probe };
+  if (probe.cachedWav) {
+    onProgress({ stage: "done", ratio: 1 });
+    return { path: probe.cachedWav, converted: true, cached: true, probe };
+  }
+  if (probe.format === "unknown") throw new AudioPrepareError(`\u65E0\u6CD5\u8BC6\u522B\u8FD9\u4E2A\u6587\u4EF6\u7684\u683C\u5F0F\uFF08\u6309\u5185\u5BB9\u5224\u65AD\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\uFF09\uFF1A${path}`, { code: "unknown-format", probe });
+  if (!probe.chromium) throw new AudioPrepareError(`${probe.label} \u4E0D\u80FD\u7531\u9762\u677F\u89E3\u7801\u3002`, { code: "decode-failed", probe });
+  const source = await read(api, path, { onProgress });
+  try {
+    const result = await uploadDecodedWav(api, source, probe.sha256, { onProgress, decode });
+    return { path: result.path, converted: true, cached: result.cached, duration: result.duration, probe };
+  } catch (error) {
+    if (/无法解码|decode/i.test(String(error?.message))) throw new AudioPrepareError(String(error.message), { code: "decode-failed", probe });
+    throw error;
+  }
+}
+
 // .dsh-plugin/client/mv-ui.jsx
 var import_react = __toESM(require("react"), 1);
 var svg = (children, size = 16) => /* @__PURE__ */ import_react.default.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, children);
@@ -5445,7 +6624,8 @@ var Icon = Object.freeze({
   mute: () => svg(/* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("path", { d: "M4 9v6h4l5 4V5L8 9H4z" }), /* @__PURE__ */ import_react.default.createElement("path", { d: "M17 9l4 6M21 9l-4 6" }))),
   plus: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M12 5v14M5 12h14" })),
   folder: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" })),
-  close: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M6 6l12 12M18 6L6 18" }), 14)
+  close: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M6 6l12 12M18 6L6 18" }), 14),
+  spark: () => svg(/* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("path", { d: "M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z" }), /* @__PURE__ */ import_react.default.createElement("path", { d: "M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" })))
 });
 function Alert({ kind = "info", children, actions = null }) {
   const icon = { error: "!", warn: "!", ok: "\u2713", info: "i" }[kind] ?? "i";
@@ -5500,10 +6680,11 @@ var KEY_HELP = Object.freeze([
   ["H", "\u753B\u9762\u5185\u5E2E\u52A9"]
 ]);
 function KeyHelp() {
-  return /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("h3", null, "\u952E\u76D8\u5FEB\u6377\u952E"), /* @__PURE__ */ import_react.default.createElement("p", null, "\u5148\u70B9\u4E00\u4E0B\u753B\u9762\uFF0C\u518D\u4F7F\u7528\uFF1A"), /* @__PURE__ */ import_react.default.createElement("div", { className: "mv-keys" }, KEY_HELP.map(([key, text3]) => /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, { key }, /* @__PURE__ */ import_react.default.createElement("kbd", null, key), /* @__PURE__ */ import_react.default.createElement("span", null, text3)))));
+  return /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("h3", null, "\u952E\u76D8\u5FEB\u6377\u952E"), /* @__PURE__ */ import_react.default.createElement("p", null, "\u5148\u70B9\u4E00\u4E0B\u753B\u9762\uFF0C\u518D\u4F7F\u7528\uFF1A"), /* @__PURE__ */ import_react.default.createElement("div", { className: "mv-keys" }, KEY_HELP.map(([key, text4]) => /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, { key }, /* @__PURE__ */ import_react.default.createElement("kbd", null, key), /* @__PURE__ */ import_react.default.createElement("span", null, text4)))));
 }
 
 // .dsh-plugin/client/canvas-mv.jsx
+var AUDIO_ACCEPT = "audio/*,video/*,.mp3,.mp2,.m4a,.m4b,.mp4,.m4v,.mov,.aac,.webm,.mkv,.mka,.ogg,.oga,.opus,.flac,.wav";
 var FONT_KEY = "dsh-mv.canvas.fontSize";
 var readFont = (fallback) => {
   try {
@@ -5521,6 +6702,7 @@ var storeFont = (v2) => {
 };
 var HINT = "SPACE \u64AD\u653E/\u6682\u505C  \u2190/\u2192 5s  [ ] \u5B57\u5E55  Alt+[ ] \u97F3\u9891\u540C\u6B65  1-5 \u7AE0\u8282  F \u5168\u5C4F  H \u5E2E\u52A9";
 var isGeneric = (pack) => pack?.pack?.canvas?.renderer !== "world-execute-me";
+var isScript = (pack) => pack?.pack?.canvas?.renderer === "script";
 var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null, onState = () => {
 } }, ref) {
   const wrap2 = import_react2.default.useRef(null);
@@ -5544,11 +6726,20 @@ var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFont
   const [duration, setDuration] = import_react2.default.useState(DURATION);
   const [packStatus, setPackStatus] = import_react2.default.useState("");
   const [volume, setVolume] = import_react2.default.useState({ level: 1, muted: false });
+  const [sceneNote, setSceneNote] = import_react2.default.useState("");
+  const [decodeFail, setDecodeFail] = import_react2.default.useState(null);
   import_react2.default.useEffect(() => {
     const live = new LiveSpectrum(audio.current);
     const state = {
       wem: new Film({ energy: (t) => state.energy(t) }),
       generic: new GenericFilm({ energy: (t) => state.energy(t) }),
+      script: new ScriptFilm({
+        energy: (t) => state.energy(t),
+        onFail: (reason) => {
+          if (state.film === state.script) state.film = state.generic;
+          setSceneNote(`\u573A\u666F\u811A\u672C\u5DF2\u505C\u7528\uFF0C\u6539\u7528\u901A\u7528\u753B\u9762\uFF1A${reason}`);
+        }
+      }),
       film: null,
       renderer: new GridRenderer(canvas.current, { fontSize }),
       clock: new FilmClock({ audio: audio.current }),
@@ -5591,6 +6782,7 @@ var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFont
       cancelAnimationFrame(raf);
       document.removeEventListener("fullscreenchange", onFs);
       live.close();
+      state.script.stop();
     };
   }, []);
   import_react2.default.useEffect(() => {
@@ -5606,8 +6798,12 @@ var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFont
   const useAudioFile = import_react2.default.useCallback(async (file, { remember = true, packOffset = 0 } = {}) => {
     setError("");
     const state = engine.current;
+    setDecodeFail(null);
     try {
-      const sha = await sha256Hex(await file.arrayBuffer());
+      const bytes = await file.arrayBuffer();
+      const sniff = sniffAudio(new Uint8Array(bytes, 0, Math.min(4096, bytes.byteLength)));
+      if (!file.type && sniff.format !== "unknown") file = new File([bytes], file.name, { type: audioMimeOf(sniff) });
+      const sha = await sha256Hex(bytes);
       const old = audio.current.src;
       audio.current.src = URL.createObjectURL(file);
       if (old?.startsWith("blob:")) URL.revokeObjectURL(old);
@@ -5617,7 +6813,7 @@ var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFont
       setOffsets({ audioOffset: loaded.audioOffset, subtitleOffset: loaded.subtitleOffset });
       state.clock.audioOffset = loaded.audioOffset;
       state.started = false;
-      setAudioInfo({ name: file.name, sha, known: loaded.known, saved: loaded.saved, duration: null });
+      setAudioInfo({ name: file.name, sha, known: loaded.known, saved: loaded.saved, duration: null, label: sniff.label });
       if (remember && packRef.current?.builtin) await putMedia(dbRef.current, "audio", { file, name: file.name, sha });
     } catch (failure) {
       setError(`\u65E0\u6CD5\u8BFB\u53D6\u97F3\u9891\uFF1A${failure?.message ?? failure}`);
@@ -5626,14 +6822,15 @@ var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFont
   const useLyricsText = import_react2.default.useCallback(async (name, body, { remember = true, shift = 0 } = {}) => {
     setError("");
     try {
-      const generic2 = engine.current.film === engine.current.generic;
+      const state = engine.current;
+      const generic2 = state.film !== state.wem;
       const cues = parseLyrics(name, body, { duration: generic2 ? 1e9 : DURATION });
       if (!cues.length) throw new Error("\u6587\u4EF6\u91CC\u6CA1\u6709\u5E26\u65F6\u95F4\u7684\u6B4C\u8BCD\u884C\u3002");
       if (shift) for (const cue of cues) {
         cue.time += shift;
         cue.end += shift;
       }
-      engine.current.film.setLyrics(cues);
+      for (const film of generic2 ? [state.generic, state.script] : [state.wem]) film.setLyrics(cues);
       setLyricsInfo({ name, count: cues.length });
       if (remember && packRef.current?.builtin) await putMedia(dbRef.current, "lyrics", { name, text: body });
     } catch (failure) {
@@ -5663,17 +6860,23 @@ var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFont
       state.help = false;
       state.wem.setLyrics([]);
       state.generic.setLyrics([]);
+      state.script.setLyrics([]);
+      state.script.stop();
       state.energy = () => state.live.energy();
       setLyricsInfo(null);
       setSpectrumInfo(null);
       setError("");
       setPackStatus("");
+      setSceneNote("");
+      setDecodeFail(null);
       const generic2 = isGeneric(pack);
       state.film = generic2 ? state.generic : state.wem;
       const length = generic2 ? pack.pack.duration ?? 0 : pack.pack.duration ?? DURATION;
       state.clock.duration = length || DURATION;
-      state.generic.duration = length;
-      state.generic.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? "" });
+      for (const film of [state.generic, state.script]) {
+        film.duration = length;
+        film.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? "" });
+      }
       state.wem.duration = generic2 ? DURATION : pack.pack.duration ?? DURATION;
       setDuration(state.clock.duration);
       if (pack.pack.canvas?.fontSize) setFontSize(pack.pack.canvas.fontSize);
@@ -5686,13 +6889,32 @@ var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFont
         if (s15?.text) await useSpectrumText(s15.name, s15.text, { remember: false });
         return;
       }
+      if (isScript(pack)) {
+        if (!pack.files?.scene?.exists || pack.files.scene.tooLarge || !api) setSceneNote(`\u627E\u4E0D\u5230\u53EF\u7528\u7684\u573A\u666F\u811A\u672C\uFF08${pack.pack.canvas.script}\uFF09\uFF0C\u6539\u7528\u901A\u7528\u753B\u9762\u3002`);
+        else {
+          try {
+            const { text: text4 } = await fetchPackText(api, pack.manifestPath, "scene", { isCancelled: () => cancelled });
+            if (cancelled) return;
+            state.film = state.script;
+            await state.script.load(text4);
+            if (cancelled) {
+              state.script.stop();
+              return;
+            }
+          } catch (failure) {
+            if (cancelled) return;
+            if (state.film === state.script) state.film = state.generic;
+            setSceneNote(`\u573A\u666F\u811A\u672C\u65E0\u6CD5\u8FD0\u884C\uFF0C\u6539\u7528\u901A\u7528\u753B\u9762\uFF1A${failure?.message ?? failure}`);
+          }
+        }
+      }
       for (const role of ["lyrics", "spectrum"]) {
         if (!pack.pack[role] || !pack.files?.[role]?.exists || pack.files[role].tooLarge || !api) continue;
         try {
-          const { name, text: text3 } = await fetchPackText(api, pack.manifestPath, role, { isCancelled: () => cancelled });
+          const { name, text: text4 } = await fetchPackText(api, pack.manifestPath, role, { isCancelled: () => cancelled });
           if (cancelled) return;
-          if (role === "lyrics") await useLyricsText(name, text3, { remember: false, shift: pack.pack.lyrics?.offset ?? 0 });
-          else await useSpectrumText(name, text3, { remember: false });
+          if (role === "lyrics") await useLyricsText(name, text4, { remember: false, shift: pack.pack.lyrics?.offset ?? 0 });
+          else await useSpectrumText(name, text4, { remember: false });
         } catch (failure) {
           if (!cancelled) setError(`\u65E0\u6CD5\u8BFB\u53D6 MV \u5305\u7684 ${role}\uFF1A${failure?.message ?? failure}`);
         }
@@ -5774,7 +6996,7 @@ var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFont
         void play();
         return true;
       case "chapter":
-        state.clock.seek(state.film === state.generic ? genericChapters(state.clock.duration)[action.index][0] : action.at);
+        state.clock.seek(state.film !== state.wem ? genericChapters(state.clock.duration)[action.index][0] : action.at);
         void play();
         return true;
       case "cue": {
@@ -5837,12 +7059,42 @@ var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFont
   const pickAudio = () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "audio/*,video/mp4,.mp3,.m4a,.aac,.mp4,.ogg,.opus,.flac,.wav";
+    input.accept = AUDIO_ACCEPT;
     input.onchange = () => {
       const file = input.files?.[0];
       if (file) void useAudioFile(file);
     };
     input.click();
+  };
+  const onDecodeError = async () => {
+    if (!audio.current?.src) return;
+    const current = packRef.current;
+    const path = !current?.builtin ? current?.files?.audio?.path : "";
+    const label = audioInfo?.label ?? "\u672A\u77E5\u683C\u5F0F";
+    let ffmpeg = "";
+    if (path && api?.ffmpegInfo) {
+      try {
+        const found = unwrapRemote(await api.ffmpegInfo({}), "");
+        if (found?.available) ffmpeg = found.path;
+      } catch {
+      }
+    }
+    setDecodeFail({ path, label, ffmpeg: path ? ffmpeg : "", confirming: false, busy: "" });
+  };
+  const convertWithFfmpeg = async () => {
+    const failed = decodeFail;
+    if (!failed?.path) return;
+    setDecodeFail((value) => ({ ...value, busy: "\u6B63\u5728\u7528 ffmpeg \u8F6C\u6362\u2026" }));
+    try {
+      const done = unwrapRemote(await api.audioConvert({ path: failed.path, confirmed: true }), "ffmpeg \u8F6C\u6362\u5931\u8D25\u3002");
+      setDecodeFail((value) => ({ ...value, busy: "\u6B63\u5728\u8BFB\u53D6\u8F6C\u6362\u7ED3\u679C\u2026" }));
+      const bytes = await readHostAudio(api, done.path);
+      setDecodeFail(null);
+      await useAudioFile(new File([bytes], done.path.split(/[\\/]/).pop(), { type: "audio/wav" }), { remember: false, packOffset: packRef.current?.pack?.audio?.offset ?? 0 });
+    } catch (failure) {
+      setDecodeFail((value) => value && { ...value, busy: "", confirming: false });
+      setError(`ffmpeg \u8F6C\u6362\u5931\u8D25\uFF1A${failure?.message ?? failure}`);
+    }
   };
   const known = audioInfo?.known;
   const generic = isGeneric(pack);
@@ -5864,8 +7116,8 @@ var CanvasMv = import_react2.default.forwardRef(function CanvasMv2({ defaultFont
     resetOffsets(audioInfo.sha);
   };
   const syncLabel = known ? `\u5DF2\u8BC6\u522B\uFF1A${known.label}` : audioInfo ? "\u672A\u8BC6\u522B\u7684\u7248\u672C\uFF1A\u542C\u7740\u4E0D\u540C\u6B65\u5C31\u7528 Alt+[ / Alt+] \u6821\u51C6" : "";
-  return /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-canvas-tab" }, !audioInfo && !packStatus && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react2.default.createElement("div", null, /* @__PURE__ */ import_react2.default.createElement("h2", null, pack.builtin ? "\u7B2C\u4E00\u6B21\u4F7F\u7528\uFF1F\u5148\u9009\u4E00\u9996\u6B4C" : "\u8FD9\u4E2A MV \u5305\u6CA1\u6709\u53EF\u7528\u7684\u97F3\u9891"), /* @__PURE__ */ import_react2.default.createElement("ol", null, /* @__PURE__ */ import_react2.default.createElement("li", null, "\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u6587\u4EF6\uFF08mp3 / m4a / aac / mp4 \u90FD\u884C\uFF0C\u5728\u672C\u673A\u89E3\u7801\uFF0C\u4E0D\u4E0A\u4F20\uFF09\u3002"), /* @__PURE__ */ import_react2.default.createElement("li", null, "\u53EF\u9009\uFF1A\u9009\u62E9\u6B4C\u8BCD\uFF08LRC / SRT / lyrics.json\uFF09\uFF0C\u753B\u9762\u4F1A\u663E\u793A\u5B57\u5E55\u3002"), /* @__PURE__ */ import_react2.default.createElement("li", null, "\u70B9 ", /* @__PURE__ */ import_react2.default.createElement("b", null, "\u25B6 \u64AD\u653E"), "\u3002\u4E5F\u53EF\u4EE5\u4E0D\u9009\u97F3\u9891\uFF0C\u76F4\u63A5\u9759\u97F3\u89C2\u770B\u753B\u9762\u3002")), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", onClick: pickAudio }, "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, "\u9009\u62E9\u6B4C\u8BCD\u2026")))), packStatus && /* @__PURE__ */ import_react2.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react2.default.createElement("p", null, packStatus)), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-sources", "aria-label": "\u5A92\u4F53\u6587\u4EF6" }, /* @__PURE__ */ import_react2.default.createElement("div", { className: `mv-source${audioInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u266A"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-label" }, "\u97F3\u9891"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-value", title: audioInfo ? `${audioInfo.name}
-sha256 ${audioInfo.sha}` : "" }, audioInfo ? audioInfo.name : "\u672A\u9009\u62E9 \xB7 \u9759\u97F3\u6A21\u5F0F")), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: pickAudio }, audioInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react2.default.createElement("div", { className: `mv-source${lyricsInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u201C"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-label" }, "\u6B4C\u8BCD"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-value" }, lyricsInfo ? `${lyricsInfo.name}\uFF08${lyricsInfo.count} \u53E5\uFF09` : "\u672A\u52A0\u8F7D \xB7 \u53EA\u663E\u793A [ \u95F4\u594F ]")), lyricsInfo && /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearLyrics() }, "\u79FB\u9664"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, lyricsInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source" }, /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u25AE\u25AE"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-label" }, "\u9891\u8C31"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-value" }, spectrumInfo ? spectrumInfo.name : "\u5B9E\u65F6\u5206\u6790")), spectrumInfo && /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearSpectrum() }, "\u6539\u7528\u5B9E\u65F6"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "\u53EF\u9009\uFF1Aspectrum.json", onClick: () => pickText(".json", useSpectrumText) }, spectrumInfo ? "\u66F4\u6362" : "\u6587\u4EF6\u2026"))), error && /* @__PURE__ */ import_react2.default.createElement(Alert, { kind: "error", actions: /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setError("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react2.default.createElement("p", null, error)), /* @__PURE__ */ import_react2.default.createElement(
+  return /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-canvas-tab" }, !audioInfo && !packStatus && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react2.default.createElement("div", null, /* @__PURE__ */ import_react2.default.createElement("h2", null, pack.builtin ? "\u7B2C\u4E00\u6B21\u4F7F\u7528\uFF1F\u5148\u9009\u4E00\u9996\u6B4C" : "\u8FD9\u4E2A MV \u5305\u6CA1\u6709\u53EF\u7528\u7684\u97F3\u9891"), /* @__PURE__ */ import_react2.default.createElement("ol", null, /* @__PURE__ */ import_react2.default.createElement("li", null, "\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08MP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV \u89C6\u9891\u7684\u97F3\u8F68\u3001Opus/Ogg\u3001FLAC\u3001WAV \u90FD\u884C\uFF0C\u6309\u5185\u5BB9\u8BC6\u522B\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\uFF1B\u5728\u672C\u673A\u89E3\u7801\uFF0C\u4E0D\u4E0A\u4F20\uFF09\u3002"), /* @__PURE__ */ import_react2.default.createElement("li", null, "\u53EF\u9009\uFF1A\u9009\u62E9\u6B4C\u8BCD\uFF08LRC / SRT / lyrics.json\uFF09\uFF0C\u753B\u9762\u4F1A\u663E\u793A\u5B57\u5E55\u3002"), /* @__PURE__ */ import_react2.default.createElement("li", null, "\u70B9 ", /* @__PURE__ */ import_react2.default.createElement("b", null, "\u25B6 \u64AD\u653E"), "\u3002\u4E5F\u53EF\u4EE5\u4E0D\u9009\u97F3\u9891\uFF0C\u76F4\u63A5\u9759\u97F3\u89C2\u770B\u753B\u9762\u3002")), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", onClick: pickAudio }, "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, "\u9009\u62E9\u6B4C\u8BCD\u2026")))), packStatus && /* @__PURE__ */ import_react2.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react2.default.createElement("p", null, packStatus)), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-sources", "aria-label": "\u5A92\u4F53\u6587\u4EF6" }, /* @__PURE__ */ import_react2.default.createElement("div", { className: `mv-source${audioInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u266A"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-label" }, "\u97F3\u9891"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-value", title: audioInfo ? `${audioInfo.name}
+sha256 ${audioInfo.sha}` : "" }, audioInfo ? `${audioInfo.name}${audioInfo.label && audioInfo.label !== "\u672A\u77E5\u683C\u5F0F" ? ` \xB7 ${audioInfo.label}` : ""}` : "\u672A\u9009\u62E9 \xB7 \u9759\u97F3\u6A21\u5F0F")), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: pickAudio }, audioInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react2.default.createElement("div", { className: `mv-source${lyricsInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u201C"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-label" }, "\u6B4C\u8BCD"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-value" }, lyricsInfo ? `${lyricsInfo.name}\uFF08${lyricsInfo.count} \u53E5\uFF09` : "\u672A\u52A0\u8F7D \xB7 \u53EA\u663E\u793A [ \u95F4\u594F ]")), lyricsInfo && /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearLyrics() }, "\u79FB\u9664"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, lyricsInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source" }, /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u25AE\u25AE"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-label" }, "\u9891\u8C31"), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-source-value" }, spectrumInfo ? spectrumInfo.name : "\u5B9E\u65F6\u5206\u6790")), spectrumInfo && /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearSpectrum() }, "\u6539\u7528\u5B9E\u65F6"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "\u53EF\u9009\uFF1Aspectrum.json", onClick: () => pickText(".json", useSpectrumText) }, spectrumInfo ? "\u66F4\u6362" : "\u6587\u4EF6\u2026"))), error && /* @__PURE__ */ import_react2.default.createElement(Alert, { kind: "error", actions: /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setError("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react2.default.createElement("p", null, error)), sceneNote && /* @__PURE__ */ import_react2.default.createElement(Alert, { kind: "warn", actions: /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSceneNote("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-wrap" }, sceneNote)), decodeFail && /* @__PURE__ */ import_react2.default.createElement(Alert, { kind: "warn", actions: decodeFail.ffmpeg && !decodeFail.confirming ? /* @__PURE__ */ import_react2.default.createElement(import_react2.default.Fragment, null, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: decodeFail.busy, onClick: () => setDecodeFail((value) => ({ ...value, confirming: true })) }, "\u7528 ffmpeg \u8F6C\u6362\u2026")) : null }, /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-wrap" }, "\u9762\u677F\u65E0\u6CD5\u89E3\u7801\u8FD9\u4E2A\u97F3\u9891\uFF08", decodeFail.label, "\uFF09\u3002", decodeFail.ffmpeg ? "\u627E\u5230\u4E86\u4F60\u672C\u673A\u7684 ffmpeg\uFF0C\u53EF\u4EE5\u628A\u5B83\u8F6C\u6362\u6210 WAV \u7F13\u5B58\u540E\u64AD\u653E\uFF08\u539F\u6587\u4EF6\u4E0D\u53D8\uFF09\u3002" : "\u5B89\u88C5 ffmpeg\uFF08\u653E\u8FDB PATH\uFF0C\u6216 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\uFF09\u540E\u53EF\u4EE5\u81EA\u52A8\u8F6C\u6362\uFF1B\u6216\u8005\u6362\u6210 MP3 / M4A / FLAC / WAV\u3002"), decodeFail.confirming && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u7528 ffmpeg \u8F6C\u6362" }, /* @__PURE__ */ import_react2.default.createElement("strong", null, "\u7528\u4F60\u672C\u673A\u7684 ffmpeg \u8F6C\u6362\u8FD9\u4E2A\u6587\u4EF6\uFF1F"), /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-caption" }, "Host \u5C06\u8FD0\u884C\uFF08\u4E0D\u7ECF\u8FC7 shell\uFF0C\u6700\u591A 10 \u5206\u949F\uFF09\uFF1A"), /* @__PURE__ */ import_react2.default.createElement("code", { className: "mv-cmd" }, displayCommand(decodeFail.ffmpeg, ffmpegArgs(decodeFail.path, "<\u63D2\u4EF6\u7F13\u5B58>\\<sha256>.wav"))), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", disabled: decodeFail.busy, onClick: () => void convertWithFfmpeg() }, decodeFail.busy ? decodeFail.busy : "\u786E\u8BA4\u8F6C\u6362"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(decodeFail.busy), onClick: () => setDecodeFail((value) => ({ ...value, confirming: false })) }, "\u53D6\u6D88")))), /* @__PURE__ */ import_react2.default.createElement(
     "div",
     {
       ref: wrap2,
@@ -5901,11 +7153,15 @@ ${syncLabel}` : ""}` }, /* @__PURE__ */ import_react2.default.createElement("but
         const length = event.currentTarget.duration;
         setAudioInfo((info) => info ? { ...info, duration: length } : info);
         const state = engine.current;
-        if (state && state.film === state.generic && !packRef.current?.pack?.duration && Number.isFinite(length) && length > 0) {
+        if (state && (state.film === state.generic || state.film === state.script) && !packRef.current?.pack?.duration && Number.isFinite(length) && length > 0) {
           state.clock.duration = length;
           state.generic.duration = length;
+          state.script.duration = length;
           setDuration(length);
         }
+      },
+      onError: () => {
+        void onDecodeError();
       },
       onVolumeChange: (event) => setVolume({ level: event.currentTarget.volume, muted: event.currentTarget.muted }),
       onEnded: () => {
@@ -18842,617 +20098,6 @@ var xterm_default = `/**
 }
 `;
 
-// .dsh-plugin/shared/mv-terminal-protocol.mjs
-var MV_TERMINAL_SCRIPT = ["_tools", "tui_live.py"];
-var MV_TERMINAL_LIMITS = Object.freeze({
-  maxSessions: 2,
-  /** A session nobody reads (panel closed, client gone) is killed after this. */
-  orphanTimeoutMs: 12e4,
-  /** Hard lifetime of one session (the song is 3.5 minutes). */
-  maxLifetimeMs: 2 * 60 * 6e4,
-  /** Output kept per session for the client to catch up. */
-  bufferChars: 2e6,
-  /** Largest output slice returned by one read. */
-  readChars: 512e3,
-  /** Longest long-poll wait for new output. */
-  maxWaitMs: 1e3,
-  /** Largest single input write. */
-  writeChars: 4096,
-  minCols: 20,
-  maxCols: 400,
-  minRows: 8,
-  maxRows: 200,
-  maxPathChars: 1024,
-  maxStartSeconds: 3600,
-  maxLatencySeconds: 5,
-  maxOffsetSeconds: 30
-});
-var MV_PLAYERS = Object.freeze(["python", "rust", "pack"]);
-var RUST_BASENAME = /^world-execute-me(?:-rust)?(?:[-_.][\w.-]{0,60})?(?:\.exe)?$/i;
-var MV_PLAYER_LABELS = Object.freeze({ python: "world_execute_me\uFF08tui_live.py\uFF09", rust: "world-execute-me-ascii-rust\uFF08\u7528\u6237\u81EA\u5907\u53EF\u6267\u884C\u6587\u4EF6\uFF09", pack: "\u5F53\u524D MV \u5305\u7684\u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F" });
-var PYTHON_BASENAME = /^(?:python(?:3(?:\.\d{1,2})?)?w?|py)(?:\.exe)?$/i;
-var SESSION_ID = /^mvterm-[a-z0-9]{6,40}$/;
-var isMvSessionId = (value) => typeof value === "string" && SESSION_ID.test(value);
-var CONSOLE_ID = /^mvcon-[a-z0-9]{6,40}$/;
-var isMvConsoleId = (value) => typeof value === "string" && CONSOLE_ID.test(value);
-function plainObject(value, subject) {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError(`${subject} must be an object`);
-  return value;
-}
-function sessionIdOf(value) {
-  if (typeof value !== "string" || !SESSION_ID.test(value)) throw new TypeError("sessionId is invalid");
-  return value;
-}
-function boundedInteger(value, min, max, subject) {
-  if (!Number.isInteger(value) || value < min || value > max) throw new TypeError(`${subject} must be an integer from ${min} to ${max}`);
-  return value;
-}
-function boundedNumber2(value, min, max, subject) {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max) throw new TypeError(`${subject} must be a number from ${min} to ${max}`);
-  return value;
-}
-function isAbsolutePathText(value) {
-  if (typeof value !== "string") return false;
-  const path = value.trim();
-  if (!path || path.length > MV_TERMINAL_LIMITS.maxPathChars || /[\0\r\n"]/.test(path)) return false;
-  return path.startsWith("/") || /^[A-Za-z]:[\\/]/.test(path) || /^\\\\[^\\]+\\[^\\]+/.test(path);
-}
-function absolutePath(value, subject) {
-  if (!isAbsolutePathText(value)) throw new TypeError(`${subject} \u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84`);
-  return value.trim();
-}
-function basenameOf(path) {
-  return path.split(/[\\/]/).filter(Boolean).pop() ?? "";
-}
-function parseRustLaunch(request2) {
-  const allowed = /* @__PURE__ */ new Set(["player", "exePath", "audioFile", "start", "offset", "autoplay"]);
-  const extra = Object.keys(request2).filter((key) => !allowed.has(key));
-  if (extra.length) throw new TypeError(`launch has unexpected fields: ${extra.join(", ")}`);
-  const exePath = absolutePath(request2.exePath, "\u53EF\u6267\u884C\u6587\u4EF6\u8DEF\u5F84");
-  if (!RUST_BASENAME.test(basenameOf(exePath))) throw new TypeError("\u53EF\u6267\u884C\u6587\u4EF6\u5FC5\u987B\u662F world-execute-me-rust(.exe) \u8FD9\u6837\u7684\u53D1\u5E03\u6587\u4EF6\u540D");
-  let audioFile;
-  if (request2.audioFile !== void 0 && request2.audioFile !== null && request2.audioFile !== "") audioFile = absolutePath(request2.audioFile, "\u97F3\u9891\u6587\u4EF6");
-  const start = request2.start === void 0 || request2.start === null ? 0 : boundedNumber2(request2.start, 0, MV_TERMINAL_LIMITS.maxStartSeconds, "start");
-  const offset = request2.offset === void 0 || request2.offset === null ? void 0 : boundedNumber2(request2.offset, -MV_TERMINAL_LIMITS.maxOffsetSeconds, MV_TERMINAL_LIMITS.maxOffsetSeconds, "offset");
-  if (request2.autoplay !== void 0 && typeof request2.autoplay !== "boolean") throw new TypeError("autoplay must be a boolean");
-  return {
-    player: "rust",
-    exePath,
-    start,
-    autoplay: request2.autoplay === true,
-    ...audioFile ? { audioFile } : {},
-    ...offset !== void 0 ? { offset } : {}
-  };
-}
-function parseMvLaunch(value) {
-  const request2 = plainObject(value, "launch");
-  if (request2.player !== void 0 && !MV_PLAYERS.includes(request2.player)) throw new TypeError("player must be python, rust or pack");
-  if (request2.player === "rust") return parseRustLaunch(request2);
-  if (request2.player === "pack") return parsePackLaunch(request2);
-  const allowed = /* @__PURE__ */ new Set(["player", "pythonPath", "packageDir", "audioFile", "noAudio", "start", "audioLatency"]);
-  const extra = Object.keys(request2).filter((key) => !allowed.has(key));
-  if (extra.length) throw new TypeError(`launch has unexpected fields: ${extra.join(", ")}`);
-  const pythonPath = absolutePath(request2.pythonPath, "Python \u8DEF\u5F84");
-  if (!PYTHON_BASENAME.test(basenameOf(pythonPath))) throw new TypeError("Python \u8DEF\u5F84\u5FC5\u987B\u6307\u5411 python.exe / python3 / pythonw.exe \u8FD9\u6837\u7684\u89E3\u91CA\u5668");
-  const packageDir = absolutePath(request2.packageDir, "\u64AD\u653E\u5668\u76EE\u5F55");
-  const noAudio = request2.noAudio === true;
-  if (request2.noAudio !== void 0 && typeof request2.noAudio !== "boolean") throw new TypeError("noAudio must be a boolean");
-  let audioFile;
-  if (request2.audioFile !== void 0 && request2.audioFile !== null && request2.audioFile !== "") audioFile = absolutePath(request2.audioFile, "\u97F3\u9891\u6587\u4EF6");
-  const start = request2.start === void 0 || request2.start === null ? 0 : boundedNumber2(request2.start, 0, MV_TERMINAL_LIMITS.maxStartSeconds, "start");
-  const audioLatency = request2.audioLatency === void 0 || request2.audioLatency === null ? void 0 : boundedNumber2(request2.audioLatency, 0, MV_TERMINAL_LIMITS.maxLatencySeconds, "audioLatency");
-  return {
-    player: "python",
-    pythonPath,
-    packageDir,
-    noAudio,
-    start,
-    ...audioFile && !noAudio ? { audioFile } : {},
-    ...audioLatency !== void 0 ? { audioLatency } : {}
-  };
-}
-function parseMvTerminalCheck(value) {
-  return parseMvLaunch(value);
-}
-function parseMvTerminalStart(value) {
-  const request2 = plainObject(value, "start request");
-  const { cols, rows, confirmed, ...launch } = request2;
-  const L2 = MV_TERMINAL_LIMITS;
-  return {
-    launch: parseMvLaunch(launch),
-    cols: boundedInteger(cols, L2.minCols, L2.maxCols, "cols"),
-    rows: boundedInteger(rows, L2.minRows, L2.maxRows, "rows"),
-    confirmed: confirmed === true
-  };
-}
-function parseMvTerminalRead(value) {
-  const request2 = plainObject(value, "read request");
-  return {
-    sessionId: sessionIdOf(request2.sessionId),
-    cursor: request2.cursor === void 0 ? 0 : boundedInteger(request2.cursor, 0, Number.MAX_SAFE_INTEGER, "cursor"),
-    waitMs: request2.waitMs === void 0 ? 0 : boundedInteger(request2.waitMs, 0, MV_TERMINAL_LIMITS.maxWaitMs, "waitMs")
-  };
-}
-function parseMvTerminalWrite(value) {
-  const request2 = plainObject(value, "write request");
-  if (typeof request2.data !== "string" || request2.data.length === 0 || request2.data.length > MV_TERMINAL_LIMITS.writeChars) {
-    throw new TypeError(`data must be a string of 1 to ${MV_TERMINAL_LIMITS.writeChars} characters`);
-  }
-  return { sessionId: sessionIdOf(request2.sessionId), data: request2.data };
-}
-function parseMvTerminalResize(value) {
-  const request2 = plainObject(value, "resize request");
-  const L2 = MV_TERMINAL_LIMITS;
-  return {
-    sessionId: sessionIdOf(request2.sessionId),
-    cols: boundedInteger(request2.cols, L2.minCols, L2.maxCols, "cols"),
-    rows: boundedInteger(request2.rows, L2.minRows, L2.maxRows, "rows")
-  };
-}
-function parseMvTerminalStop(value) {
-  const request2 = plainObject(value, "stop request");
-  return { sessionId: sessionIdOf(request2.sessionId) };
-}
-function mvTerminalArgs(launch, scriptPath) {
-  const args = [scriptPath];
-  if (launch.noAudio) args.push("--no-audio");
-  else if (launch.audioFile) args.push("--audio-file", launch.audioFile);
-  if (launch.start > 0) args.push("--start", String(launch.start));
-  if (launch.audioLatency !== void 0) args.push("--audio-latency", String(launch.audioLatency));
-  return args;
-}
-function rustTerminalArgs(launch) {
-  const args = [];
-  if (launch.audioFile) args.push("--audio", launch.audioFile);
-  if (launch.start > 0) args.push("--start", String(launch.start));
-  if (launch.offset !== void 0) args.push("--offset", String(launch.offset));
-  if (launch.autoplay) args.push("--autoplay");
-  return args;
-}
-function displayCommand(file, args) {
-  const quote = (text3) => /[\s"]/.test(text3) ? `"${text3}"` : text3;
-  return [file, ...args].map(quote).join(" ");
-}
-function parseMvConsoleStart(value) {
-  const request2 = plainObject(value, "console start request");
-  const { confirmed, ...launch } = request2;
-  if (confirmed !== void 0 && typeof confirmed !== "boolean") throw new TypeError("confirmed must be a boolean");
-  return { launch: parseMvLaunch(launch), confirmed: confirmed === true };
-}
-function parseMvConsoleStop(value) {
-  const request2 = plainObject(value, "console stop request");
-  const extra = Object.keys(request2).filter((key) => key !== "consoleId");
-  if (extra.length) throw new TypeError(`console stop request has unexpected fields: ${extra.join(", ")}`);
-  if (!isMvConsoleId(request2.consoleId)) throw new TypeError("consoleId is invalid");
-  return { consoleId: request2.consoleId };
-}
-function parseMvConsoleInfo(value) {
-  if (value === void 0 || value === null) return {};
-  const request2 = plainObject(value, "console info request");
-  if (Object.keys(request2).length) throw new TypeError("console info request takes no fields");
-  return {};
-}
-var CONSOLE_TITLE = "world.execute(me)";
-var UNSAFE_FOR_CMD = /[%"\r\n\0]/;
-var SAFE_BARE_ARG = /^(?:--[a-z][a-z-]*|-?\d+(?:\.\d+)?)$/;
-function cmdQuote(text3, subject = "\u53C2\u6570") {
-  const value = String(text3);
-  if (UNSAFE_FOR_CMD.test(value)) throw new Error(`${subject}\u542B\u6709\u72EC\u7ACB\u7A97\u53E3\u6A21\u5F0F\u65E0\u6CD5\u5B89\u5168\u4F20\u9012\u7684\u5B57\u7B26\uFF08% \u6216\u6362\u884C\uFF09\uFF1A${value}`);
-  return `"${value}"`;
-}
-function consoleCwd(dir) {
-  const trimmed = String(dir).replace(/[\\/]+$/, "");
-  return /^[A-Za-z]:$/.test(trimmed) ? `${trimmed}\\.` : trimmed;
-}
-function startCommandLine(resolved) {
-  const args = resolved.args.map((arg) => SAFE_BARE_ARG.test(arg) ? arg : cmdQuote(arg, "\u8DEF\u5F84"));
-  return ["start", `"${CONSOLE_TITLE}"`, "/D", cmdQuote(consoleCwd(resolved.cwd), "\u5DE5\u4F5C\u76EE\u5F55"), cmdQuote(resolved.file, "\u7A0B\u5E8F\u8DEF\u5F84"), ...args].join(" ");
-}
-function consoleCommandDisplay(resolved, cmdPath = "cmd.exe") {
-  return `${cmdPath} ${cmdArgv(resolved).join(" ")}`;
-}
-function cmdArgv(resolved) {
-  return ["/d", "/v:off", "/s", "/c", `"${startCommandLine(resolved)}"`];
-}
-
-// .dsh-plugin/client/mv-terminal-state.mjs
-var text2 = (value) => typeof value === "string" ? value.trim() : "";
-var FORM_KEY = "dsh-mv.terminal.form.v1";
-var EMPTY_FORM = Object.freeze({ packStart: "", packOffset: "", player: "python", exePath: "", offset: "", autoplay: false, pythonPath: "", packageDir: "", audioFile: "", noAudio: false, start: "", audioLatency: "" });
-function loadForm(storage = globalThis.localStorage) {
-  try {
-    return { ...EMPTY_FORM, ...JSON.parse(storage?.getItem(FORM_KEY) ?? "{}") };
-  } catch {
-    return { ...EMPTY_FORM };
-  }
-}
-function saveForm(form, storage = globalThis.localStorage) {
-  try {
-    storage?.setItem(FORM_KEY, JSON.stringify(form));
-  } catch {
-  }
-}
-var basename = (value) => text2(value).split(/[\\/]/).pop();
-var sepOf = (value) => /\\/.test(value) || /^[a-z]:/i.test(value) ? "\\" : "/";
-function suggestedPython(packageDir) {
-  const dir = text2(packageDir).replace(/[\\/]+$/, "");
-  if (!dir) return "";
-  const sep = sepOf(dir);
-  return `${dir}${sep}python${sep}python${sep === "\\" ? ".exe" : ""}`;
-}
-function launchFromForm(form, ctx = {}) {
-  if (form.player === "pack") {
-    const launch2 = { player: "pack", manifestPath: text2(ctx.pack?.manifestPath) };
-    if (text2(String(form.packStart ?? ""))) launch2.start = Number(form.packStart);
-    if (text2(String(form.packOffset ?? ""))) launch2.offset = Number(form.packOffset);
-    return launch2;
-  }
-  if (form.player === "rust") {
-    const launch2 = { player: "rust", exePath: text2(form.exePath), autoplay: Boolean(form.autoplay) };
-    if (text2(form.audioFile)) launch2.audioFile = text2(form.audioFile);
-    if (text2(String(form.start ?? ""))) launch2.start = Number(form.start);
-    if (text2(String(form.offset ?? ""))) launch2.offset = Number(form.offset);
-    return launch2;
-  }
-  const launch = { player: "python", pythonPath: text2(form.pythonPath), packageDir: text2(form.packageDir).replace(/(?<=.)[\\/]+$/, ""), noAudio: Boolean(form.noAudio) };
-  if (!launch.noAudio && text2(form.audioFile)) launch.audioFile = text2(form.audioFile);
-  if (text2(String(form.start ?? ""))) launch.start = Number(form.start);
-  if (text2(String(form.audioLatency ?? ""))) launch.audioLatency = Number(form.audioLatency);
-  return launch;
-}
-function formProblem(form, ctx = {}) {
-  const launch = launchFromForm(form, ctx);
-  if (launch.player === "pack") {
-    if (!ctx.pack?.terminal) return "\u5F53\u524D MV \u5305\u6CA1\u6709\u914D\u7F6E\u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F\uFF08mv.json \u91CC\u7684 terminal\uFF09\u3002\u8BF7\u5148\u5BFC\u5165\u5E26 terminal \u7684 MV \u5305\uFF0C\u6216\u9009\u62E9\u5176\u4ED6\u64AD\u653E\u5668\u3002";
-    if ("start" in launch && !(Number.isFinite(launch.start) && launch.start >= 0 && launch.start <= MV_PACK_LIMITS.maxStart)) return `\u8D77\u59CB\u79D2\u6570\u5E94\u5728 0\u2013${MV_PACK_LIMITS.maxStart} \u4E4B\u95F4\u3002`;
-    if ("offset" in launch && !(Number.isFinite(launch.offset) && Math.abs(launch.offset) <= MV_PACK_LIMITS.maxOffset)) return `\u504F\u79FB\u5E94\u5728 \xB1${MV_PACK_LIMITS.maxOffset} \u79D2\u4E4B\u5185\u3002`;
-    return "";
-  }
-  if (launch.player === "rust") {
-    if (!launch.exePath) return "\u8BF7\u586B\u5199 world-execute-me-rust.exe \u7684\u8DEF\u5F84\uFF08\u4ECE\u8BE5\u9879\u76EE\u7684 GitHub Release \u81EA\u884C\u4E0B\u8F7D\uFF09\u3002";
-    if (!isAbsolutePathText(launch.exePath)) return "\u53EF\u6267\u884C\u6587\u4EF6\u8DEF\u5F84\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\u3002";
-    if (!RUST_BASENAME.test(basename(launch.exePath))) return "\u53EF\u6267\u884C\u6587\u4EF6\u540D\u5E94\u4E3A world-execute-me-rust.exe\uFF08\u9632\u6B62\u8BEF\u542F\u52A8\u5176\u4ED6\u7A0B\u5E8F\uFF09\u3002";
-    if (launch.audioFile && !isAbsolutePathText(launch.audioFile)) return "\u97F3\u9891\u6587\u4EF6\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\u3002";
-    if ("start" in launch && !(Number.isFinite(launch.start) && launch.start >= 0 && launch.start <= MV_TERMINAL_LIMITS.maxStartSeconds)) return `\u8D77\u59CB\u79D2\u6570\u5E94\u5728 0\u2013${MV_TERMINAL_LIMITS.maxStartSeconds} \u4E4B\u95F4\u3002`;
-    if ("offset" in launch && !(Number.isFinite(launch.offset) && Math.abs(launch.offset) <= MV_TERMINAL_LIMITS.maxOffsetSeconds)) return `\u5B57\u5E55\u504F\u79FB\u5E94\u5728 \xB1${MV_TERMINAL_LIMITS.maxOffsetSeconds} \u79D2\u4E4B\u5185\u3002`;
-    return "";
-  }
-  if (!launch.pythonPath) return "\u8BF7\u586B\u5199 Python \u89E3\u91CA\u5668\u8DEF\u5F84\uFF08\u4F8B\u5982 world_execute_me\\python\\python.exe\uFF09\u3002";
-  if (!isAbsolutePathText(launch.pythonPath)) return "Python \u8DEF\u5F84\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\u3002";
-  if (!PYTHON_BASENAME.test(basename(launch.pythonPath))) return "Python \u8DEF\u5F84\u5FC5\u987B\u6307\u5411 python.exe / python3 \u8FD9\u6837\u7684\u89E3\u91CA\u5668\u3002";
-  if (!launch.packageDir) return "\u8BF7\u586B\u5199\u64AD\u653E\u5668\u76EE\u5F55\uFF08\u542B _tools\\tui_live.py \u7684\u6587\u4EF6\u5939\uFF09\u3002";
-  if (!isAbsolutePathText(launch.packageDir)) return "\u64AD\u653E\u5668\u76EE\u5F55\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\u3002";
-  if (launch.audioFile && !isAbsolutePathText(launch.audioFile)) return "\u97F3\u9891\u6587\u4EF6\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\u3002";
-  if ("start" in launch && !(Number.isFinite(launch.start) && launch.start >= 0 && launch.start <= MV_TERMINAL_LIMITS.maxStartSeconds)) return `\u8D77\u59CB\u79D2\u6570\u5E94\u5728 0\u2013${MV_TERMINAL_LIMITS.maxStartSeconds} \u4E4B\u95F4\u3002`;
-  if ("audioLatency" in launch && !(Number.isFinite(launch.audioLatency) && launch.audioLatency >= 0 && launch.audioLatency <= MV_TERMINAL_LIMITS.maxLatencySeconds)) return `\u97F3\u9891\u5EF6\u8FDF\u5E94\u5728 0\u2013${MV_TERMINAL_LIMITS.maxLatencySeconds} \u79D2\u4E4B\u95F4\u3002`;
-  return "";
-}
-function commandPreview(form, ctx = {}) {
-  if (form.player === "pack") return ctx.checked?.display ?? "\uFF08\u70B9\u300C\u68C0\u67E5\u300D\u540E\u663E\u793A Host \u4ECE mv.json \u89E3\u6790\u51FA\u7684\u5B8C\u6574\u547D\u4EE4\uFF09";
-  const launch = launchFromForm(form);
-  if (launch.player === "rust") return displayCommand(launch.exePath, rustTerminalArgs(launch));
-  const sep = sepOf(launch.packageDir || launch.pythonPath);
-  const script = [launch.packageDir, ...MV_TERMINAL_SCRIPT].join(sep);
-  return displayCommand(launch.pythonPath, mvTerminalArgs(launch, script));
-}
-function confirmationDetails(form, checked, ctx = {}) {
-  if (form.player === "pack") {
-    return {
-      title: `\u542F\u52A8 MV \u5305\u300C${ctx.pack?.pack?.title ?? ""}\u300D\u7684\u5916\u90E8\u6E32\u67D3\u7A0B\u5E8F\uFF1F`,
-      command: checked?.display ?? "\uFF08\u5C1A\u672A\u68C0\u67E5\uFF09",
-      cwd: checked?.cwd ?? "",
-      argv: checked?.args ?? [],
-      points: [
-        "\u8FD9\u4E2A\u7A0B\u5E8F\u548C\u53C2\u6570\u6765\u81EA\u4F60\u5BFC\u5165\u7684 mv.json\u3002\u5B83\u662F\u4EFB\u610F\u7A0B\u5E8F\uFF0C\u4F1A\u4EE5\u4F60\u7684\u6743\u9650\u8FD0\u884C\uFF0C\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\u3002\u53EA\u542F\u52A8\u4F60\u4FE1\u4EFB\u7684 MV \u5305\u3002",
-        `\u6E05\u5355\uFF1A${ctx.pack?.manifestPath ?? ""}`,
-        "\u4E0A\u9762\u5C31\u662F Host \u5C06\u6267\u884C\u7684\u5B8C\u6574\u547D\u4EE4\uFF08\u6BCF\u4E2A\u53C2\u6570\u5355\u72EC\u4F20\u9012\uFF0C\u4E0D\u7ECF\u8FC7 shell\uFF09\u3002\u5982\u679C\u786E\u8BA4\u540E mv.json \u88AB\u6539\u52A8\uFF0CHost \u4F1A\u62D2\u7EDD\u542F\u52A8\u3002",
-        "\u5173\u95ED\u9762\u677F\u3001\u7ED3\u675F\u4F1A\u8BDD\u6216\u7EA6 2 \u5206\u949F\u65E0\u4EBA\u67E5\u770B\u65F6\uFF0C\u8FDB\u7A0B\u4F1A\u88AB\u7ED3\u675F\u3002"
-      ]
-    };
-  }
-  return {
-    title: "\u542F\u52A8 MV \u7EC8\u7AEF\uFF1F",
-    command: checked?.display ?? commandPreview(form),
-    cwd: checked?.cwd ?? (form.player === "rust" ? text2(form.exePath).replace(/[\\/][^\\/]*$/, "") : launchFromForm(form).packageDir),
-    points: [
-      form.player === "rust" ? "\u5C06\u5728\u4F2A\u7EC8\u7AEF\u91CC\u8FD0\u884C\u4F60\u81EA\u5DF1\u4E0B\u8F7D\u7684 Rust \u7248\u53EF\u6267\u884C\u6587\u4EF6\uFF08\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\uFF0C\u7B2C\u4E09\u65B9\u672A\u7B7E\u540D\u7A0B\u5E8F\uFF0C\u8BF7\u786E\u8BA4\u6765\u6E90\uFF09\u3002\u5B83\u53EA\u80FD\u89E3\u7801 MP3\uFF1B\u4E0D\u586B\u97F3\u9891\u65F6\u64AD\u653E\u5176\u5185\u5D4C\u7684\u97F3\u4E50\u3002" : "\u5C06\u5728\u4F2A\u7EC8\u7AEF\u91CC\u8FD0\u884C\u4F60\u672C\u673A\u7684 Python \u548C\u64AD\u653E\u5668\u811A\u672C\uFF08\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\uFF09\uFF0C\u548C\u4F60\u81EA\u5DF1\u5728\u7EC8\u7AEF\u91CC\u8FD0\u884C\u5B83\u4E00\u6837\u3002",
-      "\u53EA\u80FD\u542F\u52A8\u56FA\u5B9A\u7684\u64AD\u653E\u5668\uFF1B\u9762\u677F\u4E0D\u80FD\u4F20\u4EFB\u610F\u547D\u4EE4\u6216\u53C2\u6570\u3002",
-      "\u753B\u9762\u662F\u7EC8\u7AEF\u8F93\u51FA\u7ECF Host \u957F\u8F6E\u8BE2\u8F6C\u53D1\u5230\u8FD9\u91CC\u7684\uFF0C\u6BD4\u539F\u751F\u7EC8\u7AEF\u591A\u7EA6 30\u2013150 ms \u5EF6\u8FDF\uFF1B\u5BF9\u53E3\u578B\u8BF7\u7528 --audio-latency \u6216\u753B\u5E03 MV \u6A21\u5F0F\u3002",
-      "\u5173\u95ED\u9762\u677F\u3001\u7ED3\u675F\u4F1A\u8BDD\u6216\u7EA6 2 \u5206\u949F\u65E0\u4EBA\u67E5\u770B\u65F6\uFF0C\u8FDB\u7A0B\u4F1A\u88AB\u7ED3\u675F\u3002"
-    ]
-  };
-}
-function plannedLaunch(form, ctx = {}) {
-  if (form.player === "pack") {
-    if (!ctx.checked) throw new Error("\u8BF7\u5148\u70B9\u300C\u68C0\u67E5\u300D\uFF0C\u7531 Host \u89E3\u6790 MV \u5305\u7684\u547D\u4EE4\u3002");
-    return { file: ctx.checked.file, args: ctx.checked.args, cwd: ctx.checked.cwd };
-  }
-  const launch = launchFromForm(form);
-  if (launch.player === "rust") return { file: launch.exePath, args: rustTerminalArgs(launch), cwd: launch.exePath.replace(/[\\/][^\\/]*$/, "") };
-  const sep = sepOf(launch.packageDir || launch.pythonPath);
-  return { file: launch.pythonPath, args: mvTerminalArgs(launch, [launch.packageDir, ...MV_TERMINAL_SCRIPT].join(sep)), cwd: launch.packageDir };
-}
-function consoleCommandPreview(form, ctx = {}) {
-  try {
-    return consoleCommandDisplay(plannedLaunch(form, ctx));
-  } catch (error) {
-    return error.message;
-  }
-}
-function consoleProblem(form, { platform, pack, checked } = {}) {
-  if (platform && platform !== "win32") return "\u72EC\u7ACB\u63A7\u5236\u53F0\u7A97\u53E3\u53EA\u5728 Windows \u4E0A\u53EF\u7528\uFF1B\u5F53\u524D\u7CFB\u7EDF\u8BF7\u7528\u9762\u677F\u5185\u7684 MV \u7EC8\u7AEF\u3002";
-  if (form.player === "pack") {
-    const problem = formProblem(form, { pack });
-    if (problem || !checked) return problem;
-    const unsafe = cmdSafetyProblems(checked.file, checked.args ?? [], checked.cwd);
-    return unsafe.length ? unsafe.join("\n") : "";
-  }
-  const launch = launchFromForm(form);
-  for (const value of [launch.pythonPath, launch.packageDir, launch.exePath, launch.audioFile]) {
-    if (typeof value === "string" && /%/.test(value)) return `\u8DEF\u5F84\u91CC\u542B\u6709 %\uFF0C\u72EC\u7ACB\u7A97\u53E3\u6A21\u5F0F\u65E0\u6CD5\u5B89\u5168\u4F20\u9012\uFF1A${value}`;
-  }
-  return formProblem(form);
-}
-function consoleConfirmationDetails(form, ctx = {}) {
-  const pack = form.player === "pack";
-  return {
-    title: pack ? `\u5728\u72EC\u7ACB\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u8FD0\u884C MV \u5305\u300C${ctx.pack?.pack?.title ?? ""}\u300D\u7684\u6E32\u67D3\u7A0B\u5E8F\uFF1F` : "\u5728\u72EC\u7ACB\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u64AD\u653E\uFF1F",
-    command: consoleCommandPreview(form, ctx),
-    player: commandPreview(form, ctx),
-    points: pack ? [
-      "\u8FD9\u4E2A\u7A0B\u5E8F\u548C\u53C2\u6570\u6765\u81EA\u4F60\u5BFC\u5165\u7684 mv.json\u3002\u5B83\u662F\u4EFB\u610F\u7A0B\u5E8F\uFF0C\u4F1A\u4EE5\u4F60\u7684\u6743\u9650\u8FD0\u884C\uFF0C\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\u3002\u53EA\u542F\u52A8\u4F60\u4FE1\u4EFB\u7684 MV \u5305\u3002",
-      '\u5C06\u7528 cmd.exe \u7684 start \u6253\u5F00\u4E00\u4E2A\u65B0\u7684\u63A7\u5236\u53F0\u7A97\u53E3\u3002\u6240\u6709\u8DEF\u5F84\u548C\u53C2\u6570\u90FD\u52A0\u5F15\u53F7\uFF1B\u542B % ! " ^ & | < > \u6216\u6362\u884C\u7684\u503C\u4E00\u5F8B\u62D2\u7EDD\u3002',
-      "\u5982\u679C\u786E\u8BA4\u540E mv.json \u88AB\u6539\u52A8\uFF0CHost \u4F1A\u62D2\u7EDD\u542F\u52A8\u3002\u9762\u677F\u91CC\u7684\u300C\u7ED3\u675F\u300D\u4F1A\u7528 taskkill /T \u7ED3\u675F\u5B83\u3002"
-    ] : [
-      "\u5C06\u7528 cmd.exe \u7684 start \u6253\u5F00\u4E00\u4E2A\u65B0\u7684\u63A7\u5236\u53F0\u7A97\u53E3\uFF08\u82E5\u7CFB\u7EDF\u9ED8\u8BA4\u7EC8\u7AEF\u662F Windows Terminal\uFF0C\u4F1A\u5728\u5176\u4E2D\u6253\u5F00\uFF09\uFF0C\u5728\u91CC\u9762\u8FD0\u884C\u4E0A\u9762\u8FD9\u4E00\u4E2A\u56FA\u5B9A\u7684\u64AD\u653E\u5668\uFF1B\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\u3002",
-      "\u6240\u6709\u8DEF\u5F84\u90FD\u52A0\u5F15\u53F7\u4F20\u9012\uFF1B\u4E0D\u80FD\u9644\u52A0\u4EFB\u4F55\u5176\u4ED6\u547D\u4EE4\u6216\u53C2\u6570\u3002",
-      "\u753B\u9762\u76F4\u63A5\u7531\u771F\u5B9E\u63A7\u5236\u53F0\u663E\u793A\uFF0C\u6CA1\u6709\u9762\u677F\u8F6C\u53D1\u7684\u5EF6\u8FDF\uFF1B\u6309\u952E\u8BF7\u5728\u90A3\u4E2A\u7A97\u53E3\u91CC\u6309\u3002",
-      "\u9762\u677F\u91CC\u7684\u300C\u7ED3\u675F\u300D\u4F1A\u7528 taskkill /T \u7ED3\u675F\u64AD\u653E\u5668\u8FDB\u7A0B\u6811\uFF1B\u63D2\u4EF6\u5378\u8F7D\u6216 Harness \u9000\u51FA\u65F6\u4E5F\u4F1A\u7ED3\u675F\u8FD9\u4E9B\u7A97\u53E3\u3002"
-    ]
-  };
-}
-async function loadConsoles(api) {
-  return unwrapRemote(await api.consoleInfo({}), "\u65E0\u6CD5\u8BFB\u53D6\u72EC\u7ACB\u7A97\u53E3\u72B6\u6001\u3002");
-}
-async function startConsole(api, form, ctx = {}) {
-  const started = unwrapRemote(await api.consoleStart({ ...launchFromForm(form, ctx), ...expectation(form, ctx), confirmed: true }), "\u65E0\u6CD5\u6253\u5F00\u72EC\u7ACB\u7A97\u53E3\u3002");
-  if (!isMvConsoleId(started?.consoleId)) throw new Error("\u542F\u52A8\u7ED3\u679C\u7F3A\u5C11\u6709\u6548\u7684\u7A97\u53E3 ID\u3002");
-  return started;
-}
-async function stopConsole(api, consoleId) {
-  return unwrapRemote(await api.consoleStop({ consoleId }), "\u65E0\u6CD5\u7ED3\u675F\u72EC\u7ACB\u7A97\u53E3\u3002");
-}
-function endDescription({ endReason, exitCode } = {}) {
-  const code = exitCode === null || exitCode === void 0 ? "" : `\uFF0C\u9000\u51FA\u7801 ${exitCode}`;
-  switch (endReason) {
-    case "stopped":
-      return `\u5DF2\u7531\u4F60\u7ED3\u675F${code}\u3002`;
-    case "orphan":
-      return "\u957F\u65F6\u95F4\u6CA1\u6709\u9762\u677F\u8BFB\u53D6\u8F93\u51FA\uFF0C\u5DF2\u81EA\u52A8\u7ED3\u675F\u3002";
-    case "lifetime":
-      return "\u4F1A\u8BDD\u8FBE\u5230\u6700\u957F\u65F6\u957F\uFF0C\u5DF2\u81EA\u52A8\u7ED3\u675F\u3002";
-    case "dispose":
-      return "\u63D2\u4EF6\u5DF2\u5378\u8F7D\u6216\u91CD\u65B0\u52A0\u8F7D\uFF0C\u4F1A\u8BDD\u5DF2\u7ED3\u675F\u3002";
-    case "lost":
-      return "\u4E0E\u540E\u53F0\u7684\u8FDE\u63A5\u4E2D\u65AD\u3002";
-    default:
-      return `\u64AD\u653E\u5668\u5DF2\u9000\u51FA${code}\u3002`;
-  }
-}
-async function loadInfo(api) {
-  const info = unwrapRemote(await api.info(), "\u65E0\u6CD5\u8BFB\u53D6 MV \u63D2\u4EF6\u72B6\u6001\u3002");
-  if (!info || typeof info !== "object") throw new Error("MV \u63D2\u4EF6\u72B6\u6001\u683C\u5F0F\u65E0\u6548\u3002");
-  return info;
-}
-async function checkLaunch(api, form, ctx = {}) {
-  return unwrapRemote(await api.terminalCheck(launchFromForm(form, ctx)), "\u8DEF\u5F84\u68C0\u67E5\u5931\u8D25\u3002");
-}
-function expectation(form, ctx) {
-  if (form.player !== "pack") return {};
-  if (typeof ctx.checked?.display !== "string") throw new Error("\u8BF7\u5148\u68C0\u67E5\u5E76\u786E\u8BA4 MV \u5305\u7684\u547D\u4EE4\u3002");
-  return { expectDisplay: ctx.checked.display };
-}
-async function startSession(api, form, { cols = 120, rows = 40 } = {}, ctx = {}) {
-  const L2 = MV_TERMINAL_LIMITS;
-  const request2 = {
-    ...launchFromForm(form, ctx),
-    ...expectation(form, ctx),
-    confirmed: true,
-    cols: Math.min(L2.maxCols, Math.max(L2.minCols, Math.round(cols))),
-    rows: Math.min(L2.maxRows, Math.max(L2.minRows, Math.round(rows)))
-  };
-  const session = unwrapRemote(await api.terminalStart(request2), "MV \u7EC8\u7AEF\u542F\u52A8\u5931\u8D25\u3002");
-  if (!isMvSessionId(session?.sessionId)) throw new Error("\u542F\u52A8\u7ED3\u679C\u7F3A\u5C11\u6709\u6548\u7684\u4F1A\u8BDD ID\u3002");
-  return session;
-}
-var TerminalConnection = class {
-  constructor({ api, sessionId, onData, onExit, onError, waitMs = 800, retryMs = 1e3, resizeDelayMs = 120, setTimer = setTimeout, clearTimer = clearTimeout }) {
-    Object.assign(this, { api, sessionId, onData, onExit, onError, waitMs, retryMs, resizeDelayMs });
-    this.setTimer = (callback, ms3) => setTimer(callback, ms3);
-    this.clearTimer = (id) => clearTimer(id);
-    this.cursor = 0;
-    this.closed = false;
-    this.pendingInput = "";
-    this.writing = null;
-    this.resizeTimer = null;
-    this.failures = 0;
-  }
-  start() {
-    if (!isMvSessionId(this.sessionId)) {
-      this.closed = true;
-      this.onError?.(new Error("\u4F1A\u8BDD ID \u65E0\u6548\u3002"));
-      this.onExit?.({ endReason: "lost", exitCode: null });
-      this.loop = Promise.resolve();
-      return this.loop;
-    }
-    this.loop = this.readLoop();
-    return this.loop;
-  }
-  async readLoop() {
-    while (!this.closed) {
-      let output;
-      try {
-        output = unwrapRemote(await this.api.terminalRead({ sessionId: this.sessionId, cursor: this.cursor, waitMs: this.waitMs }), "\u8BFB\u53D6\u7EC8\u7AEF\u8F93\u51FA\u5931\u8D25\u3002");
-        this.failures = 0;
-      } catch (error) {
-        if (this.closed) return;
-        this.failures += 1;
-        this.onError?.(error);
-        if (this.failures >= 5) {
-          this.closed = true;
-          this.onExit?.({ endReason: "lost", exitCode: null });
-          return;
-        }
-        await new Promise((resolve) => this.setTimer(resolve, this.retryMs));
-        continue;
-      }
-      if (this.closed) return;
-      if (output.dropped) this.onData?.("\r\n[\u90E8\u5206\u8F83\u65E9\u7684\u8F93\u51FA\u5DF2\u4E22\u5F03]\r\n");
-      if (output.data) this.onData?.(output.data);
-      this.cursor = output.cursor;
-      if (output.exited) {
-        this.closed = true;
-        this.onExit?.({ endReason: output.endReason, exitCode: output.exitCode });
-        return;
-      }
-    }
-  }
-  send(data) {
-    if (this.closed || !data) return;
-    this.pendingInput += data;
-    if (!this.writing) this.writing = this.flush();
-  }
-  async flush() {
-    try {
-      while (this.pendingInput && !this.closed) {
-        const chunk = this.pendingInput.slice(0, MV_TERMINAL_LIMITS.writeChars);
-        this.pendingInput = this.pendingInput.slice(chunk.length);
-        try {
-          unwrapRemote(await this.api.terminalWrite({ sessionId: this.sessionId, data: chunk }), "\u53D1\u9001\u6309\u952E\u5931\u8D25\u3002");
-        } catch (error) {
-          this.onError?.(error);
-        }
-      }
-    } finally {
-      this.writing = null;
-    }
-  }
-  resize(cols, rows) {
-    if (this.closed || !Number.isFinite(cols) || !Number.isFinite(rows)) return;
-    const L2 = MV_TERMINAL_LIMITS;
-    cols = Math.min(L2.maxCols, Math.max(L2.minCols, Math.round(cols)));
-    rows = Math.min(L2.maxRows, Math.max(L2.minRows, Math.round(rows)));
-    if (this.resizeTimer) this.clearTimer(this.resizeTimer);
-    this.resizeTimer = this.setTimer(() => {
-      this.resizeTimer = null;
-      void Promise.resolve(this.api.terminalResize({ sessionId: this.sessionId, cols, rows })).catch(() => {
-      });
-    }, this.resizeDelayMs);
-  }
-  async stop() {
-    const wasOpen = !this.closed;
-    this.closed = true;
-    if (this.resizeTimer) this.clearTimer(this.resizeTimer);
-    if (wasOpen) {
-      try {
-        await this.api.terminalStop({ sessionId: this.sessionId });
-      } catch {
-      }
-    }
-  }
-};
-var errorText = (error, fallback) => remoteErrorText(text2(error?.message), fallback);
-
-// .dsh-plugin/client/mv-wav.mjs
-var WAV_RATE = 44100;
-var WAV_CHUNK = 384 * 1024;
-function encodeWav(channels, sampleRate) {
-  const count = Math.min(2, channels.length);
-  const frames = channels[0]?.length ?? 0;
-  const dataBytes = frames * count * 2;
-  const out = new Uint8Array(44 + dataBytes);
-  const view = new DataView(out.buffer);
-  const ascii = (offset2, text3) => {
-    for (let i8 = 0; i8 < text3.length; i8 += 1) out[offset2 + i8] = text3.charCodeAt(i8);
-  };
-  ascii(0, "RIFF");
-  view.setUint32(4, 36 + dataBytes, true);
-  ascii(8, "WAVE");
-  ascii(12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, count, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * count * 2, true);
-  view.setUint16(32, count * 2, true);
-  view.setUint16(34, 16, true);
-  ascii(36, "data");
-  view.setUint32(40, dataBytes, true);
-  let offset = 44;
-  for (let frame = 0; frame < frames; frame += 1) {
-    for (let channel = 0; channel < count; channel += 1) {
-      const sample = Math.max(-1, Math.min(1, channels[channel][frame] || 0));
-      view.setInt16(offset, sample < 0 ? Math.round(sample * 32768) : Math.round(sample * 32767), true);
-      offset += 2;
-    }
-  }
-  return out;
-}
-function bytesToBase64(bytes) {
-  let binary = "";
-  for (let i8 = 0; i8 < bytes.length; i8 += 32768) binary += String.fromCharCode.apply(null, bytes.subarray(i8, i8 + 32768));
-  return btoa(binary);
-}
-async function sha256Hex2(buffer, subtle = globalThis.crypto?.subtle) {
-  const digest = new Uint8Array(await subtle.digest("SHA-256", buffer));
-  return Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-async function decodeToChannels(buffer, { OfflineContext = globalThis.OfflineAudioContext } = {}) {
-  if (typeof OfflineContext !== "function") throw new Error("\u6B64\u9762\u677F\u4E0D\u652F\u6301 WebAudio \u89E3\u7801\u3002");
-  const context = new OfflineContext(2, 1, WAV_RATE);
-  let audio;
-  try {
-    audio = await context.decodeAudioData(buffer.slice(0));
-  } catch (error) {
-    throw new Error(`\u9762\u677F\u65E0\u6CD5\u89E3\u7801\u8FD9\u4E2A\u6587\u4EF6\uFF1A${error?.message || error}`);
-  }
-  const channels = [audio.getChannelData(0)];
-  channels.push(audio.numberOfChannels > 1 ? audio.getChannelData(1) : audio.getChannelData(0));
-  return { channels, sampleRate: audio.sampleRate, duration: audio.duration };
-}
-async function convertFileToWav(api, file, { onProgress = () => {
-}, decode = decodeToChannels, hash = sha256Hex2 } = {}) {
-  onProgress({ stage: "read", ratio: 0 });
-  const source = await file.arrayBuffer();
-  const sourceSha256 = await hash(source);
-  onProgress({ stage: "decode", ratio: 0 });
-  const { channels, sampleRate, duration } = await decode(source);
-  const wav = encodeWav(channels, sampleRate);
-  const begun = unwrapRemote(await api.wavBegin({ sourceSha256, bytes: wav.length }), "\u65E0\u6CD5\u5F00\u59CB\u5199\u5165 WAV\u3002");
-  if (begun.exists) {
-    onProgress({ stage: "done", ratio: 1 });
-    return { path: begun.path, bytes: wav.length, duration, cached: true };
-  }
-  const chunk = Math.min(WAV_CHUNK, begun.chunkBytes || WAV_CHUNK);
-  for (let offset = 0; offset < wav.length; offset += chunk) {
-    const part = wav.subarray(offset, Math.min(wav.length, offset + chunk));
-    unwrapRemote(await api.wavWrite({ uploadId: begun.uploadId, offset, base64: bytesToBase64(part) }), "\u5199\u5165 WAV \u5931\u8D25\u3002");
-    onProgress({ stage: "upload", ratio: Math.min(1, (offset + part.length) / wav.length) });
-  }
-  const done = unwrapRemote(await api.wavFinish({ uploadId: begun.uploadId }), "\u65E0\u6CD5\u5B8C\u6210 WAV\u3002");
-  onProgress({ stage: "done", ratio: 1 });
-  return { path: done.path, bytes: done.bytes, duration, cached: false };
-}
-function effectiveAudioPath(form) {
-  if (form.player === "pack") return "";
-  if (form.player === "rust") return (form.audioFile || "").trim();
-  if (form.noAudio) return "";
-  const explicit = (form.audioFile || "").trim();
-  if (explicit) return explicit;
-  const dir = (form.packageDir || "").trim().replace(/[\\/]+$/, "");
-  return dir ? `${dir}${dir.includes("/") && !dir.includes("\\") ? "/" : "\\"}input${dir.includes("/") && !dir.includes("\\") ? "/" : "\\"}song.mp3` : "";
-}
-
 // .dsh-plugin/client/mv-terminal.jsx
 var THEME = Object.freeze({ background: "#000000", foreground: "#ffaf5f", cursor: "#ffaf5f", selectionBackground: "#5f5f00" });
 var FONT_KEY2 = "dsh-mv.terminal.fontSize";
@@ -19540,10 +20185,9 @@ function TerminalScreen({ api, session, onEnded, fontSize, ended, onStop, onFont
 }
 var PLAYER_OPTIONS = Object.freeze([
   { value: "python", label: "world_execute_me", title: "world_execute_me \u81EA\u5E26\u7684 tui_live.py\uFF08Python\uFF09" },
-  { value: "rust", label: "Rust \u7248", title: "world-execute-me-ascii-rust\uFF08\u81EA\u884C\u4E0B\u8F7D\u7684 exe\uFF09" },
   { value: "pack", label: "MV \u5305\u6E32\u67D3\u7A0B\u5E8F", title: "\u5F53\u524D MV \u5305 mv.json \u91CC\u7684 terminal \u914D\u7F6E" }
 ]);
-var splitProblems = (text3) => String(text3 ?? "").split("\n").map((line) => line.trim()).filter(Boolean);
+var splitProblems = (text4) => String(text4 ?? "").split("\n").map((line) => line.trim()).filter(Boolean);
 var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, info, infoError = "", reloadInfo, pack = null, destination = "panel", onState = () => {
 } }, ref) {
   const [form, setFormState] = import_react3.default.useState(loadForm);
@@ -19561,9 +20205,9 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
   const [advanced, setAdvanced] = import_react3.default.useState(false);
   const [onboardDir, setOnboardDir] = import_react3.default.useState("");
   const [audioInfo, setAudioInfo] = import_react3.default.useState(null);
-  const [converting, setConverting] = import_react3.default.useState("");
-  const [convertNote, setConvertNote] = import_react3.default.useState("");
-  const wavInput = import_react3.default.useRef(null);
+  const [prepared, setPrepared] = import_react3.default.useState(null);
+  const [preparing, setPreparing] = import_react3.default.useState("");
+  const [prepareFail, setPrepareFail] = import_react3.default.useState(null);
   const mounted = import_react3.default.useRef(true);
   import_react3.default.useEffect(() => () => {
     mounted.current = false;
@@ -19608,22 +20252,23 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
     setProblemText("");
   };
   const activePack = pack && !pack.builtin ? pack : null;
-  const ctx = { pack: activePack, checked };
+  const audioPath = effectiveAudioPath(form);
+  const audioOverride = prepared && prepared.source === audioPath ? prepared : null;
+  const ctx = { pack: activePack, checked, audioOverride };
   const problem = formProblem(form, ctx);
-  const rust = form.player === "rust";
   const packMode = form.player === "pack";
   import_react3.default.useEffect(() => {
     setChecked(null);
     setConfirming(false);
   }, [activePack?.id, activePack?.loadedAt]);
   import_react3.default.useEffect(() => {
-    if (activePack?.terminal && form.player !== "pack" && !form.packageDir && !form.exePath) setForm({ player: "pack" });
+    if (activePack?.terminal && form.player !== "pack" && !form.packageDir) setForm({ player: "pack" });
   }, [activePack?.id]);
-  const check = async ({ quiet = false } = {}) => {
+  const check = async ({ quiet = false, override = audioOverride } = {}) => {
     setChecking(true);
     if (!quiet) setProblemText("");
     try {
-      const value = await checkLaunch(api, form, ctx);
+      const value = await checkLaunch(api, form, { ...ctx, audioOverride: override });
       if (mounted.current) {
         setChecked(value);
         setCheckError("");
@@ -19639,7 +20284,7 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
       if (mounted.current) setChecking(false);
     }
   };
-  const formKey = JSON.stringify(form) + (activePack?.loadedAt ?? "");
+  const formKey = JSON.stringify(form) + (activePack?.loadedAt ?? "") + (audioOverride?.path ?? "");
   import_react3.default.useEffect(() => {
     if (problem || confirming || session && !ended) return void 0;
     const timer = setTimeout(() => {
@@ -19647,13 +20292,13 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
     }, 450);
     return () => clearTimeout(timer);
   }, [formKey, problem, confirming]);
-  const audioPath = effectiveAudioPath(form);
   import_react3.default.useEffect(() => {
     setAudioInfo(null);
-    if (!audioPath || typeof api.audioProbe !== "function") return void 0;
+    setPrepareFail(null);
+    if (!audioPath || packMode || typeof api.audioProbe !== "function") return void 0;
     let live = true;
     const timer = setTimeout(() => {
-      api.audioProbe({ path: audioPath, player: rust ? "rust" : "python" }).then((response) => {
+      api.audioProbe({ path: audioPath }).then((response) => {
         if (live && mounted.current) setAudioInfo(unwrapRemote(response, "\u65E0\u6CD5\u8BFB\u53D6\u97F3\u9891\u6587\u4EF6\u3002"));
       }).catch(() => {
         if (live && mounted.current) setAudioInfo(null);
@@ -19664,36 +20309,73 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
       clearTimeout(timer);
     };
   }, [api, audioPath, form.player]);
-  const audioWarning = audioInfo?.warning || "";
-  const convertWav = async (file) => {
-    if (!file) return;
-    setConverting("\u8BFB\u53D6\u2026");
-    setConvertNote("");
+  const needsWav = Boolean(audioInfo && !packMode && !form.noAudio && audioInfo.mciPlayable === false && !audioOverride);
+  const prepareAudio = async () => {
+    const source = audioPath;
+    setPreparing("\u6B63\u5728\u68C0\u67E5\u97F3\u9891\u2026");
+    setPrepareFail(null);
     setProblemText("");
+    const stageText = { probe: "\u68C0\u67E5\u97F3\u9891", read: "\u8BFB\u53D6", decode: "\u89E3\u7801", upload: "\u5199\u5165 WAV \u7F13\u5B58", done: "\u5B8C\u6210" };
     try {
-      const stageText = { read: "\u8BFB\u53D6", decode: "\u89E3\u7801", upload: "\u5199\u5165\u7F13\u5B58", done: "\u5B8C\u6210" };
-      const result = await convertFileToWav(api, file, { onProgress: ({ stage, ratio }) => {
-        if (mounted.current) setConverting(`${stageText[stage] ?? stage} ${Math.round(ratio * 100)}%`);
+      const result = await prepareTerminalAudio(api, source, { onProgress: ({ stage, ratio }) => {
+        if (mounted.current) setPreparing(`\u6B63\u5728\u8F6C\u6362\u97F3\u9891\uFF1A${stageText[stage] ?? stage} ${Math.round((ratio ?? 0) * 100)}%`);
       } });
-      if (!mounted.current) return;
-      setForm({ audioFile: result.path, noAudio: false });
-      setConvertNote(`\u5DF2\u8F6C\u6362\u4E3A WAV\uFF08${(result.bytes / 1048576).toFixed(1)} MB\uFF0C${Math.round(result.duration)} \u79D2${result.cached ? "\uFF0C\u4F7F\u7528\u5DF2\u6709\u7F13\u5B58" : ""}\uFF09\uFF0C\u97F3\u9891\u5DF2\u6539\u4E3A\uFF1A${result.path}`);
+      if (!mounted.current) return null;
+      if (!result.converted) return null;
+      const value = { source, path: result.path, cached: result.cached, label: result.probe?.label ?? "" };
+      setPrepared(value);
+      return value;
     } catch (error) {
-      if (mounted.current) setProblemText(errorText(error, "\u8F6C\u6362\u4E3A WAV \u5931\u8D25\u3002"));
+      if (!mounted.current) return null;
+      if (error instanceof AudioPrepareError && (error.code === "decode-failed" || error.code === "unknown-format")) {
+        let ffmpeg = "";
+        try {
+          const found = unwrapRemote(await api.ffmpegInfo({}), "");
+          if (found?.available) ffmpeg = found.path;
+        } catch {
+        }
+        setPrepareFail({ message: error.message, path: source, label: error.probe?.label ?? "", ffmpeg, confirming: false, busy: "" });
+        return void 0;
+      }
+      if (!audioInfo) return null;
+      setProblemText(errorText(error, "\u97F3\u9891\u8F6C\u6362\u5931\u8D25\u3002"));
+      return void 0;
     } finally {
-      if (mounted.current) setConverting("");
+      if (mounted.current) setPreparing("");
+    }
+  };
+  const convertWithFfmpeg = async () => {
+    const failed = prepareFail;
+    if (!failed) return;
+    setPrepareFail({ ...failed, busy: "\u6B63\u5728\u7528 ffmpeg \u8F6C\u6362\u2026" });
+    try {
+      const done = unwrapRemote(await api.audioConvert({ path: failed.path, confirmed: true }), "ffmpeg \u8F6C\u6362\u5931\u8D25\u3002");
+      if (!mounted.current) return;
+      setPrepared({ source: failed.path, path: done.path, cached: done.cached, label: failed.label, ffmpeg: true });
+      setPrepareFail(null);
+    } catch (error) {
+      if (mounted.current) {
+        setPrepareFail({ ...failed, busy: "", confirming: false });
+        setProblemText(errorText(error, "ffmpeg \u8F6C\u6362\u5931\u8D25\u3002"));
+      }
     }
   };
   const platform = consoles.platform ?? info?.platform;
-  const consoleBlocked = consoles.supported === false ? consoles.reason || "\u72EC\u7ACB\u7A97\u53E3\u4E0D\u53EF\u7528\u3002" : consoleProblem(form, { platform, pack: activePack, checked });
+  const consoleBlocked = consoles.supported === false ? consoles.reason || "\u72EC\u7ACB\u7A97\u53E3\u4E0D\u53EF\u7528\u3002" : consoleProblem(form, { platform, pack: activePack, checked, audioOverride });
   const running = Boolean(session && !ended);
-  const canPlay = !problem && !checking && !starting && !confirming && (consoleMode ? !consoleBlocked : !running) && !(packMode && !checked);
+  const canPlay = !problem && !checking && !starting && !confirming && !preparing && (consoleMode ? !consoleBlocked : !running) && !(packMode && !checked);
   const confirmAfterCheck = async () => {
     setProblemText("");
-    const value = packMode || !checked ? await check() : checked;
+    let override = audioOverride;
+    if (!packMode && audioPath && !form.noAudio && !audioOverride) {
+      const made = await prepareAudio();
+      if (made === void 0) return;
+      if (made) override = made;
+    }
+    const value = packMode || !checked || override !== audioOverride ? await check({ override }) : checked;
     if (!value) return;
     if (consoleMode) {
-      const blocked = consoleProblem(form, { platform, pack: activePack, checked: value });
+      const blocked = consoleProblem(form, { platform, pack: activePack, checked: value, audioOverride: override });
       if (blocked) {
         setProblemText(blocked);
         return;
@@ -19705,8 +20387,8 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
     if (canPlay) void confirmAfterCheck();
   } }));
   import_react3.default.useEffect(() => {
-    onState({ canPlay, running, busy: checking || starting, label: consoleMode ? "\u5728\u72EC\u7ACB\u7A97\u53E3\u64AD\u653E" : "\u5728\u9762\u677F\u7EC8\u7AEF\u64AD\u653E", confirming });
-  }, [canPlay, running, checking, starting, consoleMode, confirming]);
+    onState({ canPlay, running, busy: checking || starting || Boolean(preparing), busyLabel: preparing ? "\u8F6C\u6362\u97F3\u9891\u2026" : "", label: consoleMode ? "\u5728\u72EC\u7ACB\u7A97\u53E3\u64AD\u653E" : "\u5728\u9762\u677F\u7EC8\u7AEF\u64AD\u653E", confirming });
+  }, [canPlay, running, checking, starting, consoleMode, confirming, preparing]);
   const openConsole = async () => {
     setStarting(true);
     setProblemText("");
@@ -19768,7 +20450,7 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
   let status = null;
   if (infoError) status = /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react3.default.createElement("p", null, infoError));
   else if (firstRun) {
-    status = /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("h2", null, "\u5728\u7EC8\u7AEF\u91CC\u64AD\u653E\uFF0C\u9700\u8981\u4F60\u672C\u673A\u7684\u64AD\u653E\u5668"), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, "\u9009\u62E9 world_execute_me \u6587\u4EF6\u5939\uFF08\u91CC\u9762\u6709 ", /* @__PURE__ */ import_react3.default.createElement("code", null, "_tools\\tui_live.py"), " \u548C ", /* @__PURE__ */ import_react3.default.createElement("code", null, "python\\python.exe"), "\uFF09\uFF0C\u63D2\u4EF6\u4F1A\u81EA\u52A8\u586B\u597D Python \u8DEF\u5F84\u5E76\u68C0\u67E5\u3002\u4E5F\u53EF\u4EE5\u5728\u4E0A\u65B9\u5207\u6362\u4E3A Rust \u7248\u6216 MV \u5305\u7684\u6E32\u67D3\u7A0B\u5E8F\u3002"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-field-row", style: { marginTop: 8 } }, /* @__PURE__ */ import_react3.default.createElement(
+    status = /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("h2", null, "\u5728\u7EC8\u7AEF\u91CC\u64AD\u653E\uFF0C\u9700\u8981\u4F60\u672C\u673A\u7684\u64AD\u653E\u5668"), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, "\u9009\u62E9 world_execute_me \u6587\u4EF6\u5939\uFF08\u91CC\u9762\u6709 ", /* @__PURE__ */ import_react3.default.createElement("code", null, "_tools\\tui_live.py"), " \u548C ", /* @__PURE__ */ import_react3.default.createElement("code", null, "python\\python.exe"), "\uFF09\uFF0C\u63D2\u4EF6\u4F1A\u81EA\u52A8\u586B\u597D Python \u8DEF\u5F84\u5E76\u68C0\u67E5\u3002\u4E5F\u53EF\u4EE5\u5728\u4E0A\u65B9\u5207\u6362\u4E3A MV \u5305\u7684\u6E32\u67D3\u7A0B\u5E8F\u3002"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-field-row", style: { marginTop: 8 } }, /* @__PURE__ */ import_react3.default.createElement(
       "input",
       {
         value: onboardDir,
@@ -19791,7 +20473,7 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
     status = /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "error", actions: fixes }, splitProblems(checkError).map((line) => /* @__PURE__ */ import_react3.default.createElement("p", { key: line, className: "mv-wrap" }, line)));
   } else if (checking && !checked) status = /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, "\u6B63\u5728\u68C0\u67E5\u8DEF\u5F84\u2026"));
   else if (checked) {
-    status = /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "ok" }, /* @__PURE__ */ import_react3.default.createElement("p", null, /* @__PURE__ */ import_react3.default.createElement("b", null, audioWarning && !packMode ? "\u8DEF\u5F84\u68C0\u67E5\u901A\u8FC7\uFF08\u4F46\u58F0\u97F3\u6709\u95EE\u9898\uFF0C\u89C1\u4E0B\u65B9\uFF09" : "\u5DF2\u5C31\u7EEA"), checked.audio?.format ? ` \xB7 \u97F3\u9891 ${checked.audio.label}` : form.noAudio && !rust && !packMode ? " \xB7 \u4E0D\u64AD\u653E\u58F0\u97F3" : "", consoleMode ? " \xB7 \u5C06\u6253\u5F00\u4E00\u4E2A Windows \u63A7\u5236\u53F0\u7A97\u53E3" : " \xB7 \u5728\u4E0B\u65B9\u9762\u677F\u7EC8\u7AEF\u4E2D\u663E\u793A"), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption mv-wrap", title: checked.display }, checked.display));
+    status = /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "ok" }, /* @__PURE__ */ import_react3.default.createElement("p", null, /* @__PURE__ */ import_react3.default.createElement("b", null, "\u5DF2\u5C31\u7EEA"), audioOverride ? ` \xB7 \u97F3\u9891 ${audioOverride.label || ""} \u2192 WAV \u7F13\u5B58` : checked.audio?.format ? ` \xB7 \u97F3\u9891 ${checked.audio.label}` : form.noAudio && !packMode ? " \xB7 \u4E0D\u64AD\u653E\u58F0\u97F3" : "", consoleMode ? " \xB7 \u5C06\u6253\u5F00\u4E00\u4E2A Windows \u63A7\u5236\u53F0\u7A97\u53E3" : " \xB7 \u5728\u4E0B\u65B9\u9762\u677F\u7EC8\u7AEF\u4E2D\u663E\u793A"), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption mv-wrap", title: checked.display }, checked.display));
   }
   return /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-term-tab" }, /* @__PURE__ */ import_react3.default.createElement("style", null, xterm_default), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-card-box" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row", style: { justifyContent: "space-between" } }, /* @__PURE__ */ import_react3.default.createElement("h2", { style: { margin: 0 } }, "\u64AD\u653E\u5668"), /* @__PURE__ */ import_react3.default.createElement(
     Segmented,
@@ -19802,20 +20484,10 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
       onChange: (value) => setForm({ player: value }),
       options: PLAYER_OPTIONS.map((option) => option.value === "pack" ? { ...option, disabled: !activePack?.terminal && form.player !== "pack", title: activePack?.terminal ? `MV \u5305\uFF1A${activePack.pack.title}\uFF08${activePack.terminal.label}\uFF09` : "\u5F53\u524D MV \u5305\u6CA1\u6709 terminal \u914D\u7F6E" } : option)
     }
-  )), packMode && activePack?.terminal && /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, "\u6E32\u67D3\u7A0B\u5E8F ", /* @__PURE__ */ import_react3.default.createElement("code", null, activePack.terminal.program), activePack.terminal.script ? /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, " \xB7 \u811A\u672C ", /* @__PURE__ */ import_react3.default.createElement("code", null, activePack.terminal.script)) : null), status, consoleMode && !problem && !firstRun && consoleBlocked && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react3.default.createElement("p", null, "\u72EC\u7ACB\u7A97\u53E3\uFF1A", consoleBlocked)), audioInfo && audioWarning && !packMode && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: !rust ? /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: Boolean(converting), onClick: () => wavInput.current?.click() }, converting || "\u8F6C\u6362\u4E3A WAV\u2026"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => setForm({ noAudio: true }) }, "\u4E0D\u64AD\u653E\u58F0\u97F3"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u5728\u5F39\u51FA\u7684\u5BF9\u8BDD\u6846\u91CC\u9009\u540C\u4E00\u4E2A\u6587\u4EF6\uFF1B\u8F6C\u6362\u7ED3\u679C\u5B58\u5165\u63D2\u4EF6\u7F13\u5B58\uFF0C\u4E0D\u6539\u52A8\u539F\u6587\u4EF6\u3002")) : null }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, audioWarning)), convertNote && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "ok" }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, convertNote)), problemText && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, problemText)), consoleNote && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, consoleNote)), !rust && !packMode && /* @__PURE__ */ import_react3.default.createElement(
-    "input",
-    {
-      ref: wavInput,
-      type: "file",
-      accept: "audio/*,video/mp4,.mp3,.m4a,.mp4,.aac,.ogg,.flac,.wav",
-      className: "mv-hidden",
-      onChange: (event) => {
-        const file = event.target.files?.[0];
-        event.target.value = "";
-        void convertWav(file);
-      }
-    }
-  )), confirming && consoleMode && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u5728\u72EC\u7ACB\u7A97\u53E3\u64AD\u653E" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, consoleDetails.title), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "Host \u5C06\u6267\u884C\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, consoleDetails.command), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u7A97\u53E3\u91CC\u8FD0\u884C\u7684\u64AD\u653E\u5668\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, consoleDetails.player), /* @__PURE__ */ import_react3.default.createElement("ul", null, consoleDetails.points.map((point2) => /* @__PURE__ */ import_react3.default.createElement("li", { key: point2 }, point2)), audioWarning && !packMode && /* @__PURE__ */ import_react3.default.createElement("li", { className: "mv-error" }, audioWarning)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: starting, onClick: () => void openConsole() }, starting ? "\u6B63\u5728\u6253\u5F00\u2026" : "\u786E\u8BA4\u6253\u5F00\u7A97\u53E3"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: starting, onClick: () => setConfirming(false) }, "\u53D6\u6D88"))), confirming && !consoleMode && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u542F\u52A8 MV \u7EC8\u7AEF" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, details.title), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u547D\u4EE4\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, details.command), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u5DE5\u4F5C\u76EE\u5F55\uFF1A", /* @__PURE__ */ import_react3.default.createElement("code", null, details.cwd)), details.argv?.length > 0 && /* @__PURE__ */ import_react3.default.createElement("ol", { className: "mv-argv", "aria-label": "\u9010\u4E2A\u53C2\u6570" }, details.argv.map((arg, i8) => /* @__PURE__ */ import_react3.default.createElement("li", { key: i8 }, /* @__PURE__ */ import_react3.default.createElement("code", null, arg)))), /* @__PURE__ */ import_react3.default.createElement("ul", null, details.points.map((point2) => /* @__PURE__ */ import_react3.default.createElement("li", { key: point2 }, point2)), !packMode && audioWarning && /* @__PURE__ */ import_react3.default.createElement("li", { className: "mv-error" }, audioWarning)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: starting, onClick: () => void start() }, starting ? "\u6B63\u5728\u542F\u52A8\u2026" : "\u786E\u8BA4\u542F\u52A8"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: starting, onClick: () => setConfirming(false) }, "\u53D6\u6D88"))), consoleMode && consoles.consoles.length > 0 && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-console-list", "aria-label": "\u72EC\u7ACB\u64AD\u653E\u7A97\u53E3" }, consoles.consoles.map((item) => /* @__PURE__ */ import_react3.default.createElement("div", { key: item.consoleId, className: "mv-console-item" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: `mv-dot${item.exited ? " mv-dot-off" : ""}`, "aria-hidden": "true" }), /* @__PURE__ */ import_react3.default.createElement("b", null, item.exited ? item.endReason === "stopped" ? "\u5DF2\u7531\u4F60\u7ED3\u675F" : item.endReason === "dispose" ? "\u63D2\u4EF6\u5378\u8F7D\u65F6\u5DF2\u7ED3\u675F" : "\u7A97\u53E3\u5DF2\u5173\u95ED" : "\u72EC\u7ACB\u7A97\u53E3\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption", title: item.display }, item.pid ? `PID ${item.pid}` : "\u672A\u8DDF\u8E2A", " \xB7 ", new Date(item.startedAt).toLocaleTimeString()), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-spacer" }), !item.exited && item.tracked && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-danger mv-button-small", onClick: () => {
+  )), packMode && activePack?.terminal && /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, "\u6E32\u67D3\u7A0B\u5E8F ", /* @__PURE__ */ import_react3.default.createElement("code", null, activePack.terminal.program), activePack.terminal.script ? /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, " \xB7 \u811A\u672C ", /* @__PURE__ */ import_react3.default.createElement("code", null, activePack.terminal.script)) : null), status, consoleMode && !problem && !firstRun && consoleBlocked && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react3.default.createElement("p", null, "\u72EC\u7ACB\u7A97\u53E3\uFF1A", consoleBlocked)), needsWav && !preparing && !prepareFail && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, "\u97F3\u9891\u662F ", /* @__PURE__ */ import_react3.default.createElement("b", null, audioInfo.label), "\uFF1Atui_live.py\uFF08Windows MCI\uFF09\u53EA\u80FD\u76F4\u63A5\u64AD\u653E MP3 / PCM WAV\uFF0C\u70B9\u64AD\u653E\u65F6\u4F1A\u81EA\u52A8\u8F6C\u6362\u6210 WAV \u7F13\u5B58\uFF08\u6BCF\u4E2A\u6587\u4EF6\u53EA\u8F6C\u6362\u4E00\u6B21\uFF0C\u539F\u6587\u4EF6\u4E0D\u53D8\uFF09\u3002")), preparing && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, preparing)), audioOverride && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "ok" }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, "\u97F3\u9891\u5DF2", audioOverride.cached ? "\u4F7F\u7528\u7F13\u5B58\u7684" : "\u8F6C\u6362\u4E3A", " WAV", audioOverride.ffmpeg ? "\uFF08ffmpeg\uFF09" : "", "\uFF1A", /* @__PURE__ */ import_react3.default.createElement("code", null, audioOverride.path))), prepareFail && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, prepareFail.ffmpeg && !prepareFail.confirming && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-small", onClick: () => setPrepareFail({ ...prepareFail, confirming: true }) }, "\u7528 ffmpeg \u8F6C\u6362\u2026"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => {
+    setPrepareFail(null);
+    setForm({ noAudio: true });
+  } }, "\u4E0D\u64AD\u653E\u58F0\u97F3")) }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, "\u9762\u677F\u65E0\u6CD5\u89E3\u7801\u8FD9\u4E2A\u97F3\u9891\uFF08", prepareFail.label || prepareFail.message, "\uFF09\u3002", prepareFail.ffmpeg ? "\u627E\u5230\u4E86\u4F60\u672C\u673A\u7684 ffmpeg\uFF0C\u53EF\u4EE5\u7528\u5B83\u8F6C\u6362\u3002" : "\u5B89\u88C5 ffmpeg\uFF08\u653E\u8FDB PATH\uFF0C\u6216 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\uFF09\u540E\u53EF\u4EE5\u8F6C\u6362\uFF1B\u6216\u6362\u6210 MP3 / M4A / FLAC / WAV\u3002"), prepareFail.confirming && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u7528 ffmpeg \u8F6C\u6362" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, "\u7528\u4F60\u672C\u673A\u7684 ffmpeg \u8F6C\u6362\u8FD9\u4E2A\u6587\u4EF6\uFF1F"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "Host \u5C06\u8FD0\u884C\uFF08\u4E0D\u7ECF\u8FC7 shell\uFF0C\u6700\u591A 10 \u5206\u949F\uFF1B\u8F93\u51FA\u5199\u5165\u63D2\u4EF6\u7684 WAV \u7F13\u5B58\uFF09\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, displayCommand(prepareFail.ffmpeg, ffmpegArgs(prepareFail.path, "<\u63D2\u4EF6\u7F13\u5B58>\\<sha256>.wav"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(prepareFail.busy), onClick: () => void convertWithFfmpeg() }, prepareFail.busy || "\u786E\u8BA4\u8F6C\u6362"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(prepareFail.busy), onClick: () => setPrepareFail({ ...prepareFail, confirming: false }) }, "\u53D6\u6D88")))), problemText && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, problemText)), consoleNote && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, consoleNote))), confirming && consoleMode && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u5728\u72EC\u7ACB\u7A97\u53E3\u64AD\u653E" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, consoleDetails.title), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "Host \u5C06\u6267\u884C\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, consoleDetails.command), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u7A97\u53E3\u91CC\u8FD0\u884C\u7684\u64AD\u653E\u5668\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, consoleDetails.player), /* @__PURE__ */ import_react3.default.createElement("ul", null, consoleDetails.points.map((point2) => /* @__PURE__ */ import_react3.default.createElement("li", { key: point2 }, point2)), audioOverride && /* @__PURE__ */ import_react3.default.createElement("li", null, "\u97F3\u9891\u5DF2\u81EA\u52A8\u8F6C\u6362\u4E3A WAV \u7F13\u5B58\uFF08\u539F\u6587\u4EF6 ", audioOverride.source, " \u4E0D\u53D8\uFF09\u3002")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: starting, onClick: () => void openConsole() }, starting ? "\u6B63\u5728\u6253\u5F00\u2026" : "\u786E\u8BA4\u6253\u5F00\u7A97\u53E3"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: starting, onClick: () => setConfirming(false) }, "\u53D6\u6D88"))), confirming && !consoleMode && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u542F\u52A8 MV \u7EC8\u7AEF" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, details.title), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u547D\u4EE4\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, details.command), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u5DE5\u4F5C\u76EE\u5F55\uFF1A", /* @__PURE__ */ import_react3.default.createElement("code", null, details.cwd)), details.argv?.length > 0 && /* @__PURE__ */ import_react3.default.createElement("ol", { className: "mv-argv", "aria-label": "\u9010\u4E2A\u53C2\u6570" }, details.argv.map((arg, i8) => /* @__PURE__ */ import_react3.default.createElement("li", { key: i8 }, /* @__PURE__ */ import_react3.default.createElement("code", null, arg)))), /* @__PURE__ */ import_react3.default.createElement("ul", null, details.points.map((point2) => /* @__PURE__ */ import_react3.default.createElement("li", { key: point2 }, point2))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: starting, onClick: () => void start() }, starting ? "\u6B63\u5728\u542F\u52A8\u2026" : "\u786E\u8BA4\u542F\u52A8"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: starting, onClick: () => setConfirming(false) }, "\u53D6\u6D88"))), consoleMode && consoles.consoles.length > 0 && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-console-list", "aria-label": "\u72EC\u7ACB\u64AD\u653E\u7A97\u53E3" }, consoles.consoles.map((item) => /* @__PURE__ */ import_react3.default.createElement("div", { key: item.consoleId, className: "mv-console-item" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: `mv-dot${item.exited ? " mv-dot-off" : ""}`, "aria-hidden": "true" }), /* @__PURE__ */ import_react3.default.createElement("b", null, item.exited ? item.endReason === "stopped" ? "\u5DF2\u7531\u4F60\u7ED3\u675F" : item.endReason === "dispose" ? "\u63D2\u4EF6\u5378\u8F7D\u65F6\u5DF2\u7ED3\u675F" : "\u7A97\u53E3\u5DF2\u5173\u95ED" : "\u72EC\u7ACB\u7A97\u53E3\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption", title: item.display }, item.pid ? `PID ${item.pid}` : "\u672A\u8DDF\u8E2A", " \xB7 ", new Date(item.startedAt).toLocaleTimeString()), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-spacer" }), !item.exited && item.tracked && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-danger mv-button-small", onClick: () => {
     void stopConsole(api, item.consoleId).catch((error) => setProblemText(errorText(error, "\u65E0\u6CD5\u7ED3\u675F\u72EC\u7ACB\u7A97\u53E3\u3002"))).then(refreshConsoles);
   } }, "\u7ED3\u675F")))), !consoleMode && session && /* @__PURE__ */ import_react3.default.createElement(
     TerminalScreen,
@@ -19829,7 +20501,7 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
       onFont: setFontSize,
       onStop: () => void api.terminalStop({ sessionId: session.sessionId })
     }
-  ), !consoleMode && !session && !confirming && !firstRun && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-placeholder" }, /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("b", null, "\u9762\u677F\u7EC8\u7AEF"), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, canPlay ? "\u70B9\u4E0A\u65B9\u7684 \u25B6 \u5728\u9762\u677F\u7EC8\u7AEF\u64AD\u653E\uFF0C\u786E\u8BA4\u547D\u4EE4\u540E\u753B\u9762\u4F1A\u51FA\u73B0\u5728\u8FD9\u91CC\u3002" : "\u8BBE\u7F6E\u597D\u64AD\u653E\u5668\u540E\uFF0C\u70B9\u4E0A\u65B9\u7684 \u25B6 \u64AD\u653E\u3002"))), /* @__PURE__ */ import_react3.default.createElement("details", { className: "mv-details", open: advanced, onToggle: (event) => setAdvanced(event.currentTarget.open) }, /* @__PURE__ */ import_react3.default.createElement("summary", null, "\u8BBE\u7F6E / \u9AD8\u7EA7 ", /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u8DEF\u5F84\u3001\u97F3\u9891\u3001\u8D77\u59CB\u4F4D\u7F6E", rust ? "\u3001\u5B57\u5E55\u504F\u79FB" : packMode ? "\u3001\u504F\u79FB" : "\u3001\u5EF6\u8FDF\u8865\u507F", "\u3001\u5B57\u53F7")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-details-body" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-form" }, packMode && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u8D77\u59CB\u79D2\u6570 ", "{start}"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.packStart, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ packStart: event.target.value }) })), /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u504F\u79FB\uFF08\u79D2\uFF09", "{offset}"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.packOffset, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ packOffset: event.target.value }) }))), !rust && !packMode && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u64AD\u653E\u5668\u76EE\u5F55\uFF08\u542B _tools\\tui_live.py\uFF09"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-field-row" }, /* @__PURE__ */ import_react3.default.createElement(
+  ), !consoleMode && !session && !confirming && !firstRun && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-placeholder" }, /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("b", null, "\u9762\u677F\u7EC8\u7AEF"), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, canPlay ? "\u70B9\u4E0A\u65B9\u7684 \u25B6 \u5728\u9762\u677F\u7EC8\u7AEF\u64AD\u653E\uFF0C\u786E\u8BA4\u547D\u4EE4\u540E\u753B\u9762\u4F1A\u51FA\u73B0\u5728\u8FD9\u91CC\u3002" : "\u8BBE\u7F6E\u597D\u64AD\u653E\u5668\u540E\uFF0C\u70B9\u4E0A\u65B9\u7684 \u25B6 \u64AD\u653E\u3002"))), /* @__PURE__ */ import_react3.default.createElement("details", { className: "mv-details", open: advanced, onToggle: (event) => setAdvanced(event.currentTarget.open) }, /* @__PURE__ */ import_react3.default.createElement("summary", null, "\u8BBE\u7F6E / \u9AD8\u7EA7 ", /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u8DEF\u5F84\u3001\u97F3\u9891\u3001\u8D77\u59CB\u4F4D\u7F6E", packMode ? "\u3001\u504F\u79FB" : "\u3001\u5EF6\u8FDF\u8865\u507F", "\u3001\u5B57\u53F7")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-details-body" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-form" }, packMode && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u8D77\u59CB\u79D2\u6570 ", "{start}"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.packStart, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ packStart: event.target.value }) })), /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u504F\u79FB\uFF08\u79D2\uFF09", "{offset}"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.packOffset, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ packOffset: event.target.value }) }))), !packMode && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u64AD\u653E\u5668\u76EE\u5F55\uFF08\u542B _tools\\tui_live.py\uFF09"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-field-row" }, /* @__PURE__ */ import_react3.default.createElement(
     "input",
     {
       value: form.packageDir,
@@ -19840,11 +20512,377 @@ var MvTerminal = import_react3.default.forwardRef(function MvTerminal2({ api, in
         if (!form.pythonPath && form.packageDir) setForm({ pythonPath: suggestedPython(form.packageDir) });
       }
     }
-  ), pick2 && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => void chooseDir("packageDir") }, "\u6D4F\u89C8\u2026"))), /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "Python \u89E3\u91CA\u5668"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-field-row" }, /* @__PURE__ */ import_react3.default.createElement("input", { value: form.pythonPath, spellCheck: false, placeholder: suggestedPython(form.packageDir) || "F:\\everyAI\\dsh-mv-cli\\world_execute_me\\python\\python.exe", onChange: (event) => setForm({ pythonPath: event.target.value }) }), form.packageDir && form.pythonPath !== suggestedPython(form.packageDir) && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => setForm({ pythonPath: suggestedPython(form.packageDir) }) }, "\u81EA\u52A8\u586B\u5199")))), rust && !packMode && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "world-execute-me-rust.exe\uFF08\u81EA\u884C\u4ECE\u5176 GitHub Release \u4E0B\u8F7D\uFF09"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.exePath, spellCheck: false, placeholder: "D:\\tools\\world-execute-me-rust\\world-execute-me-rust.exe", onChange: (event) => setForm({ exePath: event.target.value }) })), !packMode && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react3.default.createElement("span", null, rust ? "\u97F3\u9891\u6587\u4EF6\uFF08\u53EF\u9009\uFF0C\u4EC5 MP3\uFF1B\u7559\u7A7A\u64AD\u653E\u5176\u5185\u5D4C\u97F3\u4E50\uFF09" : "\u97F3\u9891\u6587\u4EF6\uFF08\u53EF\u9009\uFF1B\u7559\u7A7A\u7528\u64AD\u653E\u5668\u81EA\u5E26\u7684 input\\song.mp3\uFF09"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.audioFile, spellCheck: false, disabled: !rust && form.noAudio, placeholder: rust ? "D:\\music\\world.execute(me).mp3" : audioPath || "D:\\music\\world.execute(me).mp3", onChange: (event) => setForm({ audioFile: event.target.value }) }), audioInfo && !audioWarning && /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-field-help" }, "\u683C\u5F0F\uFF1A", audioInfo.label, "\uFF08\u53EF\u4EE5\u64AD\u653E\uFF09")), !packMode && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u8D77\u59CB\u79D2\u6570"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.start, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ start: event.target.value }) })), !rust && !packMode && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u97F3\u9891\u5EF6\u8FDF\u8865\u507F\uFF08\u79D2\uFF09"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.audioLatency, placeholder: "\u9ED8\u8BA4", inputMode: "decimal", onChange: (event) => setForm({ audioLatency: event.target.value }) })), rust && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u5B57\u5E55\u504F\u79FB\uFF08\u79D2\uFF09"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.offset, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ offset: event.target.value }) })), /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u9762\u677F\u7EC8\u7AEF\u5B57\u53F7"), /* @__PURE__ */ import_react3.default.createElement("input", { type: "number", min: 8, max: 24, value: fontSize, onChange: (event) => setFontSize(Number(event.target.value)) })), !rust && !packMode && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react3.default.createElement("input", { type: "checkbox", checked: form.noAudio, onChange: (event) => setForm({ noAudio: event.target.checked }) }), " \u4E0D\u64AD\u653E\u58F0\u97F3\uFF08--no-audio\uFF09"), rust && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react3.default.createElement("input", { type: "checkbox", checked: form.autoplay, onChange: (event) => setForm({ autoplay: event.target.checked }) }), " \u7ACB\u5373\u64AD\u653E\uFF08--autoplay\uFF09")), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, "\u5C06\u8FD0\u884C\uFF1A", /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-wrap" }, problem ? "\u2014" : checked?.display ?? commandPreview(form, ctx))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: Boolean(problem) || checking, onClick: () => void check() }, checking ? "\u68C0\u67E5\u4E2D\u2026" : "\u91CD\u65B0\u68C0\u67E5"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u4FEE\u6539\u540E\u4F1A\u81EA\u52A8\u68C0\u67E5\uFF1B\u9762\u677F\u53EA\u80FD\u542F\u52A8\u8FD9\u51E0\u79CD\u56FA\u5B9A\u7684\u64AD\u653E\u5668\uFF0C\u4E0D\u80FD\u4F20\u4EFB\u610F\u547D\u4EE4\u3002")))));
+  ), pick2 && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => void chooseDir("packageDir") }, "\u6D4F\u89C8\u2026"))), /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "Python \u89E3\u91CA\u5668"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-field-row" }, /* @__PURE__ */ import_react3.default.createElement("input", { value: form.pythonPath, spellCheck: false, placeholder: suggestedPython(form.packageDir) || "F:\\everyAI\\dsh-mv-cli\\world_execute_me\\python\\python.exe", onChange: (event) => setForm({ pythonPath: event.target.value }) }), form.packageDir && form.pythonPath !== suggestedPython(form.packageDir) && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => setForm({ pythonPath: suggestedPython(form.packageDir) }) }, "\u81EA\u52A8\u586B\u5199")))), !packMode && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08\u53EF\u9009\uFF1B\u7559\u7A7A\u7528\u64AD\u653E\u5668\u81EA\u5E26\u7684 input\\song.mp3\uFF1B\u4EFB\u4F55\u683C\u5F0F\uFF0C\u6309\u5185\u5BB9\u8BC6\u522B\uFF09"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.audioFile, spellCheck: false, disabled: form.noAudio, placeholder: audioPath || "D:\\music\\world.execute(me).m4a", onChange: (event) => setForm({ audioFile: event.target.value }) }), audioInfo && /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-field-help" }, "\u683C\u5F0F\uFF1A", audioInfo.label, audioInfo.mciPlayable ? "\uFF08\u53EF\u4EE5\u76F4\u63A5\u64AD\u653E\uFF09" : "\uFF08\u64AD\u653E\u524D\u81EA\u52A8\u8F6C\u6362\u4E3A WAV\uFF09")), !packMode && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u8D77\u59CB\u79D2\u6570"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.start, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ start: event.target.value }) })), !packMode && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u97F3\u9891\u5EF6\u8FDF\u8865\u507F\uFF08\u79D2\uFF09"), /* @__PURE__ */ import_react3.default.createElement("input", { value: form.audioLatency, placeholder: "\u9ED8\u8BA4", inputMode: "decimal", onChange: (event) => setForm({ audioLatency: event.target.value }) })), /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u9762\u677F\u7EC8\u7AEF\u5B57\u53F7"), /* @__PURE__ */ import_react3.default.createElement("input", { type: "number", min: 8, max: 24, value: fontSize, onChange: (event) => setFontSize(Number(event.target.value)) })), !packMode && /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react3.default.createElement("input", { type: "checkbox", checked: form.noAudio, onChange: (event) => setForm({ noAudio: event.target.checked }) }), " \u4E0D\u64AD\u653E\u58F0\u97F3\uFF08--no-audio\uFF09")), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, "\u5C06\u8FD0\u884C\uFF1A", /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-wrap" }, problem ? "\u2014" : checked?.display ?? commandPreview(form, ctx))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: Boolean(problem) || checking, onClick: () => void check() }, checking ? "\u68C0\u67E5\u4E2D\u2026" : "\u91CD\u65B0\u68C0\u67E5"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u4FEE\u6539\u540E\u4F1A\u81EA\u52A8\u68C0\u67E5\uFF1B\u9762\u677F\u53EA\u80FD\u542F\u52A8\u8FD9\u51E0\u79CD\u56FA\u5B9A\u7684\u64AD\u653E\u5668\uFF0C\u4E0D\u80FD\u4F20\u4EFB\u610F\u547D\u4EE4\u3002")))));
 });
 
 // .dsh-plugin/client/mv-library.jsx
+var import_react5 = __toESM(require("react"), 1);
+
+// .dsh-plugin/client/mv-ai.jsx
 var import_react4 = __toESM(require("react"), 1);
+
+// .dsh-plugin/shared/mv-ai-prompt.mjs
+var AI_PACK_LIMITS = Object.freeze({ maxTitle: 200, maxStyle: 4e3, maxLyrics: 2e5, maxDuration: 36e3 });
+var AI_AUDIO_EXTENSIONS = Object.freeze([".mp3", ".mp2", ".m4a", ".mp4", ".aac", ".webm", ".mka", ".ogg", ".flac", ".wav"]);
+var AI_UPLOAD_ROLES = Object.freeze(["audio", "spectrum"]);
+var AI_TOOL_NAMES = Object.freeze({ validate: "mv_pack_validate", preview: "mv_pack_preview_frame" });
+var AGENT_FILE = "AGENT.md";
+var SCENE_FILE = "scenes.js";
+var isObject2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var text3 = (value, max, subject, required = false) => {
+  if (value === void 0 || value === null || value === "") {
+    if (required) throw new TypeError(`${subject} \u5FC5\u586B`);
+    return "";
+  }
+  if (typeof value !== "string") throw new TypeError(`${subject} \u5FC5\u987B\u662F\u5B57\u7B26\u4E32`);
+  if (value.length > max) throw new TypeError(`${subject} \u8D85\u8FC7 ${max} \u4E2A\u5B57\u7B26`);
+  if (/[\0]/.test(value)) throw new TypeError(`${subject} \u542B\u6709 NUL`);
+  return value;
+};
+var looksTimed = (lyrics) => (String(lyrics).match(/^\s*\[\d{1,3}:\d{2}(?:[.:]\d{1,3})?\]/gm) ?? []).length >= 2;
+function parseAiPackCreate(value) {
+  if (!isObject2(value)) throw new TypeError("request must be an object");
+  const extra = Object.keys(value).filter((key) => !["title", "artist", "lyrics", "style", "parentDir", "audioExt", "duration"].includes(key));
+  if (extra.length) throw new TypeError(`request has unexpected fields: ${extra.join(", ")}`);
+  const title = text3(value.title, AI_PACK_LIMITS.maxTitle, "\u6B4C\u540D", true).trim();
+  if (!title) throw new TypeError("\u6B4C\u540D \u5FC5\u586B");
+  const artist = text3(value.artist, AI_PACK_LIMITS.maxTitle, "\u6B4C\u624B").trim();
+  const lyrics = text3(value.lyrics, AI_PACK_LIMITS.maxLyrics, "\u6B4C\u8BCD").replace(/\r\n?/g, "\n");
+  const style = text3(value.style, AI_PACK_LIMITS.maxStyle, "\u98CE\u683C\u8BF4\u660E").trim();
+  let parentDir = "";
+  if (value.parentDir !== void 0 && value.parentDir !== null && value.parentDir !== "") {
+    if (typeof value.parentDir !== "string" || !isAbsolutePackPath(value.parentDir.trim()) || /[\0\r\n"]/.test(value.parentDir) || value.parentDir.length > 1024) throw new TypeError("\u4FDD\u5B58\u4F4D\u7F6E\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84");
+    parentDir = value.parentDir.trim();
+  }
+  if (!AI_AUDIO_EXTENSIONS.includes(value.audioExt)) throw new TypeError(`audioExt must be one of ${AI_AUDIO_EXTENSIONS.join(" ")}`);
+  let duration;
+  if (value.duration !== void 0 && value.duration !== null) {
+    if (typeof value.duration !== "number" || !Number.isFinite(value.duration) || value.duration < 1 || value.duration > AI_PACK_LIMITS.maxDuration) throw new TypeError("duration is invalid");
+    duration = Math.round(value.duration * 1e3) / 1e3;
+  }
+  return { title, artist, lyrics, style, parentDir, audioExt: value.audioExt, ...duration ? { duration } : {} };
+}
+function agentPrompt({ packDir, title, artist, toolsAvailable = true }) {
+  return [
+    `\u8BF7\u5E2E\u6211\u7528 dsh-mv \u63D2\u4EF6\u5236\u4F5C\u300C${title}${artist ? ` \u2014 ${artist}` : ""}\u300D\u7684 MV \u5305\u3002`,
+    "",
+    `MV \u5305\u6587\u4EF6\u5939\uFF1A${packDir}`,
+    `\u5148\u5B8C\u6574\u9605\u8BFB\u8BE5\u6587\u4EF6\u5939\u91CC\u7684 ${AGENT_FILE}\uFF08\u4EFB\u52A1\u8BF4\u660E\u548C\u573A\u666F\u811A\u672C\u63A5\u53E3\uFF09\uFF0C\u518D\u8BFB README.md \u548C ${MV_PACK_SCHEMA_FILE}\uFF0C\u7136\u540E\u6309 ${AGENT_FILE} \u7684\u6B65\u9AA4\u5B8C\u6210\uFF1A\u6574\u7406/\u5BF9\u9F50\u6B4C\u8BCD\u4E3A LRC\u3001\u7F16\u5199 ${SCENE_FILE} \u573A\u666F\u811A\u672C\u3001\u5199\u51FA\u6700\u7EC8 mv.json\u3002`,
+    toolsAvailable ? `\u5B8C\u6210\u540E\u7528 ${AI_TOOL_NAMES.validate} \u68C0\u67E5\uFF08path \u586B\u4E0A\u9762\u7684\u6587\u4EF6\u5939\uFF09\uFF0C\u5E76\u7528 ${AI_TOOL_NAMES.preview} \u9884\u89C8\u51E0\u4E2A\u65F6\u95F4\u70B9\u7684\u753B\u9762\uFF0C\u6709\u95EE\u9898\u5C31\u4FEE\u6539\u76F4\u5230\u901A\u8FC7\u3002` : `\u5982\u679C\u6CA1\u6709 ${AI_TOOL_NAMES.validate} / ${AI_TOOL_NAMES.preview} \u5DE5\u5177\uFF0C\u8BF7\u81EA\u884C\u4ED4\u7EC6\u68C0\u67E5 JSON \u548C\u811A\u672C\u3002`,
+    "\u53EA\u4FEE\u6539\u8FD9\u4E2A\u6587\u4EF6\u5939\u91CC\u7684\u6587\u4EF6\uFF1B\u4E0D\u8981\u4FEE\u6539\u6216\u4E0A\u4F20\u97F3\u9891\uFF0C\u4E0D\u8981\u8FD0\u884C\u5916\u90E8\u7A0B\u5E8F\uFF0C\u4E0D\u8981\u8054\u7F51\u4E0B\u8F7D\u6B4C\u8BCD\u6216\u7D20\u6750\u3002"
+  ].join("\n");
+}
+
+// .dsh-plugin/client/mv-ai-state.mjs
+var SPECTRUM_FPS = 20;
+var FFT_SIZE = 2048;
+function fft(re3, im) {
+  const n = re3.length;
+  for (let i8 = 1, j3 = 0; i8 < n; i8++) {
+    let bit = n >> 1;
+    for (; j3 & bit; bit >>= 1) j3 ^= bit;
+    j3 ^= bit;
+    if (i8 < j3) {
+      [re3[i8], re3[j3]] = [re3[j3], re3[i8]];
+      [im[i8], im[j3]] = [im[j3], im[i8]];
+    }
+  }
+  for (let len = 2; len <= n; len <<= 1) {
+    const angle = -2 * Math.PI / len, wr3 = Math.cos(angle), wi3 = Math.sin(angle);
+    for (let i8 = 0; i8 < n; i8 += len) {
+      let cr4 = 1, ci3 = 0;
+      for (let k2 = 0; k2 < len / 2; k2++) {
+        const a = i8 + k2, b2 = a + len / 2;
+        const tr3 = re3[b2] * cr4 - im[b2] * ci3, ti3 = re3[b2] * ci3 + im[b2] * cr4;
+        re3[b2] = re3[a] - tr3;
+        im[b2] = im[a] - ti3;
+        re3[a] += tr3;
+        im[a] += ti3;
+        const next = cr4 * wr3 - ci3 * wi3;
+        ci3 = cr4 * wi3 + ci3 * wr3;
+        cr4 = next;
+      }
+    }
+  }
+}
+async function computeSpectrum(channels, sampleRate, { fps = SPECTRUM_FPS, onProgress = () => {
+}, yieldEvery = 400 } = {}) {
+  const left = channels[0], right = channels[1] ?? channels[0];
+  const total = left.length;
+  const hop = sampleRate / fps;
+  const count = Math.max(1, Math.ceil(total / hop));
+  const window2 = new Float32Array(FFT_SIZE);
+  for (let i8 = 0; i8 < FFT_SIZE; i8++) window2[i8] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i8 / (FFT_SIZE - 1));
+  const edges = bandEdges(FFT_SIZE / 2, sampleRate, BANDS);
+  const raw = new Array(count);
+  const re3 = new Float64Array(FFT_SIZE), im = new Float64Array(FFT_SIZE);
+  for (let f = 0; f < count; f++) {
+    const start = Math.round(f * hop) - FFT_SIZE / 2;
+    for (let i8 = 0; i8 < FFT_SIZE; i8++) {
+      const at3 = start + i8;
+      re3[i8] = at3 >= 0 && at3 < total ? (left[at3] + right[at3]) * 0.5 * window2[i8] : 0;
+      im[i8] = 0;
+    }
+    fft(re3, im);
+    const bands = new Float32Array(BANDS);
+    for (let b2 = 0; b2 < BANDS; b2++) {
+      let sum = 0, n = 0;
+      for (let i8 = edges[b2]; i8 < Math.max(edges[b2] + 1, edges[b2 + 1]); i8++) {
+        sum += Math.hypot(re3[i8], im[i8]);
+        n++;
+      }
+      bands[b2] = Math.log10(1 + (n ? sum / n : 0) * 10);
+    }
+    raw[f] = bands;
+    if (f % yieldEvery === yieldEvery - 1) {
+      onProgress(f / count);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+  }
+  const frames = raw.map(() => new Array(BANDS));
+  for (let b2 = 0; b2 < BANDS; b2++) {
+    const values = raw.map((frame) => frame[b2]).sort((x, y) => x - y);
+    const peak = Math.max(1e-6, values[Math.min(values.length - 1, Math.floor(values.length * 0.97))]);
+    for (let f = 0; f < count; f++) frames[f][b2] = Math.round(Math.min(1, raw[f][b2] / peak) ** 1.4 * 100) / 100;
+  }
+  onProgress(1);
+  return { fps, bands: BANDS, frames };
+}
+async function uploadPackFile(api, packDir, role, bytes, { onProgress = () => {
+} } = {}) {
+  const begun = unwrapRemote(await api.packUploadBegin({ packDir, role, bytes: bytes.length }), `\u65E0\u6CD5\u5199\u5165 ${role}\u3002`);
+  const chunk = Math.min(384 * 1024, begun.chunkBytes || 384 * 1024);
+  for (let offset = 0; offset < bytes.length; offset += chunk) {
+    const part = bytes.subarray(offset, Math.min(bytes.length, offset + chunk));
+    unwrapRemote(await api.packUploadWrite({ uploadId: begun.uploadId, offset, base64: bytesToBase64(part) }), `\u5199\u5165 ${role} \u5931\u8D25\u3002`);
+    onProgress(Math.min(1, (offset + part.length) / bytes.length));
+  }
+  return unwrapRemote(await api.packUploadFinish({ uploadId: begun.uploadId }), `\u65E0\u6CD5\u5B8C\u6210 ${role}\u3002`);
+}
+function inspectAiAudio(headBytes) {
+  const sniff = sniffAudio(headBytes);
+  const ext = audioExtensionOf(sniff);
+  if (sniff.format === "unknown") return { sniff, ext, problem: "\u65E0\u6CD5\u8BC6\u522B\u8FD9\u4E2A\u6587\u4EF6\u7684\u683C\u5F0F\uFF08\u6309\u5185\u5BB9\u5224\u65AD\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\uFF09\u3002\u8BF7\u9009\u62E9\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\u3002" };
+  if (!sniff.chromium || !AI_AUDIO_EXTENSIONS.includes(ext)) return { sniff, ext, problem: `${sniff.label} \u4E0D\u80FD\u5728\u9762\u677F\u91CC\u64AD\u653E\u3002\u8BF7\u5148\u8F6C\u6362\u6210 MP3 / M4A / FLAC / WAV / Opus \u7B49\u683C\u5F0F\uFF08\u4F8B\u5982\u7528 ffmpeg\uFF09\u3002` };
+  return { sniff, ext, problem: "" };
+}
+async function createAiPack(api, { file, title, artist = "", lyrics = "", style = "", parentDir = "" }, { onProgress = () => {
+}, decode = decodeToChannels, spectrum = computeSpectrum, toolsAvailable = true } = {}) {
+  onProgress({ stage: "read", ratio: 0 });
+  const source = new Uint8Array(await file.arrayBuffer());
+  const { sniff, ext, problem } = inspectAiAudio(source.subarray(0, 4096));
+  if (problem) throw new Error(problem);
+  onProgress({ stage: "decode", ratio: 0 });
+  const decoded = await decode(source.buffer.slice(0));
+  onProgress({ stage: "spectrum", ratio: 0 });
+  const spec = await spectrum(decoded.channels, decoded.sampleRate, { onProgress: (ratio) => onProgress({ stage: "spectrum", ratio }) });
+  const created = unwrapRemote(await api.aiPackCreate({
+    title: title.trim(),
+    artist: artist.trim(),
+    lyrics,
+    style: style.trim(),
+    audioExt: ext,
+    ...parentDir.trim() ? { parentDir: parentDir.trim() } : {},
+    ...Number.isFinite(decoded.duration) && decoded.duration >= 1 ? { duration: Math.round(decoded.duration * 1e3) / 1e3 } : {}
+  }), "\u65E0\u6CD5\u521B\u5EFA MV \u5305\u6587\u4EF6\u5939\u3002");
+  await uploadPackFile(api, created.packDir, "audio", source, { onProgress: (ratio) => onProgress({ stage: "copy", ratio }) });
+  await uploadPackFile(api, created.packDir, "spectrum", new TextEncoder().encode(JSON.stringify(spec)), { onProgress: (ratio) => onProgress({ stage: "spectrum-save", ratio }) });
+  onProgress({ stage: "done", ratio: 1 });
+  return { created, duration: decoded.duration, sniff, lyricsTimed: looksTimed(lyrics), prompt: agentPrompt({ packDir: created.packDir, title: title.trim(), artist: artist.trim(), toolsAvailable }) };
+}
+var SessionApiMissing = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "SessionApiMissing";
+  }
+};
+var callSafely = (fn3, fallback = void 0) => {
+  try {
+    return fn3();
+  } catch {
+    return fallback;
+  }
+};
+var zone = () => callSafely(() => Intl.DateTimeFormat().resolvedOptions().timeZone, void 0);
+var uuid = () => globalThis.crypto?.randomUUID?.() ?? `mv-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+function sessionSupport(harness) {
+  const remote = callSafely(() => harness?.get?.("remote"));
+  const sessionRemote = callSafely(() => remote?.session);
+  const sessions = callSafely(() => harness?.get?.("sessions"));
+  const workspaces = callSafely(() => harness?.get?.("workspaces"));
+  const ui3 = callSafely(() => harness?.get?.("uiWorkspace"));
+  const canCreate = typeof sessions?.create === "function" || typeof sessionRemote?.create === "function";
+  const canPrompt = typeof sessionRemote?.prompt === "function";
+  return { available: canCreate && canPrompt, canCreate, canPrompt, canOpen: typeof ui3?.openSession === "function", canWorkspace: typeof workspaces?.create === "function", sessionRemote, sessions, workspaces, ui: ui3 };
+}
+async function startAgentSession(harness, { packDir, title, prompt }) {
+  const support = sessionSupport(harness);
+  if (!support.available) throw new SessionApiMissing("\u5F53\u524D Harness \u6CA1\u6709\u63D0\u4F9B\u53EF\u7528\u7684\u4F1A\u8BDD\u63A5\u53E3\uFF08session.create / session.prompt\uFF09\u3002");
+  let workspaceId;
+  if (support.canWorkspace) {
+    try {
+      workspaceId = (await support.workspaces.create({ path: packDir }))?.workspaceId;
+    } catch {
+      const items = callSafely(() => support.workspaces.list.getSnapshot().items, []);
+      workspaceId = items?.find((item) => String(item.path).toLowerCase() === packDir.toLowerCase())?.workspaceId;
+    }
+  }
+  const target = workspaceId !== void 0 ? { workspaceId } : { cwd: packDir };
+  let sessionId;
+  if (typeof support.sessions?.create === "function") sessionId = await support.sessions.create(target);
+  else sessionId = unwrapRemote(await support.sessionRemote.create(target), "\u65E0\u6CD5\u521B\u5EFA\u4F1A\u8BDD\u3002")?.sessionId;
+  if (typeof sessionId !== "string" || !sessionId) throw new Error("\u521B\u5EFA\u4F1A\u8BDD\u6CA1\u6709\u8FD4\u56DE\u4F1A\u8BDD ID\u3002");
+  if (typeof support.sessionRemote?.rename === "function") {
+    try {
+      await support.sessionRemote.rename({ sessionId, title: `MV\uFF1A${title}`.slice(0, 120) });
+    } catch {
+    }
+  }
+  const timeZone = zone();
+  unwrapRemote(await support.sessionRemote.prompt({ requestId: uuid(), sessionId, mode: "queue", content: [{ type: "text", text: prompt }], ...timeZone ? { clientTimeZone: timeZone } : {} }), "\u65E0\u6CD5\u628A\u4EFB\u52A1\u53D1\u9001\u7ED9\u4F1A\u8BDD\u3002");
+  let opened = false;
+  if (support.canOpen) {
+    try {
+      support.ui.openSession(sessionId);
+      opened = true;
+    } catch {
+      opened = false;
+    }
+  }
+  return { sessionId, workspaceId: workspaceId ?? null, opened };
+}
+async function openBlankSession(harness, packDir) {
+  const support = sessionSupport(harness);
+  if (!support.canCreate) return false;
+  let target = { cwd: packDir };
+  if (support.canWorkspace) {
+    try {
+      const id = (await support.workspaces.create({ path: packDir }))?.workspaceId;
+      if (id !== void 0) target = { workspaceId: id };
+    } catch {
+    }
+  }
+  const sessionId = typeof support.sessions?.create === "function" ? await support.sessions.create(target) : unwrapRemote(await support.sessionRemote.create(target), "\u65E0\u6CD5\u521B\u5EFA\u4F1A\u8BDD\u3002")?.sessionId;
+  if (support.canOpen && sessionId) {
+    support.ui.openSession(sessionId);
+    return true;
+  }
+  return false;
+}
+
+// .dsh-plugin/client/mv-ai.jsx
+var STAGES = { read: "\u8BFB\u53D6\u97F3\u9891", decode: "\u5728\u672C\u673A\u89E3\u7801", spectrum: "\u8BA1\u7B97\u9891\u8C31", copy: "\u590D\u5236\u97F3\u9891\u5230 MV \u5305", "spectrum-save": "\u4FDD\u5B58 spectrum.json", done: "\u5B8C\u6210" };
+var baseName = (name) => String(name ?? "").replace(/\.[^.]+$/, "").replace(/[_]+/g, " ").trim();
+var AREA = { width: "100%", minHeight: 72, padding: "6px 8px", borderRadius: 8, border: "1px solid var(--mv-border)", background: "var(--mv-bg)", resize: "vertical", fontFamily: "inherit", fontSize: 12.5 };
+function AiPackDialog({ api, harness, info, onClose, onLoaded, onRecent }) {
+  const [file, setFile] = import_react4.default.useState(null);
+  const [audioLabel, setAudioLabel] = import_react4.default.useState("");
+  const [title, setTitle] = import_react4.default.useState("");
+  const [artist, setArtist] = import_react4.default.useState("");
+  const [lyrics, setLyrics] = import_react4.default.useState("");
+  const [style, setStyle] = import_react4.default.useState("");
+  const [parentDir, setParentDir] = import_react4.default.useState("");
+  const [progress, setProgress] = import_react4.default.useState(null);
+  const [error, setError] = import_react4.default.useState("");
+  const [result, setResult] = import_react4.default.useState(null);
+  const [prompt, setPrompt] = import_react4.default.useState("");
+  const [session, setSession] = import_react4.default.useState(null);
+  const [sending, setSending] = import_react4.default.useState(false);
+  const [copied, setCopied] = import_react4.default.useState(false);
+  const pick2 = directoryPicker();
+  const support = sessionSupport(harness);
+  const toolsOn = info?.agentTools?.registered !== false;
+  const chooseAudio = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = AUDIO_ACCEPT;
+    input.onchange = async () => {
+      const chosen = input.files?.[0];
+      if (!chosen) return;
+      setError("");
+      const head = new Uint8Array(await chosen.slice(0, 4096).arrayBuffer());
+      const checked = inspectAiAudio(head);
+      setAudioLabel(checked.sniff.label);
+      if (checked.problem) {
+        setError(checked.problem);
+        setFile(null);
+        return;
+      }
+      setFile(chosen);
+      if (!title.trim()) setTitle(baseName(chosen.name));
+    };
+    input.click();
+  };
+  const chooseLyrics = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".lrc,.txt,.srt,.vtt";
+    input.onchange = async () => {
+      const chosen = input.files?.[0];
+      if (chosen) setLyrics(await chosen.text());
+    };
+    input.click();
+  };
+  const chooseDir = async () => {
+    try {
+      const dir = await pick2?.();
+      if (dir) setParentDir(dir);
+    } catch (failure) {
+      setError(errorText(failure, "\u65E0\u6CD5\u6253\u5F00\u6587\u4EF6\u5939\u9009\u62E9\u5668\u3002"));
+    }
+  };
+  const create = async () => {
+    setError("");
+    setProgress({ stage: "read", ratio: 0 });
+    try {
+      const made = await createAiPack(api, { file, title, artist, lyrics, style, parentDir }, { toolsAvailable: toolsOn, onProgress: (value) => setProgress(value) });
+      setResult(made);
+      setPrompt(made.prompt);
+      try {
+        const loaded = await loadPackFromHost(api, made.created.manifestPath);
+        onRecent(rememberPack(loaded));
+        onLoaded(loaded);
+      } catch {
+      }
+    } catch (failure) {
+      setError(errorText(failure, "\u65E0\u6CD5\u521B\u5EFA MV \u5305\u3002"));
+    } finally {
+      setProgress(null);
+    }
+  };
+  const send = async () => {
+    setSending(true);
+    setError("");
+    try {
+      setSession(await startAgentSession(harness, { packDir: result.created.packDir, title: title.trim(), prompt }));
+    } catch (failure) {
+      setError(errorText(failure, "\u65E0\u6CD5\u542F\u52A8\u4F1A\u8BDD\u3002"));
+    } finally {
+      setSending(false);
+    }
+  };
+  const copy = async () => {
+    try {
+      await globalThis.navigator?.clipboard?.writeText(prompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2e3);
+    } catch {
+      setError("\u65E0\u6CD5\u5199\u5165\u526A\u8D34\u677F\uFF0C\u8BF7\u624B\u52A8\u9009\u4E2D\u4E0A\u9762\u7684\u6587\u5B57\u590D\u5236\u3002");
+    }
+  };
+  const openNew = async () => {
+    try {
+      if (!await openBlankSession(harness, result.created.packDir)) setError("\u5F53\u524D Harness \u65E0\u6CD5\u4ECE\u63D2\u4EF6\u6253\u5F00\u65B0\u4F1A\u8BDD\uFF1A\u8BF7\u5728\u4FA7\u8FB9\u680F\u624B\u52A8\u65B0\u5EFA\u4E00\u4E2A\u4F1A\u8BDD\uFF0C\u518D\u7C98\u8D34\u63D0\u793A\u8BCD\u3002");
+    } catch (failure) {
+      setError(errorText(failure, "\u65E0\u6CD5\u6253\u5F00\u65B0\u4F1A\u8BDD\u3002"));
+    }
+  };
+  const busy = Boolean(progress);
+  const timed = looksTimed(lyrics);
+  return /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-dialog mv-ai", role: "dialog", "aria-label": "\u7528 AI \u5236\u4F5C\u65B0 MV" }, /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-row", style: { justifyContent: "space-between" } }, /* @__PURE__ */ import_react4.default.createElement("h2", null, "\u7528 AI \u5236\u4F5C\u65B0 MV"), /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u5173\u95ED", onClick: onClose }, /* @__PURE__ */ import_react4.default.createElement(Icon.close, null))), !result && /* @__PURE__ */ import_react4.default.createElement(import_react4.default.Fragment, null, /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-caption" }, "\u9009\u4E00\u9996\u4F60\u81EA\u5DF1\u7684\u6B4C\uFF0C\u63D2\u4EF6\u5728\u672C\u673A\u5EFA\u597D MV \u5305\u6587\u4EF6\u5939\uFF08\u590D\u5236\u97F3\u9891\u3001\u7B97\u597D\u9891\u8C31\uFF09\uFF0C\u518D\u8BA9 Harness \u7684 Agent \u5199\u6B4C\u8BCD\u65F6\u95F4\u8F74\u3001mv.json \u548C ASCII \u573A\u666F\u811A\u672C\u3002\u97F3\u9891\u4E0D\u4F1A\u4E0A\u4F20\uFF0C\u539F\u6587\u4EF6\u4E0D\u4F1A\u88AB\u4FEE\u6539\u3002"), /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react4.default.createElement("span", null, "\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08\u5FC5\u9009\uFF1BMP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV\u3001Opus/Ogg\u3001FLAC\u3001WAV\u2026\uFF09"), /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-field-row" }, /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: busy, onClick: chooseAudio }, file ? "\u66F4\u6362\u2026" : "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-caption", style: { alignSelf: "center" } }, file ? `${file.name} \xB7 ${audioLabel} \xB7 ${(file.size / 1048576).toFixed(1)} MB` : audioLabel ? `\u4E0D\u652F\u6301\uFF1A${audioLabel}` : "\u672A\u9009\u62E9"))), /* @__PURE__ */ import_react4.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react4.default.createElement("span", null, "\u6B4C\u540D\uFF08\u5FC5\u586B\uFF09"), /* @__PURE__ */ import_react4.default.createElement("input", { value: title, disabled: busy, onChange: (event) => setTitle(event.target.value), placeholder: "\u6B4C\u540D" })), /* @__PURE__ */ import_react4.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react4.default.createElement("span", null, "\u6B4C\u624B"), /* @__PURE__ */ import_react4.default.createElement("input", { value: artist, disabled: busy, onChange: (event) => setArtist(event.target.value), placeholder: "\u53EF\u9009" })), /* @__PURE__ */ import_react4.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react4.default.createElement("span", null, "\u6B4C\u8BCD\uFF08\u53EF\u9009\uFF1BLRC \u5E26\u65F6\u95F4\u8F74\u6700\u597D\uFF0C\u7EAF\u6587\u672C\u4E5F\u884C\uFF0CAI \u4F1A\u4F30\u8BA1\u65F6\u95F4\uFF09", lyrics.trim() ? ` \xB7 ${timed ? "\u5DF2\u8BC6\u522B\u4E3A LRC" : "\u7EAF\u6587\u672C"}` : ""), /* @__PURE__ */ import_react4.default.createElement("textarea", { style: AREA, value: lyrics, disabled: busy, spellCheck: false, onChange: (event) => setLyrics(event.target.value), placeholder: "[00:12.30]\u7B2C\u4E00\u53E5\n[00:17.80]\u7B2C\u4E8C\u53E5\n\u2026\u6216\u76F4\u63A5\u7C98\u8D34\u6B4C\u8BCD\u6587\u672C" }), /* @__PURE__ */ import_react4.default.createElement("span", null, /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-link", disabled: busy, onClick: chooseLyrics }, "\u4ECE\u6587\u4EF6\u8BFB\u53D6\u2026"))), /* @__PURE__ */ import_react4.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react4.default.createElement("span", null, "\u98CE\u683C\u8BF4\u660E\uFF08\u53EF\u9009\uFF0C\u544A\u8BC9 AI \u4F60\u60F3\u8981\u7684\u753B\u9762\uFF09"), /* @__PURE__ */ import_react4.default.createElement("textarea", { style: { ...AREA, minHeight: 52 }, value: style, disabled: busy, onChange: (event) => setStyle(event.target.value), placeholder: "\u4F8B\u5982\uFF1A\u8D5B\u535A\u670B\u514B\u96E8\u591C\u3001\u526F\u6B4C\u65F6\u6EE1\u5C4F\u4EE3\u7801\u96E8\u3001\u7ED3\u5C3E\u6162\u6162\u7184\u706D" })), /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react4.default.createElement("span", null, "\u4FDD\u5B58\u4F4D\u7F6E"), /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-field-row" }, /* @__PURE__ */ import_react4.default.createElement("input", { value: parentDir, disabled: busy, spellCheck: false, onChange: (event) => setParentDir(event.target.value), placeholder: info?.aiPacksDir ? `\u9ED8\u8BA4\uFF1A${info.aiPacksDir}` : "\u9ED8\u8BA4\uFF1A%LOCALAPPDATA%\\dsh-mv\\packs" }), pick2 && /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: busy, onClick: () => void chooseDir() }, "\u6D4F\u89C8\u2026")), /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-field-help" }, "\u4F1A\u5728\u8FD9\u91CC\u65B0\u5EFA\u4E00\u4E2A\u4EE5\u6B4C\u540D\u547D\u540D\u7684\u5B50\u6587\u4EF6\u5939\uFF0C\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\u3002"))), progress && /* @__PURE__ */ import_react4.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react4.default.createElement("p", null, STAGES[progress.stage] ?? progress.stage, "\u2026 ", Math.round((progress.ratio ?? 0) * 100), "%")), /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button", disabled: !file || !title.trim() || busy, onClick: () => void create() }, busy ? "\u6B63\u5728\u521B\u5EFA\u2026" : "\u521B\u5EFA MV \u5305"), /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: busy, onClick: onClose }, "\u53D6\u6D88"))), result && /* @__PURE__ */ import_react4.default.createElement(import_react4.default.Fragment, null, /* @__PURE__ */ import_react4.default.createElement(Alert, { kind: "ok" }, /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-wrap" }, "\u5DF2\u521B\u5EFA MV \u5305\uFF1A", /* @__PURE__ */ import_react4.default.createElement("code", null, result.created.packDir), "\uFF08", Math.round(result.duration), " \u79D2\uFF0C\u9891\u8C31\u5DF2\u7B97\u597D\uFF09\u3002\u5B83\u5DF2\u51FA\u73B0\u5728\u66F2\u5E93\u91CC\uFF0C\u73B0\u5728\u5C31\u80FD\u7528\u901A\u7528\u753B\u9762\u64AD\u653E\uFF1BAI \u5199\u597D\u573A\u666F\u811A\u672C\u540E\uFF0C\u5728\u66F2\u5E93\u91CC\u518D\u70B9\u4E00\u6B21\u8FD9\u5F20\u5361\u7247\u5373\u53EF\u91CD\u65B0\u8F7D\u5165\u3002")), !session && /* @__PURE__ */ import_react4.default.createElement(import_react4.default.Fragment, null, /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-caption" }, support.available ? "\u4E0B\u9762\u7684\u4EFB\u52A1\u4F1A\u53D1\u9001\u5230\u4E00\u4E2A\u65B0\u7684 Agent \u4F1A\u8BDD\uFF08\u5DE5\u4F5C\u533A\u5C31\u662F\u8FD9\u4E2A\u6587\u4EF6\u5939\uFF09\u3002\u53D1\u9001\u524D\u53EF\u4EE5\u4FEE\u6539\uFF1A" : "\u5F53\u524D Harness \u6CA1\u6709\u7ED9\u63D2\u4EF6\u5F00\u653E\u4F1A\u8BDD\u63A5\u53E3\uFF1A\u8BF7\u590D\u5236\u4E0B\u9762\u7684\u63D0\u793A\u8BCD\uFF0C\u5728\u65B0\u4F1A\u8BDD\u91CC\u7C98\u8D34\u53D1\u9001\u3002"), /* @__PURE__ */ import_react4.default.createElement("textarea", { style: { ...AREA, minHeight: 150, fontFamily: '"Cascadia Mono", Consolas, monospace', fontSize: 12 }, value: prompt, spellCheck: false, onChange: (event) => setPrompt(event.target.value), "aria-label": "\u53D1\u7ED9 Agent \u7684\u63D0\u793A\u8BCD" }), /* @__PURE__ */ import_react4.default.createElement("ul", { className: "mv-caption", style: { margin: "6px 0", paddingLeft: 18 } }, /* @__PURE__ */ import_react4.default.createElement("li", null, "Agent \u53EA\u4F1A\u88AB\u8981\u6C42\u4FEE\u6539\u8FD9\u4E2A\u6587\u4EF6\u5939\u91CC\u7684\u6587\u4EF6\uFF1B\u5B83\u5199\u6587\u4EF6\u65F6 Harness \u53EF\u80FD\u4F1A\u8BF7\u4F60\u6279\u51C6\u6743\u9650\u3002\u4F1A\u8BDD\u4F1A\u6D88\u8017\u4F60\u7684\u6A21\u578B\u989D\u5EA6\u3002"), /* @__PURE__ */ import_react4.default.createElement("li", null, toolsOn ? "Agent \u53EF\u4EE5\u7528 mv_pack_validate / mv_pack_preview_frame \u68C0\u67E5\u548C\u9884\u89C8\uFF08\u53EA\u8BFB\uFF0C\u5728\u6C99\u7BB1\u91CC\u8FD0\u884C\u573A\u666F\u811A\u672C\uFF09\u3002" : "Agent \u5DE5\u5177\u672A\u6CE8\u518C\uFF08Host \u6CA1\u6709 tools \u670D\u52A1\u6216\u5DF2\u5728\u8BBE\u7F6E\u91CC\u5173\u95ED\uFF09\uFF0CAgent \u4F1A\u6309 AGENT.md \u81EA\u67E5\u3002"), /* @__PURE__ */ import_react4.default.createElement("li", null, "\u573A\u666F\u811A\u672C\u5728\u9762\u677F\u91CC\u8FD0\u884C\u4E8E\u6CA1\u6709\u7F51\u7EDC\u548C DOM \u7684 Web Worker \u4E2D\uFF0C\u8D85\u65F6\u6216\u51FA\u9519\u4F1A\u81EA\u52A8\u6362\u56DE\u901A\u7528\u753B\u9762\uFF1B\u63D2\u4EF6\u4E0D\u4F1A\u8FD0\u884C\u4EFB\u4F55\u5916\u90E8\u7A0B\u5E8F\u3002")), /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-row" }, support.available && /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button", disabled: sending || !prompt.trim(), onClick: () => void send() }, sending ? "\u6B63\u5728\u542F\u52A8\u4F1A\u8BDD\u2026" : "\u5728\u65B0\u4F1A\u8BDD\u4E2D\u4EA4\u7ED9 AI"), /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: support.available ? "mv-button mv-button-secondary" : "mv-button", onClick: () => void copy() }, copied ? "\u5DF2\u590D\u5236" : "\u590D\u5236\u63D0\u793A\u8BCD"), !support.available && support.canCreate && /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => void openNew() }, "\u6253\u5F00\u65B0\u4F1A\u8BDD"), /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: onClose }, "\u5B8C\u6210"))), session && /* @__PURE__ */ import_react4.default.createElement(import_react4.default.Fragment, null, /* @__PURE__ */ import_react4.default.createElement(Alert, { kind: "ok" }, /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-wrap" }, "\u5DF2\u5728\u65B0\u4F1A\u8BDD\u4E2D\u5F00\u59CB\u5236\u4F5C", session.opened ? "\uFF08\u5DF2\u5207\u6362\u5230\u8BE5\u4F1A\u8BDD\uFF09" : "", "\u3002\u4F1A\u8BDD ID ", /* @__PURE__ */ import_react4.default.createElement("code", null, session.sessionId), "\u3002AI \u5B8C\u6210\u540E\u56DE\u5230\u8FD9\u91CC\uFF0C\u5728\u66F2\u5E93\u91CC\u70B9\u300C", title.trim(), "\u300D\u91CD\u65B0\u8F7D\u5165\u5E76\u64AD\u653E\u3002")), /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: onClose }, "\u5B8C\u6210")))), error && /* @__PURE__ */ import_react4.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error)));
+}
+
+// .dsh-plugin/client/mv-library.jsx
 function downloadZip() {
   const blob = new Blob([templateZip()], { type: "application/zip" });
   const url = URL.createObjectURL(blob);
@@ -19862,12 +20900,13 @@ var initials = (title) => {
   const words = clean.split(" ");
   return /[\u3400-\u9fff]/.test(clean[0]) ? clean[0] : (words[0][0] + (words[1]?.[0] ?? "")).toUpperCase();
 };
-function Library({ api, active, recent, onSelect, onLoaded, onRecent }) {
-  const [importing, setImporting] = import_react4.default.useState(false);
-  const [path, setPath] = import_react4.default.useState("");
-  const [busy, setBusy] = import_react4.default.useState("");
-  const [note, setNote] = import_react4.default.useState("");
-  const [error, setError] = import_react4.default.useState("");
+function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false }) {
+  const [importing, setImporting] = import_react5.default.useState(false);
+  const [aiOpen, setAiOpen] = import_react5.default.useState(initialAi);
+  const [path, setPath] = import_react5.default.useState("");
+  const [busy, setBusy] = import_react5.default.useState("");
+  const [note, setNote] = import_react5.default.useState("");
+  const [error, setError] = import_react5.default.useState("");
   const pick2 = directoryPicker();
   const importPath = async (value) => {
     setBusy("import");
@@ -19919,9 +20958,9 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent }) {
     }
   };
   const warnings = active.warnings ?? [];
-  return /* @__PURE__ */ import_react4.default.createElement("section", { "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93"), /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-library" }, /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-card", "aria-pressed": active.id === BUILTIN_ID, onClick: () => onSelect(BUILTIN_ID), title: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" }, /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-card-art" }, ">_"), /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-card-title" }, "world.execute(me);"), /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-card-sub" }, "Mili \xB7 \u5185\u7F6E\u9884\u8BBE")), recent.map((item) => {
+  return /* @__PURE__ */ import_react5.default.createElement("section", { "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93"), /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-library" }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-card", "aria-pressed": active.id === BUILTIN_ID, onClick: () => onSelect(BUILTIN_ID), title: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-card-art" }, ">_"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-card-title" }, "world.execute(me);"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-card-sub" }, "Mili \xB7 \u5185\u7F6E\u9884\u8BBE")), recent.map((item) => {
     const id = `pack:${item.manifestPath}`;
-    return /* @__PURE__ */ import_react4.default.createElement(
+    return /* @__PURE__ */ import_react5.default.createElement(
       "div",
       {
         key: item.manifestPath,
@@ -19938,7 +20977,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent }) {
           }
         }
       },
-      /* @__PURE__ */ import_react4.default.createElement(
+      /* @__PURE__ */ import_react5.default.createElement(
         "button",
         {
           type: "button",
@@ -19951,16 +20990,32 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent }) {
             if (active.id === id) onSelect(BUILTIN_ID);
           }
         },
-        /* @__PURE__ */ import_react4.default.createElement(Icon.close, null)
+        /* @__PURE__ */ import_react5.default.createElement(Icon.close, null)
       ),
-      /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-card-art" }, initials(item.title)),
-      /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-card-title" }, item.title || item.manifestPath),
-      /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-card-sub" }, item.artist ? `${item.artist} \xB7 MV \u5305` : "MV \u5305")
+      /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-card-art" }, initials(item.title)),
+      /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-card-title" }, item.title || item.manifestPath),
+      /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-card-sub" }, item.artist ? `${item.artist} \xB7 MV \u5305` : "MV \u5305")
     );
-  }), /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-card mv-card-ghost", "aria-expanded": importing, onClick: () => {
+  }), /* @__PURE__ */ import_react5.default.createElement(
+    "button",
+    {
+      type: "button",
+      className: "mv-card mv-card-ghost mv-card-ai",
+      "aria-expanded": aiOpen,
+      onClick: () => {
+        setAiOpen((value) => !value);
+        setImporting(false);
+        setError("");
+      },
+      title: "\u9009\u4E00\u9996\u4F60\u7684\u6B4C\uFF0C\u8BA9 Harness \u7684 Agent \u5199\u6B4C\u8BCD\u65F6\u95F4\u8F74\u3001mv.json \u548C ASCII \u573A\u666F\u811A\u672C"
+    },
+    /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react5.default.createElement(Icon.spark, null)),
+    /* @__PURE__ */ import_react5.default.createElement("span", null, "\u7528 AI \u5236\u4F5C\u65B0 MV")
+  ), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-card mv-card-ghost", "aria-expanded": importing, onClick: () => {
     setImporting((value) => !value);
+    setAiOpen(false);
     setError("");
-  } }, /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react4.default.createElement(Icon.plus, null)), /* @__PURE__ */ import_react4.default.createElement("span", null, "\u5BFC\u5165 MV \u5305")), /* @__PURE__ */ import_react4.default.createElement(
+  } }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react5.default.createElement(Icon.plus, null)), /* @__PURE__ */ import_react5.default.createElement("span", null, "\u5BFC\u5165 MV \u5305")), /* @__PURE__ */ import_react5.default.createElement(
     "button",
     {
       type: "button",
@@ -19969,9 +21024,9 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent }) {
       onClick: () => void writeTemplate(),
       title: pick2 ? "\u9009\u62E9\u4E00\u4E2A\u6587\u4EF6\u5939\uFF0C\u5728\u5176\u4E2D\u65B0\u5EFA dsh-mv-pack-template\uFF08\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\uFF09" : `\u4E0B\u8F7D ${TEMPLATE_ZIP_NAME}`
     },
-    /* @__PURE__ */ import_react4.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react4.default.createElement(Icon.folder, null)),
-    /* @__PURE__ */ import_react4.default.createElement("span", null, busy === "template" ? "\u6B63\u5728\u5199\u5165\u2026" : "\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09")
-  )), recent.length === 0 && !importing && /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-caption" }, "\u60F3\u653E\u522B\u7684\u6B4C\uFF1F\u505A\u4E00\u4E2A ", /* @__PURE__ */ import_react4.default.createElement("b", null, "MV \u5305"), "\uFF1A\u70B9\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u5F97\u5230\u5E26\u8BF4\u660E\u7684 mv.json\uFF0C\u653E\u5165\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u540E\u300C\u5BFC\u5165\u300D\u3002"), importing && /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-dialog", role: "dialog", "aria-label": "\u5BFC\u5165 MV \u5305" }, /* @__PURE__ */ import_react4.default.createElement("h2", null, "\u5BFC\u5165 MV \u5305"), /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-caption" }, "\u9009\u62E9\u542B mv.json \u7684\u6587\u4EF6\u5939\uFF0C\u6216\u7C98\u8D34 mv.json / \u6587\u4EF6\u5939\u7684\u7EDD\u5BF9\u8DEF\u5F84\u3002\u53EA\u8BFB\u53D6\u6E05\u5355\uFF0C\u4E0D\u8FD0\u884C\u4EFB\u4F55\u7A0B\u5E8F\u3002"), /* @__PURE__ */ import_react4.default.createElement("div", { className: "mv-field-row" }, /* @__PURE__ */ import_react4.default.createElement(
+    /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react5.default.createElement(Icon.folder, null)),
+    /* @__PURE__ */ import_react5.default.createElement("span", null, busy === "template" ? "\u6B63\u5728\u5199\u5165\u2026" : "\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09")
+  )), recent.length === 0 && !importing && !aiOpen && /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-caption" }, "\u60F3\u653E\u522B\u7684\u6B4C\uFF1F\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u5F97\u5230\u5E26\u8BF4\u660E\u7684 mv.json\uFF0C\u653E\u5165\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u540E\u300C\u5BFC\u5165\u300D\u3002"), aiOpen && /* @__PURE__ */ import_react5.default.createElement(AiPackDialog, { api, harness, info, onClose: () => setAiOpen(false), onLoaded, onRecent }), importing && /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-dialog", role: "dialog", "aria-label": "\u5BFC\u5165 MV \u5305" }, /* @__PURE__ */ import_react5.default.createElement("h2", null, "\u5BFC\u5165 MV \u5305"), /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-caption" }, "\u9009\u62E9\u542B mv.json \u7684\u6587\u4EF6\u5939\uFF0C\u6216\u7C98\u8D34 mv.json / \u6587\u4EF6\u5939\u7684\u7EDD\u5BF9\u8DEF\u5F84\u3002\u53EA\u8BFB\u53D6\u6E05\u5355\uFF0C\u4E0D\u8FD0\u884C\u4EFB\u4F55\u7A0B\u5E8F\u3002"), /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-field-row" }, /* @__PURE__ */ import_react5.default.createElement(
     "input",
     {
       value: path,
@@ -19984,11 +21039,11 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent }) {
         if (event.key === "Enter" && path.trim()) void importPath(path);
       }
     }
-  ), pick2 && /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void chooseFolder() }, "\u9009\u62E9\u6587\u4EF6\u5939\u2026"), /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button", disabled: !path.trim() || Boolean(busy), onClick: () => void importPath(path) }, busy === "import" ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5BFC\u5165"), /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => setImporting(false) }, "\u53D6\u6D88")), pick2 && /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-caption" }, "\u6CA1\u6709\u73B0\u6210\u7684\u5305\uFF1F", /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-link", onClick: downloadZip }, "\u4E0B\u8F7D\u6A21\u677F zip"))), warnings.length > 0 && /* @__PURE__ */ import_react4.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-wrap" }, warnings.join("\n"))), error && /* @__PURE__ */ import_react4.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error)), note && /* @__PURE__ */ import_react4.default.createElement(Alert, { kind: "ok", actions: /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setNote("") }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react4.default.createElement("p", { className: "mv-wrap" }, note)));
+  ), pick2 && /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void chooseFolder() }, "\u9009\u62E9\u6587\u4EF6\u5939\u2026"), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-button", disabled: !path.trim() || Boolean(busy), onClick: () => void importPath(path) }, busy === "import" ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5BFC\u5165"), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => setImporting(false) }, "\u53D6\u6D88")), pick2 && /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-caption" }, "\u6CA1\u6709\u73B0\u6210\u7684\u5305\uFF1F", /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-link", onClick: downloadZip }, "\u4E0B\u8F7D\u6A21\u677F zip"))), warnings.length > 0 && /* @__PURE__ */ import_react5.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-wrap" }, warnings.join("\n"))), error && /* @__PURE__ */ import_react5.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error)), note && /* @__PURE__ */ import_react5.default.createElement(Alert, { kind: "ok", actions: /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setNote("") }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-wrap" }, note)));
 }
 
 // .dsh-plugin/client/mv.css
-var mv_default = '/* MV \u653E\u6620\u5BA4 \u2014 opaque surface that follows Harness light/dark (body[data-ds-dark-theme]). */\n.mv-root {\n  --mv-fb-bg: #ffffff; --mv-fb-text: #14151a; --mv-fb-muted: #4b4e59; --mv-fb-faint: #6b6e79; --mv-fb-border: rgba(20, 21, 26, .12);\n  --mv-fb-danger: #d92d20; --mv-fb-ok: #15803d;\n  --mv-accent: #e8890c; --mv-accent-strong: #c96f00; --mv-accent-ink: #1b1204;\n  --mv-bg: var(--dsw-alias-bg-base, var(--mv-fb-bg));\n  --mv-text: var(--dsw-alias-label-primary, var(--mv-fb-text));\n  --mv-muted: var(--dsw-alias-label-secondary, var(--mv-fb-muted));\n  --mv-faint: var(--dsw-alias-label-tertiary, var(--mv-fb-faint));\n  --mv-border: var(--dsw-alias-border-l2, var(--mv-fb-border));\n  --mv-danger: var(--dsw-alias-state-error-primary, var(--mv-fb-danger));\n  --mv-ok: var(--dsw-alias-state-success-primary, var(--mv-fb-ok));\n  --mv-surface: color-mix(in srgb, var(--mv-text) 4%, var(--mv-bg));\n  --mv-surface-2: color-mix(in srgb, var(--mv-text) 8%, var(--mv-bg));\n  --mv-hover: color-mix(in srgb, var(--mv-text) 10%, var(--mv-bg));\n  --mv-accent-soft: color-mix(in srgb, var(--mv-accent) 16%, var(--mv-bg));\n  --mv-danger-soft: color-mix(in srgb, var(--mv-danger) 10%, var(--mv-bg));\n  --mv-warn-soft: color-mix(in srgb, #f59e0b 16%, var(--mv-bg));\n  --mv-radius: 12px;\n  color-scheme: light;\n  position: relative; isolation: isolate;\n  min-height: 100%; box-sizing: border-box; padding: 18px 22px 28px;\n  background: var(--mv-bg); color: var(--mv-text);\n  font-size: 13px; line-height: 20px;\n  font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif;\n}\n@media (prefers-color-scheme: dark) {\n  .mv-root { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; color-scheme: dark; }\n}\nbody[data-ds-dark-theme] .mv-root, .mv-root.mv-dark { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; --mv-accent: #ffaf5f; --mv-accent-strong: #ffc285; color-scheme: dark; }\n.mv-root *, .mv-root *::before, .mv-root *::after { box-sizing: border-box; }\n.mv-root :where(button, input, select, textarea) { font: inherit; color: inherit; }\n.mv-root code { font-family: "Cascadia Mono", Consolas, Menlo, monospace; font-size: 12px; }\n.mv-root :focus-visible { outline: 2px solid var(--mv-accent); outline-offset: 2px; }\n\n/* ---- header ---- */\n.mv-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }\n.mv-title { margin: 0; font-size: 20px; line-height: 28px; font-weight: 650; letter-spacing: .2px; }\n.mv-title small { font-size: 12px; font-weight: 400; color: var(--mv-faint); margin-left: 8px; }\n.mv-spacer { flex: 1; }\n.mv-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px; line-height: 20px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-pill-warn { background: var(--mv-warn-soft); color: var(--mv-text); border: 1px solid color-mix(in srgb, #f59e0b 45%, transparent); }\n.mv-pill-ok { color: var(--mv-ok); }\n.mv-icon-button { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--mv-border); background: var(--mv-bg); cursor: pointer; padding: 0; color: var(--mv-muted); }\n.mv-icon-button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-icon-button[aria-pressed="true"] { background: var(--mv-accent-soft); color: var(--mv-text); border-color: var(--mv-accent); }\n\n/* ---- popover ---- */\n.mv-pop-anchor { position: relative; display: inline-flex; }\n.mv-popover { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: min(440px, 86vw); padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-bg); border: 1px solid var(--mv-border); box-shadow: 0 12px 32px rgba(0, 0, 0, .22); font-size: 12.5px; line-height: 19px; }\n.mv-popover h3 { margin: 0 0 6px; font-size: 13px; }\n.mv-popover p { margin: 6px 0; color: var(--mv-muted); }\n.mv-popover ul { margin: 4px 0 8px; padding-left: 18px; color: var(--mv-muted); }\n.mv-keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 6px 0; }\n.mv-keys kbd { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--mv-border); background: var(--mv-surface); white-space: nowrap; justify-self: start; }\n\n/* ---- library ---- */\n.mv-section-label { font-size: 12px; font-weight: 600; color: var(--mv-faint); margin: 0 0 8px; letter-spacing: .3px; }\n.mv-library { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; margin: 0 -2px 6px; scrollbar-width: thin; }\n.mv-card { flex: 0 0 196px; min-height: 84px; text-align: left; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; position: relative; }\n.mv-card:hover { background: var(--mv-hover); }\n.mv-card[aria-pressed="true"] { border-color: var(--mv-accent); box-shadow: inset 0 0 0 1px var(--mv-accent); background: var(--mv-accent-soft); }\n.mv-card-art { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-size: 13px; font-weight: 700; background: #111; color: #ffaf5f; margin-bottom: 4px; }\n.mv-card-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-sub { font-size: 12px; color: var(--mv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-ghost { background: transparent; border-style: dashed; color: var(--mv-muted); align-items: center; justify-content: center; text-align: center; flex-basis: 132px; }\n.mv-card-ghost .mv-card-art { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-card-remove { position: absolute; right: 6px; top: 6px; width: 22px; height: 22px; border-radius: 999px; border: 0; background: transparent; color: var(--mv-faint); cursor: pointer; display: none; }\n.mv-card:hover .mv-card-remove, .mv-card:focus-within .mv-card-remove { display: grid; place-items: center; }\n.mv-card-remove:hover { background: var(--mv-surface-2); color: var(--mv-text); }\n\n/* ---- now playing hero ---- */\n.mv-hero { display: grid; grid-template-columns: 1fr auto; gap: 12px 16px; align-items: center; padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin-bottom: 14px; }\n.mv-hero-title { font-size: 18px; line-height: 26px; font-weight: 650; margin: 0; }\n.mv-hero-sub { color: var(--mv-muted); margin: 2px 0 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }\n.mv-hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }\n.mv-segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--mv-surface-2); gap: 2px; }\n.mv-segmented button { border: 0; background: transparent; padding: 5px 12px; border-radius: 8px; cursor: pointer; color: var(--mv-muted); white-space: nowrap; }\n.mv-segmented button:hover:not(:disabled) { color: var(--mv-text); }\n.mv-segmented button[aria-checked="true"] { background: var(--mv-bg); color: var(--mv-text); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }\n.mv-segmented button:disabled { opacity: .45; cursor: not-allowed; }\n.mv-segmented-small button { padding: 3px 10px; font-size: 12px; }\n.mv-play-big { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 20px 0 16px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); font-weight: 650; font-size: 14px; cursor: pointer; box-shadow: 0 2px 8px color-mix(in srgb, var(--mv-accent) 40%, transparent); }\n.mv-play-big:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-play-big:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }\n.mv-play-big svg { width: 18px; height: 18px; }\n.mv-hero-hint { grid-column: 1 / -1; margin: 0; font-size: 12px; color: var(--mv-muted); }\n\n/* ---- generic pieces ---- */\n.mv-caption { color: var(--mv-muted); font-size: 12px; margin: 4px 0; }\n.mv-faint { color: var(--mv-faint); }\n.mv-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 18px; padding: 1px 8px; border-radius: 999px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-button { display: inline-flex; align-items: center; gap: 6px; height: 30px; border: 1px solid transparent; background: var(--mv-accent); color: var(--mv-accent-ink); border-radius: 8px; padding: 0 12px; cursor: pointer; font-weight: 600; white-space: nowrap; }\n.mv-button:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-button:disabled { opacity: .5; cursor: not-allowed; }\n.mv-button-secondary { background: var(--mv-bg); color: var(--mv-text); border-color: var(--mv-border); font-weight: 500; }\n.mv-button-secondary:hover:not(:disabled) { background: var(--mv-hover); }\n.mv-button-danger { background: var(--mv-bg); color: var(--mv-danger); border-color: color-mix(in srgb, var(--mv-danger) 45%, transparent); font-weight: 500; }\n.mv-button-danger:hover:not(:disabled) { background: var(--mv-danger-soft); }\n.mv-button-small { height: 26px; padding: 0 10px; font-size: 12px; }\n.mv-link { border: 0; background: none; color: var(--mv-accent-strong); cursor: pointer; padding: 0 2px; text-decoration: underline; text-underline-offset: 2px; }\n.mv-link:disabled { opacity: .5; cursor: default; }\n.mv-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }\n.mv-card-box { padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin: 0 0 12px; }\n.mv-card-box h2 { margin: 0 0 8px; font-size: 14px; line-height: 20px; }\n\n/* Inline status / problems */\n.mv-alert { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--mv-border); background: var(--mv-bg); }\n.mv-alert-icon { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; font-size: 12px; font-weight: 700; margin-top: 1px; }\n.mv-alert-body { flex: 1; min-width: 0; }\n.mv-alert-body p { margin: 0; }\n.mv-alert-body .mv-row { margin-top: 6px; }\n.mv-alert-error { border-color: color-mix(in srgb, var(--mv-danger) 40%, transparent); background: var(--mv-danger-soft); }\n.mv-alert-error .mv-alert-icon { background: var(--mv-danger); color: #fff; }\n.mv-alert-warn { border-color: color-mix(in srgb, #f59e0b 50%, transparent); background: var(--mv-warn-soft); }\n.mv-alert-warn .mv-alert-icon { background: #f59e0b; color: #1b1204; }\n.mv-alert-ok .mv-alert-icon { background: var(--mv-ok); color: #fff; }\n.mv-alert-info .mv-alert-icon { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-error { color: var(--mv-danger); white-space: pre-wrap; margin: 6px 0; }\n.mv-wrap { word-break: break-all; }\n\n/* Media source rows (canvas) */\n.mv-sources { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin: 0 0 12px; }\n.mv-source { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); min-width: 0; }\n.mv-source-icon { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--mv-surface-2); font-size: 14px; }\n.mv-source-main { flex: 1; min-width: 0; }\n.mv-source-label { font-size: 11.5px; color: var(--mv-faint); line-height: 16px; }\n.mv-source-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-source-empty .mv-source-value { color: var(--mv-muted); }\n\n/* Onboarding */\n.mv-onboard { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 16px; border-radius: var(--mv-radius); border: 1px solid color-mix(in srgb, var(--mv-accent) 45%, transparent); background: var(--mv-accent-soft); margin: 0 0 12px; }\n.mv-onboard h2 { margin: 0 0 4px; font-size: 15px; }\n.mv-onboard ol { margin: 6px 0 10px; padding-left: 18px; color: var(--mv-muted); }\n.mv-onboard-badge { width: 40px; height: 40px; border-radius: 10px; background: #111; color: #ffaf5f; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; }\n\n/* Stage + player bar */\n.mv-stage-wrap { background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; outline: none; padding: 6px; position: relative; }\n.mv-stage-wrap:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); }\n.mv-stage { height: min(62vh, 720px); min-height: 340px; resize: vertical; overflow: hidden; display: flex; align-items: center; justify-content: center; }\n.mv-stage canvas { display: block; }\n.mv-fullscreen { border-radius: 0; padding: 0; width: 100vw; height: 100vh; }\n.mv-fullscreen .mv-stage { height: 100vh; resize: none; }\n.mv-playerbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); margin-bottom: 12px; }\n.mv-round { width: 38px; height: 38px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); display: grid; place-items: center; cursor: pointer; flex: 0 0 auto; }\n.mv-round:hover { background: var(--mv-accent-strong); }\n.mv-round svg { width: 18px; height: 18px; }\n.mv-seek-wrap { flex: 1 1 260px; display: flex; align-items: center; gap: 10px; min-width: 200px; }\n.mv-seek { flex: 1; accent-color: var(--mv-accent); }\n.mv-time { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--mv-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }\n.mv-volume { display: inline-flex; align-items: center; gap: 6px; }\n.mv-volume input { width: 84px; accent-color: var(--mv-accent); }\n.mv-stepper { display: inline-flex; align-items: center; border: 1px solid var(--mv-border); border-radius: 8px; overflow: hidden; background: var(--mv-bg); height: 28px; }\n.mv-stepper button { border: 0; background: transparent; width: 26px; height: 100%; cursor: pointer; color: var(--mv-muted); }\n.mv-stepper button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-stepper span { padding: 0 8px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; border-left: 1px solid var(--mv-border); border-right: 1px solid var(--mv-border); line-height: 26px; }\n\n/* Collapsible settings */\n.mv-details { border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); margin: 0 0 12px; }\n.mv-details > summary { cursor: pointer; padding: 10px 14px; list-style: none; display: flex; align-items: center; gap: 8px; font-weight: 600; user-select: none; }\n.mv-details > summary::-webkit-details-marker { display: none; }\n.mv-details > summary::before { content: "\u25B8"; color: var(--mv-faint); transition: transform .15s; display: inline-block; }\n.mv-details[open] > summary::before { transform: rotate(90deg); }\n.mv-details > summary .mv-caption { font-weight: 400; margin: 0; }\n.mv-details-body { padding: 4px 14px 14px; }\n.mv-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px 14px; margin: 6px 0; }\n.mv-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; min-width: 0; }\n.mv-field > span:first-child { color: var(--mv-muted); }\n.mv-field input, .mv-field select { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); min-width: 0; width: 100%; }\n.mv-field input:disabled { opacity: .55; }\n.mv-field-help { font-size: 11.5px; color: var(--mv-faint); }\n.mv-field-row { display: flex; gap: 6px; }\n.mv-field-row input { flex: 1; }\n.mv-wide { grid-column: 1 / -1; }\n.mv-check { display: inline-flex; gap: 8px; align-items: center; font-size: 12.5px; align-self: end; height: 30px; }\n.mv-check input { accent-color: var(--mv-accent); width: 15px; height: 15px; }\n\n/* Confirmation */\n.mv-confirm { margin: 0 0 12px; padding: 14px 16px; border: 1px solid var(--mv-accent); border-radius: var(--mv-radius); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-confirm > strong { display: block; font-size: 14px; margin-bottom: 6px; }\n.mv-confirm ul { margin: 8px 0; padding-left: 20px; color: var(--mv-muted); }\n.mv-confirm code { word-break: break-all; }\n.mv-cmd { display: block; margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: var(--mv-surface-2); white-space: pre-wrap; word-break: break-all; }\n.mv-argv { margin: 4px 0 6px; padding-left: 24px; font-size: 12px; }\n\n/* Terminal */\n.mv-term-pane { margin: 0 0 12px; }\n.mv-term-screen { height: min(66vh, 740px); min-height: 300px; resize: vertical; overflow: hidden; padding: 6px; background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; }\n.mv-term-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); }\n.mv-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mv-ok); display: inline-block; }\n.mv-dot-off { background: var(--mv-faint); }\n.mv-console-list { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }\n.mv-console-item { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); font-size: 12.5px; }\n.mv-placeholder { display: grid; place-items: center; text-align: center; min-height: 140px; border-radius: var(--mv-radius); border: 1px dashed var(--mv-border); color: var(--mv-muted); background: var(--mv-surface); padding: 24px; margin: 0 0 12px; }\n.mv-placeholder b { color: var(--mv-text); font-size: 14px; }\n\n/* Import dialog */\n.mv-dialog { margin: 0 0 12px; padding: 14px 16px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-dialog h2 { margin: 0 0 6px; font-size: 14px; }\n.mv-hidden { display: none !important; }\n';
+var mv_default = '/* MV \u653E\u6620\u5BA4 \u2014 opaque surface that follows Harness light/dark (body[data-ds-dark-theme]). */\n.mv-root {\n  --mv-fb-bg: #ffffff; --mv-fb-text: #14151a; --mv-fb-muted: #4b4e59; --mv-fb-faint: #6b6e79; --mv-fb-border: rgba(20, 21, 26, .12);\n  --mv-fb-danger: #d92d20; --mv-fb-ok: #15803d;\n  --mv-accent: #e8890c; --mv-accent-strong: #c96f00; --mv-accent-ink: #1b1204;\n  --mv-bg: var(--dsw-alias-bg-base, var(--mv-fb-bg));\n  --mv-text: var(--dsw-alias-label-primary, var(--mv-fb-text));\n  --mv-muted: var(--dsw-alias-label-secondary, var(--mv-fb-muted));\n  --mv-faint: var(--dsw-alias-label-tertiary, var(--mv-fb-faint));\n  --mv-border: var(--dsw-alias-border-l2, var(--mv-fb-border));\n  --mv-danger: var(--dsw-alias-state-error-primary, var(--mv-fb-danger));\n  --mv-ok: var(--dsw-alias-state-success-primary, var(--mv-fb-ok));\n  --mv-surface: color-mix(in srgb, var(--mv-text) 4%, var(--mv-bg));\n  --mv-surface-2: color-mix(in srgb, var(--mv-text) 8%, var(--mv-bg));\n  --mv-hover: color-mix(in srgb, var(--mv-text) 10%, var(--mv-bg));\n  --mv-accent-soft: color-mix(in srgb, var(--mv-accent) 16%, var(--mv-bg));\n  --mv-danger-soft: color-mix(in srgb, var(--mv-danger) 10%, var(--mv-bg));\n  --mv-warn-soft: color-mix(in srgb, #f59e0b 16%, var(--mv-bg));\n  --mv-radius: 12px;\n  color-scheme: light;\n  position: relative; isolation: isolate;\n  min-height: 100%; box-sizing: border-box; padding: 18px 22px 28px;\n  background: var(--mv-bg); color: var(--mv-text);\n  font-size: 13px; line-height: 20px;\n  font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif;\n}\n@media (prefers-color-scheme: dark) {\n  .mv-root { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; color-scheme: dark; }\n}\nbody[data-ds-dark-theme] .mv-root, .mv-root.mv-dark { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; --mv-accent: #ffaf5f; --mv-accent-strong: #ffc285; color-scheme: dark; }\n.mv-root *, .mv-root *::before, .mv-root *::after { box-sizing: border-box; }\n.mv-root :where(button, input, select, textarea) { font: inherit; color: inherit; }\n.mv-root code { font-family: "Cascadia Mono", Consolas, Menlo, monospace; font-size: 12px; }\n.mv-root :focus-visible { outline: 2px solid var(--mv-accent); outline-offset: 2px; }\n\n/* ---- header ---- */\n.mv-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }\n.mv-title { margin: 0; font-size: 20px; line-height: 28px; font-weight: 650; letter-spacing: .2px; }\n.mv-title small { font-size: 12px; font-weight: 400; color: var(--mv-faint); margin-left: 8px; }\n.mv-spacer { flex: 1; }\n.mv-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px; line-height: 20px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-pill-warn { background: var(--mv-warn-soft); color: var(--mv-text); border: 1px solid color-mix(in srgb, #f59e0b 45%, transparent); }\n.mv-pill-ok { color: var(--mv-ok); }\n.mv-icon-button { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--mv-border); background: var(--mv-bg); cursor: pointer; padding: 0; color: var(--mv-muted); }\n.mv-icon-button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-icon-button[aria-pressed="true"] { background: var(--mv-accent-soft); color: var(--mv-text); border-color: var(--mv-accent); }\n\n/* ---- popover ---- */\n.mv-pop-anchor { position: relative; display: inline-flex; }\n.mv-popover { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: min(440px, 86vw); padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-bg); border: 1px solid var(--mv-border); box-shadow: 0 12px 32px rgba(0, 0, 0, .22); font-size: 12.5px; line-height: 19px; }\n.mv-popover h3 { margin: 0 0 6px; font-size: 13px; }\n.mv-popover p { margin: 6px 0; color: var(--mv-muted); }\n.mv-popover ul { margin: 4px 0 8px; padding-left: 18px; color: var(--mv-muted); }\n.mv-keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 6px 0; }\n.mv-keys kbd { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--mv-border); background: var(--mv-surface); white-space: nowrap; justify-self: start; }\n\n/* ---- library ---- */\n.mv-section-label { font-size: 12px; font-weight: 600; color: var(--mv-faint); margin: 0 0 8px; letter-spacing: .3px; }\n.mv-library { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; margin: 0 -2px 6px; scrollbar-width: thin; }\n.mv-card { flex: 0 0 196px; min-height: 84px; text-align: left; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; position: relative; }\n.mv-card:hover { background: var(--mv-hover); }\n.mv-card[aria-pressed="true"] { border-color: var(--mv-accent); box-shadow: inset 0 0 0 1px var(--mv-accent); background: var(--mv-accent-soft); }\n.mv-card-art { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-size: 13px; font-weight: 700; background: #111; color: #ffaf5f; margin-bottom: 4px; }\n.mv-card-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-sub { font-size: 12px; color: var(--mv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-ghost { background: transparent; border-style: dashed; color: var(--mv-muted); align-items: center; justify-content: center; text-align: center; flex-basis: 132px; }\n.mv-card-ghost .mv-card-art { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-card-remove { position: absolute; right: 6px; top: 6px; width: 22px; height: 22px; border-radius: 999px; border: 0; background: transparent; color: var(--mv-faint); cursor: pointer; display: none; }\n.mv-card:hover .mv-card-remove, .mv-card:focus-within .mv-card-remove { display: grid; place-items: center; }\n.mv-card-remove:hover { background: var(--mv-surface-2); color: var(--mv-text); }\n\n/* ---- now playing hero ---- */\n.mv-hero { display: grid; grid-template-columns: 1fr auto; gap: 12px 16px; align-items: center; padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin-bottom: 14px; }\n.mv-hero-title { font-size: 18px; line-height: 26px; font-weight: 650; margin: 0; }\n.mv-hero-sub { color: var(--mv-muted); margin: 2px 0 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }\n.mv-hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }\n.mv-segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--mv-surface-2); gap: 2px; }\n.mv-segmented button { border: 0; background: transparent; padding: 5px 12px; border-radius: 8px; cursor: pointer; color: var(--mv-muted); white-space: nowrap; }\n.mv-segmented button:hover:not(:disabled) { color: var(--mv-text); }\n.mv-segmented button[aria-checked="true"] { background: var(--mv-bg); color: var(--mv-text); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }\n.mv-segmented button:disabled { opacity: .45; cursor: not-allowed; }\n.mv-segmented-small button { padding: 3px 10px; font-size: 12px; }\n.mv-play-big { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 20px 0 16px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); font-weight: 650; font-size: 14px; cursor: pointer; box-shadow: 0 2px 8px color-mix(in srgb, var(--mv-accent) 40%, transparent); }\n.mv-play-big:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-play-big:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }\n.mv-play-big svg { width: 18px; height: 18px; }\n.mv-hero-hint { grid-column: 1 / -1; margin: 0; font-size: 12px; color: var(--mv-muted); }\n\n/* ---- generic pieces ---- */\n.mv-caption { color: var(--mv-muted); font-size: 12px; margin: 4px 0; }\n.mv-faint { color: var(--mv-faint); }\n.mv-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 18px; padding: 1px 8px; border-radius: 999px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-button { display: inline-flex; align-items: center; gap: 6px; height: 30px; border: 1px solid transparent; background: var(--mv-accent); color: var(--mv-accent-ink); border-radius: 8px; padding: 0 12px; cursor: pointer; font-weight: 600; white-space: nowrap; }\n.mv-button:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-button:disabled { opacity: .5; cursor: not-allowed; }\n.mv-button-secondary { background: var(--mv-bg); color: var(--mv-text); border-color: var(--mv-border); font-weight: 500; }\n.mv-button-secondary:hover:not(:disabled) { background: var(--mv-hover); }\n.mv-button-danger { background: var(--mv-bg); color: var(--mv-danger); border-color: color-mix(in srgb, var(--mv-danger) 45%, transparent); font-weight: 500; }\n.mv-button-danger:hover:not(:disabled) { background: var(--mv-danger-soft); }\n.mv-button-small { height: 26px; padding: 0 10px; font-size: 12px; }\n.mv-link { border: 0; background: none; color: var(--mv-accent-strong); cursor: pointer; padding: 0 2px; text-decoration: underline; text-underline-offset: 2px; }\n.mv-link:disabled { opacity: .5; cursor: default; }\n.mv-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }\n.mv-card-box { padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin: 0 0 12px; }\n.mv-card-box h2 { margin: 0 0 8px; font-size: 14px; line-height: 20px; }\n\n/* Inline status / problems */\n.mv-alert { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--mv-border); background: var(--mv-bg); }\n.mv-alert-icon { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; font-size: 12px; font-weight: 700; margin-top: 1px; }\n.mv-alert-body { flex: 1; min-width: 0; }\n.mv-alert-body p { margin: 0; }\n.mv-alert-body .mv-row { margin-top: 6px; }\n.mv-alert-error { border-color: color-mix(in srgb, var(--mv-danger) 40%, transparent); background: var(--mv-danger-soft); }\n.mv-alert-error .mv-alert-icon { background: var(--mv-danger); color: #fff; }\n.mv-alert-warn { border-color: color-mix(in srgb, #f59e0b 50%, transparent); background: var(--mv-warn-soft); }\n.mv-alert-warn .mv-alert-icon { background: #f59e0b; color: #1b1204; }\n.mv-alert-ok .mv-alert-icon { background: var(--mv-ok); color: #fff; }\n.mv-alert-info .mv-alert-icon { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-error { color: var(--mv-danger); white-space: pre-wrap; margin: 6px 0; }\n.mv-wrap { word-break: break-all; }\n\n/* Media source rows (canvas) */\n.mv-sources { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin: 0 0 12px; }\n.mv-source { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); min-width: 0; }\n.mv-source-icon { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--mv-surface-2); font-size: 14px; }\n.mv-source-main { flex: 1; min-width: 0; }\n.mv-source-label { font-size: 11.5px; color: var(--mv-faint); line-height: 16px; }\n.mv-source-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-source-empty .mv-source-value { color: var(--mv-muted); }\n\n/* Onboarding */\n.mv-onboard { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 16px; border-radius: var(--mv-radius); border: 1px solid color-mix(in srgb, var(--mv-accent) 45%, transparent); background: var(--mv-accent-soft); margin: 0 0 12px; }\n.mv-onboard h2 { margin: 0 0 4px; font-size: 15px; }\n.mv-onboard ol { margin: 6px 0 10px; padding-left: 18px; color: var(--mv-muted); }\n.mv-onboard-badge { width: 40px; height: 40px; border-radius: 10px; background: #111; color: #ffaf5f; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; }\n\n/* Stage + player bar */\n.mv-stage-wrap { background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; outline: none; padding: 6px; position: relative; }\n.mv-stage-wrap:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); }\n.mv-stage { height: min(62vh, 720px); min-height: 340px; resize: vertical; overflow: hidden; display: flex; align-items: center; justify-content: center; }\n.mv-stage canvas { display: block; }\n.mv-fullscreen { border-radius: 0; padding: 0; width: 100vw; height: 100vh; }\n.mv-fullscreen .mv-stage { height: 100vh; resize: none; }\n.mv-playerbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); margin-bottom: 12px; }\n.mv-round { width: 38px; height: 38px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); display: grid; place-items: center; cursor: pointer; flex: 0 0 auto; }\n.mv-round:hover { background: var(--mv-accent-strong); }\n.mv-round svg { width: 18px; height: 18px; }\n.mv-seek-wrap { flex: 1 1 260px; display: flex; align-items: center; gap: 10px; min-width: 200px; }\n.mv-seek { flex: 1; accent-color: var(--mv-accent); }\n.mv-time { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--mv-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }\n.mv-volume { display: inline-flex; align-items: center; gap: 6px; }\n.mv-volume input { width: 84px; accent-color: var(--mv-accent); }\n.mv-stepper { display: inline-flex; align-items: center; border: 1px solid var(--mv-border); border-radius: 8px; overflow: hidden; background: var(--mv-bg); height: 28px; }\n.mv-stepper button { border: 0; background: transparent; width: 26px; height: 100%; cursor: pointer; color: var(--mv-muted); }\n.mv-stepper button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-stepper span { padding: 0 8px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; border-left: 1px solid var(--mv-border); border-right: 1px solid var(--mv-border); line-height: 26px; }\n\n/* Collapsible settings */\n.mv-details { border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); margin: 0 0 12px; }\n.mv-details > summary { cursor: pointer; padding: 10px 14px; list-style: none; display: flex; align-items: center; gap: 8px; font-weight: 600; user-select: none; }\n.mv-details > summary::-webkit-details-marker { display: none; }\n.mv-details > summary::before { content: "\u25B8"; color: var(--mv-faint); transition: transform .15s; display: inline-block; }\n.mv-details[open] > summary::before { transform: rotate(90deg); }\n.mv-details > summary .mv-caption { font-weight: 400; margin: 0; }\n.mv-details-body { padding: 4px 14px 14px; }\n.mv-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px 14px; margin: 6px 0; }\n.mv-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; min-width: 0; }\n.mv-field > span:first-child { color: var(--mv-muted); }\n.mv-field input, .mv-field select { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); min-width: 0; width: 100%; }\n.mv-field input:disabled { opacity: .55; }\n.mv-field-help { font-size: 11.5px; color: var(--mv-faint); }\n.mv-field-row { display: flex; gap: 6px; }\n.mv-field-row input { flex: 1; }\n.mv-wide { grid-column: 1 / -1; }\n.mv-check { display: inline-flex; gap: 8px; align-items: center; font-size: 12.5px; align-self: end; height: 30px; }\n.mv-check input { accent-color: var(--mv-accent); width: 15px; height: 15px; }\n\n/* Confirmation */\n.mv-confirm { margin: 0 0 12px; padding: 14px 16px; border: 1px solid var(--mv-accent); border-radius: var(--mv-radius); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-confirm > strong { display: block; font-size: 14px; margin-bottom: 6px; }\n.mv-confirm ul { margin: 8px 0; padding-left: 20px; color: var(--mv-muted); }\n.mv-confirm code { word-break: break-all; }\n.mv-cmd { display: block; margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: var(--mv-surface-2); white-space: pre-wrap; word-break: break-all; }\n.mv-argv { margin: 4px 0 6px; padding-left: 24px; font-size: 12px; }\n\n/* Terminal */\n.mv-term-pane { margin: 0 0 12px; }\n.mv-term-screen { height: min(66vh, 740px); min-height: 300px; resize: vertical; overflow: hidden; padding: 6px; background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; }\n.mv-term-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); }\n.mv-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mv-ok); display: inline-block; }\n.mv-dot-off { background: var(--mv-faint); }\n.mv-console-list { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }\n.mv-console-item { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); font-size: 12.5px; }\n.mv-placeholder { display: grid; place-items: center; text-align: center; min-height: 140px; border-radius: var(--mv-radius); border: 1px dashed var(--mv-border); color: var(--mv-muted); background: var(--mv-surface); padding: 24px; margin: 0 0 12px; }\n.mv-placeholder b { color: var(--mv-text); font-size: 14px; }\n\n/* Import dialog */\n.mv-dialog { margin: 0 0 12px; padding: 14px 16px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-dialog h2 { margin: 0 0 6px; font-size: 14px; }\n.mv-hidden { display: none !important; }\n.mv-card-ai { border-color: var(--mv-accent); color: var(--mv-text); flex-basis: 150px; }\n.mv-card-ai .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent); }\n.mv-card-ai[aria-expanded="true"] { background: var(--mv-accent-soft); border-style: solid; }\n.mv-ai .mv-form { margin: 8px 0 10px; }\n.mv-ai textarea:disabled { opacity: .6; }\n';
 
 // .dsh-plugin/client/mv-panel.jsx
 var DEST_KEY = "dsh-mv.panel.destination";
@@ -20004,17 +21059,17 @@ function loadDestination(storage = globalThis.localStorage) {
 }
 function About({ pack }) {
   const credits = [...pack.pack.credits ?? [], pack.pack.notice].filter(Boolean);
-  return /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("h3", null, "\u5173\u4E8E MV \u653E\u6620\u5BA4 ", /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-faint" }, "v", CLIENT_VERSION || "?")), /* @__PURE__ */ import_react5.default.createElement("p", null, "\u975E\u5B98\u65B9\u540C\u4EBA\u5DE5\u5177\u3002\u63D2\u4EF6", /* @__PURE__ */ import_react5.default.createElement("b", null, "\u4E0D\u9644\u5E26"), "\u4EFB\u4F55\u97F3\u9891\u3001\u89C6\u9891\u3001\u6B4C\u8BCD\u6216\u7F8E\u672F\u7D20\u6750\uFF0C\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\uFF1B\u97F3\u9891\u548C\u6B4C\u8BCD\u53EA\u5728\u672C\u673A\u8BFB\u53D6\uFF0C\u4E0D\u4F1A\u4E0A\u4F20\u3002"), /* @__PURE__ */ import_react5.default.createElement("p", null, "\u5185\u7F6E world.execute(me) \u9884\u8BBE\uFF1A\u6B4C\u66F2\u4E0E\u6B4C\u8BCD\u7248\u6743\u5F52 Mili\uFF1B\u753B\u9762\u573A\u666F\u79FB\u690D\u81EA yym8224961/world.execute-me-ascii\uFF08\u91CE\u751F\u5927K\uFF09\uFF0C\u7ECF\u539F\u4F5C\u8005\u8BB8\u53EF\u3002"), !pack.builtin && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("h3", null, "\u5F53\u524D MV \u5305\uFF1A", pack.pack.title), credits.length > 0 ? /* @__PURE__ */ import_react5.default.createElement("ul", null, credits.map((item) => /* @__PURE__ */ import_react5.default.createElement("li", { key: item }, item))) : /* @__PURE__ */ import_react5.default.createElement("p", null, "\u6E05\u5355\u91CC\u6CA1\u6709\u7F72\u540D\u4FE1\u606F\u3002"), /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react5.default.createElement("code", null, pack.manifestPath))), /* @__PURE__ */ import_react5.default.createElement("p", null, "\u5176\u4ED6\u6B4C\u66F2\uFF1A\u5728\u66F2\u5E93\u91CC\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u505A\u4E00\u4E2A MV \u5305\uFF0C\u518D\u300C\u5BFC\u5165\u300D\u3002"));
+  return /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, /* @__PURE__ */ import_react6.default.createElement("h3", null, "\u5173\u4E8E MV \u653E\u6620\u5BA4 ", /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-faint" }, "v", CLIENT_VERSION || "?")), /* @__PURE__ */ import_react6.default.createElement("p", null, "\u975E\u5B98\u65B9\u540C\u4EBA\u5DE5\u5177\u3002\u63D2\u4EF6", /* @__PURE__ */ import_react6.default.createElement("b", null, "\u4E0D\u9644\u5E26"), "\u4EFB\u4F55\u97F3\u9891\u3001\u89C6\u9891\u3001\u6B4C\u8BCD\u6216\u7F8E\u672F\u7D20\u6750\uFF0C\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\uFF1B\u97F3\u9891\u548C\u6B4C\u8BCD\u53EA\u5728\u672C\u673A\u8BFB\u53D6\uFF0C\u4E0D\u4F1A\u4E0A\u4F20\u3002"), /* @__PURE__ */ import_react6.default.createElement("p", null, "\u5185\u7F6E world.execute(me) \u9884\u8BBE\uFF1A\u6B4C\u66F2\u4E0E\u6B4C\u8BCD\u7248\u6743\u5F52 Mili\uFF1B\u753B\u9762\u573A\u666F\u79FB\u690D\u81EA yym8224961/world.execute-me-ascii\uFF08\u91CE\u751F\u5927K\uFF09\uFF0C\u7ECF\u539F\u4F5C\u8005\u8BB8\u53EF\u3002"), !pack.builtin && /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, /* @__PURE__ */ import_react6.default.createElement("h3", null, "\u5F53\u524D MV \u5305\uFF1A", pack.pack.title), credits.length > 0 ? /* @__PURE__ */ import_react6.default.createElement("ul", null, credits.map((item) => /* @__PURE__ */ import_react6.default.createElement("li", { key: item }, item))) : /* @__PURE__ */ import_react6.default.createElement("p", null, "\u6E05\u5355\u91CC\u6CA1\u6709\u7F72\u540D\u4FE1\u606F\u3002"), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react6.default.createElement("code", null, pack.manifestPath))), /* @__PURE__ */ import_react6.default.createElement("p", null, "\u5176\u4ED6\u6B4C\u66F2\uFF1A\u5728\u66F2\u5E93\u91CC\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Harness \u7684 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u624B\u5199\u4E00\u4E2A MV \u5305\u518D\u300C\u5BFC\u5165\u300D\u3002"));
 }
-var PlayIcon = ({ playing }) => playing ? /* @__PURE__ */ import_react5.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react5.default.createElement(Icon.play, null);
-function MvPanel({ api }) {
-  const [destination, setDestinationState] = import_react5.default.useState(loadDestination);
-  const [info, setInfo] = import_react5.default.useState({ status: "loading", value: null, error: "" });
-  const [terminalSeen, setTerminalSeen] = import_react5.default.useState(() => loadDestination() !== "canvas");
-  const [canvasState, setCanvasState] = import_react5.default.useState({ playing: false, hasAudio: false });
-  const [terminalState, setTerminalState] = import_react5.default.useState({ canPlay: false, running: false, busy: false, label: "", confirming: false });
-  const canvasRef = import_react5.default.useRef(null);
-  const terminalRef = import_react5.default.useRef(null);
+var PlayIcon = ({ playing }) => playing ? /* @__PURE__ */ import_react6.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react6.default.createElement(Icon.play, null);
+function MvPanel({ api, harness = null, initialAi = false }) {
+  const [destination, setDestinationState] = import_react6.default.useState(loadDestination);
+  const [info, setInfo] = import_react6.default.useState({ status: "loading", value: null, error: "" });
+  const [terminalSeen, setTerminalSeen] = import_react6.default.useState(() => loadDestination() !== "canvas");
+  const [canvasState, setCanvasState] = import_react6.default.useState({ playing: false, hasAudio: false });
+  const [terminalState, setTerminalState] = import_react6.default.useState({ canPlay: false, running: false, busy: false, label: "", confirming: false });
+  const canvasRef = import_react6.default.useRef(null);
+  const terminalRef = import_react6.default.useRef(null);
   const setDestination = (value) => {
     if (value !== "canvas" && canvasState.playing) canvasRef.current?.pause();
     setDestinationState(value);
@@ -20024,7 +21079,7 @@ function MvPanel({ api }) {
     } catch {
     }
   };
-  const reloadInfo = import_react5.default.useCallback(async () => {
+  const reloadInfo = import_react6.default.useCallback(async () => {
     try {
       const value = await loadInfo(api);
       setInfo({ status: "ready", value, error: "" });
@@ -20032,13 +21087,13 @@ function MvPanel({ api }) {
       setInfo({ status: "error", value: null, error: errorText(error, "\u65E0\u6CD5\u8FDE\u63A5 MV \u63D2\u4EF6\u540E\u53F0\u3002") });
     }
   }, [api]);
-  import_react5.default.useEffect(() => {
+  import_react6.default.useEffect(() => {
     void reloadInfo();
   }, [reloadInfo]);
-  const [pack, setPack] = import_react5.default.useState(BUILTIN_PACK);
-  const [recent, setRecent] = import_react5.default.useState(loadRecent);
-  const [packError, setPackError] = import_react5.default.useState("");
-  const selectPack = import_react5.default.useCallback(async (id) => {
+  const [pack, setPack] = import_react6.default.useState(BUILTIN_PACK);
+  const [recent, setRecent] = import_react6.default.useState(loadRecent);
+  const [packError, setPackError] = import_react6.default.useState("");
+  const selectPack = import_react6.default.useCallback(async (id) => {
     setPackError("");
     if (id === BUILTIN_ID || !id.startsWith("pack:")) {
       setPack(BUILTIN_PACK);
@@ -20055,7 +21110,7 @@ function MvPanel({ api }) {
       saveActive(BUILTIN_ID);
     }
   }, [api]);
-  import_react5.default.useEffect(() => {
+  import_react6.default.useEffect(() => {
     const id = loadActive();
     if (id !== BUILTIN_ID) void selectPack(id);
   }, [selectPack]);
@@ -20068,14 +21123,14 @@ function MvPanel({ api }) {
   const platform = info.value?.platform;
   const consoleOff = Boolean(platform) && platform !== "win32";
   const canvas = destination === "canvas";
-  const primary = canvas ? { label: canvasState.playing ? "\u6682\u505C" : "\u64AD\u653E", disabled: false, playing: canvasState.playing, run: () => canvasRef.current?.toggle() } : { label: terminalState.running && destination === "panel" ? "\u6B63\u5728\u64AD\u653E" : terminalState.busy ? "\u68C0\u67E5\u4E2D\u2026" : terminalState.label || "\u64AD\u653E", disabled: !terminalState.canPlay, playing: false, run: () => terminalRef.current?.primary() };
+  const primary = canvas ? { label: canvasState.playing ? "\u6682\u505C" : "\u64AD\u653E", disabled: false, playing: canvasState.playing, run: () => canvasRef.current?.toggle() } : { label: terminalState.running && destination === "panel" ? "\u6B63\u5728\u64AD\u653E" : terminalState.busy ? terminalState.busyLabel || "\u68C0\u67E5\u4E2D\u2026" : terminalState.label || "\u64AD\u653E", disabled: !terminalState.canPlay, playing: false, run: () => terminalRef.current?.primary() };
   const hint = canvas ? canvasState.hasAudio ? "\u753B\u9762\u4EE5\u97F3\u9891\u4E3A\u65F6\u949F\u9010\u5E27\u6E32\u67D3\uFF1B\u70B9\u4E00\u4E0B\u753B\u9762\u540E\u53EF\u7528\u952E\u76D8\u63A7\u5236\u3002" : "\u8FD8\u6CA1\u6709\u9009\u62E9\u97F3\u9891\uFF1A\u53EF\u4EE5\u5148\u9759\u97F3\u89C2\u770B\uFF0C\u6216\u5728\u4E0B\u65B9\u9009\u62E9\u4F60\u7684\u6B4C\u66F2\u3002" : terminalState.confirming ? "\u8BF7\u5728\u4E0B\u65B9\u6838\u5BF9\u5C06\u8981\u6267\u884C\u7684\u547D\u4EE4\uFF0C\u786E\u8BA4\u540E\u624D\u4F1A\u542F\u52A8\u3002" : terminalState.running && destination === "panel" ? "\u64AD\u653E\u5668\u6B63\u5728\u4E0B\u65B9\u7684\u9762\u677F\u7EC8\u7AEF\u4E2D\u8FD0\u884C\u3002" : terminalState.canPlay ? "\u70B9\u64AD\u653E\u540E\u4F1A\u5148\u663E\u793A\u5C06\u8981\u6267\u884C\u7684\u5B8C\u6574\u547D\u4EE4\uFF0C\u786E\u8BA4\u540E\u624D\u542F\u52A8\u3002" : "\u5148\u5728\u4E0B\u65B9\u5B8C\u6210\u64AD\u653E\u5668\u8BBE\u7F6E\uFF08\u8DEF\u5F84\u4F1A\u81EA\u52A8\u68C0\u67E5\uFF09\u3002";
-  const renderer = pack.pack.canvas?.renderer === "world-execute-me" ? "world.execute(me) \u573A\u666F" : "\u901A\u7528\u753B\u9762\uFF08\u9891\u8C31 + \u6B4C\u8BCD\uFF09";
-  return /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-root" }, /* @__PURE__ */ import_react5.default.createElement("style", null, mv_default), /* @__PURE__ */ import_react5.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react5.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react5.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react5.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react5.default.createElement(About, { pack }))), /* @__PURE__ */ import_react5.default.createElement(Library, { api, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react5.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-wrap" }, packError)), /* @__PURE__ */ import_react5.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E" }, /* @__PURE__ */ import_react5.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react5.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react5.default.createElement("span", null, pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-chip" }, pack.builtin ? "\u5185\u7F6E\u9884\u8BBE" : "MV \u5305"), canvas && /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-chip" }, renderer), !canvas && !pack.builtin && pack.terminal && /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-chip" }, "\u5916\u90E8\u6E32\u67D3\uFF1A", pack.terminal.label))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react5.default.createElement(Segmented, { label: "\u5728\u54EA\u91CC\u64AD\u653E", value: destination, onChange: setDestination, options: [
+  const renderer = { "world-execute-me": "world.execute(me) \u573A\u666F", script: "\u573A\u666F\u811A\u672C\uFF08scenes.js\uFF09" }[pack.pack.canvas?.renderer] ?? "\u901A\u7528\u753B\u9762\uFF08\u9891\u8C31 + \u6B4C\u8BCD\uFF09";
+  return /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-root" }, /* @__PURE__ */ import_react6.default.createElement("style", null, mv_default), /* @__PURE__ */ import_react6.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react6.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react6.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react6.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react6.default.createElement(About, { pack }))), /* @__PURE__ */ import_react6.default.createElement(Library, { api, harness, info: info.value, initialAi, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, packError)), /* @__PURE__ */ import_react6.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E" }, /* @__PURE__ */ import_react6.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react6.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react6.default.createElement("span", null, pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, pack.builtin ? "\u5185\u7F6E\u9884\u8BBE" : "MV \u5305"), canvas && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, renderer), !canvas && !pack.builtin && pack.terminal && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, "\u5916\u90E8\u6E32\u67D3\uFF1A", pack.terminal.label))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react6.default.createElement(Segmented, { label: "\u5728\u54EA\u91CC\u64AD\u653E", value: destination, onChange: setDestination, options: [
     { value: "canvas", label: "\u753B\u5E03", title: "\u5728\u9762\u677F\u91CC\u7528\u753B\u5E03\u6E32\u67D3\uFF08\u63A8\u8350\uFF0C\u97F3\u753B\u540C\u6B65\u6700\u597D\uFF09" },
     { value: "panel", label: "\u9762\u677F\u7EC8\u7AEF", title: "\u5728\u9762\u677F\u91CC\u7684\u7EC8\u7AEF\u4E2D\u8FD0\u884C\u4F60\u672C\u673A\u7684\u64AD\u653E\u5668" },
     { value: "console", label: "\u72EC\u7ACB\u7A97\u53E3", disabled: consoleOff, title: consoleOff ? "\u72EC\u7ACB\u63A7\u5236\u53F0\u7A97\u53E3\u53EA\u5728 Windows \u4E0A\u53EF\u7528" : "\u5728\u771F\u5B9E\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u64AD\u653E\uFF08\u65E0\u8F6C\u53D1\u5EF6\u8FDF\uFF09" }
-  ] }), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-play-big", disabled: primary.disabled, onClick: primary.run, "aria-label": primary.label }, /* @__PURE__ */ import_react5.default.createElement(PlayIcon, { playing: primary.playing }), primary.label)), /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react5.default.createElement("div", { className: canvas ? "" : "mv-hidden" }, /* @__PURE__ */ import_react5.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState })), terminalSeen && /* @__PURE__ */ import_react5.default.createElement("div", { className: canvas ? "mv-hidden" : "" }, /* @__PURE__ */ import_react5.default.createElement(
+  ] }), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-play-big", disabled: primary.disabled, onClick: primary.run, "aria-label": primary.label }, /* @__PURE__ */ import_react6.default.createElement(PlayIcon, { playing: primary.playing }), primary.label)), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react6.default.createElement("div", { className: canvas ? "" : "mv-hidden" }, /* @__PURE__ */ import_react6.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState })), terminalSeen && /* @__PURE__ */ import_react6.default.createElement("div", { className: canvas ? "mv-hidden" : "" }, /* @__PURE__ */ import_react6.default.createElement(
     MvTerminal,
     {
       ref: terminalRef,
@@ -20090,45 +21145,32 @@ function MvPanel({ api }) {
   )));
 }
 
-// .dsh-plugin/shared/mv-audio-protocol.mjs
-var WAV_LIMITS = Object.freeze({ maxBytes: 700 * 1024 * 1024, chunkBytes: 512 * 1024, keepFiles: 6 });
-var MCI_FORMATS = Object.freeze(["mp3", "wav"]);
-var SHA = /^[0-9a-f]{64}$/;
-var UPLOAD = /^wav-[0-9a-f]{16,40}$/;
-function parseWavBegin(value) {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError("wav request must be an object");
-  const extra = Object.keys(value).filter((key) => !["sourceSha256", "bytes"].includes(key));
-  if (extra.length) throw new TypeError(`wav request has unexpected fields: ${extra.join(", ")}`);
-  if (typeof value.sourceSha256 !== "string" || !SHA.test(value.sourceSha256)) throw new TypeError("sourceSha256 must be 64 hex characters");
-  if (!Number.isInteger(value.bytes) || value.bytes < 44 || value.bytes > WAV_LIMITS.maxBytes) throw new TypeError(`bytes must be 44..${WAV_LIMITS.maxBytes}`);
-  return { sourceSha256: value.sourceSha256, bytes: value.bytes };
+// .dsh-plugin/shared/mv-ai-upload.mjs
+var UPLOAD_ID = /^pack-[0-9a-f]{16,40}$/;
+function parsePackUploadBegin(value) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError("upload request must be an object");
+  const extra = Object.keys(value).filter((key) => !["packDir", "role", "bytes"].includes(key));
+  if (extra.length) throw new TypeError(`upload request has unexpected fields: ${extra.join(", ")}`);
+  if (typeof value.packDir !== "string" || !isAbsolutePackPath(value.packDir) || value.packDir.length > 1024) throw new TypeError("packDir must be an absolute path");
+  if (!AI_UPLOAD_ROLES.includes(value.role)) throw new TypeError(`role must be ${AI_UPLOAD_ROLES.join(" / ")}`);
+  const max = value.role === "audio" ? MV_PACK_LIMITS.audioBytes : MV_PACK_LIMITS.textFileBytes;
+  if (!Number.isInteger(value.bytes) || value.bytes < 1 || value.bytes > max) throw new TypeError(`bytes must be 1..${max}`);
+  return { packDir: value.packDir, role: value.role, bytes: value.bytes };
 }
-function parseWavWrite(value) {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError("wav write must be an object");
+function parsePackUploadWrite(value) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError("upload write must be an object");
   const extra = Object.keys(value).filter((key) => !["uploadId", "offset", "base64"].includes(key));
-  if (extra.length) throw new TypeError(`wav write has unexpected fields: ${extra.join(", ")}`);
-  if (typeof value.uploadId !== "string" || !UPLOAD.test(value.uploadId)) throw new TypeError("uploadId is invalid");
-  if (!Number.isInteger(value.offset) || value.offset < 0 || value.offset > WAV_LIMITS.maxBytes) throw new TypeError("offset is invalid");
-  if (typeof value.base64 !== "string" || value.base64.length === 0 || value.base64.length > Math.ceil(WAV_LIMITS.chunkBytes / 3) * 4 || !/^[A-Za-z0-9+/]*={0,2}$/.test(value.base64)) {
-    throw new TypeError("base64 chunk is invalid");
-  }
-  return { uploadId: value.uploadId, offset: value.offset, base64: value.base64 };
+  if (extra.length) throw new TypeError(`upload write has unexpected fields: ${extra.join(", ")}`);
+  if (typeof value.uploadId !== "string" || !UPLOAD_ID.test(value.uploadId)) throw new TypeError("uploadId is invalid");
+  if (!Number.isInteger(value.offset) || value.offset < 0 || value.offset > MV_PACK_LIMITS.audioBytes) throw new TypeError("offset is invalid");
+  return { uploadId: value.uploadId, offset: value.offset, base64: parseBase64Chunk(value.base64) };
 }
-function parseWavFinish(value) {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError("wav finish must be an object");
+function parsePackUploadFinish(value) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError("upload finish must be an object");
   const extra = Object.keys(value).filter((key) => key !== "uploadId");
-  if (extra.length) throw new TypeError(`wav finish has unexpected fields: ${extra.join(", ")}`);
-  if (typeof value.uploadId !== "string" || !UPLOAD.test(value.uploadId)) throw new TypeError("uploadId is invalid");
+  if (extra.length) throw new TypeError(`upload finish has unexpected fields: ${extra.join(", ")}`);
+  if (typeof value.uploadId !== "string" || !UPLOAD_ID.test(value.uploadId)) throw new TypeError("uploadId is invalid");
   return { uploadId: value.uploadId };
-}
-function parseAudioProbe(value) {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError("probe request must be an object");
-  const extra = Object.keys(value).filter((key) => !["path", "player"].includes(key));
-  if (extra.length) throw new TypeError(`probe request has unexpected fields: ${extra.join(", ")}`);
-  const path = typeof value.path === "string" ? value.path.trim() : "";
-  if (!path || path.length > 1024 || /[\0\r\n"]/.test(path) || !(path.startsWith("/") || /^[A-Za-z]:[\\/]/.test(path) || /^\\\\[^\\]+\\[^\\]+/.test(path))) throw new TypeError("path must be an absolute path");
-  if (value.player !== void 0 && !["python", "rust"].includes(value.player)) throw new TypeError("player must be python or rust");
-  return { path, player: value.player ?? "python" };
 }
 
 // .dsh-plugin/shared/mv-remote.mjs
@@ -20177,7 +21219,14 @@ var MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor("audioProbe", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvAudioProbe`, parseAudioProbe))], anyObjectCodec("MvAudioProbed")),
   descriptor("wavBegin", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWavBegin`, parseWavBegin))], anyObjectCodec("MvWavBegun")),
   descriptor("wavWrite", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWavWrite`, parseWavWrite))], anyObjectCodec("MvWavWritten")),
-  descriptor("wavFinish", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWavFinish`, parseWavFinish))], anyObjectCodec("MvWavFinished"))
+  descriptor("wavFinish", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWavFinish`, parseWavFinish))], anyObjectCodec("MvWavFinished")),
+  descriptor("audioRead", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvAudioRead`, parseAudioRead))], anyObjectCodec("MvAudioChunk")),
+  descriptor("ffmpegInfo", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvFfmpegInfo`, parseFfmpegInfo))], anyObjectCodec("MvFfmpegInfo")),
+  descriptor("audioConvert", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvAudioConvert`, parseAudioConvert))], anyObjectCodec("MvAudioConverted")),
+  descriptor("aiPackCreate", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvAiPackCreate`, parseAiPackCreate))], anyObjectCodec("MvAiPackCreated")),
+  descriptor("packUploadBegin", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvPackUploadBegin`, parsePackUploadBegin))], anyObjectCodec("MvPackUploadBegun")),
+  descriptor("packUploadWrite", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvPackUploadWrite`, parsePackUploadWrite))], anyObjectCodec("MvPackUploadWritten")),
+  descriptor("packUploadFinish", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvPackUploadFinish`, parsePackUploadFinish))], anyObjectCodec("MvPackUploadFinished"))
 ]);
 var MV_CLIENT_REMOTE = Object.freeze({ package: MV_REMOTE_PACKAGE, descriptors: MV_REMOTE_DESCRIPTORS });
 var MV_HOST_TYPERT = Object.freeze({
@@ -20193,7 +21242,7 @@ var PLUGIN_NAME = "dsh-mv";
 var PANEL = "dsh-mv.main";
 var inject = ["remote"];
 function MvIcon() {
-  return /* @__PURE__ */ import_react6.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" }, /* @__PURE__ */ import_react6.default.createElement("rect", { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2", stroke: "currentColor" }), /* @__PURE__ */ import_react6.default.createElement("path", { d: "M4 6l2 2-2 2M7.5 10.5H11", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" }));
+  return /* @__PURE__ */ import_react7.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" }, /* @__PURE__ */ import_react7.default.createElement("rect", { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2", stroke: "currentColor" }), /* @__PURE__ */ import_react7.default.createElement("path", { d: "M4 6l2 2-2 2M7.5 10.5H11", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" }));
 }
 function panelApi(remote) {
   const service = remote[MV_REMOTE_NAMESPACE];
@@ -20214,22 +21263,42 @@ function panelApi(remote) {
     audioProbe: (request2) => service.audioProbe(request2),
     wavBegin: (request2) => service.wavBegin(request2),
     wavWrite: (request2) => service.wavWrite(request2),
-    wavFinish: (request2) => service.wavFinish(request2)
+    wavFinish: (request2) => service.wavFinish(request2),
+    audioRead: (request2) => service.audioRead(request2),
+    ffmpegInfo: (request2) => service.ffmpegInfo(request2),
+    audioConvert: (request2) => service.audioConvert(request2),
+    aiPackCreate: (request2) => service.aiPackCreate(request2),
+    packUploadBegin: (request2) => service.packUploadBegin(request2),
+    packUploadWrite: (request2) => service.packUploadWrite(request2),
+    packUploadFinish: (request2) => service.packUploadFinish(request2)
   };
+}
+function harnessServices(ctx) {
+  return Object.freeze({
+    get(name) {
+      if (!["workspaces", "sessions", "uiWorkspace", "remote", "layout"].includes(name)) return void 0;
+      try {
+        return typeof ctx?.get === "function" ? ctx.get(name) : void 0;
+      } catch {
+        return void 0;
+      }
+    }
+  });
 }
 var OPEN_BUTTON = Object.freeze({ border: "1px solid #ffaf5f", background: "transparent", color: "inherit", borderRadius: 6, padding: "3px 10px", cursor: "pointer", font: "inherit", fontSize: 12 });
 function OpenMvPanel({ subject, openPanel }) {
   if (subject?.kind !== "bundle" || subject.pkg?.name !== MV_REMOTE_PACKAGE) return null;
-  return /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", style: OPEN_BUTTON, onClick: openPanel }, "\u6253\u5F00 MV \u653E\u6620\u5BA4");
+  return /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", style: OPEN_BUTTON, onClick: openPanel }, "\u6253\u5F00 MV \u653E\u6620\u5BA4");
 }
 var UI_INJECT = ["slots", "remote", `remote.${MV_REMOTE_NAMESPACE}`, "layout"];
 function registerUi(ctx) {
   const api = Object.freeze(panelApi(ctx.remote));
+  const harness = harnessServices(ctx);
   const served = (slot, item, component, label) => ctx.effect(
     () => ctx.slots.inject(slot, () => ctx.slots.register(item, component)),
     `dsh-mv: ${label}`
   );
-  served("main", { name: "main", key: PANEL, inject: () => ({ api }) }, MvPanel, "main workspace");
+  served("main", { name: "main", key: PANEL, inject: () => ({ api, harness }) }, MvPanel, "main workspace");
   served("sidebar.panellist", { name: "sidebar.panellist", id: PANEL, order: 60, label: "MV \u653E\u6620\u5BA4" }, MvIcon, "sidebar entry");
   served("plugins.detail.actions", {
     name: "plugins.detail.actions",

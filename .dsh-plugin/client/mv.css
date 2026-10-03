@@ -198,3 +198,8 @@ body[data-ds-dark-theme] .mv-root, .mv-root.mv-dark { --mv-fb-bg: #151517; --mv-
 .mv-dialog { margin: 0 0 12px; padding: 14px 16px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }
 .mv-dialog h2 { margin: 0 0 6px; font-size: 14px; }
 .mv-hidden { display: none !important; }
+.mv-card-ai { border-color: var(--mv-accent); color: var(--mv-text); flex-basis: 150px; }
+.mv-card-ai .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent); }
+.mv-card-ai[aria-expanded="true"] { background: var(--mv-accent-soft); border-style: solid; }
+.mv-ai .mv-form { margin: 8px 0 10px; }
+.mv-ai textarea:disabled { opacity: .6; }

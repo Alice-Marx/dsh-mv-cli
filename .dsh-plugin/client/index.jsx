@@ -40,7 +40,28 @@ export function panelApi(remote) {
     wavBegin: request => service.wavBegin(request),
     wavWrite: request => service.wavWrite(request),
     wavFinish: request => service.wavFinish(request),
+    audioRead: request => service.audioRead(request),
+    ffmpegInfo: request => service.ffmpegInfo(request),
+    audioConvert: request => service.audioConvert(request),
+    aiPackCreate: request => service.aiPackCreate(request),
+    packUploadBegin: request => service.packUploadBegin(request),
+    packUploadWrite: request => service.packUploadWrite(request),
+    packUploadFinish: request => service.packUploadFinish(request),
   }
+}
+
+/**
+ * Optional Harness client services for "用 AI 制作新 MV", looked up lazily
+ * when the user acts (workspaces, sessions, uiWorkspace, remote.session).
+ * Missing services make the dialog fall back to copy & paste.
+ */
+export function harnessServices(ctx) {
+  return Object.freeze({
+    get(name) {
+      if (!['workspaces', 'sessions', 'uiWorkspace', 'remote', 'layout'].includes(name)) return undefined
+      try { return typeof ctx?.get === 'function' ? ctx.get(name) : undefined } catch { return undefined }
+    },
+  })
 }
 
 const OPEN_BUTTON = Object.freeze({ border: '1px solid #ffaf5f', background: 'transparent', color: 'inherit', borderRadius: 6, padding: '3px 10px', cursor: 'pointer', font: 'inherit', fontSize: 12 })
@@ -62,9 +83,10 @@ const UI_INJECT = ['slots', 'remote', `remote.${MV_REMOTE_NAMESPACE}`, 'layout']
  */
 export function registerUi(ctx) {
   const api = Object.freeze(panelApi(ctx.remote))
+  const harness = harnessServices(ctx)
   const served = (slot, item, component, label) => ctx.effect(
     () => ctx.slots.inject(slot, () => ctx.slots.register(item, component)), `dsh-mv: ${label}`)
-  served('main', { name: 'main', key: PANEL, inject: () => ({ api }) }, MvPanel, 'main workspace')
+  served('main', { name: 'main', key: PANEL, inject: () => ({ api, harness }) }, MvPanel, 'main workspace')
   served('sidebar.panellist', { name: 'sidebar.panellist', id: PANEL, order: 60, label: 'MV 放映室' }, MvIcon, 'sidebar entry')
   served('plugins.detail.actions', {
     name: 'plugins.detail.actions', id: 'dsh-mv-open-panel', order: 40,

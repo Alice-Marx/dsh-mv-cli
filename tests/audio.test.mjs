@@ -22,11 +22,10 @@ test('sniffAudio tells real formats apart from extensions', () => {
   assert.equal(sniffAudio(Buffer.from('hello')).format, 'unknown')
 })
 
-test('mciWarning flags anything but MP3/WAV for tui_live.py, non-MP3 for rust', () => {
-  assert.match(mciWarning(sniffAudio(DASH), 'F:\\a\\song.mp3'), /MCI.*转换为 WAV/)
-  assert.equal(mciWarning({ format: 'mp3' }, 'x'), '')
-  assert.equal(mciWarning({ format: 'wav' }, 'x'), '')
-  assert.match(mciWarning({ format: 'wav', label: 'WAV' }, 'x', 'rust'), /只能解码 MP3/)
+test('mciWarning flags anything MCI cannot open and says it is converted automatically', () => {
+  assert.match(mciWarning(sniffAudio(DASH), 'F:\\a\\song.mp3'), /MCI.*自动转换成 WAV/)
+  assert.equal(mciWarning(sniffAudio(hex('ff fb 90 64')), 'x'), '')
+  assert.equal(mciWarning(sniffAudio(encodeWav([new Float32Array(4)], 44100)), 'x'), '')
 })
 
 test('probeAudioFile reads only the header and size', async () => {
@@ -42,7 +41,8 @@ test('probeAudioFile reads only the header and size', async () => {
 test('parsers reject bad requests', () => {
   assert.throws(() => parseAudioProbe({ path: 'relative.mp3' }))
   assert.throws(() => parseAudioProbe({ path: 'C:\\a.mp3', extra: 1 }))
-  assert.deepEqual(parseAudioProbe({ path: 'C:\\a.mp3' }), { path: 'C:\\a.mp3', player: 'python' })
+  assert.deepEqual(parseAudioProbe({ path: 'C:\\a.mp3' }), { path: 'C:\\a.mp3', hash: false })
+  assert.deepEqual(parseAudioProbe({ path: 'C:\\a.mp3', hash: true, player: 'python' }), { path: 'C:\\a.mp3', hash: true })
   assert.throws(() => parseWavBegin({ sourceSha256: 'abc', bytes: 100 }))
   assert.throws(() => parseWavBegin({ sourceSha256: 'a'.repeat(64), bytes: 10 }))
   assert.throws(() => parseWavWrite({ uploadId: '../x', offset: 0, base64: 'AA==' }))
@@ -110,7 +110,6 @@ test('effectiveAudioPath follows tui_live.py defaults', () => {
   assert.equal(effectiveAudioPath({ player: 'python', packageDir: 'F:\\w\\', audioFile: '' }), 'F:\\w\\input\\song.mp3')
   assert.equal(effectiveAudioPath({ player: 'python', packageDir: 'F:\\w', audioFile: 'D:\\a.mp3' }), 'D:\\a.mp3')
   assert.equal(effectiveAudioPath({ player: 'python', packageDir: 'F:\\w', noAudio: true }), '')
-  assert.equal(effectiveAudioPath({ player: 'rust', audioFile: '' }), '')
   assert.equal(effectiveAudioPath({ player: 'pack' }), '')
 })
 
@@ -123,5 +122,6 @@ test('terminal check reports the real audio format and the MCI warning', async (
   })
   const checked = await terminals.check({ player: 'python', pythonPath: 'C:\\w\\python.exe', packageDir: 'C:\\w', audioFile: 'F:\\w\\song.mp3', noAudio: false, start: 0 })
   assert.equal(checked.audio.format, 'mp4')
-  assert.match(checked.audio.warning, /MCI/)
+  assert.equal(checked.audio.mciPlayable, false)
+  assert.match(checked.audio.note, /MCI/)
 })

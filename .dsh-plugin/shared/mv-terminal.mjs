@@ -9,7 +9,7 @@
  * keystrokes are forwarded verbatim and never logged.
  */
 import { spawn } from 'node:child_process'
-import { mciWarning, probeAudioFile } from './mv-audio.mjs'
+import { mciNote, probeAudioFile } from './mv-audio.mjs'
 import { randomBytes } from 'node:crypto'
 import { stat } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -21,7 +21,6 @@ import {
   MV_TERMINAL_SCRIPT,
   displayCommand,
   mvTerminalArgs,
-  rustTerminalArgs,
 } from './mv-terminal-protocol.mjs'
 import { resolvePackLaunch } from './mv-pack-host.mjs'
 
@@ -76,17 +75,6 @@ export async function resolveMvLaunch(launch, { statPath = stat, joinPath = join
   if (launch.player === 'pack') return resolvePackLaunch(launch, { statPath, ...(readText ? { readText } : {}), ...(platform ? { platform } : {}) })
   const problems = []
   const info = async path => { try { return await statPath(path) } catch { return null } }
-  if (launch.player === 'rust') {
-    const exe = await info(launch.exePath)
-    if (!exe?.isFile?.()) problems.push(`找不到可执行文件，或它不是文件：${launch.exePath}`)
-    if (launch.audioFile) {
-      const audio = await info(launch.audioFile)
-      if (!audio?.isFile?.()) problems.push(`音频文件不存在或不是文件：${launch.audioFile}`)
-    }
-    if (problems.length) { const error = new Error(problems.join('\n')); error.problems = problems; throw error }
-    const args = rustTerminalArgs(launch)
-    return { file: launch.exePath, args, cwd: dirnameOf(launch.exePath), script: launch.exePath, display: displayCommand(launch.exePath, args) }
-  }
   const python = await info(launch.pythonPath)
   if (!python?.isFile?.()) problems.push(`找不到 Python 解释器，或它不是文件：${launch.pythonPath}`)
   const dir = await info(launch.packageDir)
@@ -276,7 +264,7 @@ export function createMvTerminalManager({
       if (launch.player !== 'pack' && launch.audioFile) {
         try {
           const probe = await probeAudio(launch.audioFile)
-          audio = { format: probe.format, label: probe.label, warning: mciWarning(probe, launch.audioFile, launch.player) }
+          audio = { format: probe.format, label: probe.label, mciPlayable: Boolean(probe.mci), note: mciNote(probe) }
         } catch { audio = null }
       }
       return { ok: true, ...(audio ? { audio } : {}), display: resolved.display, cwd: resolved.cwd, script: resolved.script, file: resolved.file, args: resolved.args, ...(resolved.pack ? { pack: resolved.pack } : {}), ...backendInfo() }

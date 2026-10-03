@@ -232,7 +232,8 @@ test('pack template: written into a new folder, never overwriting, and every man
     assert.equal(second.path, join(dir, 'dsh-mv-pack-template (2)'))
     assert.equal(first.files.length, templateFiles().length)
     parseMvPack(readFileSync(join(first.path, 'mv.json'), 'utf8'))
-    for (const name of readdirSync(join(first.path, 'examples'))) parseMvPack(readFileSync(join(first.path, 'examples', name), 'utf8'))
+    for (const name of readdirSync(join(first.path, 'examples')).filter(name => name.endsWith('.json'))) parseMvPack(readFileSync(join(first.path, 'examples', name), 'utf8'))
+    assert.match(readFileSync(join(first.path, 'examples', 'scenes.example.js'), 'utf8'), /function render\(t, cols, rows, ctx\)/)
     assert.equal(JSON.parse(readFileSync(join(first.path, 'mv.schema.json'), 'utf8')).$id, MV_PACK_JSON_SCHEMA.$id)
     const readme = readFileSync(join(first.path, 'README.zh.md'), 'utf8')
     for (const word of ['{audio}', '{start}', 'when', '% ! " ^ & | < >']) assert.ok(readme.includes(word), word)
@@ -281,4 +282,13 @@ test('generic renderer: title, lyrics, next line, progress; chapters split the s
   assert.match(film.render(0, 80, 30, { ready: true }).plain(), /SPACE \/ ENTER TO START/)
   assert.match(film.render(0, 30, 10).plain(), /请放大窗口/)
   assert.deepEqual(genericChapters(100).map(c => c[0]), [0, 20, 40, 60, 80])
+})
+
+test('pack: canvas renderer "script" needs a .js/.mjs scene inside the pack', () => {
+  const scripted = parseMvPack({ ...base, audio: 'a.m4a', canvas: { script: 'scenes.js' } })
+  assert.equal(scripted.canvas.renderer, 'script', 'script implies the script renderer')
+  assert.ok(problemsOf({ ...base, canvas: { renderer: 'script' } }).length > 0)
+  assert.ok(problemsOf({ ...base, canvas: { renderer: 'script', script: 'scenes.py' } }).length > 0)
+  assert.ok(problemsOf({ ...base, canvas: { renderer: 'script', script: '../x.js' } }).length > 0)
+  assert.ok(problemsOf({ ...base, canvas: { renderer: 'rust' } }).length > 0)
 })

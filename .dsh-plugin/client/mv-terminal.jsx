@@ -1,11 +1,13 @@
 /**
  * MV 终端 / 独立窗口: runs the user's own TUI player (world_execute_me
- * tui_live.py, a user-downloaded build of the Rust rewrite, or an MV pack's
- * external renderer) in a pseudo terminal on the Host and shows it with
- * xterm.js, or opens it in a real Windows console window.
+ * tui_live.py, or an MV pack's external renderer) in a pseudo terminal on the
+ * Host and shows it with xterm.js, or opens it in a real Windows console
+ * window.
  *
- * Paths are validated automatically (Host terminalCheck, debounced). Starting
- * always goes through the confirmation card that shows the exact command.
+ * Paths are validated automatically (Host terminalCheck, debounced). Audio
+ * that tui_live.py's MCI cannot open is converted to a cached WAV on Play
+ * (decoded by the panel, keyed by sha256; ffmpeg only after a confirmation).
+ * Starting always goes through the confirmation card with the exact command.
  */
 import React from 'react'
 import { Terminal } from '@xterm/xterm'
@@ -18,7 +20,9 @@ import {
   consoleConfirmationDetails, consoleProblem, loadConsoles, startConsole, stopConsole,
 } from './mv-terminal-state.mjs'
 import { unwrapRemote } from './remote-state.mjs'
-import { convertFileToWav, effectiveAudioPath } from './mv-wav.mjs'
+import { AudioPrepareError, effectiveAudioPath, prepareTerminalAudio } from './mv-wav.mjs'
+import { ffmpegArgs } from '../shared/mv-audio-protocol.mjs'
+import { displayCommand } from '../shared/mv-terminal-protocol.mjs'
 import { directoryPicker } from './mv-pack-state.mjs'
 import { Alert, Segmented } from './mv-ui.jsx'
 
@@ -92,7 +96,6 @@ function TerminalScreen({ api, session, onEnded, fontSize, ended, onStop, onFont
 
 const PLAYER_OPTIONS = Object.freeze([
   { value: 'python', label: 'world_execute_me', title: 'world_execute_me 自带的 tui_live.py（Python）' },
-  { value: 'rust', label: 'Rust 版', title: 'world-execute-me-ascii-rust（自行下载的 exe）' },
   { value: 'pack', label: 'MV 包渲染程序', title: '当前 MV 包 mv.json 里的 terminal 配置' },
 ])
 
@@ -114,9 +117,9 @@ export const MvTerminal = React.forwardRef(function MvTerminal({ api, info, info
   const [advanced, setAdvanced] = React.useState(false)
   const [onboardDir, setOnboardDir] = React.useState('')
   const [audioInfo, setAudioInfo] = React.useState(null)
-  const [converting, setConverting] = React.useState('')
-  const [convertNote, setConvertNote] = React.useState('')
-  const wavInput = React.useRef(null)
+  const [prepared, setPrepared] = React.useState(null) // { source, path, cached, label }
+  const [preparing, setPreparing] = React.useState('')
+  const [prepareFail, setPrepareFail] = React.useState(null) // { message, path, label, ffmpeg, confirming, busy }
   const mounted = React.useRef(true)
   React.useEffect(() => () => { mounted.current = false }, [])
   const consoleMode = destination === 'console'
@@ -139,75 +142,106 @@ export const MvTerminal = React.forwardRef(function MvTerminal({ api, info, info
     setChecked(null); setCheckError(''); setConfirming(false); setProblemText('')
   }
   const activePack = pack && !pack.builtin ? pack : null
-  const ctx = { pack: activePack, checked }
+  const audioPath = effectiveAudioPath(form)
+  const audioOverride = prepared && prepared.source === audioPath ? prepared : null
+  const ctx = { pack: activePack, checked, audioOverride }
   const problem = formProblem(form, ctx)
-  const rust = form.player === 'rust'
   const packMode = form.player === 'pack'
   React.useEffect(() => { setChecked(null); setConfirming(false) }, [activePack?.id, activePack?.loadedAt])
   // Choosing an MV pack with a terminal section offers its renderer right away.
-  React.useEffect(() => { if (activePack?.terminal && form.player !== 'pack' && !form.packageDir && !form.exePath) setForm({ player: 'pack' }) }, [activePack?.id])
+  React.useEffect(() => { if (activePack?.terminal && form.player !== 'pack' && !form.packageDir) setForm({ player: 'pack' }) }, [activePack?.id])
 
-  const check = async ({ quiet = false } = {}) => {
+  const check = async ({ quiet = false, override = audioOverride } = {}) => {
     setChecking(true); if (!quiet) setProblemText('')
-    try { const value = await checkLaunch(api, form, ctx); if (mounted.current) { setChecked(value); setCheckError('') } return value }
+    try { const value = await checkLaunch(api, form, { ...ctx, audioOverride: override }); if (mounted.current) { setChecked(value); setCheckError('') } return value }
     catch (error) { if (mounted.current) { setChecked(null); setCheckError(errorText(error, '路径检查失败。')) } return null }
     finally { if (mounted.current) setChecking(false) }
   }
   // Validate automatically shortly after the form settles (no "检查路径" button).
-  const formKey = JSON.stringify(form) + (activePack?.loadedAt ?? '')
+  const formKey = JSON.stringify(form) + (activePack?.loadedAt ?? '') + (audioOverride?.path ?? '')
   React.useEffect(() => {
     if (problem || confirming || session && !ended) return undefined
     const timer = setTimeout(() => { void check({ quiet: true }) }, 450)
     return () => clearTimeout(timer)
   }, [formKey, problem, confirming])
 
-  // Real format of the audio the player will open (MCI plays MP3/WAV only).
-  const audioPath = effectiveAudioPath(form)
+  // Real format of the audio the player will open, by content (MCI plays MP3 / PCM WAV only).
   React.useEffect(() => {
-    setAudioInfo(null)
-    if (!audioPath || typeof api.audioProbe !== 'function') return undefined
+    setAudioInfo(null); setPrepareFail(null)
+    if (!audioPath || packMode || typeof api.audioProbe !== 'function') return undefined
     let live = true
     const timer = setTimeout(() => {
-      api.audioProbe({ path: audioPath, player: rust ? 'rust' : 'python' })
+      api.audioProbe({ path: audioPath })
         .then(response => { if (live && mounted.current) setAudioInfo(unwrapRemote(response, '无法读取音频文件。')) })
         .catch(() => { if (live && mounted.current) setAudioInfo(null) })
     }, 400)
     return () => { live = false; clearTimeout(timer) }
   }, [api, audioPath, form.player])
-  const audioWarning = audioInfo?.warning || ''
+  const needsWav = Boolean(audioInfo && !packMode && !form.noAudio && audioInfo.mciPlayable === false && !audioOverride)
 
-  const convertWav = async file => {
-    if (!file) return
-    setConverting('读取…'); setConvertNote(''); setProblemText('')
+  /** Convert the audio for tui_live.py (cached by sha256); returns the override or null. */
+  const prepareAudio = async () => {
+    const source = audioPath
+    setPreparing('正在检查音频…'); setPrepareFail(null); setProblemText('')
+    const stageText = { probe: '检查音频', read: '读取', decode: '解码', upload: '写入 WAV 缓存', done: '完成' }
     try {
-      const stageText = { read: '读取', decode: '解码', upload: '写入缓存', done: '完成' }
-      const result = await convertFileToWav(api, file, { onProgress: ({ stage, ratio }) => { if (mounted.current) setConverting(`${stageText[stage] ?? stage} ${Math.round(ratio * 100)}%`) } })
+      const result = await prepareTerminalAudio(api, source, { onProgress: ({ stage, ratio }) => { if (mounted.current) setPreparing(`正在转换音频：${stageText[stage] ?? stage} ${Math.round((ratio ?? 0) * 100)}%`) } })
+      if (!mounted.current) return null
+      if (!result.converted) return null
+      const value = { source, path: result.path, cached: result.cached, label: result.probe?.label ?? '' }
+      setPrepared(value)
+      return value
+    } catch (error) {
+      if (!mounted.current) return null
+      if (error instanceof AudioPrepareError && (error.code === 'decode-failed' || error.code === 'unknown-format')) {
+        let ffmpeg = ''
+        try { const found = unwrapRemote(await api.ffmpegInfo({}), ''); if (found?.available) ffmpeg = found.path } catch { /* none */ }
+        setPrepareFail({ message: error.message, path: source, label: error.probe?.label ?? '', ffmpeg, confirming: false, busy: '' })
+        return undefined
+      }
+      // The file is missing or unreadable: let the path check report it.
+      if (!audioInfo) return null
+      setProblemText(errorText(error, '音频转换失败。'))
+      return undefined
+    } finally { if (mounted.current) setPreparing('') }
+  }
+  const convertWithFfmpeg = async () => {
+    const failed = prepareFail
+    if (!failed) return
+    setPrepareFail({ ...failed, busy: '正在用 ffmpeg 转换…' })
+    try {
+      const done = unwrapRemote(await api.audioConvert({ path: failed.path, confirmed: true }), 'ffmpeg 转换失败。')
       if (!mounted.current) return
-      setForm({ audioFile: result.path, noAudio: false })
-      setConvertNote(`已转换为 WAV（${(result.bytes / 1048576).toFixed(1)} MB，${Math.round(result.duration)} 秒${result.cached ? '，使用已有缓存' : ''}），音频已改为：${result.path}`)
-    } catch (error) { if (mounted.current) setProblemText(errorText(error, '转换为 WAV 失败。')) }
-    finally { if (mounted.current) setConverting('') }
+      setPrepared({ source: failed.path, path: done.path, cached: done.cached, label: failed.label, ffmpeg: true })
+      setPrepareFail(null)
+    } catch (error) { if (mounted.current) { setPrepareFail({ ...failed, busy: '', confirming: false }); setProblemText(errorText(error, 'ffmpeg 转换失败。')) } }
   }
 
   const platform = consoles.platform ?? info?.platform
-  const consoleBlocked = consoles.supported === false ? (consoles.reason || '独立窗口不可用。') : consoleProblem(form, { platform, pack: activePack, checked })
+  const consoleBlocked = consoles.supported === false ? (consoles.reason || '独立窗口不可用。') : consoleProblem(form, { platform, pack: activePack, checked, audioOverride })
   const running = Boolean(session && !ended)
-  const canPlay = !problem && !checking && !starting && !confirming && (consoleMode ? !consoleBlocked : !running) && !(packMode && !checked)
+  const canPlay = !problem && !checking && !starting && !confirming && !preparing && (consoleMode ? !consoleBlocked : !running) && !(packMode && !checked)
 
   const confirmAfterCheck = async () => {
     setProblemText('')
-    const value = packMode || !checked ? await check() : checked
+    let override = audioOverride
+    if (!packMode && audioPath && !form.noAudio && !audioOverride) {
+      const made = await prepareAudio()
+      if (made === undefined) return
+      if (made) override = made
+    }
+    const value = packMode || !checked || override !== audioOverride ? await check({ override }) : checked
     if (!value) return
     if (consoleMode) {
-      const blocked = consoleProblem(form, { platform, pack: activePack, checked: value })
+      const blocked = consoleProblem(form, { platform, pack: activePack, checked: value, audioOverride: override })
       if (blocked) { setProblemText(blocked); return }
     }
     setConfirming(true)
   }
   React.useImperativeHandle(ref, () => ({ primary: () => { if (canPlay) void confirmAfterCheck() } }))
   React.useEffect(() => {
-    onState({ canPlay, running, busy: checking || starting, label: consoleMode ? '在独立窗口播放' : '在面板终端播放', confirming })
-  }, [canPlay, running, checking, starting, consoleMode, confirming])
+    onState({ canPlay, running, busy: checking || starting || Boolean(preparing), busyLabel: preparing ? '转换音频…' : '', label: consoleMode ? '在独立窗口播放' : '在面板终端播放', confirming })
+  }, [canPlay, running, checking, starting, consoleMode, confirming, preparing])
 
   const openConsole = async () => {
     setStarting(true); setProblemText(''); setConsoleNote('')
@@ -257,7 +291,7 @@ export const MvTerminal = React.forwardRef(function MvTerminal({ api, info, info
         <span className="mv-onboard-badge">&gt;_</span>
         <div>
           <h2>在终端里播放，需要你本机的播放器</h2>
-          <p className="mv-caption">选择 world_execute_me 文件夹（里面有 <code>_tools\tui_live.py</code> 和 <code>python\python.exe</code>），插件会自动填好 Python 路径并检查。也可以在上方切换为 Rust 版或 MV 包的渲染程序。</p>
+          <p className="mv-caption">选择 world_execute_me 文件夹（里面有 <code>_tools\tui_live.py</code> 和 <code>python\python.exe</code>），插件会自动填好 Python 路径并检查。也可以在上方切换为 MV 包的渲染程序。</p>
           <div className="mv-field-row" style={{ marginTop: 8 }}>
             <input value={onboardDir} spellCheck={false} placeholder="F:\everyAI\dsh-mv-cli\world_execute_me" aria-label="world_execute_me 文件夹"
               style={{ height: 30, padding: '0 8px', borderRadius: 8, border: '1px solid var(--mv-border)', background: 'var(--mv-bg)' }}
@@ -276,7 +310,7 @@ export const MvTerminal = React.forwardRef(function MvTerminal({ api, info, info
   } else if (checking && !checked) status = <Alert kind="info"><p>正在检查路径…</p></Alert>
   else if (checked) {
     status = (
-      <Alert kind="ok"><p><b>{audioWarning && !packMode ? '路径检查通过（但声音有问题，见下方）' : '已就绪'}</b>{checked.audio?.format ? ` · 音频 ${checked.audio.label}` : form.noAudio && !rust && !packMode ? ' · 不播放声音' : ''}{consoleMode ? ' · 将打开一个 Windows 控制台窗口' : ' · 在下方面板终端中显示'}</p>
+      <Alert kind="ok"><p><b>已就绪</b>{audioOverride ? ` · 音频 ${audioOverride.label || ''} → WAV 缓存` : checked.audio?.format ? ` · 音频 ${checked.audio.label}` : form.noAudio && !packMode ? ' · 不播放声音' : ''}{consoleMode ? ' · 将打开一个 Windows 控制台窗口' : ' · 在下方面板终端中显示'}</p>
         <p className="mv-caption mv-wrap" title={checked.display}>{checked.display}</p></Alert>
     )
   }
@@ -293,23 +327,33 @@ export const MvTerminal = React.forwardRef(function MvTerminal({ api, info, info
         {packMode && activePack?.terminal && <p className="mv-caption">渲染程序 <code>{activePack.terminal.program}</code>{activePack.terminal.script ? <> · 脚本 <code>{activePack.terminal.script}</code></> : null}</p>}
         {status}
         {consoleMode && !problem && !firstRun && consoleBlocked && <Alert kind="warn"><p>独立窗口：{consoleBlocked}</p></Alert>}
-        {audioInfo && audioWarning && !packMode && <Alert kind="warn" actions={!rust ? <>
-          <button type="button" className="mv-button mv-button-small" disabled={Boolean(converting)} onClick={() => wavInput.current?.click()}>{converting || '转换为 WAV…'}</button>
-          <button type="button" className="mv-button mv-button-secondary mv-button-small" onClick={() => setForm({ noAudio: true })}>不播放声音</button>
-          <span className="mv-caption">在弹出的对话框里选同一个文件；转换结果存入插件缓存，不改动原文件。</span>
-        </> : null}><p className="mv-wrap">{audioWarning}</p></Alert>}
-        {convertNote && <Alert kind="ok"><p className="mv-wrap">{convertNote}</p></Alert>}
+        {needsWav && !preparing && !prepareFail && <Alert kind="info"><p className="mv-wrap">音频是 <b>{audioInfo.label}</b>：tui_live.py（Windows MCI）只能直接播放 MP3 / PCM WAV，点播放时会自动转换成 WAV 缓存（每个文件只转换一次，原文件不变）。</p></Alert>}
+        {preparing && <Alert kind="info"><p>{preparing}</p></Alert>}
+        {audioOverride && <Alert kind="ok"><p className="mv-wrap">音频已{audioOverride.cached ? '使用缓存的' : '转换为'} WAV{audioOverride.ffmpeg ? '（ffmpeg）' : ''}：<code>{audioOverride.path}</code></p></Alert>}
+        {prepareFail && <Alert kind="warn" actions={<>
+          {prepareFail.ffmpeg && !prepareFail.confirming && <button type="button" className="mv-button mv-button-small" onClick={() => setPrepareFail({ ...prepareFail, confirming: true })}>用 ffmpeg 转换…</button>}
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" onClick={() => { setPrepareFail(null); setForm({ noAudio: true }) }}>不播放声音</button>
+        </>}>
+          <p className="mv-wrap">面板无法解码这个音频（{prepareFail.label || prepareFail.message}）。{prepareFail.ffmpeg ? '找到了你本机的 ffmpeg，可以用它转换。' : '安装 ffmpeg（放进 PATH，或 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe）后可以转换；或换成 MP3 / M4A / FLAC / WAV。'}</p>
+          {prepareFail.confirming && <div className="mv-confirm" role="dialog" aria-label="确认用 ffmpeg 转换">
+            <strong>用你本机的 ffmpeg 转换这个文件？</strong>
+            <span className="mv-caption">Host 将运行（不经过 shell，最多 10 分钟；输出写入插件的 WAV 缓存）：</span>
+            <code className="mv-cmd">{displayCommand(prepareFail.ffmpeg, ffmpegArgs(prepareFail.path, '<插件缓存>\\<sha256>.wav'))}</code>
+            <div className="mv-row">
+              <button type="button" className="mv-button" disabled={Boolean(prepareFail.busy)} onClick={() => void convertWithFfmpeg()}>{prepareFail.busy || '确认转换'}</button>
+              <button type="button" className="mv-button mv-button-secondary" disabled={Boolean(prepareFail.busy)} onClick={() => setPrepareFail({ ...prepareFail, confirming: false })}>取消</button>
+            </div>
+          </div>}
+        </Alert>}
         {problemText && <Alert kind="error"><p className="mv-wrap" style={{ whiteSpace: 'pre-wrap' }}>{problemText}</p></Alert>}
         {consoleNote && <Alert kind="info"><p>{consoleNote}</p></Alert>}
-        {!rust && !packMode && <input ref={wavInput} type="file" accept="audio/*,video/mp4,.mp3,.m4a,.mp4,.aac,.ogg,.flac,.wav" className="mv-hidden"
-          onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; void convertWav(file) }} />}
       </div>
 
       {confirming && consoleMode && <div className="mv-confirm" role="dialog" aria-label="确认在独立窗口播放">
         <strong>{consoleDetails.title}</strong>
         <span className="mv-caption">Host 将执行：</span><code className="mv-cmd">{consoleDetails.command}</code>
         <span className="mv-caption">窗口里运行的播放器：</span><code className="mv-cmd">{consoleDetails.player}</code>
-        <ul>{consoleDetails.points.map(point => <li key={point}>{point}</li>)}{audioWarning && !packMode && <li className="mv-error">{audioWarning}</li>}</ul>
+        <ul>{consoleDetails.points.map(point => <li key={point}>{point}</li>)}{audioOverride && <li>音频已自动转换为 WAV 缓存（原文件 {audioOverride.source} 不变）。</li>}</ul>
         <div className="mv-row">
           <button type="button" className="mv-button" disabled={starting} onClick={() => void openConsole()}>{starting ? '正在打开…' : '确认打开窗口'}</button>
           <button type="button" className="mv-button mv-button-secondary" disabled={starting} onClick={() => setConfirming(false)}>取消</button>
@@ -320,7 +364,7 @@ export const MvTerminal = React.forwardRef(function MvTerminal({ api, info, info
         <span className="mv-caption">命令：</span><code className="mv-cmd">{details.command}</code>
         <span className="mv-caption">工作目录：<code>{details.cwd}</code></span>
         {details.argv?.length > 0 && <ol className="mv-argv" aria-label="逐个参数">{details.argv.map((arg, i) => <li key={i}><code>{arg}</code></li>)}</ol>}
-        <ul>{details.points.map(point => <li key={point}>{point}</li>)}{!packMode && audioWarning && <li className="mv-error">{audioWarning}</li>}</ul>
+        <ul>{details.points.map(point => <li key={point}>{point}</li>)}</ul>
         <div className="mv-row">
           <button type="button" className="mv-button" disabled={starting} onClick={() => void start()}>{starting ? '正在启动…' : '确认启动'}</button>
           <button type="button" className="mv-button mv-button-secondary" disabled={starting} onClick={() => setConfirming(false)}>取消</button>
@@ -344,14 +388,14 @@ export const MvTerminal = React.forwardRef(function MvTerminal({ api, info, info
       </div></div>}
 
       <details className="mv-details" open={advanced} onToggle={event => setAdvanced(event.currentTarget.open)}>
-        <summary>设置 / 高级 <span className="mv-caption">路径、音频、起始位置{rust ? '、字幕偏移' : packMode ? '、偏移' : '、延迟补偿'}、字号</span></summary>
+        <summary>设置 / 高级 <span className="mv-caption">路径、音频、起始位置{packMode ? '、偏移' : '、延迟补偿'}、字号</span></summary>
         <div className="mv-details-body">
           <div className="mv-form">
             {packMode && <>
               <label className="mv-field"><span>起始秒数 {'{start}'}</span><input value={form.packStart} placeholder="0" inputMode="decimal" onChange={event => setForm({ packStart: event.target.value })} /></label>
               <label className="mv-field"><span>偏移（秒）{'{offset}'}</span><input value={form.packOffset} placeholder="0" inputMode="decimal" onChange={event => setForm({ packOffset: event.target.value })} /></label>
             </>}
-            {!rust && !packMode && <>
+            {!packMode && <>
               <label className="mv-field mv-wide"><span>播放器目录（含 _tools\tui_live.py）</span>
                 <span className="mv-field-row">
                   <input value={form.packageDir} spellCheck={false} placeholder="F:\everyAI\dsh-mv-cli\world_execute_me" onChange={event => setForm({ packageDir: event.target.value })}
@@ -364,17 +408,13 @@ export const MvTerminal = React.forwardRef(function MvTerminal({ api, info, info
                   {form.packageDir && form.pythonPath !== suggestedPython(form.packageDir) && <button type="button" className="mv-button mv-button-secondary" onClick={() => setForm({ pythonPath: suggestedPython(form.packageDir) })}>自动填写</button>}
                 </span></label>
             </>}
-            {rust && !packMode && <label className="mv-field mv-wide"><span>world-execute-me-rust.exe（自行从其 GitHub Release 下载）</span>
-              <input value={form.exePath} spellCheck={false} placeholder="D:\tools\world-execute-me-rust\world-execute-me-rust.exe" onChange={event => setForm({ exePath: event.target.value })} /></label>}
-            {!packMode && <label className="mv-field mv-wide"><span>{rust ? '音频文件（可选，仅 MP3；留空播放其内嵌音乐）' : '音频文件（可选；留空用播放器自带的 input\\song.mp3）'}</span>
-              <input value={form.audioFile} spellCheck={false} disabled={!rust && form.noAudio} placeholder={rust ? 'D:\\music\\world.execute(me).mp3' : audioPath || 'D:\\music\\world.execute(me).mp3'} onChange={event => setForm({ audioFile: event.target.value })} />
-              {audioInfo && !audioWarning && <span className="mv-field-help">格式：{audioInfo.label}（可以播放）</span>}</label>}
+            {!packMode && <label className="mv-field mv-wide"><span>音频或视频文件（可选；留空用播放器自带的 input\song.mp3；任何格式，按内容识别）</span>
+              <input value={form.audioFile} spellCheck={false} disabled={form.noAudio} placeholder={audioPath || 'D:\\music\\world.execute(me).m4a'} onChange={event => setForm({ audioFile: event.target.value })} />
+              {audioInfo && <span className="mv-field-help">格式：{audioInfo.label}{audioInfo.mciPlayable ? '（可以直接播放）' : '（播放前自动转换为 WAV）'}</span>}</label>}
             {!packMode && <label className="mv-field"><span>起始秒数</span><input value={form.start} placeholder="0" inputMode="decimal" onChange={event => setForm({ start: event.target.value })} /></label>}
-            {!rust && !packMode && <label className="mv-field"><span>音频延迟补偿（秒）</span><input value={form.audioLatency} placeholder="默认" inputMode="decimal" onChange={event => setForm({ audioLatency: event.target.value })} /></label>}
-            {rust && <label className="mv-field"><span>字幕偏移（秒）</span><input value={form.offset} placeholder="0" inputMode="decimal" onChange={event => setForm({ offset: event.target.value })} /></label>}
+            {!packMode && <label className="mv-field"><span>音频延迟补偿（秒）</span><input value={form.audioLatency} placeholder="默认" inputMode="decimal" onChange={event => setForm({ audioLatency: event.target.value })} /></label>}
             <label className="mv-field"><span>面板终端字号</span><input type="number" min={8} max={24} value={fontSize} onChange={event => setFontSize(Number(event.target.value))} /></label>
-            {!rust && !packMode && <label className="mv-check"><input type="checkbox" checked={form.noAudio} onChange={event => setForm({ noAudio: event.target.checked })} /> 不播放声音（--no-audio）</label>}
-            {rust && <label className="mv-check"><input type="checkbox" checked={form.autoplay} onChange={event => setForm({ autoplay: event.target.checked })} /> 立即播放（--autoplay）</label>}
+            {!packMode && <label className="mv-check"><input type="checkbox" checked={form.noAudio} onChange={event => setForm({ noAudio: event.target.checked })} /> 不播放声音（--no-audio）</label>}
           </div>
           <p className="mv-caption">将运行：<code className="mv-wrap">{problem ? '—' : (checked?.display ?? commandPreview(form, ctx))}</code></p>
           <div className="mv-row">

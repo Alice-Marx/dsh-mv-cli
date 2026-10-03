@@ -17,7 +17,7 @@
  *   "audio":    { "file": "song.mp3", "offset": 0 },
  *   "lyrics":   { "file": "lyrics.lrc", "offset": 0 },
  *   "spectrum": { "file": "spectrum.json" },
- *   "canvas":   { "renderer": "generic" | "world-execute-me", "fontSize": 14 },
+ *   "canvas":   { "renderer": "generic" | "world-execute-me" | "script", "script": "scenes.js", "fontSize": 14 },
  *   "terminal": { "label": "…", "program": "python/python.exe", "script": "player.py",
  *                 "args": ["{script}", { "when": "audio", "args": ["--audio", "{audio}"] }, "--start", "{start}"],
  *                 "cwd": "pack" | "program" | "script" }
@@ -28,20 +28,21 @@ export const MV_PACK_FORMAT = 'dsh-mv-pack'
 export const MV_PACK_VERSION = 1
 export const MV_PACK_MANIFEST = 'mv.json'
 export const MV_PACK_SCHEMA_FILE = 'mv.schema.json'
-export const MV_CANVAS_RENDERERS = Object.freeze(['generic', 'world-execute-me'])
+export const MV_CANVAS_RENDERERS = Object.freeze(['generic', 'world-execute-me', 'script'])
 export const MV_PACK_CWD = Object.freeze(['pack', 'program', 'script'])
 /** Placeholders usable inside terminal.args strings. */
 export const MV_PACK_PLACEHOLDERS = Object.freeze(['audio', 'lyrics', 'spectrum', 'script', 'packDir', 'start', 'offset'])
 /** Conditions of `{ "when": …, "args": […] }` groups. */
 export const MV_PACK_CONDITIONS = Object.freeze(['audio', 'lyrics', 'spectrum', 'start', 'offset'])
 /** Pack files the panel may read (only through the pack's own manifest). */
-export const MV_PACK_FILE_ROLES = Object.freeze(['audio', 'lyrics', 'spectrum'])
+export const MV_PACK_FILE_ROLES = Object.freeze(['audio', 'lyrics', 'spectrum', 'scene'])
 export const MV_LYRICS_EXTENSIONS = Object.freeze(['.lrc', '.srt', '.vtt', '.json', '.txt'])
 
 export const MV_PACK_LIMITS = Object.freeze({
   manifestBytes: 256 * 1024,
   textFileBytes: 8 * 1024 * 1024,
-  audioBytes: 512 * 1024 * 1024,
+  sceneBytes: 256 * 1024,
+  audioBytes: 1024 * 1024 * 1024,
   readChunkBytes: 512 * 1024,
   maxArgs: 64,
   maxArgChars: 2_048,
@@ -249,10 +250,16 @@ export function parseMvPack(input) {
   const canvas = data.canvas ?? {}
   if (!isObject(canvas)) problems.push('canvas 必须是对象')
   else {
-    unknownKeys(canvas, new Set(['renderer', 'fontSize']), 'canvas', problems)
-    const renderer = canvas.renderer ?? 'generic'
+    unknownKeys(canvas, new Set(['renderer', 'fontSize', 'script']), 'canvas', problems)
+    const renderer = canvas.renderer ?? (canvas.script ? 'script' : 'generic')
     if (!MV_CANVAS_RENDERERS.includes(renderer)) problems.push(`canvas.renderer 必须是 ${MV_CANVAS_RENDERERS.join(' / ')}`)
-    pack.canvas = { renderer, fontSize: optionalNumber(canvas, 'fontSize', 8, 32, problems, 'canvas.fontSize') }
+    let script
+    if (canvas.script !== undefined && canvas.script !== null) {
+      script = checkPackPath(canvas.script, 'canvas.script', problems)
+      if (script && !['.js', '.mjs'].includes(extOf(script))) problems.push('canvas.script 应是 .js 文件（定义 render(t, cols, rows, ctx) 的场景脚本）')
+    }
+    if (renderer === 'script' && !script && !problems.some(p => p.startsWith('canvas.script'))) problems.push('canvas.renderer 为 script 时必须提供 canvas.script（如 "scenes.js"）')
+    pack.canvas = { renderer, ...(script ? { script } : {}), fontSize: optionalNumber(canvas, 'fontSize', 8, 32, problems, 'canvas.fontSize') }
   }
   pack.terminal = terminalSection(data.terminal, problems, pack)
   if (problems.length) throw new MvPackError(problems)

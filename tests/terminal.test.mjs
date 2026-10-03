@@ -9,8 +9,7 @@ const DIR = 'F:\\everyAI\\dsh-mv-cli\\world_execute_me'
 const PY = `${DIR}\\python\\python.exe`
 const SCRIPT = `${DIR}\\_tools\\tui_live.py`
 const AUDIO = 'D:\\Music\\song.mp3'
-const RUST = 'D:\\tools\\wem\\world-execute-me-rust.exe'
-const FILES = { [PY]: 'file', [DIR]: 'dir', [SCRIPT]: 'file', [AUDIO]: 'file', [RUST]: 'file' }
+const FILES = { [PY]: 'file', [DIR]: 'dir', [SCRIPT]: 'file', [AUDIO]: 'file' }
 
 test('resolve: every path is checked on disk before anything runs', async () => {
   const { statPath } = manager(createMvTerminalManager, { files: FILES })
@@ -24,8 +23,6 @@ test('resolve: every path is checked on disk before anything runs', async () => 
     return /播放器目录不存在/.test(error.message) && /音频文件不存在/.test(error.message)
   })
   await assert.rejects(resolveMvLaunch(parseMvLaunch({ pythonPath: PY, packageDir: 'F:\\empty' }), { ...opts, statPath: async p => (p === 'F:\\empty' ? { isDirectory: () => true, isFile: () => false } : statPath(p)) }), /_tools\/tui_live\.py/)
-  const rust = await resolveMvLaunch(parseMvLaunch({ player: 'rust', exePath: RUST, autoplay: true }), opts)
-  assert.deepEqual([rust.file, rust.args, rust.cwd], [RUST, ['--autoplay'], 'D:\\tools\\wem'])
 })
 
 test('environment: UTF-8 Python without bytecode or user site', () => {

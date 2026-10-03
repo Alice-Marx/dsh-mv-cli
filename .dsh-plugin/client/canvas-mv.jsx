@@ -12,8 +12,16 @@ import { KNOWN_AUDIO, formatOffset, loadOffsets, saveOffsets, resetOffsets, sha2
 import { openMediaStore, getMedia, putMedia, deleteMedia } from './mv/media-store.mjs'
 import { FilmClock, frameTime, keyAction, stepCue, stepOffset } from './mv/player-state.mjs'
 import { GenericFilm, genericChapters, timeText } from './mv/generic-film.mjs'
+import { ScriptFilm } from './mv/script-film.mjs'
 import { BUILTIN_PACK, fetchPackAudio, fetchPackText } from './mv-pack-state.mjs'
+import { readHostAudio } from './mv-wav.mjs'
+import { unwrapRemote } from './remote-state.mjs'
+import { audioMimeOf, ffmpegArgs, sniffAudio } from '../shared/mv-audio-protocol.mjs'
+import { displayCommand } from '../shared/mv-terminal-protocol.mjs'
 import { Alert, Icon, KeyHelp, Popover } from './mv-ui.jsx'
+
+/** Everything the panel's Chromium can decode; the content decides, not the extension. */
+export const AUDIO_ACCEPT = 'audio/*,video/*,.mp3,.mp2,.m4a,.m4b,.mp4,.m4v,.mov,.aac,.webm,.mkv,.mka,.ogg,.oga,.opus,.flac,.wav'
 
 const FONT_KEY = 'dsh-mv.canvas.fontSize'
 const readFont = fallback => { try { const v = Number(globalThis.localStorage?.getItem(FONT_KEY)); return v >= 8 && v <= 32 ? v : fallback } catch { return fallback } }
@@ -22,6 +30,7 @@ const storeFont = v => { try { globalThis.localStorage?.setItem(FONT_KEY, String
 const HINT = 'SPACE 播放/暂停  ←/→ 5s  [ ] 字幕  Alt+[ ] 音频同步  1-5 章节  F 全屏  H 帮助'
 
 const isGeneric = pack => pack?.pack?.canvas?.renderer !== 'world-execute-me'
+const isScript = pack => pack?.pack?.canvas?.renderer === 'script'
 
 export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null, onState = () => {} }, ref) {
   const wrap = React.useRef(null)
@@ -45,6 +54,8 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const [duration, setDuration] = React.useState(DURATION)
   const [packStatus, setPackStatus] = React.useState('')
   const [volume, setVolume] = React.useState({ level: 1, muted: false })
+  const [sceneNote, setSceneNote] = React.useState('')
+  const [decodeFail, setDecodeFail] = React.useState(null) // { path, label, ffmpeg, confirming, busy }
 
   // Engine setup and the render loop.
   React.useEffect(() => {
@@ -52,6 +63,13 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     const state = {
       wem: new Film({ energy: t => state.energy(t) }),
       generic: new GenericFilm({ energy: t => state.energy(t) }),
+      script: new ScriptFilm({
+        energy: t => state.energy(t),
+        onFail: reason => {
+          if (state.film === state.script) state.film = state.generic
+          setSceneNote(`场景脚本已停用，改用通用画面：${reason}`)
+        },
+      }),
       film: null,
       renderer: new GridRenderer(canvas.current, { fontSize }),
       clock: new FilmClock({ audio: audio.current }),
@@ -78,7 +96,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     raf = requestAnimationFrame(frame)
     const onFs = () => setFullscreen(document.fullscreenElement === wrap.current)
     document.addEventListener('fullscreenchange', onFs)
-    return () => { cancelAnimationFrame(raf); document.removeEventListener('fullscreenchange', onFs); live.close() }
+    return () => { cancelAnimationFrame(raf); document.removeEventListener('fullscreenchange', onFs); live.close(); state.script.stop() }
   }, [])
 
   React.useEffect(() => { engine.current?.renderer.setFontSize(fontSize); storeFont(fontSize) }, [fontSize])
@@ -93,8 +111,12 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const useAudioFile = React.useCallback(async (file, { remember = true, packOffset = 0 } = {}) => {
     setError('')
     const state = engine.current
+    setDecodeFail(null)
     try {
-      const sha = await sha256Hex(await file.arrayBuffer())
+      const bytes = await file.arrayBuffer()
+      const sniff = sniffAudio(new Uint8Array(bytes, 0, Math.min(4096, bytes.byteLength)))
+      if (!file.type && sniff.format !== 'unknown') file = new File([bytes], file.name, { type: audioMimeOf(sniff) })
+      const sha = await sha256Hex(bytes)
       const old = audio.current.src
       audio.current.src = URL.createObjectURL(file)
       if (old?.startsWith('blob:')) URL.revokeObjectURL(old)
@@ -105,7 +127,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       setOffsets({ audioOffset: loaded.audioOffset, subtitleOffset: loaded.subtitleOffset })
       state.clock.audioOffset = loaded.audioOffset
       state.started = false
-      setAudioInfo({ name: file.name, sha, known: loaded.known, saved: loaded.saved, duration: null })
+      setAudioInfo({ name: file.name, sha, known: loaded.known, saved: loaded.saved, duration: null, label: sniff.label })
       if (remember && packRef.current?.builtin) await putMedia(dbRef.current, 'audio', { file, name: file.name, sha })
     } catch (failure) {
       setError(`无法读取音频：${failure?.message ?? failure}`)
@@ -115,11 +137,12 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const useLyricsText = React.useCallback(async (name, body, { remember = true, shift = 0 } = {}) => {
     setError('')
     try {
-      const generic = engine.current.film === engine.current.generic
+      const state = engine.current
+      const generic = state.film !== state.wem
       const cues = parseLyrics(name, body, { duration: generic ? 1e9 : DURATION })
       if (!cues.length) throw new Error('文件里没有带时间的歌词行。')
       if (shift) for (const cue of cues) { cue.time += shift; cue.end += shift }
-      engine.current.film.setLyrics(cues)
+      for (const film of generic ? [state.generic, state.script] : [state.wem]) film.setLyrics(cues)
       setLyricsInfo({ name, count: cues.length })
       if (remember && packRef.current?.builtin) await putMedia(dbRef.current, 'lyrics', { name, text: body })
     } catch (failure) { setError(`无法解析歌词：${failure?.message ?? failure}`) }
@@ -147,15 +170,15 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       state.clock.pause()
       state.started = false
       state.help = false
-      state.wem.setLyrics([]); state.generic.setLyrics([])
+      state.wem.setLyrics([]); state.generic.setLyrics([]); state.script.setLyrics([])
+      state.script.stop()
       state.energy = () => state.live.energy()
-      setLyricsInfo(null); setSpectrumInfo(null); setError(''); setPackStatus('')
+      setLyricsInfo(null); setSpectrumInfo(null); setError(''); setPackStatus(''); setSceneNote(''); setDecodeFail(null)
       const generic = isGeneric(pack)
       state.film = generic ? state.generic : state.wem
       const length = generic ? (pack.pack.duration ?? 0) : (pack.pack.duration ?? DURATION)
       state.clock.duration = length || DURATION
-      state.generic.duration = length
-      state.generic.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? '' })
+      for (const film of [state.generic, state.script]) { film.duration = length; film.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? '' }) }
       state.wem.duration = generic ? DURATION : (pack.pack.duration ?? DURATION)
       setDuration(state.clock.duration)
       if (pack.pack.canvas?.fontSize) setFontSize(pack.pack.canvas.fontSize)
@@ -167,6 +190,22 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         if (l?.text) await useLyricsText(l.name, l.text, { remember: false })
         if (s?.text) await useSpectrumText(s.name, s.text, { remember: false })
         return
+      }
+      if (isScript(pack)) {
+        if (!pack.files?.scene?.exists || pack.files.scene.tooLarge || !api) setSceneNote(`找不到可用的场景脚本（${pack.pack.canvas.script}），改用通用画面。`)
+        else {
+          try {
+            const { text } = await fetchPackText(api, pack.manifestPath, 'scene', { isCancelled: () => cancelled })
+            if (cancelled) return
+            state.film = state.script
+            await state.script.load(text)
+            if (cancelled) { state.script.stop(); return }
+          } catch (failure) {
+            if (cancelled) return
+            if (state.film === state.script) state.film = state.generic
+            setSceneNote(`场景脚本无法运行，改用通用画面：${failure?.message ?? failure}`)
+          }
+        }
       }
       for (const role of ['lyrics', 'spectrum']) {
         if (!pack.pack[role] || !pack.files?.[role]?.exists || pack.files[role].tooLarge || !api) continue
@@ -234,7 +273,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       case 'toggle': if (!state.started || !state.clock.playing) void play(); else state.clock.pause(); return true
       case 'seekBy': state.clock.seek(Math.max(-60, t + action.delta)); return true
       case 'restart': state.clock.seek(0); void play(); return true
-      case 'chapter': state.clock.seek(state.film === state.generic ? genericChapters(state.clock.duration)[action.index][0] : action.at); void play(); return true
+      case 'chapter': state.clock.seek(state.film !== state.wem ? genericChapters(state.clock.duration)[action.index][0] : action.at); void play(); return true
       case 'cue': { const at = stepCue(state.film.times, t, action.direction); if (at !== null) { state.clock.seek(at); state.started = true } return true }
       case 'subtitleOffset': applyOffsets({ ...offsetsRef.current, subtitleOffset: stepOffset(offsetsRef.current.subtitleOffset, action.delta) }); return true
       case 'audioOffset': applyOffsets({ ...offsetsRef.current, audioOffset: stepOffset(offsetsRef.current.audioOffset, action.delta) }); return true
@@ -265,9 +304,32 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   }
   const pickAudio = () => {
     const input = document.createElement('input')
-    input.type = 'file'; input.accept = 'audio/*,video/mp4,.mp3,.m4a,.aac,.mp4,.ogg,.opus,.flac,.wav'
+    input.type = 'file'; input.accept = AUDIO_ACCEPT
     input.onchange = () => { const file = input.files?.[0]; if (file) void useAudioFile(file) }
     input.click()
+  }
+
+  // <audio> could not decode the file: for pack audio (a path on the Host) offer the user's ffmpeg.
+  const onDecodeError = async () => {
+    if (!audio.current?.src) return
+    const current = packRef.current
+    const path = !current?.builtin ? current?.files?.audio?.path : ''
+    const label = audioInfo?.label ?? '未知格式'
+    let ffmpeg = ''
+    if (path && api?.ffmpegInfo) { try { const found = unwrapRemote(await api.ffmpegInfo({}), ''); if (found?.available) ffmpeg = found.path } catch { /* no ffmpeg */ } }
+    setDecodeFail({ path, label, ffmpeg: path ? ffmpeg : '', confirming: false, busy: '' })
+  }
+  const convertWithFfmpeg = async () => {
+    const failed = decodeFail
+    if (!failed?.path) return
+    setDecodeFail(value => ({ ...value, busy: '正在用 ffmpeg 转换…' }))
+    try {
+      const done = unwrapRemote(await api.audioConvert({ path: failed.path, confirmed: true }), 'ffmpeg 转换失败。')
+      setDecodeFail(value => ({ ...value, busy: '正在读取转换结果…' }))
+      const bytes = await readHostAudio(api, done.path)
+      setDecodeFail(null)
+      await useAudioFile(new File([bytes], done.path.split(/[\\/]/).pop(), { type: 'audio/wav' }), { remember: false, packOffset: packRef.current?.pack?.audio?.offset ?? 0 })
+    } catch (failure) { setDecodeFail(value => value && ({ ...value, busy: '', confirming: false })); setError(`ffmpeg 转换失败：${failure?.message ?? failure}`) }
   }
 
   const known = audioInfo?.known
@@ -288,7 +350,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         <div>
           <h2>{pack.builtin ? '第一次使用？先选一首歌' : '这个 MV 包没有可用的音频'}</h2>
           <ol>
-            <li>选择你自己的音频文件（mp3 / m4a / aac / mp4 都行，在本机解码，不上传）。</li>
+            <li>选择你自己的音频或视频文件（MP3、M4A/AAC、MP4/MOV/WebM/MKV 视频的音轨、Opus/Ogg、FLAC、WAV 都行，按内容识别，不看扩展名；在本机解码，不上传）。</li>
             <li>可选：选择歌词（LRC / SRT / lyrics.json），画面会显示字幕。</li>
             <li>点 <b>▶ 播放</b>。也可以不选音频，直接静音观看画面。</li>
           </ol>
@@ -304,7 +366,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
           <span className="mv-source-icon" aria-hidden="true">♪</span>
           <div className="mv-source-main">
             <div className="mv-source-label">音频</div>
-            <div className="mv-source-value" title={audioInfo ? `${audioInfo.name}\nsha256 ${audioInfo.sha}` : ''}>{audioInfo ? audioInfo.name : '未选择 · 静音模式'}</div>
+            <div className="mv-source-value" title={audioInfo ? `${audioInfo.name}\nsha256 ${audioInfo.sha}` : ''}>{audioInfo ? `${audioInfo.name}${audioInfo.label && audioInfo.label !== '未知格式' ? ` · ${audioInfo.label}` : ''}` : '未选择 · 静音模式'}</div>
           </div>
           <button type="button" className="mv-button mv-button-secondary mv-button-small" onClick={pickAudio}>{audioInfo ? '更换' : '选择…'}</button>
         </div>
@@ -328,6 +390,21 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         </div>
       </div>
       {error && <Alert kind="error" actions={<button type="button" className="mv-link" onClick={() => setError('')}>关闭</button>}><p>{error}</p></Alert>}
+      {sceneNote && <Alert kind="warn" actions={<button type="button" className="mv-link" onClick={() => setSceneNote('')}>关闭</button>}><p className="mv-wrap">{sceneNote}</p></Alert>}
+      {decodeFail && <Alert kind="warn" actions={decodeFail.ffmpeg && !decodeFail.confirming ? <>
+        <button type="button" className="mv-button mv-button-small" disabled={decodeFail.busy} onClick={() => setDecodeFail(value => ({ ...value, confirming: true }))}>用 ffmpeg 转换…</button>
+      </> : null}>
+        <p className="mv-wrap">面板无法解码这个音频（{decodeFail.label}）。{decodeFail.ffmpeg ? '找到了你本机的 ffmpeg，可以把它转换成 WAV 缓存后播放（原文件不变）。' : '安装 ffmpeg（放进 PATH，或 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe）后可以自动转换；或者换成 MP3 / M4A / FLAC / WAV。'}</p>
+        {decodeFail.confirming && <div className="mv-confirm" role="dialog" aria-label="确认用 ffmpeg 转换">
+          <strong>用你本机的 ffmpeg 转换这个文件？</strong>
+          <span className="mv-caption">Host 将运行（不经过 shell，最多 10 分钟）：</span>
+          <code className="mv-cmd">{displayCommand(decodeFail.ffmpeg, ffmpegArgs(decodeFail.path, '<插件缓存>\\<sha256>.wav'))}</code>
+          <div className="mv-row">
+            <button type="button" className="mv-button" disabled={decodeFail.busy} onClick={() => void convertWithFfmpeg()}>{decodeFail.busy ? decodeFail.busy : '确认转换'}</button>
+            <button type="button" className="mv-button mv-button-secondary" disabled={Boolean(decodeFail.busy)} onClick={() => setDecodeFail(value => ({ ...value, confirming: false }))}>取消</button>
+          </div>
+        </div>}
+      </Alert>}
       <div ref={wrap} className={`mv-stage-wrap${fullscreen ? ' mv-fullscreen' : ''}`} tabIndex={0} onKeyDown={onKeyDown}
         onDoubleClick={toggleFullscreen} aria-label="画布 MV（点击后可用键盘控制）">
         <div ref={stage} className="mv-stage" onClick={() => wrap.current?.focus()}><canvas ref={canvas} /></div>
@@ -377,10 +454,11 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         const length = event.currentTarget.duration
         setAudioInfo(info => info ? { ...info, duration: length } : info)
         const state = engine.current
-        if (state && state.film === state.generic && !packRef.current?.pack?.duration && Number.isFinite(length) && length > 0) {
-          state.clock.duration = length; state.generic.duration = length; setDuration(length)
+        if (state && (state.film === state.generic || state.film === state.script) && !packRef.current?.pack?.duration && Number.isFinite(length) && length > 0) {
+          state.clock.duration = length; state.generic.duration = length; state.script.duration = length; setDuration(length)
         }
       }}
+        onError={() => { void onDecodeError() }}
         onVolumeChange={event => setVolume({ level: event.currentTarget.volume, muted: event.currentTarget.muted })}
         onEnded={() => { if (engine.current) engine.current.started = true }} />
     </div>

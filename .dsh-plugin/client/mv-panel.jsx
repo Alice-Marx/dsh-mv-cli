@@ -36,14 +36,14 @@ function About({ pack }) {
         {credits.length > 0 ? <ul>{credits.map(item => <li key={item}>{item}</li>)}</ul> : <p>清单里没有署名信息。</p>}
         <p className="mv-wrap"><code>{pack.manifestPath}</code></p>
       </>}
-      <p>其他歌曲：在曲库里「新建（模板）」做一个 MV 包，再「导入」。</p>
+      <p>其他歌曲：在曲库里点「用 AI 制作新 MV」让 Harness 的 Agent 帮你做，或「新建（模板）」手写一个 MV 包再「导入」。</p>
     </>
   )
 }
 
 const PlayIcon = ({ playing }) => playing ? <Icon.pause /> : <Icon.play />
 
-export function MvPanel({ api }) {
+export function MvPanel({ api, harness = null, initialAi = false }) {
   const [destination, setDestinationState] = React.useState(loadDestination)
   const [info, setInfo] = React.useState({ status: 'loading', value: null, error: '' })
   const [terminalSeen, setTerminalSeen] = React.useState(() => loadDestination() !== 'canvas')
@@ -80,13 +80,13 @@ export function MvPanel({ api }) {
   const canvas = destination === 'canvas'
   const primary = canvas
     ? { label: canvasState.playing ? '暂停' : '播放', disabled: false, playing: canvasState.playing, run: () => canvasRef.current?.toggle() }
-    : { label: terminalState.running && destination === 'panel' ? '正在播放' : (terminalState.busy ? '检查中…' : terminalState.label || '播放'), disabled: !terminalState.canPlay, playing: false, run: () => terminalRef.current?.primary() }
+    : { label: terminalState.running && destination === 'panel' ? '正在播放' : (terminalState.busy ? (terminalState.busyLabel || '检查中…') : terminalState.label || '播放'), disabled: !terminalState.canPlay, playing: false, run: () => terminalRef.current?.primary() }
   const hint = canvas
     ? (canvasState.hasAudio ? '画面以音频为时钟逐帧渲染；点一下画面后可用键盘控制。' : '还没有选择音频：可以先静音观看，或在下方选择你的歌曲。')
     : terminalState.confirming ? '请在下方核对将要执行的命令，确认后才会启动。'
       : terminalState.running && destination === 'panel' ? '播放器正在下方的面板终端中运行。'
         : terminalState.canPlay ? '点播放后会先显示将要执行的完整命令，确认后才启动。' : '先在下方完成播放器设置（路径会自动检查）。'
-  const renderer = pack.pack.canvas?.renderer === 'world-execute-me' ? 'world.execute(me) 场景' : '通用画面（频谱 + 歌词）'
+  const renderer = { 'world-execute-me': 'world.execute(me) 场景', script: '场景脚本（scenes.js）' }[pack.pack.canvas?.renderer] ?? '通用画面（频谱 + 歌词）'
 
   return (
     <div className="mv-root">
@@ -98,7 +98,7 @@ export function MvPanel({ api }) {
         <Popover label="关于与版权" icon={<Icon.info />}><About pack={pack} /></Popover>
       </header>
 
-      <Library api={api} active={pack} recent={recent} onSelect={id => void selectPack(id)} onLoaded={onLoaded} onRecent={setRecent} />
+      <Library api={api} harness={harness} info={info.value} initialAi={initialAi} active={pack} recent={recent} onSelect={id => void selectPack(id)} onLoaded={onLoaded} onRecent={setRecent} />
       {packError && <Alert kind="error"><p className="mv-wrap">{packError}</p></Alert>}
 
       <section className="mv-hero" aria-label="正在播放">

@@ -1,12 +1,13 @@
 /**
  * The library row: the built-in world.execute(me) preset and recent MV packs
- * as cards, plus "导入" and "新建（模板）". Importing only reads mv.json;
- * nothing is ever run from here.
+ * as cards, plus "用 AI 制作新 MV", "导入" and "新建（模板）". Importing only
+ * reads mv.json; nothing is ever run from here.
  */
 import React from 'react'
 import { errorText } from './mv-terminal-state.mjs'
 import { unwrapRemote } from './remote-state.mjs'
 import { Alert, Icon } from './mv-ui.jsx'
+import { AiPackDialog } from './mv-ai.jsx'
 import { BUILTIN_ID, TEMPLATE_ZIP_NAME, directoryPicker, forgetPack, loadPackFromHost, rememberPack, templateZip } from './mv-pack-state.mjs'
 
 function downloadZip() {
@@ -25,8 +26,9 @@ const initials = title => {
   return /[\u3400-\u9fff]/.test(clean[0]) ? clean[0] : (words[0][0] + (words[1]?.[0] ?? '')).toUpperCase()
 }
 
-export function Library({ api, active, recent, onSelect, onLoaded, onRecent }) {
+export function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false }) {
   const [importing, setImporting] = React.useState(false)
+  const [aiOpen, setAiOpen] = React.useState(initialAi)
   const [path, setPath] = React.useState('')
   const [busy, setBusy] = React.useState('')
   const [note, setNote] = React.useState('')
@@ -84,7 +86,12 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent }) {
             </div>
           )
         })}
-        <button type="button" className="mv-card mv-card-ghost" aria-expanded={importing} onClick={() => { setImporting(value => !value); setError('') }}>
+        <button type="button" className="mv-card mv-card-ghost mv-card-ai" aria-expanded={aiOpen} onClick={() => { setAiOpen(value => !value); setImporting(false); setError('') }}
+          title="选一首你的歌，让 Harness 的 Agent 写歌词时间轴、mv.json 和 ASCII 场景脚本">
+          <span className="mv-card-art"><Icon.spark /></span>
+          <span>用 AI 制作新 MV</span>
+        </button>
+        <button type="button" className="mv-card mv-card-ghost" aria-expanded={importing} onClick={() => { setImporting(value => !value); setAiOpen(false); setError('') }}>
           <span className="mv-card-art"><Icon.plus /></span>
           <span>导入 MV 包</span>
         </button>
@@ -94,7 +101,8 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent }) {
           <span>{busy === 'template' ? '正在写入…' : '新建（模板）'}</span>
         </button>
       </div>
-      {recent.length === 0 && !importing && <p className="mv-caption">想放别的歌？做一个 <b>MV 包</b>：点「新建（模板）」得到带说明的 mv.json，放入你自己的音频和歌词后「导入」。</p>}
+      {recent.length === 0 && !importing && !aiOpen && <p className="mv-caption">想放别的歌？点「用 AI 制作新 MV」让 Agent 帮你做，或「新建（模板）」得到带说明的 mv.json，放入你自己的音频和歌词后「导入」。</p>}
+      {aiOpen && <AiPackDialog api={api} harness={harness} info={info} onClose={() => setAiOpen(false)} onLoaded={onLoaded} onRecent={onRecent} />}
       {importing && <div className="mv-dialog" role="dialog" aria-label="导入 MV 包">
         <h2>导入 MV 包</h2>
         <p className="mv-caption">选择含 mv.json 的文件夹，或粘贴 mv.json / 文件夹的绝对路径。只读取清单，不运行任何程序。</p>

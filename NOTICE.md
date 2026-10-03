@@ -38,13 +38,9 @@ this repository does not cover the ported files.
 
 - **world_execute_me**（「用五亿 token 在 cmd 上演出大肥鱼的 world.execute(me)」，作者 林原林海 / MisakaZentai
   等，见其目录内说明）：MV 终端以用户本机的 `python.exe _tools\tui_live.py` 方式启动它。本插件不包含其任何文件。
-- **world-execute-me-ascii-rust**（<https://github.com/bilixxb/world-execute-me-ascii-rust>，作者 **bilixxb**，
-  2026-09-28 创建）：world.execute-me-ascii 的 Rust 重写版（crossterm + rodio，有 Windows 发布版）。
-  该仓库同样**没有 LICENSE 文件**（Cargo.toml 声明 `license = "MIT"`，但没有许可证文本），且其二进制内嵌了歌曲与歌词。
-  本插件**没有复制其任何代码**，只在开发时用它的公开说明做对照参考；MV 终端可以启动**用户自己下载的**可执行文件。
-  bilixxb 与 yym8224961 是不同的作者，上面第 2 节的许可不覆盖该 Rust 项目。
-
 ## 4. 相关作品 / Related work
 
+- world-execute-me-ascii-rust（<https://github.com/bilixxb/world-execute-me-ascii-rust>，作者 bilixxb）：world.execute-me-ascii 的
+  Rust 重写版。0.2.x–0.3.x 的 MV 终端可以启动用户自己下载的这个程序；**自 0.4.0 起已移除该支持**，本插件从未复制其任何代码或数据。
 - world-execute-me-dsh-pv（DeepSeek Harness 风格 PV）——本插件的音频版本识别表里包含其音频文件的 sha256（只存哈希）。
 - xterm.js（MIT）、@lydell/node-pty（MIT）、React（MIT）随客户端/宿主依赖使用，许可证见各自包内。

@@ -1,10 +1,13 @@
 /**
  * Turn an audio file the MCI-based player cannot open (MP4/AAC renamed to
- * .mp3, …) into a 16-bit PCM WAV, decoded by the panel's own Chromium, and
- * upload it into the plugin's cache folder on the Host. The user's file and
- * folders are only read.
+ * .mp3, Opus, FLAC, video files, …) into a 16-bit PCM WAV, decoded by the
+ * panel's own Chromium, and upload it into the plugin's cache folder on the
+ * Host (keyed by the source's sha256, so each file is converted once). The
+ * user's file and folders are only read. Formats Chromium cannot decode can
+ * be converted with the user's own ffmpeg after a confirmation.
  */
 import { unwrapRemote } from './remote-state.mjs'
+import { effectiveAudioOf } from './mv-terminal-state.mjs'
 
 export const WAV_RATE = 44100
 export const WAV_CHUNK = 384 * 1024
@@ -63,6 +66,11 @@ export async function convertFileToWav(api, file, { onProgress = () => {}, decod
   onProgress({ stage: 'read', ratio: 0 })
   const source = await file.arrayBuffer()
   const sourceSha256 = await hash(source)
+  return uploadDecodedWav(api, source, sourceSha256, { onProgress, decode })
+}
+
+/** Decode bytes and store them as <sourceSha256>.wav in the Host cache. */
+export async function uploadDecodedWav(api, source, sourceSha256, { onProgress = () => {}, decode = decodeToChannels } = {}) {
   onProgress({ stage: 'decode', ratio: 0 })
   const { channels, sampleRate, duration } = await decode(source)
   const wav = encodeWav(channels, sampleRate)
@@ -80,12 +88,53 @@ export async function convertFileToWav(api, file, { onProgress = () => {}, decod
 }
 
 /** The file tui_live.py will try to play for this form ('' when none). */
-export function effectiveAudioPath(form) {
-  if (form.player === 'pack') return ''
-  if (form.player === 'rust') return (form.audioFile || '').trim()
-  if (form.noAudio) return ''
-  const explicit = (form.audioFile || '').trim()
-  if (explicit) return explicit
-  const dir = (form.packageDir || '').trim().replace(/[\\/]+$/, '')
-  return dir ? `${dir}${dir.includes('/') && !dir.includes('\\') ? '/' : '\\'}input${dir.includes('/') && !dir.includes('\\') ? '/' : '\\'}song.mp3` : ''
+export const effectiveAudioPath = effectiveAudioOf
+
+const fromBase64 = text => {
+  const binary = globalThis.atob(text)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return bytes
+}
+
+/** Read a user-chosen audio file from the Host in chunks (Host serves media files only). */
+export async function readHostAudio(api, path, { onProgress = () => {}, decode = fromBase64 } = {}) {
+  let offset = 0, size = 0, buffer = null
+  for (;;) {
+    const chunk = unwrapRemote(await api.audioRead({ path, offset, length: 512 * 1024 }), '无法读取音频文件。')
+    size = chunk.size
+    buffer ??= new Uint8Array(size)
+    if (chunk.bytes > 0) buffer.set(decode(chunk.base64), offset)
+    offset += chunk.bytes
+    onProgress({ stage: 'read', ratio: size ? offset / size : 1 })
+    if (chunk.done || chunk.bytes === 0) break
+  }
+  return buffer ? buffer.buffer.slice(0, offset) : new ArrayBuffer(0)
+}
+
+export class AudioPrepareError extends Error {
+  constructor(message, { code, probe } = {}) { super(message); this.name = 'AudioPrepareError'; this.code = code; this.probe = probe }
+}
+
+/**
+ * Make sure tui_live.py gets a file MCI can open. Returns
+ * { path, converted, cached, probe } (path = the original when it plays as is).
+ * Throws AudioPrepareError with code 'decode-failed' when neither MCI nor the
+ * panel's Chromium can handle the file (ffmpeg may still convert it).
+ */
+export async function prepareTerminalAudio(api, path, { onProgress = () => {}, decode = decodeToChannels, read = readHostAudio } = {}) {
+  onProgress({ stage: 'probe', ratio: 0 })
+  const probe = unwrapRemote(await api.audioProbe({ path, hash: true }), '无法读取音频文件。')
+  if (probe.mciPlayable) return { path, converted: false, cached: false, probe }
+  if (probe.cachedWav) { onProgress({ stage: 'done', ratio: 1 }); return { path: probe.cachedWav, converted: true, cached: true, probe } }
+  if (probe.format === 'unknown') throw new AudioPrepareError(`无法识别这个文件的格式（按内容判断，不看扩展名）：${path}`, { code: 'unknown-format', probe })
+  if (!probe.chromium) throw new AudioPrepareError(`${probe.label} 不能由面板解码。`, { code: 'decode-failed', probe })
+  const source = await read(api, path, { onProgress })
+  try {
+    const result = await uploadDecodedWav(api, source, probe.sha256, { onProgress, decode })
+    return { path: result.path, converted: true, cached: result.cached, duration: result.duration, probe }
+  } catch (error) {
+    if (/无法解码|decode/i.test(String(error?.message))) throw new AudioPrepareError(String(error.message), { code: 'decode-failed', probe })
+    throw error
+  }
 }

@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   parseMvLaunch, parseMvTerminalStart, parseMvTerminalRead, parseMvTerminalWrite, parseMvTerminalResize, parseMvTerminalStop,
-  mvTerminalArgs, rustTerminalArgs, displayCommand, isAbsolutePathText, MV_TERMINAL_LIMITS,
+  mvTerminalArgs, displayCommand, isAbsolutePathText, MV_TERMINAL_LIMITS,
 } from '../.dsh-plugin/shared/mv-terminal-protocol.mjs'
 
 const PY = 'F:\\everyAI\\dsh-mv-cli\\world_execute_me\\python\\python.exe'
@@ -25,16 +25,8 @@ test('protocol: python launch is a fixed shape with absolute paths', () => {
   for (const ok of ['/usr/bin/python3', 'C:\\py\\pythonw.exe', 'D:\\x\\python3.13.exe', '\\\\server\\share\\python.exe']) assert.ok(parseMvLaunch({ pythonPath: ok, packageDir: '/srv/p' }))
 })
 
-test('protocol: rust launch only accepts the release binary name', () => {
-  assert.deepEqual(parseMvLaunch({ player: 'rust', exePath: 'D:\\tools\\world-execute-me-rust.exe', start: 12, offset: -0.4, autoplay: true }),
-    { player: 'rust', exePath: 'D:\\tools\\world-execute-me-rust.exe', start: 12, autoplay: true, offset: -0.4 })
-  assert.ok(parseMvLaunch({ player: 'rust', exePath: '/opt/world-execute-me-rust-x86_64-unknown-linux-gnu' }))
-  for (const bad of ['D:\\x\\cmd.exe', 'D:\\x\\powershell.exe', 'D:\\x\\world.exe', 'D:\\x\\evil world-execute-me-rust.exe']) {
-    assert.throws(() => parseMvLaunch({ player: 'rust', exePath: bad }), /发布文件名/, bad)
-  }
-  assert.throws(() => parseMvLaunch({ player: 'rust', exePath: 'D:\\x\\world-execute-me-rust.exe', pythonPath: PY }), /unexpected/)
-  assert.throws(() => parseMvLaunch({ player: 'node', exePath: 'x' }), /player/)
-  assert.throws(() => parseMvLaunch({ player: 'rust', exePath: 'D:\\x\\world-execute-me-rust.exe', offset: 99 }), /offset/)
+test('protocol: the Rust player is gone; only python and pack remain', () => {
+  for (const player of ['rust', 'node']) assert.throws(() => parseMvLaunch({ player, exePath: 'D:\\tools\\world-execute-me-rust.exe' }), /player/)
 })
 
 test('protocol: argument vectors', () => {
@@ -42,7 +34,6 @@ test('protocol: argument vectors', () => {
   assert.deepEqual(mvTerminalArgs(parseMvLaunch({ pythonPath: PY, packageDir: DIR }), script), [script])
   assert.deepEqual(mvTerminalArgs(parseMvLaunch({ pythonPath: PY, packageDir: DIR, noAudio: true, start: 5 }), script), [script, '--no-audio', '--start', '5'])
   assert.deepEqual(mvTerminalArgs(parseMvLaunch({ pythonPath: PY, packageDir: DIR, audioFile: 'D:\\s.mp3', audioLatency: 0.15 }), script), [script, '--audio-file', 'D:\\s.mp3', '--audio-latency', '0.15'])
-  assert.deepEqual(rustTerminalArgs(parseMvLaunch({ player: 'rust', exePath: 'D:\\w\\world-execute-me-rust.exe', audioFile: 'D:\\s.mp3', autoplay: true })), ['--audio', 'D:\\s.mp3', '--autoplay'])
   assert.equal(displayCommand('D:\\a b\\python.exe', ['x.py', '--start', '3']), '"D:\\a b\\python.exe" x.py --start 3')
 })
 

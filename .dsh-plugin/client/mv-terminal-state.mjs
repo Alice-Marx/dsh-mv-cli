@@ -7,24 +7,39 @@ import {
   MV_TERMINAL_LIMITS,
   MV_TERMINAL_SCRIPT,
   PYTHON_BASENAME,
-  RUST_BASENAME,
   displayCommand,
   isAbsolutePathText,
   isMvConsoleId,
   isMvSessionId,
   mvTerminalArgs,
-  rustTerminalArgs,
   consoleCommandDisplay,
 } from '../shared/mv-terminal-protocol.mjs'
 import { MV_PACK_LIMITS, cmdSafetyProblems } from '../shared/mv-pack.mjs'
 
 const text = value => typeof value === 'string' ? value.trim() : ''
+
+/** The file tui_live.py will try to play for this form ('' when none). */
+export function effectiveAudioOf(form) {
+  if (form.player === 'pack' || form.noAudio) return ''
+  const explicit = text(form.audioFile)
+  if (explicit) return explicit
+  const dir = text(form.packageDir).replace(/[\\/]+$/, '')
+  if (!dir) return ''
+  const sep = dir.includes('/') && !dir.includes('\\') ? '/' : '\\'
+  return `${dir}${sep}input${sep}song.mp3`
+}
 const FORM_KEY = 'dsh-mv.terminal.form.v1'
 
-export const EMPTY_FORM = Object.freeze({ packStart: '', packOffset: '', player: 'python', exePath: '', offset: '', autoplay: false, pythonPath: '', packageDir: '', audioFile: '', noAudio: false, start: '', audioLatency: '' })
+export const EMPTY_FORM = Object.freeze({ packStart: '', packOffset: '', player: 'python', pythonPath: '', packageDir: '', audioFile: '', noAudio: false, start: '', audioLatency: '' })
 
+/** Saved form; fields of removed players (0.3.x Rust option) are dropped. */
 export function loadForm(storage = globalThis.localStorage) {
-  try { return { ...EMPTY_FORM, ...JSON.parse(storage?.getItem(FORM_KEY) ?? '{}') } } catch { return { ...EMPTY_FORM } }
+  let saved = {}
+  try { saved = JSON.parse(storage?.getItem(FORM_KEY) ?? '{}') ?? {} } catch { saved = {} }
+  const form = { ...EMPTY_FORM }
+  for (const key of Object.keys(EMPTY_FORM)) if (key in saved) form[key] = saved[key]
+  if (form.player !== 'python' && form.player !== 'pack') form.player = 'python'
+  return form
 }
 export function saveForm(form, storage = globalThis.localStorage) {
   try { storage?.setItem(FORM_KEY, JSON.stringify(form)) } catch { /* private mode */ }
@@ -41,7 +56,11 @@ export function suggestedPython(packageDir) {
   return `${dir}${sep}python${sep}python${sep === '\\' ? '.exe' : ''}`
 }
 
-/** Form → launch request (what the Host validates again). `ctx.pack` is the active MV pack. */
+/**
+ * Form → launch request (what the Host validates again). `ctx.pack` is the
+ * active MV pack; `ctx.audioOverride` = { source, path } replaces the audio
+ * the player would open (source) with its cached WAV (path).
+ */
 export function launchFromForm(form, ctx = {}) {
   if (form.player === 'pack') {
     const launch = { player: 'pack', manifestPath: text(ctx.pack?.manifestPath) }
@@ -49,15 +68,10 @@ export function launchFromForm(form, ctx = {}) {
     if (text(String(form.packOffset ?? ''))) launch.offset = Number(form.packOffset)
     return launch
   }
-  if (form.player === 'rust') {
-    const launch = { player: 'rust', exePath: text(form.exePath), autoplay: Boolean(form.autoplay) }
-    if (text(form.audioFile)) launch.audioFile = text(form.audioFile)
-    if (text(String(form.start ?? ''))) launch.start = Number(form.start)
-    if (text(String(form.offset ?? ''))) launch.offset = Number(form.offset)
-    return launch
-  }
   const launch = { player: 'python', pythonPath: text(form.pythonPath), packageDir: text(form.packageDir).replace(/(?<=.)[\\/]+$/, ''), noAudio: Boolean(form.noAudio) }
   if (!launch.noAudio && text(form.audioFile)) launch.audioFile = text(form.audioFile)
+  const override = ctx.audioOverride
+  if (!launch.noAudio && override?.path && override.source === effectiveAudioOf(form)) launch.audioFile = override.path
   if (text(String(form.start ?? ''))) launch.start = Number(form.start)
   if (text(String(form.audioLatency ?? ''))) launch.audioLatency = Number(form.audioLatency)
   return launch
@@ -70,15 +84,6 @@ export function formProblem(form, ctx = {}) {
     if (!ctx.pack?.terminal) return '当前 MV 包没有配置外部渲染程序（mv.json 里的 terminal）。请先导入带 terminal 的 MV 包，或选择其他播放器。'
     if ('start' in launch && !(Number.isFinite(launch.start) && launch.start >= 0 && launch.start <= MV_PACK_LIMITS.maxStart)) return `起始秒数应在 0–${MV_PACK_LIMITS.maxStart} 之间。`
     if ('offset' in launch && !(Number.isFinite(launch.offset) && Math.abs(launch.offset) <= MV_PACK_LIMITS.maxOffset)) return `偏移应在 ±${MV_PACK_LIMITS.maxOffset} 秒之内。`
-    return ''
-  }
-  if (launch.player === 'rust') {
-    if (!launch.exePath) return '请填写 world-execute-me-rust.exe 的路径（从该项目的 GitHub Release 自行下载）。'
-    if (!isAbsolutePathText(launch.exePath)) return '可执行文件路径必须是绝对路径。'
-    if (!RUST_BASENAME.test(basename(launch.exePath))) return '可执行文件名应为 world-execute-me-rust.exe（防止误启动其他程序）。'
-    if (launch.audioFile && !isAbsolutePathText(launch.audioFile)) return '音频文件必须是绝对路径。'
-    if ('start' in launch && !(Number.isFinite(launch.start) && launch.start >= 0 && launch.start <= MV_TERMINAL_LIMITS.maxStartSeconds)) return `起始秒数应在 0–${MV_TERMINAL_LIMITS.maxStartSeconds} 之间。`
-    if ('offset' in launch && !(Number.isFinite(launch.offset) && Math.abs(launch.offset) <= MV_TERMINAL_LIMITS.maxOffsetSeconds)) return `字幕偏移应在 ±${MV_TERMINAL_LIMITS.maxOffsetSeconds} 秒之内。`
     return ''
   }
   if (!launch.pythonPath) return '请填写 Python 解释器路径（例如 world_execute_me\\python\\python.exe）。'
@@ -95,8 +100,7 @@ export function formProblem(form, ctx = {}) {
 /** Preview of the exact command (the Host builds the real one the same way). */
 export function commandPreview(form, ctx = {}) {
   if (form.player === 'pack') return ctx.checked?.display ?? '（点「检查」后显示 Host 从 mv.json 解析出的完整命令）'
-  const launch = launchFromForm(form)
-  if (launch.player === 'rust') return displayCommand(launch.exePath, rustTerminalArgs(launch))
+  const launch = launchFromForm(form, ctx)
   const sep = sepOf(launch.packageDir || launch.pythonPath)
   const script = [launch.packageDir, ...MV_TERMINAL_SCRIPT].join(sep)
   return displayCommand(launch.pythonPath, mvTerminalArgs(launch, script))
@@ -120,11 +124,10 @@ export function confirmationDetails(form, checked, ctx = {}) {
   return {
     title: '启动 MV 终端？',
     command: checked?.display ?? commandPreview(form),
-    cwd: checked?.cwd ?? (form.player === 'rust' ? text(form.exePath).replace(/[\\/][^\\/]*$/, '') : launchFromForm(form).packageDir),
+    cwd: checked?.cwd ?? launchFromForm(form, ctx).packageDir,
     points: [
-      form.player === 'rust'
-        ? '将在伪终端里运行你自己下载的 Rust 版可执行文件（不经过 Harness 沙箱，第三方未签名程序，请确认来源）。它只能解码 MP3；不填音频时播放其内嵌的音乐。'
-        : '将在伪终端里运行你本机的 Python 和播放器脚本（不经过 Harness 沙箱），和你自己在终端里运行它一样。',
+      '将在伪终端里运行你本机的 Python 和播放器脚本（不经过 Harness 沙箱），和你自己在终端里运行它一样。',
+      ...(ctx.audioOverride?.path ? [`音频已自动转换为 WAV 缓存（原文件 ${ctx.audioOverride.source} 不变）。`] : []),
       '只能启动固定的播放器；面板不能传任意命令或参数。',
       '画面是终端输出经 Host 长轮询转发到这里的，比原生终端多约 30–150 ms 延迟；对口型请用 --audio-latency 或画布 MV 模式。',
       '关闭面板、结束会话或约 2 分钟无人查看时，进程会被结束。',
@@ -138,8 +141,7 @@ export function plannedLaunch(form, ctx = {}) {
     if (!ctx.checked) throw new Error('请先点「检查」，由 Host 解析 MV 包的命令。')
     return { file: ctx.checked.file, args: ctx.checked.args, cwd: ctx.checked.cwd }
   }
-  const launch = launchFromForm(form)
-  if (launch.player === 'rust') return { file: launch.exePath, args: rustTerminalArgs(launch), cwd: launch.exePath.replace(/[\\/][^\\/]*$/, '') }
+  const launch = launchFromForm(form, ctx)
   const sep = sepOf(launch.packageDir || launch.pythonPath)
   return { file: launch.pythonPath, args: mvTerminalArgs(launch, [launch.packageDir, ...MV_TERMINAL_SCRIPT].join(sep)), cwd: launch.packageDir }
 }
@@ -150,7 +152,8 @@ export function consoleCommandPreview(form, ctx = {}) {
 }
 
 /** Paths cmd.exe cannot carry safely (it expands %VAR% even inside quotes). */
-export function consoleProblem(form, { platform, pack, checked } = {}) {
+export function consoleProblem(form, ctx = {}) {
+  const { platform, pack, checked } = ctx
   if (platform && platform !== 'win32') return '独立控制台窗口只在 Windows 上可用；当前系统请用面板内的 MV 终端。'
   if (form.player === 'pack') {
     const problem = formProblem(form, { pack })
@@ -158,8 +161,8 @@ export function consoleProblem(form, { platform, pack, checked } = {}) {
     const unsafe = cmdSafetyProblems(checked.file, checked.args ?? [], checked.cwd)
     return unsafe.length ? unsafe.join('\n') : ''
   }
-  const launch = launchFromForm(form)
-  for (const value of [launch.pythonPath, launch.packageDir, launch.exePath, launch.audioFile]) {
+  const launch = launchFromForm(form, { audioOverride: ctx.audioOverride })
+  for (const value of [launch.pythonPath, launch.packageDir, launch.audioFile]) {
     if (typeof value === 'string' && /%/.test(value)) return `路径里含有 %，独立窗口模式无法安全传递：${value}`
   }
   return formProblem(form)

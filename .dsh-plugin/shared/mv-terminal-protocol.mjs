@@ -9,10 +9,8 @@
  *   <python> <packageDir>/_tools/tui_live.py [--audio-file <audio> | --no-audio] [--start N] [--audio-latency S]
  * after checking every path on disk.
  *
- * Optional second player: a user-supplied build of the Rust rewrite
- * (github.com/bilixxb/world-execute-me-ascii-rust; not bundled), launched as
- *   <exe> [--audio <file>] [--start N] [--offset S] [--autoplay]
- * with the executable's folder as working directory.
+ * The other launch shape is an MV pack's own external renderer (player
+ * 'pack'), resolved by the Host from the pack's mv.json.
  */
 
 import { parsePackLaunch } from './mv-pack.mjs'
@@ -41,10 +39,8 @@ export const MV_TERMINAL_LIMITS = Object.freeze({
   maxOffsetSeconds: 30,
 })
 
-export const MV_PLAYERS = Object.freeze(['python', 'rust', 'pack'])
-/** Rust release binary name, optionally with a version / target suffix. */
-export const RUST_BASENAME = /^world-execute-me(?:-rust)?(?:[-_.][\w.-]{0,60})?(?:\.exe)?$/i
-export const MV_PLAYER_LABELS = Object.freeze({ python: 'world_execute_me（tui_live.py）', rust: 'world-execute-me-ascii-rust（用户自备可执行文件）', pack: '当前 MV 包的外部渲染程序' })
+export const MV_PLAYERS = Object.freeze(['python', 'pack'])
+export const MV_PLAYER_LABELS = Object.freeze({ python: 'world_execute_me（tui_live.py）', pack: '当前 MV 包的外部渲染程序' })
 
 /** python, python3, python3.13, pythonw, py — with or without .exe. */
 export const PYTHON_BASENAME = /^(?:python(?:3(?:\.\d{1,2})?)?w?|py)(?:\.exe)?$/i
@@ -95,28 +91,9 @@ function basenameOf(path) {
 }
 
 /** The launch description; every field is validated, nothing else is accepted. */
-function parseRustLaunch(request) {
-  const allowed = new Set(['player', 'exePath', 'audioFile', 'start', 'offset', 'autoplay'])
-  const extra = Object.keys(request).filter(key => !allowed.has(key))
-  if (extra.length) throw new TypeError(`launch has unexpected fields: ${extra.join(', ')}`)
-  const exePath = absolutePath(request.exePath, '可执行文件路径')
-  if (!RUST_BASENAME.test(basenameOf(exePath))) throw new TypeError('可执行文件必须是 world-execute-me-rust(.exe) 这样的发布文件名')
-  let audioFile
-  if (request.audioFile !== undefined && request.audioFile !== null && request.audioFile !== '') audioFile = absolutePath(request.audioFile, '音频文件')
-  const start = request.start === undefined || request.start === null ? 0 : boundedNumber(request.start, 0, MV_TERMINAL_LIMITS.maxStartSeconds, 'start')
-  const offset = request.offset === undefined || request.offset === null ? undefined : boundedNumber(request.offset, -MV_TERMINAL_LIMITS.maxOffsetSeconds, MV_TERMINAL_LIMITS.maxOffsetSeconds, 'offset')
-  if (request.autoplay !== undefined && typeof request.autoplay !== 'boolean') throw new TypeError('autoplay must be a boolean')
-  return {
-    player: 'rust', exePath, start, autoplay: request.autoplay === true,
-    ...(audioFile ? { audioFile } : {}),
-    ...(offset !== undefined ? { offset } : {}),
-  }
-}
-
 export function parseMvLaunch(value) {
   const request = plainObject(value, 'launch')
-  if (request.player !== undefined && !MV_PLAYERS.includes(request.player)) throw new TypeError('player must be python, rust or pack')
-  if (request.player === 'rust') return parseRustLaunch(request)
+  if (request.player !== undefined && !MV_PLAYERS.includes(request.player)) throw new TypeError('player must be python or pack')
   if (request.player === 'pack') return parsePackLaunch(request)
   const allowed = new Set(['player', 'pythonPath', 'packageDir', 'audioFile', 'noAudio', 'start', 'audioLatency'])
   const extra = Object.keys(request).filter(key => !allowed.has(key))
@@ -195,16 +172,6 @@ export function mvTerminalArgs(launch, scriptPath) {
   else if (launch.audioFile) args.push('--audio-file', launch.audioFile)
   if (launch.start > 0) args.push('--start', String(launch.start))
   if (launch.audioLatency !== undefined) args.push('--audio-latency', String(launch.audioLatency))
-  return args
-}
-
-/** Arguments of the Rust player. */
-export function rustTerminalArgs(launch) {
-  const args = []
-  if (launch.audioFile) args.push('--audio', launch.audioFile)
-  if (launch.start > 0) args.push('--start', String(launch.start))
-  if (launch.offset !== undefined) args.push('--offset', String(launch.offset))
-  if (launch.autoplay) args.push('--autoplay')
   return args
 }
 

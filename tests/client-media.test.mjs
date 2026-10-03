@@ -116,7 +116,7 @@ test('terminal form: validation, preview and suggested python', async () => {
   assert.equal(state.commandPreview(form), 'F:\\w\\world_execute_me\\python\\python.exe F:\\w\\world_execute_me\\_tools\\tui_live.py --audio-file "D:\\My Music\\song.mp3" --start 30')
   assert.match(state.formProblem({ ...form, pythonPath: 'C:\\Windows\\System32\\cmd.exe' }), /解释器/)
   assert.match(state.formProblem({ ...form, start: '-3' }), /起始/)
-  assert.match(state.formProblem({ ...state.EMPTY_FORM, player: 'rust', exePath: 'D:\\x\\notepad.exe' }), /文件名/)
+  assert.equal(state.loadForm({ getItem: () => JSON.stringify({ ...form, player: 'rust', exePath: 'D:\\x\\w.exe' }) }).player, 'python', 'an old Rust form falls back to python')
   assert.equal(state.confirmationDetails(form).points.length, 4)
   assert.match(state.endDescription({ endReason: 'orphan' }), /自动结束/)
 })

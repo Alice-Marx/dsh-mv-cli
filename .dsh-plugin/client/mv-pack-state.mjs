@@ -6,6 +6,7 @@
 import { unwrapRemote } from './remote-state.mjs'
 import { MV_PACK_LIMITS, packSummary, parseManifestPath } from '../shared/mv-pack.mjs'
 import { TEMPLATE_FOLDER, templateFiles } from '../shared/mv-pack-template.mjs'
+import { audioMimeOf, sniffAudio } from '../shared/mv-audio-protocol.mjs'
 
 export const RECENT_KEY = 'dsh-mv.packs.recent.v1'
 export const ACTIVE_KEY = 'dsh-mv.packs.active.v1'
@@ -71,8 +72,8 @@ const fromBase64 = text => {
   return bytes
 }
 
-const MIME = { '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.mp4': 'audio/mp4', '.aac': 'audio/aac', '.ogg': 'audio/ogg', '.opus': 'audio/ogg', '.flac': 'audio/flac', '.wav': 'audio/wav', '.webm': 'audio/webm' }
-export const audioMime = name => MIME[(String(name).match(/\.[^.]+$/)?.[0] ?? '').toLowerCase()] ?? 'application/octet-stream'
+/** MIME type from the content (never from the file extension). */
+export const audioMime = bytes => audioMimeOf(sniffAudio(bytes ?? new Uint8Array(0)))
 
 /** Read one pack file from the Host in chunks; returns { name, parts: Uint8Array[] }. */
 export async function fetchPackBytes(api, manifestPath, role, { onProgress = () => {}, isCancelled = () => false, decode = fromBase64 } = {}) {
@@ -93,7 +94,7 @@ export async function fetchPackBytes(api, manifestPath, role, { onProgress = () 
 /** The pack's audio as a File (for the <audio> element and its sha256). */
 export async function fetchPackAudio(api, manifestPath, { FileClass = globalThis.File, ...options } = {}) {
   const { name, parts } = await fetchPackBytes(api, manifestPath, 'audio', options)
-  return new FileClass(parts, name, { type: audioMime(name) })
+  return new FileClass(parts, name, { type: audioMime(parts[0]) })
 }
 
 /** The pack's lyrics or spectrum file as text. */
