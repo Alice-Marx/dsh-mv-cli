@@ -71,6 +71,8 @@
     ".dsh-plugin/shared/mv-scene.mjs",
     ".dsh-plugin/shared/mv-scene-host.mjs",
     ".dsh-plugin/shared/mv-template-assets.gen.mjs",
+    ".dsh-plugin/shared/mv-workshop.mjs",
+    ".dsh-plugin/shared/mv-workshop-host.mjs",
     "cordis.patch.yml",
     "README.md",
     "README.zh.md",

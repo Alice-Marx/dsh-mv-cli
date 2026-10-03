@@ -72,6 +72,14 @@ export class MvRemoteService extends TypertRemoteService {
   packWriteText(request) { return settled(() => (this.services.packWriteText ?? unavailable)(request ?? {})) }
   analysisRead(request) { return settled(() => (this.services.analysisRead ?? unavailable)(request ?? {})) }
   dshpvAsset(request) { return settled(() => (this.services.dshpvAsset ?? unavailable)(request ?? {})) }
+
+  /** 0.7.0 MV 创意工坊: catalogue, covers, install / uninstall (sha256-checked), publish folder (no upload). */
+  workshopIndex(request) { return settled(() => (this.services.workshopIndex ?? unavailable)(request ?? {})) }
+  workshopCover(request) { return settled(() => (this.services.workshopCover ?? unavailable)(request ?? {})) }
+  workshopInstall(request) { return settled(() => (this.services.workshopInstall ?? unavailable)(request ?? {})) }
+  workshopUninstall(request) { return settled(() => (this.services.workshopUninstall ?? unavailable)(request ?? {})) }
+  workshopInstalled(request) { return settled(() => (this.services.workshopInstalled ?? unavailable)(request ?? {})) }
+  workshopPublish(request) { return settled(() => (this.services.workshopPublish ?? unavailable)(request ?? {})) }
 }
 
 /** Registration follows the Host plugin fiber; unload withdraws all endpoints. */

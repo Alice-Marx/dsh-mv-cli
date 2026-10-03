@@ -6,7 +6,9 @@
  * user's audio, the optional confirmed ffmpeg conversion, the folders of
  * AI-made packs, the lyrics engine jobs, LRCLIB lookups and two read-only
  * agent tools (mv_pack_validate, mv_pack_preview_frame) when Harness provides
- * the `tools` service. Audio and lyrics never leave this machine.
+ * the `tools` service, and the MV 创意工坊 (catalogue and sha256-checked
+ * downloads from a public GitHub repository; publishing prepares a folder the
+ * user submits on github.com). Audio and lyrics never leave this machine.
  */
 import z from '@deepseek-ai/schemastery'
 import { HOST_PLUGIN_VERSION, registerMvRemote } from './remote-service.mjs'
@@ -20,6 +22,8 @@ import { parseEngineInfo, parseEngineInstall, parseEngineModel, parseEngineTrans
 import { createLrclibClient, parseLyricsLookup } from './shared/mv-lrclib.mjs'
 import { parseAnalysisRead, parsePackWriteText, readAnalysis, writePackText } from './shared/mv-pack-edit.mjs'
 import { parseDshPvAsset, readDshPvAsset } from './shared/mv-dshpv-assets.mjs'
+import { parseWorkshopId, parseWorkshopIndexRequest, parseWorkshopInstalled, parseWorkshopPublish } from './shared/mv-workshop.mjs'
+import { createWorkshopManager } from './shared/mv-workshop-host.mjs'
 
 /** Cordis plugin name; equals the profile entry id in cordis.patch.yml. */
 export const name = 'dsh-mv'
@@ -51,7 +55,8 @@ export function mvRemoteServices(config = {}, packs = defaultPackOps, extras = {
   const noAi = () => { throw new Error('AI 制作 MV 功能未加载。') }
   const noFfmpeg = () => { throw new Error('ffmpeg 功能未加载。') }
   const noEngine = () => { throw new Error('歌词引擎功能未加载。') }
-  const { aiPacks = null, ffmpeg = null, toolsState = () => ({ registered: false }), engine = null, lrclib = null, packEdit = { write: writePackText, read: readAnalysis } } = extras
+  const noWorkshop = () => { throw new Error('创意工坊功能未加载。') }
+  const { aiPacks = null, ffmpeg = null, toolsState = () => ({ registered: false }), engine = null, lrclib = null, packEdit = { write: writePackText, read: readAnalysis }, workshop = null } = extras
   return {
     info: async () => ({ platform: process.platform, canvasFontSize: config.canvasFontSize ?? 14, aiPacksDir: aiPacks?.root ?? null, agentTools: toolsState(), lrclib: config.lrclib !== false }),
     packLoad: async request => packs.load(parsePackLoad(request).path),
@@ -80,6 +85,12 @@ export function mvRemoteServices(config = {}, packs = defaultPackOps, extras = {
     packWriteText: async request => packEdit.write(parsePackWriteText(request)),
     analysisRead: async request => packEdit.read(parseAnalysisRead(request)),
     dshpvAsset: async request => readDshPvAsset(parseDshPvAsset(request)),
+    workshopIndex: async request => (workshop ?? noWorkshop()).index(parseWorkshopIndexRequest(request)),
+    workshopCover: async request => (workshop ?? noWorkshop()).cover(parseWorkshopId(request)),
+    workshopInstall: async request => (workshop ?? noWorkshop()).install(parseWorkshopId(request)),
+    workshopUninstall: async request => (workshop ?? noWorkshop()).uninstall(parseWorkshopId(request)),
+    workshopInstalled: async request => { parseWorkshopInstalled(request); return (workshop ?? noWorkshop()).installed() },
+    workshopPublish: async request => (workshop ?? noWorkshop()).publishPrepare(parseWorkshopPublish(request)),
   }
 }
 
@@ -110,7 +121,8 @@ export function apply(ctx, config = {}) {
   const engine = createEngineManager({ jobs: createJobManager(), config: () => config, loadPack })
   ctx.effect(() => () => engine.disposeAll(), 'dsh-mv: lyrics engine jobs')
   const lrclib = createLrclibClient({ userAgent: `dsh-mv-cli/${HOST_PLUGIN_VERSION ?? ''} (https://github.com/Alice-Marx/dsh-mv-cli)` })
-  registerMvRemote(ctx, mvRemoteServices(config, defaultPackOps, { aiPacks, ffmpeg, toolsState: () => ({ ...tools }), engine, lrclib }))
+  const workshop = createWorkshopManager({ userAgent: `dsh-mv-cli/${HOST_PLUGIN_VERSION ?? ''} (https://github.com/Alice-Marx/dsh-mv-cli)` })
+  registerMvRemote(ctx, mvRemoteServices(config, defaultPackOps, { aiPacks, ffmpeg, toolsState: () => ({ ...tools }), engine, lrclib, workshop }))
   const logger = optionalService(ctx, 'logger')
   logger?.info?.(`dsh-mv ${HOST_PLUGIN_VERSION ?? ''} loaded`)
 }

@@ -45,6 +45,12 @@ export function panelApi(remote) {
     packWriteText: request => service.packWriteText(request),
     analysisRead: request => service.analysisRead(request),
     dshpvAsset: request => service.dshpvAsset(request),
+    workshopIndex: request => service.workshopIndex(request),
+    workshopCover: request => service.workshopCover(request),
+    workshopInstall: request => service.workshopInstall(request),
+    workshopUninstall: request => service.workshopUninstall(request),
+    workshopInstalled: request => service.workshopInstalled(request),
+    workshopPublish: request => service.workshopPublish(request),
   }
 }
 

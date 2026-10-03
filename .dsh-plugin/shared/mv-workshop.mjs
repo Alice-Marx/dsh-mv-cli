@@ -388,3 +388,49 @@ export function publishLinks(id) {
     issues: `${repo}/issues/new?title=${encodeURIComponent(`[pack] ${id}`)}`,
   }
 }
+
+// ---- request parsers (Typert gateway + Host) ------------------------------------------------------
+const onlyKeys = (value, keys, subject) => {
+  if (!isObject(value)) throw new TypeError(`${subject} must be an object`)
+  const extra = Object.keys(value).filter(k => !keys.includes(k))
+  if (extra.length) throw new TypeError(`${subject} has unexpected fields: ${extra.join(', ')}`)
+  return value
+}
+const packId = v => { if (typeof v !== 'string' || !ID_PATTERN.test(v)) throw new TypeError('工坊包 id 无效'); return v }
+
+export function parseWorkshopIndexRequest(value = {}) {
+  onlyKeys(value ?? {}, ['refresh'], 'workshop index request')
+  return { refresh: value?.refresh === true }
+}
+export function parseWorkshopId(value) {
+  onlyKeys(value, ['id'], 'workshop request')
+  return { id: packId(value.id) }
+}
+export function parseWorkshopInstalled(value = {}) {
+  onlyKeys(value ?? {}, [], 'workshop installed request')
+  return {}
+}
+export function parseWorkshopPublish(value) {
+  onlyKeys(value, ['manifestPath', 'id', 'version', 'license', 'author', 'description', 'tags', 'homepage', 'duration', 'fingerprint', 'coverPng'], 'workshop publish request')
+  const str = (v, n, name, required = false) => {
+    if (v === undefined || v === '') { if (required) throw new TypeError(`${name} 必填`); return '' }
+    if (typeof v !== 'string' || v.length > n || /[\0\r]/.test(v)) throw new TypeError(`${name} 无效`)
+    return v.trim()
+  }
+  if (typeof value.manifestPath !== 'string' || !value.manifestPath.trim() || value.manifestPath.length > 1000) throw new TypeError('manifestPath 无效')
+  const version = str(value.version, 20, 'version', true)
+  if (!VERSION_PATTERN.test(version)) throw new TypeError('version 应为 x.y.z')
+  const tags = value.tags === undefined ? [] : value.tags
+  if (!Array.isArray(tags) || tags.length > 8 || !tags.every(t => typeof t === 'string' && t.length <= 24)) throw new TypeError('tags 无效（最多 8 个，每个不超过 24 字符）')
+  const homepage = str(value.homepage, 300, 'homepage')
+  if (homepage && !/^https:\/\/[^\s]+$/.test(homepage)) throw new TypeError('homepage 必须是 https:// 链接')
+  if (value.duration !== undefined && !(Number.isFinite(value.duration) && value.duration > 0 && value.duration <= 36_000)) throw new TypeError('duration 无效')
+  if (value.fingerprint !== undefined && !(typeof value.fingerprint === 'string' && /^[A-Za-z0-9+/=]{1,4096}$/.test(value.fingerprint))) throw new TypeError('fingerprint 无效')
+  if (value.coverPng !== undefined && !(typeof value.coverPng === 'string' && value.coverPng.length <= 1_400_000 && /^[A-Za-z0-9+/=]+$/.test(value.coverPng))) throw new TypeError('coverPng 无效（base64 PNG，最大约 1 MB）')
+  return {
+    manifestPath: value.manifestPath.trim(), id: packId(value.id), version,
+    license: str(value.license, 120, 'license', true), author: str(value.author, 120, 'author', true),
+    description: str(value.description, 500, 'description'), tags: tags.map(t => t.trim()).filter(Boolean), homepage,
+    duration: value.duration, fingerprint: value.fingerprint, coverPng: value.coverPng,
+  }
+}

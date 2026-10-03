@@ -55,7 +55,7 @@ export async function loadPack(path, { statPath = stat, readText = p => readFile
   const { manifestPath, packDir, pack } = await readPack(path, { statPath, readText })
   const warnings = []
   const files = {}
-  const media = { audio: MV_PACK_LIMITS.audioBytes, lyrics: MV_PACK_LIMITS.textFileBytes, spectrum: MV_PACK_LIMITS.textFileBytes, scene: MV_PACK_LIMITS.sceneBytes }
+  const media = { audio: MV_PACK_LIMITS.audioBytes, lyrics: MV_PACK_LIMITS.textFileBytes, spectrum: MV_PACK_LIMITS.textFileBytes, scene: MV_PACK_LIMITS.sceneBytes, timing: MV_PACK_LIMITS.textFileBytes }
   for (const [role, max] of Object.entries(media)) {
     const ref = roleFile(pack, role)
     if (!ref) continue
@@ -69,7 +69,7 @@ export async function loadPack(path, { statPath = stat, readText = p => readFile
 }
 
 /** The manifest's file reference for a readable role ('scene' = canvas.script). */
-export const roleFile = (pack, role) => role === 'scene' ? pack.canvas?.script : pack[role]?.file
+export const roleFile = (pack, role) => role === 'scene' ? pack.canvas?.script : role === 'timing' ? pack.workshop?.lyricsTiming : pack[role]?.file
 
 /**
  * Read one chunk of a file the pack's manifest names as audio, lyrics,

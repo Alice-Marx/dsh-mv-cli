@@ -7272,7 +7272,7 @@ var MV_PACK_VERSION = 1;
 var MV_PACK_MANIFEST = "mv.json";
 var MV_PACK_SCHEMA_FILE = "mv.schema.json";
 var MV_CANVAS_RENDERERS = Object.freeze(["generic", "world-execute-me", "dsh-pv", "script"]);
-var MV_PACK_FILE_ROLES = Object.freeze(["audio", "lyrics", "spectrum", "scene"]);
+var MV_PACK_FILE_ROLES = Object.freeze(["audio", "lyrics", "spectrum", "scene", "timing"]);
 var MV_LYRICS_EXTENSIONS = Object.freeze([".lrc", ".srt", ".vtt", ".json", ".txt"]);
 var MV_PACK_LIMITS = Object.freeze({
   manifestBytes: 256 * 1024,
@@ -10963,6 +10963,118 @@ function parseDshPvAsset(value) {
   return { name: value.name, offset };
 }
 
+// .dsh-plugin/shared/mv-workshop.mjs
+var WORKSHOP_REPO = "Alice-Marx/dsh-mv-workshop";
+var WORKSHOP_BRANCH = "main";
+var WORKSHOP_RAW = "https://raw.githubusercontent.com";
+var WORKSHOP_INDEX_URL = `${WORKSHOP_RAW}/${WORKSHOP_REPO}/${WORKSHOP_BRANCH}/index.json`;
+var WORKSHOP_LIMITS = Object.freeze({
+  maxFiles: 40,
+  fileBytes: 512 * 1024,
+  coverBytes: 1024 * 1024,
+  scriptBytes: 256 * 1024,
+  packBytes: 4 * 1024 * 1024,
+  indexBytes: 8 * 1024 * 1024,
+  maxPacks: 5e3,
+  maxLongLine: 4e3
+});
+var WORKSHOP_ALLOWED_EXT = Object.freeze([".json", ".js", ".mjs", ".md", ".txt", ".png", ".webp", ".jpg", ".jpeg"]);
+var WORKSHOP_BANNED_EXT = Object.freeze([
+  ".mp3",
+  ".mp2",
+  ".m4a",
+  ".mp4",
+  ".aac",
+  ".webm",
+  ".mka",
+  ".mkv",
+  ".ogg",
+  ".oga",
+  ".opus",
+  ".flac",
+  ".wav",
+  ".wma",
+  ".aiff",
+  ".aif",
+  ".ape",
+  ".amr",
+  ".ac3",
+  ".mov",
+  ".avi",
+  ".mid",
+  ".midi",
+  ".lrc",
+  ".srt",
+  ".vtt",
+  ".ass",
+  ".ssa",
+  ".ttml",
+  ".krc",
+  ".qrc",
+  ".yrc",
+  ".lrcx"
+]);
+var COVER_NAMES = Object.freeze(["cover.webp", "cover.png", "cover.jpg", "cover.jpeg"]);
+var ID_PATTERN = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/;
+var VERSION_PATTERN = /^\d{1,4}\.\d{1,4}\.\d{1,4}$/;
+var isObject3 = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+var onlyKeys2 = (value, keys, subject) => {
+  if (!isObject3(value)) throw new TypeError(`${subject} must be an object`);
+  const extra = Object.keys(value).filter((k) => !keys.includes(k));
+  if (extra.length) throw new TypeError(`${subject} has unexpected fields: ${extra.join(", ")}`);
+  return value;
+};
+var packId = (v) => {
+  if (typeof v !== "string" || !ID_PATTERN.test(v)) throw new TypeError("\u5DE5\u574A\u5305 id \u65E0\u6548");
+  return v;
+};
+function parseWorkshopIndexRequest(value = {}) {
+  onlyKeys2(value ?? {}, ["refresh"], "workshop index request");
+  return { refresh: value?.refresh === true };
+}
+function parseWorkshopId(value) {
+  onlyKeys2(value, ["id"], "workshop request");
+  return { id: packId(value.id) };
+}
+function parseWorkshopInstalled(value = {}) {
+  onlyKeys2(value ?? {}, [], "workshop installed request");
+  return {};
+}
+function parseWorkshopPublish(value) {
+  onlyKeys2(value, ["manifestPath", "id", "version", "license", "author", "description", "tags", "homepage", "duration", "fingerprint", "coverPng"], "workshop publish request");
+  const str = (v, n, name, required = false) => {
+    if (v === void 0 || v === "") {
+      if (required) throw new TypeError(`${name} \u5FC5\u586B`);
+      return "";
+    }
+    if (typeof v !== "string" || v.length > n || /[\0\r]/.test(v)) throw new TypeError(`${name} \u65E0\u6548`);
+    return v.trim();
+  };
+  if (typeof value.manifestPath !== "string" || !value.manifestPath.trim() || value.manifestPath.length > 1e3) throw new TypeError("manifestPath \u65E0\u6548");
+  const version = str(value.version, 20, "version", true);
+  if (!VERSION_PATTERN.test(version)) throw new TypeError("version \u5E94\u4E3A x.y.z");
+  const tags = value.tags === void 0 ? [] : value.tags;
+  if (!Array.isArray(tags) || tags.length > 8 || !tags.every((t) => typeof t === "string" && t.length <= 24)) throw new TypeError("tags \u65E0\u6548\uFF08\u6700\u591A 8 \u4E2A\uFF0C\u6BCF\u4E2A\u4E0D\u8D85\u8FC7 24 \u5B57\u7B26\uFF09");
+  const homepage = str(value.homepage, 300, "homepage");
+  if (homepage && !/^https:\/\/[^\s]+$/.test(homepage)) throw new TypeError("homepage \u5FC5\u987B\u662F https:// \u94FE\u63A5");
+  if (value.duration !== void 0 && !(Number.isFinite(value.duration) && value.duration > 0 && value.duration <= 36e3)) throw new TypeError("duration \u65E0\u6548");
+  if (value.fingerprint !== void 0 && !(typeof value.fingerprint === "string" && /^[A-Za-z0-9+/=]{1,4096}$/.test(value.fingerprint))) throw new TypeError("fingerprint \u65E0\u6548");
+  if (value.coverPng !== void 0 && !(typeof value.coverPng === "string" && value.coverPng.length <= 14e5 && /^[A-Za-z0-9+/=]+$/.test(value.coverPng))) throw new TypeError("coverPng \u65E0\u6548\uFF08base64 PNG\uFF0C\u6700\u5927\u7EA6 1 MB\uFF09");
+  return {
+    manifestPath: value.manifestPath.trim(),
+    id: packId(value.id),
+    version,
+    license: str(value.license, 120, "license", true),
+    author: str(value.author, 120, "author", true),
+    description: str(value.description, 500, "description"),
+    tags: tags.map((t) => t.trim()).filter(Boolean),
+    homepage,
+    duration: value.duration,
+    fingerprint: value.fingerprint,
+    coverPng: value.coverPng
+  };
+}
+
 // .dsh-plugin/shared/mv-engine-protocol.mjs
 var ENGINE_TORCH = Object.freeze({
   cuda: Object.freeze({ packages: ["torch==2.8.0"], index: "https://download.pytorch.org/whl/cu126", downloadMB: 2780, diskMB: 5860, label: "NVIDIA GPU\uFF08CUDA 12.6\uFF09" }),
@@ -11084,7 +11196,14 @@ var MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor("jobCancel", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvJobCancel`, parseJobCancel))], anyObjectCodec("MvJobCancelResult")),
   descriptor("packWriteText", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvPackWriteText`, parsePackWriteText))], anyObjectCodec("MvPackWriteTextResult")),
   descriptor("analysisRead", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvAnalysisRead`, parseAnalysisRead))], anyObjectCodec("MvAnalysisReadResult")),
-  descriptor("dshpvAsset", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvDshPvAsset`, parseDshPvAsset))], anyObjectCodec("MvDshPvAssetChunk"))
+  descriptor("dshpvAsset", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvDshPvAsset`, parseDshPvAsset))], anyObjectCodec("MvDshPvAssetChunk")),
+  // 0.7.0 MV 创意工坊 (GitHub repository catalogue; downloads checked by sha256; publishing happens on github.com).
+  descriptor("workshopIndex", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopIndex`, parseWorkshopIndexRequest))], anyObjectCodec("MvWorkshopIndexResult")),
+  descriptor("workshopCover", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopCover`, parseWorkshopId))], anyObjectCodec("MvWorkshopCoverResult")),
+  descriptor("workshopInstall", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopInstall`, parseWorkshopId))], anyObjectCodec("MvWorkshopInstallResult")),
+  descriptor("workshopUninstall", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopUninstall`, parseWorkshopId))], anyObjectCodec("MvWorkshopUninstallResult")),
+  descriptor("workshopInstalled", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopInstalled`, parseWorkshopInstalled))], anyObjectCodec("MvWorkshopInstalledResult")),
+  descriptor("workshopPublish", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopPublish`, parseWorkshopPublish))], anyObjectCodec("MvWorkshopPublishResult"))
 ]);
 var MV_CLIENT_REMOTE = Object.freeze({ package: MV_REMOTE_PACKAGE, descriptors: MV_REMOTE_DESCRIPTORS });
 var MV_HOST_TYPERT = Object.freeze({
@@ -11126,7 +11245,13 @@ function panelApi(remote) {
     jobCancel: (request2) => service.jobCancel(request2),
     packWriteText: (request2) => service.packWriteText(request2),
     analysisRead: (request2) => service.analysisRead(request2),
-    dshpvAsset: (request2) => service.dshpvAsset(request2)
+    dshpvAsset: (request2) => service.dshpvAsset(request2),
+    workshopIndex: (request2) => service.workshopIndex(request2),
+    workshopCover: (request2) => service.workshopCover(request2),
+    workshopInstall: (request2) => service.workshopInstall(request2),
+    workshopUninstall: (request2) => service.workshopUninstall(request2),
+    workshopInstalled: (request2) => service.workshopInstalled(request2),
+    workshopPublish: (request2) => service.workshopPublish(request2)
   };
 }
 function harnessServices(ctx) {

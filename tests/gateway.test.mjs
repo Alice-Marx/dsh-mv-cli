@@ -18,7 +18,7 @@ function harness() {
 }
 
 test('descriptors: ids, namespace and strict codecs; no terminal or console endpoints', () => {
-  assert.deepEqual(MV_REMOTE_DESCRIPTORS.map(d => d.method), ['info', 'packLoad', 'packRead', 'packTemplate', 'audioRead', 'ffmpegInfo', 'audioConvert', 'aiPackCreate', 'packUploadBegin', 'packUploadWrite', 'packUploadFinish', 'lyricsLookup', 'engineInfo', 'engineProbe', 'engineInstall', 'engineModel', 'engineTranscribe', 'jobRead', 'jobCancel', 'packWriteText', 'analysisRead', 'dshpvAsset'])
+  assert.deepEqual(MV_REMOTE_DESCRIPTORS.map(d => d.method), ['info', 'packLoad', 'packRead', 'packTemplate', 'audioRead', 'ffmpegInfo', 'audioConvert', 'aiPackCreate', 'packUploadBegin', 'packUploadWrite', 'packUploadFinish', 'lyricsLookup', 'engineInfo', 'engineProbe', 'engineInstall', 'engineModel', 'engineTranscribe', 'jobRead', 'jobCancel', 'packWriteText', 'analysisRead', 'dshpvAsset', 'workshopIndex', 'workshopCover', 'workshopInstall', 'workshopUninstall', 'workshopInstalled', 'workshopPublish'])
   for (const d of MV_REMOTE_DESCRIPTORS) {
     assert.equal(d.id, `${MV_REMOTE_PACKAGE}#${MV_REMOTE_NAMESPACE}/${d.method}`)
     assert.equal(d.result.mode, 'strict')

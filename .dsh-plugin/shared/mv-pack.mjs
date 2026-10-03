@@ -31,7 +31,7 @@ export const MV_PACK_MANIFEST = 'mv.json'
 export const MV_PACK_SCHEMA_FILE = 'mv.schema.json'
 export const MV_CANVAS_RENDERERS = Object.freeze(['generic', 'world-execute-me', 'dsh-pv', 'script'])
 /** Pack files the panel may read (only through the pack's own manifest). */
-export const MV_PACK_FILE_ROLES = Object.freeze(['audio', 'lyrics', 'spectrum', 'scene'])
+export const MV_PACK_FILE_ROLES = Object.freeze(['audio', 'lyrics', 'spectrum', 'scene', 'timing'])
 export const MV_LYRICS_EXTENSIONS = Object.freeze(['.lrc', '.srt', '.vtt', '.json', '.txt'])
 
 export const MV_PACK_LIMITS = Object.freeze({
