@@ -7068,6 +7068,10 @@ function bytesToBase64(bytes) {
   for (let i = 0; i < bytes.length; i += 32768) binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 32768));
   return btoa(binary);
 }
+async function sha256Hex2(buffer, subtle = globalThis.crypto?.subtle) {
+  const digest = new Uint8Array(await subtle.digest("SHA-256", buffer));
+  return Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
 async function decodeToChannels(buffer, { OfflineContext = globalThis.OfflineAudioContext } = {}) {
   if (typeof OfflineContext !== "function") throw new Error("\u6B64\u9762\u677F\u4E0D\u652F\u6301 WebAudio \u89E3\u7801\u3002");
   const context = new OfflineContext(2, 1, WAV_RATE);
@@ -9751,14 +9755,14 @@ function crc322(bytes) {
   return (crc ^ 4294967295) >>> 0;
 }
 function zipFiles(files, { date = new Date(2026, 9, 3) } = {}) {
-  const encoder = new TextEncoder();
+  const encoder2 = new TextEncoder();
   const time = date.getHours() << 11 | date.getMinutes() << 5 | date.getSeconds() >> 1;
   const day = date.getFullYear() - 1980 << 9 | date.getMonth() + 1 << 5 | date.getDate();
   const locals = [], centrals = [];
   let offset = 0;
   for (const file of files) {
-    const name = encoder.encode(file.path);
-    const data = typeof file.text === "string" ? encoder.encode(file.text) : file.bytes;
+    const name = encoder2.encode(file.path);
+    const data = typeof file.text === "string" ? encoder2.encode(file.text) : file.bytes;
     const crc = crc322(data);
     const local = new DataView(new ArrayBuffer(30));
     local.setUint32(0, 67324752, true);
@@ -9807,6 +9811,227 @@ function zipFiles(files, { date = new Date(2026, 9, 3) } = {}) {
 }
 var templateZip = () => zipFiles(templateFiles().map((file) => ({ path: `${TEMPLATE_FOLDER}/${file.path}`, text: file.text })));
 var TEMPLATE_ZIP_NAME = `${TEMPLATE_FOLDER}.zip`;
+
+// .dsh-plugin/shared/mv-workshop.mjs
+var WORKSHOP_REPO = "Alice-Marx/dsh-mv-workshop";
+var WORKSHOP_BRANCH = "main";
+var WORKSHOP_RAW = "https://raw.githubusercontent.com";
+var WORKSHOP_INDEX_URL = `${WORKSHOP_RAW}/${WORKSHOP_REPO}/${WORKSHOP_BRANCH}/index.json`;
+var WORKSHOP_LIMITS = Object.freeze({
+  maxFiles: 40,
+  fileBytes: 512 * 1024,
+  coverBytes: 1024 * 1024,
+  scriptBytes: 256 * 1024,
+  packBytes: 4 * 1024 * 1024,
+  indexBytes: 8 * 1024 * 1024,
+  maxPacks: 5e3,
+  maxLongLine: 4e3
+});
+var WORKSHOP_ALLOWED_EXT = Object.freeze([".json", ".js", ".mjs", ".md", ".txt", ".png", ".webp", ".jpg", ".jpeg"]);
+var WORKSHOP_BANNED_EXT = Object.freeze([
+  ".mp3",
+  ".mp2",
+  ".m4a",
+  ".mp4",
+  ".aac",
+  ".webm",
+  ".mka",
+  ".mkv",
+  ".ogg",
+  ".oga",
+  ".opus",
+  ".flac",
+  ".wav",
+  ".wma",
+  ".aiff",
+  ".aif",
+  ".ape",
+  ".amr",
+  ".ac3",
+  ".mov",
+  ".avi",
+  ".mid",
+  ".midi",
+  ".lrc",
+  ".srt",
+  ".vtt",
+  ".ass",
+  ".ssa",
+  ".ttml",
+  ".krc",
+  ".qrc",
+  ".yrc",
+  ".lrcx"
+]);
+var COVER_NAMES = Object.freeze(["cover.webp", "cover.png", "cover.jpg", "cover.jpeg"]);
+var ID_PATTERN = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/;
+var VERSION_PATTERN = /^\d{1,4}\.\d{1,4}\.\d{1,4}$/;
+var isObject3 = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+function normalizeLyricLine(text4) {
+  return String(text4 ?? "").normalize("NFKC").toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, "");
+}
+function energyFingerprint(samples, sampleRate) {
+  const win = Math.max(1, Math.round(sampleRate / 2));
+  const count = Math.min(3e3, Math.floor(samples.length / win));
+  const out = new Uint8Array(count);
+  for (let i = 0; i < count; i++) {
+    let sum = 0;
+    for (let j = i * win, end = j + win; j < end; j += 4) sum += samples[j] * samples[j];
+    const rms = Math.sqrt(sum / (win / 4));
+    const db = 20 * Math.log10(rms + 1e-6);
+    out[i] = Math.max(0, Math.min(255, Math.round((db + 60) / 60 * 255)));
+  }
+  return out;
+}
+var encodeFingerprint = (bytes) => btoa(String.fromCharCode(...bytes));
+function decodeFingerprint(text4) {
+  try {
+    const s = atob(String(text4));
+    return Uint8Array.from(s, (c) => c.charCodeAt(0));
+  } catch {
+    return new Uint8Array(0);
+  }
+}
+function compareFingerprints(a, b, maxShift = 20) {
+  if (!a?.length || !b?.length) return { score: 0, shift: 0 };
+  let best = { score: -1, shift: 0 };
+  for (let shift = -maxShift; shift <= maxShift; shift++) {
+    let n = 0, sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0;
+    for (let i = Math.max(0, -shift); i < a.length && i + shift < b.length; i++) {
+      const x = a[i], y = b[i + shift];
+      n++;
+      sa += x;
+      sb += y;
+      saa += x * x;
+      sbb += y * y;
+      sab += x * y;
+    }
+    if (n < 20) continue;
+    const cov = sab - sa * sb / n, va = saa - sa * sa / n, vb = sbb - sb * sb / n;
+    const score = va > 0 && vb > 0 ? cov / Math.sqrt(va * vb) : 0;
+    if (score > best.score) best = { score, shift };
+  }
+  return { score: Math.round(Math.max(0, best.score) * 1e3) / 1e3, shift: best.shift / 2 };
+}
+function audioMatch(expected, actual) {
+  if (!expected?.duration) return { ok: true, level: "unknown", message: "\u8FD9\u4E2A\u5DE5\u574A\u5305\u6CA1\u6709\u8BB0\u5F55\u6B4C\u66F2\u65F6\u957F\uFF0C\u65E0\u6CD5\u68C0\u67E5\u97F3\u9891\u662F\u5426\u5339\u914D\u3002" };
+  const diff = Math.abs((actual?.duration ?? 0) - expected.duration);
+  const lines = [];
+  let ok = diff <= 2;
+  if (!ok) lines.push(`\u65F6\u957F\u4E0D\u4E00\u81F4\uFF1A\u5DE5\u574A\u5305\u6309 ${expected.duration.toFixed(1)} \u79D2\u5236\u4F5C\uFF0C\u4F60\u7684\u97F3\u9891 ${Number(actual?.duration ?? 0).toFixed(1)} \u79D2\uFF08\u53EF\u80FD\u662F\u4E0D\u540C\u7248\u672C / \u526A\u8F91\uFF09\uFF0C\u753B\u9762\u53EF\u80FD\u5BF9\u4E0D\u4E0A\u3002`);
+  if (expected.fingerprint && actual?.fingerprint) {
+    const r = compareFingerprints(decodeFingerprint(expected.fingerprint), actual.fingerprint);
+    if (r.score < 0.8) {
+      ok = false;
+      lines.push(`\u97F3\u9891\u6307\u7EB9\u76F8\u4F3C\u5EA6 ${Math.round(r.score * 100)}%\uFF08\u4F4E\u4E8E 80%\uFF09\uFF1A\u53EF\u80FD\u4E0D\u662F\u540C\u4E00\u4E2A\u5F55\u97F3\u7248\u672C\u3002`);
+    } else if (Math.abs(r.shift) >= 0.5) lines.push(`\u97F3\u9891\u6307\u7EB9\u5339\u914D\uFF08${Math.round(r.score * 100)}%\uFF09\uFF0C\u4F46\u6574\u4F53\u504F\u79FB\u7EA6 ${r.shift > 0 ? "+" : ""}${r.shift} \u79D2\uFF0C\u53EF\u4EE5\u7528\u97F3\u9891\u504F\u79FB\u952E\u8C03\u6574\u3002`);
+    else lines.push(`\u97F3\u9891\u6307\u7EB9\u5339\u914D\uFF08${Math.round(r.score * 100)}%\uFF09\u3002`);
+  }
+  return { ok, level: ok ? "ok" : "warn", message: lines.join("\n") || `\u65F6\u957F\u5339\u914D\uFF08\u76F8\u5DEE ${diff.toFixed(1)} \u79D2\uFF09\u3002` };
+}
+async function retimeCues(cues, timing, hashOf) {
+  const lines = Array.isArray(timing?.lines) ? timing.lines : [];
+  if (!lines.length || !cues.length) return { cues, matched: 0, total: lines.length };
+  const hashes = await Promise.all(cues.map((c) => hashOf(normalizeLyricLine(c.en || c.zh || ""))));
+  let from = 0, matched = 0;
+  const out = cues.map((c) => ({ ...c }));
+  for (let i = 0; i < out.length; i++) {
+    let found = -1;
+    for (let j = from; j < Math.min(lines.length, from + 40); j++) if (lines[j].h === hashes[i]) {
+      found = j;
+      break;
+    }
+    if (found < 0) continue;
+    const line = lines[found];
+    out[i].time = line.t;
+    if (Number.isFinite(line.e)) out[i].end = line.e;
+    if (Array.isArray(line.w) && line.w.length) {
+      const words = String(out[i].en || out[i].zh || "").split(/\s+/).filter(Boolean);
+      if (words.length === line.w.length) out[i].words = words.map((text4, k) => ({ text: text4, time: line.w[k] }));
+    }
+    from = found + 1;
+    matched++;
+  }
+  for (let i = 0; i < out.length; i++) if (!Number.isFinite(out[i].end) || out[i].end <= out[i].time) out[i].end = out[i + 1]?.time ?? out[i].time + 4;
+  return { cues: out, matched, total: lines.length };
+}
+var onlyKeys2 = (value, keys, subject) => {
+  if (!isObject3(value)) throw new TypeError(`${subject} must be an object`);
+  const extra = Object.keys(value).filter((k) => !keys.includes(k));
+  if (extra.length) throw new TypeError(`${subject} has unexpected fields: ${extra.join(", ")}`);
+  return value;
+};
+var packId = (v) => {
+  if (typeof v !== "string" || !ID_PATTERN.test(v)) throw new TypeError("\u5DE5\u574A\u5305 id \u65E0\u6548");
+  return v;
+};
+function parseWorkshopIndexRequest(value = {}) {
+  onlyKeys2(value ?? {}, ["refresh"], "workshop index request");
+  return { refresh: value?.refresh === true };
+}
+function parseWorkshopId(value) {
+  onlyKeys2(value, ["id"], "workshop request");
+  return { id: packId(value.id) };
+}
+function parseWorkshopInstalled(value = {}) {
+  onlyKeys2(value ?? {}, [], "workshop installed request");
+  return {};
+}
+function parseWorkshopPublish(value) {
+  onlyKeys2(value, ["manifestPath", "id", "version", "license", "author", "description", "tags", "homepage", "duration", "fingerprint", "coverPng"], "workshop publish request");
+  const str = (v, n, name, required = false) => {
+    if (v === void 0 || v === "") {
+      if (required) throw new TypeError(`${name} \u5FC5\u586B`);
+      return "";
+    }
+    if (typeof v !== "string" || v.length > n || /[\0\r]/.test(v)) throw new TypeError(`${name} \u65E0\u6548`);
+    return v.trim();
+  };
+  if (typeof value.manifestPath !== "string" || !value.manifestPath.trim() || value.manifestPath.length > 1e3) throw new TypeError("manifestPath \u65E0\u6548");
+  const version = str(value.version, 20, "version", true);
+  if (!VERSION_PATTERN.test(version)) throw new TypeError("version \u5E94\u4E3A x.y.z");
+  const tags = value.tags === void 0 ? [] : value.tags;
+  if (!Array.isArray(tags) || tags.length > 8 || !tags.every((t) => typeof t === "string" && t.length <= 24)) throw new TypeError("tags \u65E0\u6548\uFF08\u6700\u591A 8 \u4E2A\uFF0C\u6BCF\u4E2A\u4E0D\u8D85\u8FC7 24 \u5B57\u7B26\uFF09");
+  const homepage = str(value.homepage, 300, "homepage");
+  if (homepage && !/^https:\/\/[^\s]+$/.test(homepage)) throw new TypeError("homepage \u5FC5\u987B\u662F https:// \u94FE\u63A5");
+  if (value.duration !== void 0 && !(Number.isFinite(value.duration) && value.duration > 0 && value.duration <= 36e3)) throw new TypeError("duration \u65E0\u6548");
+  if (value.fingerprint !== void 0 && !(typeof value.fingerprint === "string" && /^[A-Za-z0-9+/=]{1,4096}$/.test(value.fingerprint))) throw new TypeError("fingerprint \u65E0\u6548");
+  if (value.coverPng !== void 0 && !(typeof value.coverPng === "string" && value.coverPng.length <= 14e5 && /^[A-Za-z0-9+/=]+$/.test(value.coverPng))) throw new TypeError("coverPng \u65E0\u6548\uFF08base64 PNG\uFF0C\u6700\u5927\u7EA6 1 MB\uFF09");
+  return {
+    manifestPath: value.manifestPath.trim(),
+    id: packId(value.id),
+    version,
+    license: str(value.license, 120, "license", true),
+    author: str(value.author, 120, "author", true),
+    description: str(value.description, 500, "description"),
+    tags: tags.map((t) => t.trim()).filter(Boolean),
+    homepage,
+    duration: value.duration,
+    fingerprint: value.fingerprint,
+    coverPng: value.coverPng
+  };
+}
+
+// .dsh-plugin/client/mv-workshop-state.mjs
+function mediaSlot(pack, kind) {
+  if (pack?.builtin) return kind;
+  const id = pack?.pack?.workshop?.id;
+  return id && !pack?.pack?.audio ? `workshop:${id}:${kind}` : null;
+}
+async function fingerprintAudio(bytes, decode2 = decodeToChannels) {
+  const { channels, sampleRate, duration } = await decode2(bytes);
+  const [a, b] = channels;
+  const mono = new Float32Array(a.length);
+  for (let i = 0; i < a.length; i++) mono[i] = (a[i] + b[i]) / 2;
+  const fingerprint = energyFingerprint(mono, sampleRate);
+  return { duration, fingerprint, base64: encodeFingerprint(fingerprint) };
+}
+function checkAudioForPack(workshop, actual) {
+  return audioMatch({ duration: workshop?.audio?.duration, fingerprint: workshop?.audio?.fingerprint?.values }, actual);
+}
+var encoder = new TextEncoder();
+var lineHash = async (text4) => (await sha256Hex2(encoder.encode(text4))).slice(0, 16);
+var retimeWithPack = (cues, timing, hash = lineHash) => retimeCues(cues, timing, hash);
 
 // .dsh-plugin/client/canvas-mv.jsx
 var AUDIO_ACCEPT = "audio/*,video/*,.mp3,.mp2,.m4a,.m4b,.mp4,.m4v,.mov,.aac,.webm,.mkv,.mka,.ogg,.oga,.opus,.flac,.wav";
@@ -9858,6 +10083,9 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   const [audioFile, setAudioFile] = import_react3.default.useState(null);
   const [lyricsText, setLyricsText] = import_react3.default.useState("");
   const cuesRef = import_react3.default.useRef([]);
+  const [matchNote, setMatchNote] = import_react3.default.useState(null);
+  const timingRef = import_react3.default.useRef(null);
+  const fpRef = import_react3.default.useRef(null);
   import_react3.default.useEffect(() => {
     const live = new LiveSpectrum(audio.current);
     const state = {
@@ -9959,7 +10187,18 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       state.started = false;
       setAudioInfo({ name: file.name, sha, known: loaded.known, saved: loaded.saved, duration: null, label: sniff.label });
       setAudioFile(file);
-      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, "audio", { file, name: file.name, sha });
+      const slot = mediaSlot(packRef.current, "audio");
+      if (remember && slot) await putMedia(dbRef.current, slot, { file, name: file.name, sha });
+      const ws = packRef.current?.pack?.workshop;
+      if (ws && !packRef.current?.pack?.audio) {
+        setMatchNote({ level: "info", message: "\u6B63\u5728\u68C0\u67E5\u4F60\u7684\u97F3\u9891\u662F\u5426\u4E0E\u8FD9\u4E2A\u5DE5\u574A\u5305\u5339\u914D\u2026" });
+        void fingerprintAudio(bytes).then((fp) => {
+          fpRef.current = { sha, ...fp };
+          if (engine.current?.sha === sha) setMatchNote(checkAudioForPack(ws, fp));
+        }).catch(() => {
+          if (engine.current?.sha === sha) setMatchNote({ level: "unknown", message: "\u65E0\u6CD5\u5728\u9762\u677F\u91CC\u89E3\u7801\u8FD9\u4E2A\u97F3\u9891\u6765\u68C0\u67E5\u662F\u5426\u5339\u914D\u3002" });
+        });
+      } else fpRef.current = null;
     } catch (failure) {
       setError(`\u65E0\u6CD5\u8BFB\u53D6\u97F3\u9891\uFF1A${failure?.message ?? failure}`);
     }
@@ -9984,12 +10223,19 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
         cuesRef.current = cues;
         setLyricsInfo({ name, count: cues.length, note: band.matched ? `\u9010\u8BCD\u65F6\u95F4\u5339\u914D ${band.matched}/${band.total} \u53E5` : "\u672A\u5339\u914D\u5230\u9010\u8BCD\u65F6\u95F4\uFF0C\u6309\u884C\u663E\u793A" });
       } else {
-        for (const film of generic2 ? [state.generic, state.script] : [state.wem]) film.setLyrics(cues);
-        cuesRef.current = cues;
-        setLyricsInfo({ name, count: cues.length });
+        let use = cues, note = "";
+        if (generic2 && timingRef.current) {
+          const timed = await retimeWithPack(cues, timingRef.current);
+          if (timed.matched) use = timed.cues;
+          note = timed.matched ? `\u6309\u5DE5\u574A\u65F6\u95F4\u8F74\u5BF9\u9F50 ${timed.matched}/${timed.total} \u53E5` : "\u6CA1\u6709\u4E0E\u5DE5\u574A\u65F6\u95F4\u8F74\u5339\u914D\u7684\u884C\uFF0C\u4F7F\u7528\u6B4C\u8BCD\u6587\u4EF6\u81EA\u5DF1\u7684\u65F6\u95F4";
+        }
+        for (const film of generic2 ? [state.generic, state.script] : [state.wem]) film.setLyrics(use);
+        cuesRef.current = use;
+        setLyricsInfo({ name, count: use.length, ...note ? { note } : {} });
       }
       if (!packRef.current?.builtin) setLyricsText(body);
-      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, "lyrics", { name, text: body });
+      const slot = mediaSlot(packRef.current, "lyrics");
+      if (remember && slot) await putMedia(dbRef.current, slot, { name, text: body });
     } catch (failure) {
       setError(`\u65E0\u6CD5\u89E3\u6790\u6B4C\u8BCD\uFF1A${failure?.message ?? failure}`);
     }
@@ -10029,6 +10275,9 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       setDecodeFail(null);
       setLyricsText("");
       cuesRef.current = [];
+      setMatchNote(null);
+      timingRef.current = null;
+      fpRef.current = null;
       const generic2 = isGeneric(pack);
       state.film = generic2 ? state.generic : isDshPv(pack) ? state.dshpv : state.wem;
       if (isDshPv(pack) && !state.dshpvLoad) {
@@ -10084,6 +10333,15 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
           }
         }
       }
+      if (pack.pack.workshop?.lyricsTiming && pack.files?.timing?.exists && !pack.files.timing.tooLarge && api) {
+        try {
+          const { text: text4 } = await fetchPackText(api, pack.manifestPath, "timing", { isCancelled: () => cancelled });
+          if (cancelled) return;
+          timingRef.current = JSON.parse(text4);
+        } catch {
+          timingRef.current = null;
+        }
+      }
       for (const role of ["lyrics", "spectrum"]) {
         if (!pack.pack[role] || !pack.files?.[role]?.exists || pack.files[role].tooLarge || !api) continue;
         try {
@@ -10096,6 +10354,15 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
         }
       }
       clearAudio();
+      const audioSlot = mediaSlot(pack, "audio"), lyricsSlot = mediaSlot(pack, "lyrics");
+      if (audioSlot) {
+        const [a, l] = await Promise.all([getMedia(db, audioSlot), getMedia(db, lyricsSlot)]);
+        if (cancelled) return;
+        if (l?.text) await useLyricsText(l.name, l.text, { remember: false });
+        if (a?.file) await useAudioFile(a.file, { remember: false });
+        if (!a?.file) setMatchNote({ level: "info", message: "\u8FD9\u662F\u521B\u610F\u5DE5\u574A\u7684\u5305\uFF0C\u4E0D\u5E26\u97F3\u9891\uFF1A\u8BF7\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2\u6587\u4EF6\uFF08\u548C\u6B4C\u8BCD\uFF09\uFF0C\u63D2\u4EF6\u4F1A\u68C0\u67E5\u5B83\u662F\u5426\u4E0E\u8FD9\u4E2A\u5305\u5339\u914D\u3002" });
+        return;
+      }
       if (pack.pack.audio && pack.files?.audio?.exists && !pack.files.audio.tooLarge && api) {
         setPackStatus("\u6B63\u5728\u4ECE MV \u5305\u8BFB\u53D6\u97F3\u9891\u2026");
         try {
@@ -10140,7 +10407,8 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   const clearLyrics = async () => {
     engine.current.film.setLyrics([]);
     setLyricsInfo(null);
-    if (packRef.current?.builtin) await deleteMedia(dbRef.current, "lyrics");
+    const slot = mediaSlot(packRef.current, "lyrics");
+    if (slot) await deleteMedia(dbRef.current, slot);
   };
   const play = async () => {
     const state = engine.current;
@@ -10296,7 +10564,31 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   const generic = isGeneric(pack);
   const chapterList = generic ? genericChapters(duration) : isDshPv(pack) ? DSHPV_CHAPTERS : CHAPTERS;
   const chapter = chapterList.reduce((current, item) => item[0] <= Math.max(0, status.t) ? item : current, chapterList[0]);
-  import_react3.default.useImperativeHandle(ref, () => ({ toggle: () => act({ type: "toggle" }), pause: () => engine.current?.clock.pause(), focus: () => wrap3.current?.focus() }));
+  import_react3.default.useImperativeHandle(ref, () => ({
+    toggle: () => act({ type: "toggle" }),
+    pause: () => engine.current?.clock.pause(),
+    focus: () => wrap3.current?.focus(),
+    /** PNG (base64, ≤ 960 px wide) of the current frame, for a workshop cover. */
+    snapshotPng: () => {
+      const source = isDshPv(packRef.current) ? pixel.current : canvas.current;
+      if (!source?.width) return "";
+      const scale = Math.min(1, 960 / source.width);
+      const out = document.createElement("canvas");
+      out.width = Math.round(source.width * scale);
+      out.height = Math.round(source.height * scale);
+      out.getContext("2d").drawImage(source, 0, 0, out.width, out.height);
+      return out.toDataURL("image/png").split(",")[1] ?? "";
+    },
+    /** Duration + energy fingerprint of the loaded audio (for 发布到工坊), or null without audio. */
+    audioFingerprint: async () => {
+      const sha = engine.current?.sha;
+      if (!sha || !audioFile) return null;
+      if (fpRef.current?.sha === sha) return fpRef.current;
+      const fp = await fingerprintAudio(await audioFile.arrayBuffer());
+      fpRef.current = { sha, ...fp };
+      return fpRef.current;
+    }
+  }), [audioFile]);
   import_react3.default.useEffect(() => {
     onState({ playing: status.playing, hasAudio: Boolean(audioInfo) });
   }, [status.playing, Boolean(audioInfo)]);
@@ -10312,7 +10604,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     resetOffsets(audioInfo.sha);
   };
   const syncLabel = known ? `\u5DF2\u8BC6\u522B\uFF1A${known.label}` : audioInfo ? "\u672A\u8BC6\u522B\u7684\u7248\u672C\uFF1A\u542C\u7740\u4E0D\u540C\u6B65\u5C31\u7528 Alt+[ / Alt+] \u6821\u51C6" : "";
-  return /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-canvas-tab" }, !audioInfo && !packStatus && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("h2", null, pack.builtin ? "\u7B2C\u4E00\u6B21\u4F7F\u7528\uFF1F\u5148\u9009\u4E00\u9996\u6B4C" : "\u8FD9\u4E2A MV \u5305\u6CA1\u6709\u53EF\u7528\u7684\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("ol", null, /* @__PURE__ */ import_react3.default.createElement("li", null, "\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08MP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV \u89C6\u9891\u7684\u97F3\u8F68\u3001Opus/Ogg\u3001FLAC\u3001WAV \u90FD\u884C\uFF0C\u6309\u5185\u5BB9\u8BC6\u522B\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\uFF1B\u5728\u672C\u673A\u89E3\u7801\uFF0C\u4E0D\u4E0A\u4F20\uFF09\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u53EF\u9009\uFF1A\u9009\u62E9\u6B4C\u8BCD\uFF08LRC / SRT / lyrics.json\uFF09\uFF0C\u753B\u9762\u4F1A\u663E\u793A\u5B57\u5E55\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u70B9 ", /* @__PURE__ */ import_react3.default.createElement("b", null, "\u25B6 \u64AD\u653E"), "\u3002\u4E5F\u53EF\u4EE5\u4E0D\u9009\u97F3\u9891\uFF0C\u76F4\u63A5\u9759\u97F3\u89C2\u770B\u753B\u9762\u3002")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", onClick: pickAudio }, "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, "\u9009\u62E9\u6B4C\u8BCD\u2026")))), packStatus && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, packStatus)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-sources", "aria-label": "\u5A92\u4F53\u6587\u4EF6" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${audioInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u266A"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value", title: audioInfo ? `${audioInfo.name}
+  return /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-canvas-tab" }, !audioInfo && !packStatus && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("h2", null, pack.builtin ? "\u7B2C\u4E00\u6B21\u4F7F\u7528\uFF1F\u5148\u9009\u4E00\u9996\u6B4C" : pack.pack.workshop ? "\u521B\u610F\u5DE5\u574A\u7684\u5305\u4E0D\u5E26\u97F3\u9891\uFF1A\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2" : "\u8FD9\u4E2A MV \u5305\u6CA1\u6709\u53EF\u7528\u7684\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("ol", null, /* @__PURE__ */ import_react3.default.createElement("li", null, "\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08MP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV \u89C6\u9891\u7684\u97F3\u8F68\u3001Opus/Ogg\u3001FLAC\u3001WAV \u90FD\u884C\uFF0C\u6309\u5185\u5BB9\u8BC6\u522B\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\uFF1B\u5728\u672C\u673A\u89E3\u7801\uFF0C\u4E0D\u4E0A\u4F20\uFF09\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u53EF\u9009\uFF1A\u9009\u62E9\u6B4C\u8BCD\uFF08LRC / SRT / lyrics.json\uFF09\uFF0C\u753B\u9762\u4F1A\u663E\u793A\u5B57\u5E55\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u70B9 ", /* @__PURE__ */ import_react3.default.createElement("b", null, "\u25B6 \u64AD\u653E"), "\u3002\u4E5F\u53EF\u4EE5\u4E0D\u9009\u97F3\u9891\uFF0C\u76F4\u63A5\u9759\u97F3\u89C2\u770B\u753B\u9762\u3002")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", onClick: pickAudio }, "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, "\u9009\u62E9\u6B4C\u8BCD\u2026")))), packStatus && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, packStatus)), matchNote && pack.pack.workshop && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: matchNote.level === "warn" ? "warn" : matchNote.level === "ok" ? "ok" : "info", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setMatchNote(null) }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, matchNote.level === "warn" ? "\u26A0 \u97F3\u9891\u53EF\u80FD\u4E0E\u8FD9\u4E2A\u5DE5\u574A\u5305\u4E0D\u5339\u914D\uFF1A\n" : "", matchNote.message)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-sources", "aria-label": "\u5A92\u4F53\u6587\u4EF6" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${audioInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u266A"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value", title: audioInfo ? `${audioInfo.name}
 sha256 ${audioInfo.sha}` : "" }, audioInfo ? `${audioInfo.name}${audioInfo.label && audioInfo.label !== "\u672A\u77E5\u683C\u5F0F" ? ` \xB7 ${audioInfo.label}` : ""}` : "\u672A\u9009\u62E9 \xB7 \u9759\u97F3\u6A21\u5F0F")), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: pickAudio }, audioInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${lyricsInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u201C"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u6B4C\u8BCD"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, lyricsInfo ? `${lyricsInfo.name}\uFF08${lyricsInfo.count} \u53E5${lyricsInfo.note ? ` \xB7 ${lyricsInfo.note}` : ""}\uFF09` : "\u672A\u52A0\u8F7D \xB7 \u53EA\u663E\u793A [ \u95F4\u594F ]")), lyricsInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearLyrics() }, "\u79FB\u9664"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, lyricsInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u25AE\u25AE"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u9891\u8C31"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, spectrumInfo ? spectrumInfo.name : "\u5B9E\u65F6\u5206\u6790")), spectrumInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearSpectrum() }, "\u6539\u7528\u5B9E\u65F6"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "\u53EF\u9009\uFF1Aspectrum.json", onClick: () => pickText(".json", useSpectrumText) }, spectrumInfo ? "\u66F4\u6362" : "\u6587\u4EF6\u2026"))), error && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "error", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setError("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", null, error)), sceneNote && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSceneNote("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, sceneNote)), decodeFail && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: decodeFail.ffmpeg && !decodeFail.confirming ? /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: decodeFail.busy, onClick: () => setDecodeFail((value) => ({ ...value, confirming: true })) }, "\u7528 ffmpeg \u8F6C\u6362\u2026")) : null }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, "\u9762\u677F\u65E0\u6CD5\u89E3\u7801\u8FD9\u4E2A\u97F3\u9891\uFF08", decodeFail.label, "\uFF09\u3002", decodeFail.ffmpeg ? "\u627E\u5230\u4E86\u4F60\u672C\u673A\u7684 ffmpeg\uFF0C\u53EF\u4EE5\u628A\u5B83\u8F6C\u6362\u6210 WAV \u7F13\u5B58\u540E\u64AD\u653E\uFF08\u539F\u6587\u4EF6\u4E0D\u53D8\uFF09\u3002" : "\u5B89\u88C5 ffmpeg\uFF08\u653E\u8FDB PATH\uFF0C\u6216 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\uFF09\u540E\u53EF\u4EE5\u81EA\u52A8\u8F6C\u6362\uFF1B\u6216\u8005\u6362\u6210 MP3 / M4A / FLAC / WAV\u3002"), decodeFail.confirming && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u7528 ffmpeg \u8F6C\u6362" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, "\u7528\u4F60\u672C\u673A\u7684 ffmpeg \u8F6C\u6362\u8FD9\u4E2A\u6587\u4EF6\uFF1F"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "Host \u5C06\u8FD0\u884C\uFF08\u4E0D\u7ECF\u8FC7 shell\uFF0C\u6700\u591A 10 \u5206\u949F\uFF09\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, displayCommand(decodeFail.ffmpeg, ffmpegArgs(decodeFail.path, "<\u63D2\u4EF6\u7F13\u5B58>\\<sha256>.wav"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: decodeFail.busy, onClick: () => void convertWithFfmpeg() }, decodeFail.busy ? decodeFail.busy : "\u786E\u8BA4\u8F6C\u6362"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(decodeFail.busy), onClick: () => setDecodeFail((value) => ({ ...value, confirming: false })) }, "\u53D6\u6D88")))), /* @__PURE__ */ import_react3.default.createElement(
     "div",
     {
@@ -10961,118 +11253,6 @@ function parseDshPvAsset(value) {
   const offset = value.offset ?? 0;
   if (!Number.isInteger(offset) || offset < 0) fail2("offset must be a non-negative integer");
   return { name: value.name, offset };
-}
-
-// .dsh-plugin/shared/mv-workshop.mjs
-var WORKSHOP_REPO = "Alice-Marx/dsh-mv-workshop";
-var WORKSHOP_BRANCH = "main";
-var WORKSHOP_RAW = "https://raw.githubusercontent.com";
-var WORKSHOP_INDEX_URL = `${WORKSHOP_RAW}/${WORKSHOP_REPO}/${WORKSHOP_BRANCH}/index.json`;
-var WORKSHOP_LIMITS = Object.freeze({
-  maxFiles: 40,
-  fileBytes: 512 * 1024,
-  coverBytes: 1024 * 1024,
-  scriptBytes: 256 * 1024,
-  packBytes: 4 * 1024 * 1024,
-  indexBytes: 8 * 1024 * 1024,
-  maxPacks: 5e3,
-  maxLongLine: 4e3
-});
-var WORKSHOP_ALLOWED_EXT = Object.freeze([".json", ".js", ".mjs", ".md", ".txt", ".png", ".webp", ".jpg", ".jpeg"]);
-var WORKSHOP_BANNED_EXT = Object.freeze([
-  ".mp3",
-  ".mp2",
-  ".m4a",
-  ".mp4",
-  ".aac",
-  ".webm",
-  ".mka",
-  ".mkv",
-  ".ogg",
-  ".oga",
-  ".opus",
-  ".flac",
-  ".wav",
-  ".wma",
-  ".aiff",
-  ".aif",
-  ".ape",
-  ".amr",
-  ".ac3",
-  ".mov",
-  ".avi",
-  ".mid",
-  ".midi",
-  ".lrc",
-  ".srt",
-  ".vtt",
-  ".ass",
-  ".ssa",
-  ".ttml",
-  ".krc",
-  ".qrc",
-  ".yrc",
-  ".lrcx"
-]);
-var COVER_NAMES = Object.freeze(["cover.webp", "cover.png", "cover.jpg", "cover.jpeg"]);
-var ID_PATTERN = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/;
-var VERSION_PATTERN = /^\d{1,4}\.\d{1,4}\.\d{1,4}$/;
-var isObject3 = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
-var onlyKeys2 = (value, keys, subject) => {
-  if (!isObject3(value)) throw new TypeError(`${subject} must be an object`);
-  const extra = Object.keys(value).filter((k) => !keys.includes(k));
-  if (extra.length) throw new TypeError(`${subject} has unexpected fields: ${extra.join(", ")}`);
-  return value;
-};
-var packId = (v) => {
-  if (typeof v !== "string" || !ID_PATTERN.test(v)) throw new TypeError("\u5DE5\u574A\u5305 id \u65E0\u6548");
-  return v;
-};
-function parseWorkshopIndexRequest(value = {}) {
-  onlyKeys2(value ?? {}, ["refresh"], "workshop index request");
-  return { refresh: value?.refresh === true };
-}
-function parseWorkshopId(value) {
-  onlyKeys2(value, ["id"], "workshop request");
-  return { id: packId(value.id) };
-}
-function parseWorkshopInstalled(value = {}) {
-  onlyKeys2(value ?? {}, [], "workshop installed request");
-  return {};
-}
-function parseWorkshopPublish(value) {
-  onlyKeys2(value, ["manifestPath", "id", "version", "license", "author", "description", "tags", "homepage", "duration", "fingerprint", "coverPng"], "workshop publish request");
-  const str = (v, n, name, required = false) => {
-    if (v === void 0 || v === "") {
-      if (required) throw new TypeError(`${name} \u5FC5\u586B`);
-      return "";
-    }
-    if (typeof v !== "string" || v.length > n || /[\0\r]/.test(v)) throw new TypeError(`${name} \u65E0\u6548`);
-    return v.trim();
-  };
-  if (typeof value.manifestPath !== "string" || !value.manifestPath.trim() || value.manifestPath.length > 1e3) throw new TypeError("manifestPath \u65E0\u6548");
-  const version = str(value.version, 20, "version", true);
-  if (!VERSION_PATTERN.test(version)) throw new TypeError("version \u5E94\u4E3A x.y.z");
-  const tags = value.tags === void 0 ? [] : value.tags;
-  if (!Array.isArray(tags) || tags.length > 8 || !tags.every((t) => typeof t === "string" && t.length <= 24)) throw new TypeError("tags \u65E0\u6548\uFF08\u6700\u591A 8 \u4E2A\uFF0C\u6BCF\u4E2A\u4E0D\u8D85\u8FC7 24 \u5B57\u7B26\uFF09");
-  const homepage = str(value.homepage, 300, "homepage");
-  if (homepage && !/^https:\/\/[^\s]+$/.test(homepage)) throw new TypeError("homepage \u5FC5\u987B\u662F https:// \u94FE\u63A5");
-  if (value.duration !== void 0 && !(Number.isFinite(value.duration) && value.duration > 0 && value.duration <= 36e3)) throw new TypeError("duration \u65E0\u6548");
-  if (value.fingerprint !== void 0 && !(typeof value.fingerprint === "string" && /^[A-Za-z0-9+/=]{1,4096}$/.test(value.fingerprint))) throw new TypeError("fingerprint \u65E0\u6548");
-  if (value.coverPng !== void 0 && !(typeof value.coverPng === "string" && value.coverPng.length <= 14e5 && /^[A-Za-z0-9+/=]+$/.test(value.coverPng))) throw new TypeError("coverPng \u65E0\u6548\uFF08base64 PNG\uFF0C\u6700\u5927\u7EA6 1 MB\uFF09");
-  return {
-    manifestPath: value.manifestPath.trim(),
-    id: packId(value.id),
-    version,
-    license: str(value.license, 120, "license", true),
-    author: str(value.author, 120, "author", true),
-    description: str(value.description, 500, "description"),
-    tags: tags.map((t) => t.trim()).filter(Boolean),
-    homepage,
-    duration: value.duration,
-    fingerprint: value.fingerprint,
-    coverPng: value.coverPng
-  };
 }
 
 // .dsh-plugin/shared/mv-engine-protocol.mjs

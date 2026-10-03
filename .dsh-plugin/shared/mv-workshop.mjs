@@ -177,7 +177,7 @@ export async function validateWorkshopPack({ id, files, readText }) {
     total += file.size
     if (!PATH_PATTERN.test(file.path) || file.path.split('/').some(part => part === '..' || part.startsWith('.'))) { errors.push(`文件路径不允许：${file.path}（只能用字母数字 . _ -，最多两层子文件夹，不能以 . 开头）`); continue }
     if (WORKSHOP_BANNED_EXT.includes(ext)) { errors.push(`不允许上传音频 / 视频 / 歌词文件：${file.path}`); continue }
-    if (BANNED_NAMES.test(name)) { errors.push(`不允许上传歌词文件：${file.path}（只提交 ${WORKSHOP_TIMING_FILE} 时间轴）`); continue }
+    if (BANNED_NAMES.test(name) && file.path !== WORKSHOP_TIMING_FILE) { errors.push(`不允许上传歌词文件：${file.path}（只提交 ${WORKSHOP_TIMING_FILE} 时间轴）`); continue }
     if (!WORKSHOP_ALLOWED_EXT.includes(ext)) { errors.push(`不支持的文件类型：${file.path}`); continue }
     const isImage = ['.png', '.webp', '.jpg', '.jpeg'].includes(ext)
     const max = isImage ? WORKSHOP_LIMITS.coverBytes : ['.js', '.mjs'].includes(ext) ? WORKSHOP_LIMITS.scriptBytes : WORKSHOP_LIMITS.fileBytes

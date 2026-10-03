@@ -22,6 +22,7 @@ import { readHostAudio } from './mv-wav.mjs'
 import { unwrapRemote } from './remote-state.mjs'
 import { audioMimeOf, displayCommand, ffmpegArgs, sniffAudio } from '../shared/mv-audio-protocol.mjs'
 import { Alert, Icon, KeyHelp, Popover } from './mv-ui.jsx'
+import { checkAudioForPack, fingerprintAudio, mediaSlot, retimeWithPack } from './mv-workshop-state.mjs'
 
 /** Everything the panel's Chromium can decode; the content decides, not the extension. */
 export const AUDIO_ACCEPT = 'audio/*,video/*,.mp3,.mp2,.m4a,.m4b,.mp4,.m4v,.mov,.aac,.webm,.mkv,.mka,.ogg,.oga,.opus,.flac,.wav'
@@ -64,6 +65,9 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const [audioFile, setAudioFile] = React.useState(null)
   const [lyricsText, setLyricsText] = React.useState('')
   const cuesRef = React.useRef([])
+  const [matchNote, setMatchNote] = React.useState(null) // workshop packs: { level, message }
+  const timingRef = React.useRef(null) // workshop packs: lyrics.timing.json
+  const fpRef = React.useRef(null) // { sha, duration, fingerprint, base64 } of the current audio
 
   // Engine setup and the render loop.
   React.useEffect(() => {
@@ -149,7 +153,17 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       state.started = false
       setAudioInfo({ name: file.name, sha, known: loaded.known, saved: loaded.saved, duration: null, label: sniff.label })
       setAudioFile(file)
-      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, 'audio', { file, name: file.name, sha })
+      const slot = mediaSlot(packRef.current, 'audio')
+      if (remember && slot) await putMedia(dbRef.current, slot, { file, name: file.name, sha })
+      // Workshop packs: check the user's audio against the duration / fingerprint the pack was made for.
+      const ws = packRef.current?.pack?.workshop
+      if (ws && !packRef.current?.pack?.audio) {
+        setMatchNote({ level: 'info', message: '正在检查你的音频是否与这个工坊包匹配…' })
+        void fingerprintAudio(bytes).then(fp => {
+          fpRef.current = { sha, ...fp }
+          if (engine.current?.sha === sha) setMatchNote(checkAudioForPack(ws, fp))
+        }).catch(() => { if (engine.current?.sha === sha) setMatchNote({ level: 'unknown', message: '无法在面板里解码这个音频来检查是否匹配。' }) })
+      } else fpRef.current = null
     } catch (failure) {
       setError(`无法读取音频：${failure?.message ?? failure}`)
     }
@@ -172,12 +186,20 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         cuesRef.current = cues
         setLyricsInfo({ name, count: cues.length, note: band.matched ? `逐词时间匹配 ${band.matched}/${band.total} 句` : '未匹配到逐词时间，按行显示' })
       } else {
-      for (const film of generic ? [state.generic, state.script] : [state.wem]) film.setLyrics(cues)
-      cuesRef.current = cues
-      setLyricsInfo({ name, count: cues.length })
+      let use = cues, note = ''
+      if (generic && timingRef.current) {
+        // Workshop pack: take line / word times from lyrics.timing.json for lines whose text hash matches.
+        const timed = await retimeWithPack(cues, timingRef.current)
+        if (timed.matched) use = timed.cues
+        note = timed.matched ? `按工坊时间轴对齐 ${timed.matched}/${timed.total} 句` : '没有与工坊时间轴匹配的行，使用歌词文件自己的时间'
+      }
+      for (const film of generic ? [state.generic, state.script] : [state.wem]) film.setLyrics(use)
+      cuesRef.current = use
+      setLyricsInfo({ name, count: use.length, ...(note ? { note } : {}) })
       }
       if (!packRef.current?.builtin) setLyricsText(body)
-      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, 'lyrics', { name, text: body })
+      const slot = mediaSlot(packRef.current, 'lyrics')
+      if (remember && slot) await putMedia(dbRef.current, slot, { name, text: body })
     } catch (failure) { setError(`无法解析歌词：${failure?.message ?? failure}`) }
   }, [])
 
@@ -207,6 +229,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       state.script.stop()
       state.energy = () => state.live.energy()
       setLyricsInfo(null); setSpectrumInfo(null); setError(''); setPackStatus(''); setSceneNote(''); setDecodeFail(null); setLyricsText(''); cuesRef.current = []
+      setMatchNote(null); timingRef.current = null; fpRef.current = null
       const generic = isGeneric(pack)
       state.film = generic ? state.generic : isDshPv(pack) ? state.dshpv : state.wem
       if (isDshPv(pack) && !state.dshpvLoad) {
@@ -253,6 +276,13 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
           }
         }
       }
+      if (pack.pack.workshop?.lyricsTiming && pack.files?.timing?.exists && !pack.files.timing.tooLarge && api) {
+        try {
+          const { text } = await fetchPackText(api, pack.manifestPath, 'timing', { isCancelled: () => cancelled })
+          if (cancelled) return
+          timingRef.current = JSON.parse(text)
+        } catch { timingRef.current = null }
+      }
       for (const role of ['lyrics', 'spectrum']) {
         if (!pack.pack[role] || !pack.files?.[role]?.exists || pack.files[role].tooLarge || !api) continue
         try {
@@ -263,6 +293,16 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         } catch (failure) { if (!cancelled) setError(`无法读取 MV 包的 ${role}：${failure?.message ?? failure}`) }
       }
       clearAudio()
+      const audioSlot = mediaSlot(pack, 'audio'), lyricsSlot = mediaSlot(pack, 'lyrics')
+      if (audioSlot) {
+        // A workshop pack has no audio of its own: bring back the files you chose for it last time.
+        const [a, l] = await Promise.all([getMedia(db, audioSlot), getMedia(db, lyricsSlot)])
+        if (cancelled) return
+        if (l?.text) await useLyricsText(l.name, l.text, { remember: false })
+        if (a?.file) await useAudioFile(a.file, { remember: false })
+        if (!a?.file) setMatchNote({ level: 'info', message: '这是创意工坊的包，不带音频：请选择你自己的歌曲文件（和歌词），插件会检查它是否与这个包匹配。' })
+        return
+      }
       if (pack.pack.audio && pack.files?.audio?.exists && !pack.files.audio.tooLarge && api) {
         setPackStatus('正在从 MV 包读取音频…')
         try {
@@ -301,7 +341,8 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const clearLyrics = async () => {
     engine.current.film.setLyrics([])
     setLyricsInfo(null)
-    if (packRef.current?.builtin) await deleteMedia(dbRef.current, 'lyrics')
+    const slot = mediaSlot(packRef.current, 'lyrics')
+    if (slot) await deleteMedia(dbRef.current, slot)
   }
 
   const play = async () => {
@@ -397,7 +438,28 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const chapterList = generic ? genericChapters(duration) : isDshPv(pack) ? DSHPV_CHAPTERS : CHAPTERS
   const chapter = chapterList.reduce((current, item) => (item[0] <= Math.max(0, status.t) ? item : current), chapterList[0])
 
-  React.useImperativeHandle(ref, () => ({ toggle: () => act({ type: 'toggle' }), pause: () => engine.current?.clock.pause(), focus: () => wrap.current?.focus() }))
+  React.useImperativeHandle(ref, () => ({
+    toggle: () => act({ type: 'toggle' }), pause: () => engine.current?.clock.pause(), focus: () => wrap.current?.focus(),
+    /** PNG (base64, ≤ 960 px wide) of the current frame, for a workshop cover. */
+    snapshotPng: () => {
+      const source = isDshPv(packRef.current) ? pixel.current : canvas.current
+      if (!source?.width) return ''
+      const scale = Math.min(1, 960 / source.width)
+      const out = document.createElement('canvas')
+      out.width = Math.round(source.width * scale); out.height = Math.round(source.height * scale)
+      out.getContext('2d').drawImage(source, 0, 0, out.width, out.height)
+      return out.toDataURL('image/png').split(',')[1] ?? ''
+    },
+    /** Duration + energy fingerprint of the loaded audio (for 发布到工坊), or null without audio. */
+    audioFingerprint: async () => {
+      const sha = engine.current?.sha
+      if (!sha || !audioFile) return null
+      if (fpRef.current?.sha === sha) return fpRef.current
+      const fp = await fingerprintAudio(await audioFile.arrayBuffer())
+      fpRef.current = { sha, ...fp }
+      return fpRef.current
+    },
+  }), [audioFile])
   React.useEffect(() => { onState({ playing: status.playing, hasAudio: Boolean(audioInfo) }) }, [status.playing, Boolean(audioInfo)])
   const setLevel = level => { const el = audio.current; el.volume = Math.min(1, Math.max(0, level)); if (el.muted && level > 0) el.muted = false }
   const resetSync = () => { resetOffsets(audioInfo.sha); const v = loadOffsets(audioInfo.sha, KNOWN_AUDIO); applyOffsets(v); resetOffsets(audioInfo.sha) }
@@ -408,7 +470,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       {!audioInfo && !packStatus && <div className="mv-onboard">
         <span className="mv-onboard-badge">&gt;_</span>
         <div>
-          <h2>{pack.builtin ? '第一次使用？先选一首歌' : '这个 MV 包没有可用的音频'}</h2>
+          <h2>{pack.builtin ? '第一次使用？先选一首歌' : pack.pack.workshop ? '创意工坊的包不带音频：选择你自己的歌曲' : '这个 MV 包没有可用的音频'}</h2>
           <ol>
             <li>选择你自己的音频或视频文件（MP3、M4A/AAC、MP4/MOV/WebM/MKV 视频的音轨、Opus/Ogg、FLAC、WAV 都行，按内容识别，不看扩展名；在本机解码，不上传）。</li>
             <li>可选：选择歌词（LRC / SRT / lyrics.json），画面会显示字幕。</li>
@@ -421,6 +483,9 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         </div>
       </div>}
       {packStatus && <Alert kind="info"><p>{packStatus}</p></Alert>}
+      {matchNote && pack.pack.workshop && <Alert kind={matchNote.level === 'warn' ? 'warn' : matchNote.level === 'ok' ? 'ok' : 'info'} actions={<button type="button" className="mv-link" onClick={() => setMatchNote(null)}>关闭</button>}>
+        <p className="mv-wrap" style={{ whiteSpace: 'pre-wrap' }}>{matchNote.level === 'warn' ? '⚠ 音频可能与这个工坊包不匹配：\n' : ''}{matchNote.message}</p>
+      </Alert>}
       <div className="mv-sources" aria-label="媒体文件">
         <div className={`mv-source${audioInfo ? '' : ' mv-source-empty'}`}>
           <span className="mv-source-icon" aria-hidden="true">♪</span>
