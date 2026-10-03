@@ -26,6 +26,10 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 
 面板使用不透明背景，跟随 Harness 的浅色 / 深色主题。
 
+## 外观（皮肤）
+
+点面板右上角（ⓘ 旁边）的 **外观** 选择皮肤：**Harness 原生**（默认，跟随 Harness 明暗）、**现代音乐应用**（大封面、底部播放条，默认深色）或 **终端 / 黑客**（等宽字体 + CRT 扫描线，默认深色，浅色为纸质终端）。每个皮肤分别记住「跟随 / 浅色 / 深色」，只保存在本机；功能在三套外观下完全一样。
+
 ## 安装
 
 **从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.6.0`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。

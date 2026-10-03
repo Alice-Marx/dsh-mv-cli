@@ -70,6 +70,16 @@ const shots = [
   ['48-example-rich-pack-chorus-dark', 'example', 'dark', 'ex:44.1', '&example=rich-pack'],
   ['49-example-rich-pack-outro-dark', 'example', 'dark', 'ex:110', '&example=rich-pack'],
 ]
+// SKINS=1: every page in each 0.8.0 skin and mode → <out>/<A|B|C>/<page>-<mode>.png
+if (process.env.SKINS) {
+  shots.length = 0
+  const PAGES = [['01-library', 'script', ''], ['02-now-playing', 'script', 'scriptplay'], ['03-ai-make', 'auto', 'autorun'], ['04-calibration', 'calib', 'calib'], ['05-workshop', 'workshop', 'ws'], ['06-workshop-details', 'workshop', 'wsdetail'], ['07-skin-picker', 'script', 'skinpicker']]
+  for (const [dir, skin, modes] of [['C', 'c', ['light', 'dark']], ['A', 'a', ['dark', 'light']], ['B', 'b', ['dark', 'light']]])
+    for (const mode of modes) for (const [page, scene, action] of PAGES) {
+      if (page === '07-skin-picker' && mode !== modes[0]) continue
+      shots.push([`${dir}/${page}-${mode}`, scene, mode, action, `&skin=${skin}&mode=${mode}`])
+    }
+}
 // A synthetic, silent-ish WAV for the AI dialog's file chooser (no real media).
 const AUDIO = path.join(OUT, '..', 'starlight-run-preview.wav')
 {
@@ -168,9 +178,15 @@ for (const [name, scene, theme, action, extra = ''] of shots) {
     } else await page.evaluate(() => document.querySelector('.mv-confirm')?.scrollIntoView({ block: 'start' }))
     await sleep(300)
   }
+  if (action === 'skinpicker') { await page.click('.mv-skin-trigger'); await sleep(500) }
   if (action === 'about') { await page.click('.mv-head .mv-icon-button'); await sleep(400) }
-  const full = true
-  await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: full })
+  fs.mkdirSync(path.dirname(`${OUT}/${name}.png`), { recursive: true })
+  if (process.env.SKINS && action !== 'skinpicker') { // grow the viewport to the content so sticky bars end up at the bottom
+    const h = await page.evaluate(() => document.documentElement.scrollHeight)
+    await page.setViewport({ width: 1280, height: Math.min(4000, Math.max(900, h)), deviceScaleFactor: 1 }); await sleep(600)
+    if (action === 'calib' || action === 'wsdetail') await page.evaluate(() => window.scrollTo(0, 0))
+  }
+  await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: !process.env.SKINS })
   console.log(name, errors.length ? 'ERRORS ' + errors.join(' | ').slice(0, 400) : 'ok')
   await context.close()
 }

@@ -11482,7 +11482,7 @@ var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-
   --c-accent: #5686fe; --c-accent-strong: #7aaaff; --c-danger: #f25a5a; --c-ok: #4ed17e;
   --mv-shadow: 0 1px 2px #0006, 0 4px 16px #0004; color-scheme: dark;
 }
-.mv-root.mv-skin-c {
+.mv-root.mv-skin-c:is(.mv-light, .mv-dark) {
   --mv-page: var(--c-page); --mv-bg: var(--c-bg); --mv-surface: var(--c-surface); --mv-surface-2: var(--c-surface-2); --mv-hover: var(--c-hover);
   --mv-text: var(--c-text); --mv-muted: var(--c-muted); --mv-faint: var(--c-faint); --mv-border: var(--c-border);
   --mv-accent: var(--c-accent); --mv-accent-strong: var(--c-accent-strong); --mv-accent-ink: #fff; --mv-danger: var(--c-danger); --mv-ok: var(--c-ok);
@@ -11538,7 +11538,7 @@ var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-
   --mv-page: #fbfbfd; --mv-bg: #ffffff; --mv-surface: #ffffff; --mv-surface-2: #f2f2f6; --mv-hover: #ececf1; --mv-text: #121216; --mv-muted: #5d5d68; --mv-faint: #80808b; --mv-border: #00000014;
   --mv-accent: #e8174a; --mv-accent-strong: #c90f3c; --mv-ok: #1f9d47; --mv-danger: #d70015; --mv-shadow: 0 8px 24px #0000001a; color-scheme: light;
 }
-.mv-root.mv-skin-a {
+.mv-root.mv-skin-a:is(.mv-light, .mv-dark) {
   --mv-accent-ink: #fff; --mv-radius: 16px; --mv-stage-bg: #07070a;
   font-family: "Inter", "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", "Noto Sans CJK SC", system-ui, sans-serif; font-size: 14px; padding: 24px 28px 0;
 }
@@ -11608,11 +11608,11 @@ var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-
   --mv-page: #efe8d6; --mv-bg: #f6f0e1; --mv-surface: #f6f0e1; --mv-surface-2: #ebe3cd; --mv-hover: #e4dac0; --mv-text: #2a2216; --mv-muted: #5e5240; --mv-faint: #8a7a5c; --mv-border: #a8956c;
   --mv-accent: #b43c0b; --mv-accent-strong: #8f2f08; --mv-accent-ink: #fff7ec; --mv-ok: #4d7c0f; --mv-danger: #b91c1c; --b-amber: #9a5b00; --b-glow: none; --b-scan: #7a5a2012; color-scheme: light;
 }
-.mv-root.mv-skin-b {
+.mv-root.mv-skin-b:is(.mv-light, .mv-dark) {
   --mv-radius: 2px; --mv-shadow: none; --mv-stage-bg: #030504;
   font-family: "JetBrains Mono", "Cascadia Mono", "Geist Mono", "IBM Plex Mono", Consolas, "DejaVu Sans Mono", "Noto Sans Mono CJK SC", "Microsoft YaHei UI", monospace; font-size: 13px; letter-spacing: 0;
 }
-.mv-skin-b.mv-light { --mv-stage-bg: #12130f; }
+.mv-root.mv-skin-b.mv-light:is(.mv-light) { --mv-stage-bg: #12130f; }
 .mv-root.mv-skin-b::after { content: ""; position: absolute; inset: 0; z-index: 20; pointer-events: none;
   background: repeating-linear-gradient(0deg, transparent 0 2px, var(--b-scan) 2px 3px), radial-gradient(ellipse at center, transparent 60%, color-mix(in srgb, var(--b-scan) 300%, transparent) 100%); }
 .mv-skin-b ::selection { background: var(--mv-accent); color: var(--mv-accent-ink); }

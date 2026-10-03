@@ -197,6 +197,8 @@ const harness = { get: name => (query.get('session') === '0' ? undefined : {
 
 async function setup() {
   localStorage.clear()
+  // ?skin=a|b|c&mode=auto|light|dark picks the 0.8.0 panel skin (stored like the picker does).
+  if (query.get('skin')) localStorage.setItem('dsh-mv.skin.v1', JSON.stringify({ skin: query.get('skin'), modes: { [query.get('skin')]: query.get('mode') || 'auto' } }))
   const db = await openMediaStore()
   await buildTiming()
   if (scene === 'workshop' || scene === 'wsplay') {

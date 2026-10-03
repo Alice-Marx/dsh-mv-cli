@@ -26,6 +26,10 @@ The panel reads top to bottom like a music player:
 
 The panel has an opaque background and follows the Harness light/dark theme.
 
+## Skins (外观)
+
+Click **外观** in the panel header (top right, next to ⓘ) to pick a skin: **Harness 原生** (default, follows the Harness theme), **现代音乐应用** (big covers, sticky player bar; dark by default) or **终端 / 黑客** (monospace + CRT; dark by default, light = paper terminal). Each skin remembers its own 跟随 / 浅色 / 深色 setting in local storage. Only the look changes; every feature works the same in all three.
+
 ## Install
 
 **From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.6.0` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.

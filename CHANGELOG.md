@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **Skins / 外观**: three user-selectable panel skins over the same components, picked from **外观** in the panel header (top right, next to ⓘ) and stored locally (`dsh-mv.skin.v1`): **Harness 原生** (default; follows the Harness light/dark theme and its design tokens), **现代音乐应用** (big gradient covers, bold now-playing hero, sticky player bar; dark by default) and **终端 / 黑客** (monospace, neon green + amber, CRT scanlines; dark by default, light = paper terminal). Each skin remembers its own mode (跟随 / 浅色 / 深色). CSS tokens plus per-skin layout tweaks only; behaviour is unchanged. Fixes: workshop file list no longer overflows (sha column), the terminal skin keeps the calibration view compact.
+  新增三套可切换外观（Harness 原生 / 现代音乐应用 / 终端），在面板右上角「外观」里选择，各自记住浅色或深色，只保存在本机。
+
 ## 0.7.0 — 2026-10-04
 
 - **Template upgrade / 模板升级**: the template and every AI pack now include prompt templates in Chinese and English (`prompts/{zh,en}/01-creative-brief`, `02-storyboard`, `03-scene-script-guide`, `04-qa-checklist`, `05-iteration`), wired into `AGENT.md` and the 在新会话中交给 AI prompt; seven commented example scene modules adapted from world-execute-me-dsh-pv (MIT, © 2026 MisakaZentai: chat window, heartbeat, ops ticker, stdout token bar, EXECUTION split, whale-fall, post effects; no artwork) and a full multi-section `examples/rich-pack` with placeholder lyrics and no audio. New scene context: `ctx.section` / `ctx.sections`, `ctx.beat` (`canvas.bpm`, `canvas.beatOffset`), `ctx.lyric.words` / `word` / `progress` (enhanced LRC word stamps). The template is generated into `mv-template-assets.gen.mjs` (`scripts/gen-template.mjs`).
