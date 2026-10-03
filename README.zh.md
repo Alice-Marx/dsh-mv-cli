@@ -223,7 +223,7 @@ npm run pack:local        # dist/ljwei-stak-dsh-mv-cli-<版本>.tgz（prepack �
 ## 已知限制
 
 - 与原版 Python 渲染逐帧对照：1232 个参考帧中约 2% 不一致，全部位于 75–81 s 的 legacy mesh 段，是浮点末位 / z-buffer 平局造成的个别字符差异。
-- dsh PV：时间线固定为原曲长度 211.9 s；其他剪辑版本需要用音频同步偏移对齐，长度不同的版本后半段会错位。上游位图层是近似画面；没有附带字体，不同系统上字形略有差异。立绘为 CC BY-NC-SA 4.0（非商业）。npm 包因此增大到 PKGSIZE。
+- dsh PV：时间线固定为原曲长度 211.9 s；其他剪辑版本需要用音频同步偏移对齐，长度不同的版本后半段会错位。上游位图层是近似画面；没有附带字体，不同系统上字形略有差异。立绘为 CC BY-NC-SA 4.0（非商业）。npm 包因此增大到约 1.1 MB（解压后约 5.5 MB）。
 - 0.6.0 删除了面板终端 / 独立窗口：想用 tui_live.py 请直接在终端里运行它。
 - 「用 AI 制作新 MV」需要 Harness 客户端提供 Agent 会话接口（否则请复制粘贴提示词）。场景脚本运行在 Blob Web Worker 里；如果某个 Harness 版本禁止 blob worker，脚本包会用通用画面播放。Agent 工具依赖 Host 的 `tools` 服务；没有时 Agent 按 AGENT.md 自查。
 - 超过 1 GB 的音频文件会被拒绝；单个 WAV 缓存最大 1.5 GB（约 2.5 小时）。
