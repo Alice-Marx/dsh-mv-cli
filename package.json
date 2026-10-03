@@ -1,6 +1,6 @@
 {
   "name": "@ljwei-stak/dsh-mv-cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Terminal-style music video player for DeepSeek Harness Desktop: canvas ASCII MVs synced to your own audio file (built-in world.execute(me) scenes or a generic spectrum + lyrics renderer), MV packs (mv.json) for any song, and an embedded terminal that runs a local TUI player. Unofficial fan work; no audio, video or lyrics are bundled.",
   "keywords": ["deepseek-harness", "dsh-plugin", "ascii", "terminal", "music-video", "xterm"],
@@ -31,6 +31,8 @@
     ".dsh-plugin/index.mjs",
     ".dsh-plugin/remote-service.mjs",
     ".dsh-plugin/client.js",
+    ".dsh-plugin/shared/mv-audio.mjs",
+    ".dsh-plugin/shared/mv-audio-protocol.mjs",
     ".dsh-plugin/shared/mv-console.mjs",
     ".dsh-plugin/shared/mv-pack.mjs",
     ".dsh-plugin/shared/mv-pack-host.mjs",

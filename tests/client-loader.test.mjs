@@ -53,7 +53,7 @@ test('client apply mounts the remote and registers panel, sidebar and open actio
   const dispose = await exports.apply(ctx)
   assert.equal(typeof dispose, 'function')
   assert.equal(mounted[0].package, pkg.name)
-  assert.equal(mounted[0].descriptors.length, 13)
+  assert.equal(mounted[0].descriptors.length, 17)
   assert.deepEqual(plain(injected), ['slots', 'remote', 'remote.dshMv', 'layout'])
   assert.deepEqual(slots.map(s => s.item.name), ['main', 'sidebar.panellist', 'plugins.detail.actions'])
   assert.equal(slots[0].item.key, 'dsh-mv.main')
@@ -70,4 +70,18 @@ test('package metadata', () => {
   assert.match(patch, /id: dsh-mv\n\s+name: '@ljwei-stak\/dsh-mv-cli'/)
   for (const file of ['NOTICE.md', 'LICENSE', 'README.md', 'README.zh.md']) assert.ok(pkg.files.includes(file))
   assert.ok(!pkg.files.some(f => /client\/mv|ref|lyrics|spectrum|\.mp3/.test(f)), 'only the built bundle ships client code')
+})
+
+test('every relative import of the shipped Host files is itself shipped', async () => {
+  const { readFile } = await import('node:fs/promises')
+  const { join, dirname, normalize } = await import('node:path')
+  const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
+  const shipped = new Set(pkg.files.map(f => normalize(f)))
+  for (const file of pkg.files.filter(f => f.endsWith('.mjs'))) {
+    const text = await readFile(new URL(`../${file}`, import.meta.url), 'utf8')
+    for (const match of text.matchAll(/from '(\.{1,2}\/[^']+)'/g)) {
+      const target = normalize(join(dirname(file), match[1]))
+      assert.ok(shipped.has(target), `${file} imports ${target}, which package.json files does not ship`)
+    }
+  }
 })

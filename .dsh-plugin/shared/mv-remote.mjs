@@ -16,6 +16,7 @@ import {
   parseMvTerminalWrite,
 } from './mv-terminal-protocol.mjs'
 import { parsePackLoad, parsePackRead, parseTemplateWrite } from './mv-pack.mjs'
+import { parseAudioProbe, parseWavBegin, parseWavFinish, parseWavWrite } from './mv-audio-protocol.mjs'
 
 export const MV_REMOTE_PACKAGE = '@ljwei-stak/dsh-mv-cli'
 export const MV_REMOTE_NAMESPACE = 'dshMv'
@@ -68,6 +69,10 @@ export const MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor('packLoad', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackLoad`, parsePackLoad))], anyObjectCodec('MvPackLoaded')),
   descriptor('packRead', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackRead`, parsePackRead))], anyObjectCodec('MvPackChunk')),
   descriptor('packTemplate', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackTemplate`, parseTemplateWrite))], anyObjectCodec('MvPackTemplateWritten')),
+  descriptor('audioProbe', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvAudioProbe`, parseAudioProbe))], anyObjectCodec('MvAudioProbed')),
+  descriptor('wavBegin', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWavBegin`, parseWavBegin))], anyObjectCodec('MvWavBegun')),
+  descriptor('wavWrite', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWavWrite`, parseWavWrite))], anyObjectCodec('MvWavWritten')),
+  descriptor('wavFinish', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWavFinish`, parseWavFinish))], anyObjectCodec('MvWavFinished')),
 ])
 
 export const MV_CLIENT_REMOTE = Object.freeze({ package: MV_REMOTE_PACKAGE, descriptors: MV_REMOTE_DESCRIPTORS })

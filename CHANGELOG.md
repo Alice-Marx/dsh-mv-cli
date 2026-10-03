@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — 2026-10-03
+
+- Fix (diagnosis): **MV 终端 / 独立窗口 had no sound** with world_execute_me `tui_live.py`. The cause was not ConPTY or Electron; the command line did carry `--audio-file`. The file `song.mp3` is really a DASH-fragmented MP4 with AAC (`ftyp iso5 … dash`, "Packed by Bilibili XCoder"). tui_live.py plays sound through Windows MCI (`open … type mpegvideo`), and MCI cannot open that container (error 277, "初始化 MCI 时发生问题") on any extension. The player printed `no music: …` right before its full-screen picture covered it. Verified under the Harness exe's ConPTY and outside it: a real WAV plays in both, the MP4 fails in both.
+- The Host now sniffs the real audio format (first 64 bytes: ID3 / MPEG frame sync / RIFF-WAVE / ftyp / ADTS / Ogg / FLAC) at **检查路径** and on a new `audioProbe` call. The form and both confirmation cards show a red warning when the player cannot play the file (tui_live.py: anything but MP3/WAV; Rust player: anything but MP3). An empty audio field checks the player's default `input\song.mp3`.
+- New **转换为 WAV…** button: you pick the same file, the panel decodes it with WebAudio (Chromium decodes AAC/MP4), encodes 16-bit PCM WAV at 44.1 kHz and uploads it in 384 KB chunks (`wavBegin` / `wavWrite` / `wavFinish`) to the plugin-owned cache `%LOCALAPPDATA%\dsh-mv\audio-cache\<source sha256>.wav` (XDG cache elsewhere; newest 6 kept; header and sizes validated; one upload at a time). The audio field is then set to that WAV. This works for the panel and the separate window, and tui_live.py keeps its own audio clock. The user's files and folders are never written.
+- README: "No sound?" section and ffmpeg alternative.
+
 ## 0.2.0 — 2026-10-03
 
 - **MV packs (`mv.json`, format `dsh-mv-pack` v1)** let you play any song. A pack names your own audio (with an offset), lyrics (LRC/SRT/VTT/lyrics.json, with an offset) and optional spectrum, all as paths relative to the manifest folder (no `..`) or absolute paths. It also chooses a canvas renderer (`generic` or `world-execute-me`) and can declare an external TUI renderer (`terminal`: program + script + argument template). The template documents every field. Validation is strict and reports every problem at once (unknown fields are errors; `x-…` fields are allowed).

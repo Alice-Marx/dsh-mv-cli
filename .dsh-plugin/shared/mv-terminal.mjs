@@ -9,6 +9,7 @@
  * keystrokes are forwarded verbatim and never logged.
  */
 import { spawn } from 'node:child_process'
+import { mciWarning, probeAudioFile } from './mv-audio.mjs'
 import { randomBytes } from 'node:crypto'
 import { stat } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -177,6 +178,7 @@ export function createMvTerminalManager({
   setTimer = setTimeout,
   clearTimer = clearTimeout,
   setRepeating = setInterval,
+  probeAudio = probeAudioFile,
   clearRepeating = clearInterval,
 } = {}) {
   const sessions = new Map()
@@ -270,7 +272,14 @@ export function createMvTerminalManager({
     /** Validate a launch without starting anything; returns the exact command. */
     async check(launch) {
       const resolved = await resolveLaunch(launch)
-      return { ok: true, display: resolved.display, cwd: resolved.cwd, script: resolved.script, file: resolved.file, args: resolved.args, ...(resolved.pack ? { pack: resolved.pack } : {}), ...backendInfo() }
+      let audio = null
+      if (launch.player !== 'pack' && launch.audioFile) {
+        try {
+          const probe = await probeAudio(launch.audioFile)
+          audio = { format: probe.format, label: probe.label, warning: mciWarning(probe, launch.audioFile, launch.player) }
+        } catch { audio = null }
+      }
+      return { ok: true, ...(audio ? { audio } : {}), display: resolved.display, cwd: resolved.cwd, script: resolved.script, file: resolved.file, args: resolved.args, ...(resolved.pack ? { pack: resolved.pack } : {}), ...backendInfo() }
     },
 
     async start({ launch, cols, rows, confirmed }) {

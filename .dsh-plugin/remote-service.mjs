@@ -67,6 +67,14 @@ export class MvRemoteService extends TypertRemoteService {
 
   /** Write the MV pack template into a new subfolder of a chosen folder. */
   packTemplate(request) { return settled(() => (this.services.packTemplate ?? unavailable)(request)) }
+
+  /** Sniff an audio file's real format (first 64 bytes only). */
+  audioProbe(request) { return settled(() => (this.services.audioProbe ?? unavailable)(request)) }
+
+  /** Start / continue / finish uploading a panel-made WAV into the plugin cache. */
+  wavBegin(request) { return settled(() => (this.services.wavBegin ?? unavailable)(request)) }
+  wavWrite(request) { return settled(() => (this.services.wavWrite ?? unavailable)(request)) }
+  wavFinish(request) { return settled(() => (this.services.wavFinish ?? unavailable)(request)) }
 }
 
 /** Registration follows the Host plugin fiber; unload withdraws all endpoints. */

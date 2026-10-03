@@ -23,6 +23,7 @@ import {
 } from './shared/mv-terminal-protocol.mjs'
 import { parsePackLoad, parsePackRead, parseTemplateWrite } from './shared/mv-pack.mjs'
 import { loadPack, readPackFile, writeTemplate } from './shared/mv-pack-host.mjs'
+import { createWavCache, mciWarning, parseAudioProbe, parseWavBegin, parseWavFinish, parseWavWrite, probeAudioFile } from './shared/mv-audio.mjs'
 
 /** Cordis plugin name; equals the profile entry id in cordis.patch.yml. */
 export const name = 'dsh-mv'
@@ -44,8 +45,9 @@ export function optionalService(ctx, serviceName) {
 
 export const defaultPackOps = Object.freeze({ load: loadPack, readFile: readPackFile, writeTemplate })
 
-export function mvRemoteServices(terminals, config = {}, consoles = null, packs = defaultPackOps) {
+export function mvRemoteServices(terminals, config = {}, consoles = null, packs = defaultPackOps, wavCache = null) {
   const noConsoles = async () => { throw new Error('独立窗口功能未加载。') }
+  const noWav = () => { throw new Error('WAV 缓存未加载。') }
   return {
     info: async () => ({ ...terminals.info(), canvasFontSize: config.canvasFontSize ?? 14 }),
     terminalCheck: async request => terminals.check(parseMvTerminalCheck(request)),
@@ -60,6 +62,14 @@ export function mvRemoteServices(terminals, config = {}, consoles = null, packs 
     packLoad: async request => packs.load(parsePackLoad(request).path),
     packRead: async request => packs.readFile(parsePackRead(request)),
     packTemplate: async request => packs.writeTemplate(parseTemplateWrite(request)),
+    audioProbe: async request => {
+      const { path, player } = parseAudioProbe(request)
+      const probe = await probeAudioFile(path)
+      return { ...probe, path, warning: mciWarning(probe, path, player) }
+    },
+    wavBegin: async request => (wavCache ?? noWav()).begin(parseWavBegin(request)),
+    wavWrite: async request => (wavCache ?? noWav()).write(parseWavWrite(request)),
+    wavFinish: async request => (wavCache ?? noWav()).finish(parseWavFinish(request)),
   }
 }
 
@@ -73,7 +83,9 @@ export function apply(ctx, config = {}) {
     process.once('exit', onExit)
     return () => { process.off('exit', onExit); terminals.disposeAll('dispose'); return consoles.disposeAll('dispose') }
   }, 'dsh-mv: terminals')
-  registerMvRemote(ctx, mvRemoteServices(terminals, config, consoles))
+  const wavCache = createWavCache()
+  ctx.effect(() => () => wavCache.abort(), 'dsh-mv: wav cache')
+  registerMvRemote(ctx, mvRemoteServices(terminals, config, consoles, defaultPackOps, wavCache))
   const logger = optionalService(ctx, 'logger')
   logger?.info?.(`dsh-mv ${HOST_PLUGIN_VERSION ?? ''} loaded`)
 }

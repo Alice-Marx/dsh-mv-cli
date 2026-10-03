@@ -13,9 +13,9 @@ A DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `d
 
 ## Install
 
-**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.2.0` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.
+**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.2.1` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.
 
-**From a local archive:** download `ljwei-stak-dsh-mv-cli-0.2.0.tgz` and its `.sha256` from the GitHub Release. Check it with `Get-FileHash -Algorithm SHA256 -LiteralPath <path>`, then enter the archive's absolute path in **Plugins → Add plugin**.
+**From a local archive:** download `ljwei-stak-dsh-mv-cli-0.2.1.tgz` and its `.sha256` from the GitHub Release. Check it with `Get-FileHash -Algorithm SHA256 -LiteralPath <path>`, then enter the archive's absolute path in **Plugins → Add plugin**.
 
 After installing either way:
 
@@ -119,7 +119,10 @@ Fields:
 - **Player**:
   - **world_execute_me**: give the player folder and its `python\python.exe`. Audio is optional, or tick "no audio".
   - **world-execute-me-ascii-rust**: give the `world-execute-me-rust.exe` you downloaded from [its releases](https://github.com/bilixxb/world-execute-me-ascii-rust/releases). It decodes MP3 only and plays its embedded track when no audio is given.
-- **Check paths**: the Host verifies every path on disk.
+- **Check paths**: the Host verifies every path on disk and sniffs the audio file's **real format** from its first bytes (the extension does not count).
+
+  > **No sound?** tui_live.py plays audio through Windows MCI, which opens only real **MP3 / WAV** files. An MP4/AAC download (often a DASH-fragmented MP4) renamed to `.mp3` fails with "初始化 MCI 时发生问题" (MCI error 277). The player prints `no music: …` just before the full-screen picture hides it, then plays silently, both in the panel and in the separate window.
+  > Since 0.2.1 the panel shows a red warning under the audio field and offers **转换为 WAV…**: pick the same file, the panel decodes it with Chromium into a 16-bit PCM WAV (about 10 MB per minute), stores it in the plugin's own cache `%LOCALAPPDATA%\dsh-mv\audio-cache\` (newest 6 kept) and switches the audio field to it. Your file and the player folder are never modified. Or convert yourself: `ffmpeg -i song.mp3 -vn -c:a libmp3lame -q:a 2 song-real.mp3`.
 - **Start…**: shows the exact command and working directory, and runs only after you confirm. The panel cannot pass arbitrary commands or arguments.
 - **Latency**: output is relayed by long polling and adds about 30–150 ms.
 
@@ -138,7 +141,7 @@ Fields:
 ## Known limitations
 
 - About 2% of the 1232 reference frames differ from the Python renderer. All of them are in the 75–81 s legacy-mesh section, caused by float-ulp / z-buffer ties.
-- The MV terminal has long-poll latency. tui_live.py needs ConPTY on Windows and plays audio via MCI.
+- The MV terminal has long-poll latency. tui_live.py needs ConPTY on Windows and plays audio via MCI, which only opens real MP3 / WAV (convert MP4/AAC with 转换为 WAV…).
 - The `79c4e5…` offset is inferred.
 
 ## License

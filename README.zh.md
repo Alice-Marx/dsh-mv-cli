@@ -13,10 +13,10 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 
 ## 安装
 
-**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.2.0`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
+**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.2.1`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
 
-**用本地安装包：** 从 GitHub Release 下载 `ljwei-stak-dsh-mv-cli-0.2.0.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
-`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.2.0.tgz'`，
+**用本地安装包：** 从 GitHub Release 下载 `ljwei-stak-dsh-mv-cli-0.2.1.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
+`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.2.1.tgz'`，
 然后在 **插件 → 添加插件** 里填该 `.tgz` 的绝对路径。
 
 两种方式装好后：
@@ -135,7 +135,10 @@ MV 终端依赖可选依赖 `@lydell/node-pty`（含 Windows 预编译二进制�
 1. 切到 **MV 终端** 标签，选择播放器：
    - **world_execute_me（tui_live.py）**：填播放器目录（例如 `F:\everyAI\dsh-mv-cli\world_execute_me`），Python 会自动建议为 `<目录>\python\python.exe`；音频可留空（用播放器默认的 `input\song.mp3`）、指定文件，或勾选「不播放声音」。
    - **world-execute-me-ascii-rust**：填你从 [其 Release](https://github.com/bilixxb/world-execute-me-ascii-rust/releases) 自行下载解压的 `world-execute-me-rust.exe`。它只能解码 **MP3**，不填音频时播放其内嵌音乐。
-2. **检查路径**：Host 在磁盘上核对每个路径（解释器、`_tools\tui_live.py`、音频文件）。
+2. **检查路径**：Host 在磁盘上核对每个路径（解释器、`_tools\tui_live.py`、音频文件），并读取音频文件开头的字节判断**真实格式**（扩展名不算数）。
+
+   > **没有声音？** tui_live.py 用 Windows MCI 放音，MCI 只能打开真正的 **MP3 / WAV**。从视频网站下载的 MP4/AAC（常见的是 DASH 分片 MP4）即使改名为 `.mp3`，MCI 也会报“初始化 MCI 时发生问题”，播放器只在启动前一闪而过地打印 `no music: …`，然后**静音**播放画面——面板和独立窗口都一样。
+   > 0.2.1 起面板会在音频框下方标红提示，并提供 **转换为 WAV…**：在弹出的对话框里选择同一个文件，面板用 Chromium 解码成 16 位 PCM WAV（约 10 MB/分钟），写入插件自己的缓存目录 `%LOCALAPPDATA%\dsh-mv\audio-cache\`（只保留最近 6 个），并把音频文件改为它。原文件和播放器目录不会被修改。也可以自己用 ffmpeg 转：`ffmpeg -i song.mp3 -vn -c:a libmp3lame -q:a 2 song-real.mp3`。
 3. **启动…** 会显示**将要执行的完整命令**和工作目录，确认后才运行。面板只能启动这两个固定的播放器，不能传任意命令或参数。
 4. 点进终端后按键直接发给播放器（tui_live.py 用 Q 退出）；**结束**按钮会结束进程。关闭面板约 2 分钟后，Host 也会自动结束无人查看的会话。
 
@@ -170,7 +173,7 @@ npm run pack:local        # dist/ljwei-stak-dsh-mv-cli-<版本>.tgz（prepack �
 ## 已知限制
 
 - 与原版 Python 渲染逐帧对照：1232 个参考帧中约 2% 不一致，全部位于 75–81 s 的 legacy mesh 段，是浮点末位 / z-buffer 平局造成的个别字符差异。
-- MV 终端的画面有长轮询延迟（见上）；Windows 上 tui_live.py 需要 PTY（ConPTY）。tui_live.py 用 Windows MCI 播放音频，能否播放扩展名不符的 AAC 文件取决于系统解码器。
+- MV 终端的画面有长轮询延迟（见上）；Windows 上 tui_live.py 需要 PTY（ConPTY）。tui_live.py 用 Windows MCI 播放音频，只能放真正的 MP3 / WAV（MP4/AAC 请先「转换为 WAV…」）。
 - `79c4e5…` 的偏移为推测值。
 
 ## 许可

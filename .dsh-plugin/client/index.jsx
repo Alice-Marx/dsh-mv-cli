@@ -36,6 +36,10 @@ export function panelApi(remote) {
     packLoad: request => service.packLoad(request),
     packRead: request => service.packRead(request),
     packTemplate: request => service.packTemplate(request),
+    audioProbe: request => service.audioProbe(request),
+    wavBegin: request => service.wavBegin(request),
+    wavWrite: request => service.wavWrite(request),
+    wavFinish: request => service.wavFinish(request),
   }
 }
 
