@@ -3,9 +3,9 @@
  * A mock Host answers the remote calls; ?scene= picks the state:
  *   first    – first run, nothing configured
  *   canvas   – canvas with a (synthetic) audio file, ready to play
- *   terminal – 面板终端 with paths set and an MP4-renamed-.mp3 warning
- *   termplay – 面板终端 while playing (frame rendered by the canvas engine)
- *   console  – 独立窗口 with the confirmation card open
+ *   dshpv    – the built-in "world.execute(me); dsh PV" canvas preset; its data and art are
+ *              served over HTTP by shoot.mjs, and the lyrics come from /local/lyrics.lrc when the
+ *              screenshot machine has a local copy (never committed, never shipped)
  *   ai       – 曲库 with the 用 AI 制作新 MV dialog open (mock Host creates the pack)
  *   script   – an AI-made pack with canvas.renderer "script" (example scene)
  * ?theme=dark sets body[data-ds-dark-theme] like Harness does.
@@ -15,8 +15,8 @@ import { createRoot } from 'react-dom/client'
 import { MvPanel } from '../../.dsh-plugin/client/mv-panel.jsx'
 import { openMediaStore, putMedia } from '../../.dsh-plugin/client/mv/media-store.mjs'
 import { encodeWav } from '../../.dsh-plugin/client/mv-wav.mjs'
-import { Film } from '../../.dsh-plugin/client/mv/film.mjs'
-import { PALETTE, BOLD, rowRuns } from '../../.dsh-plugin/client/mv/renderer.mjs'
+import { DSHPV_ASSETS, DSHPV_CHUNK } from '../../.dsh-plugin/shared/mv-dshpv-protocol.mjs'
+import { DSH_PV_ID } from '../../.dsh-plugin/client/mv-pack-state.mjs'
 import { EXAMPLE_SCENE } from '../../.dsh-plugin/shared/mv-scene.mjs'
 
 const query = new URLSearchParams(location.search)
@@ -24,10 +24,6 @@ const scene = query.get('scene') || 'first'
 if (query.get('theme') === 'dark') document.body.setAttribute('data-ds-dark-theme', '')
 const ok = value => Promise.resolve({ ok: true, value: { ok: true, value } })
 const fail = message => Promise.resolve({ ok: true, value: { ok: false, error: { message } } })
-const DIR = 'F:\\everyAI\\dsh-mv-cli\\world_execute_me'
-const PY = `${DIR}\\python\\python.exe`
-const SONG = `${DIR}\\input\\song.mp3`
-const NOTE = '音频实际是 MP4/AAC（DASH 分片）（看内容，不看扩展名）。tui_live.py 用 Windows MCI 放音，只能直接播放 MP3 和 PCM WAV；播放前会自动转换成 WAV 缓存，原文件不变。'
 const PACK_DIR = 'C:\\Users\\Alice\\AppData\\Local\\dsh-mv\\packs\\Starlight Run'
 const enc = new TextEncoder()
 const b64 = bytes => { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000)); return btoa(s) }
@@ -40,18 +36,6 @@ const scriptAudioBytes = () => {
   return (scriptAudio = encodeWav([samples], rate))
 }
 const SCRIPT_LRC = () => '[00:00.00]Starlight Run\n' + LYRIC_LINES_LRC()
-
-function ansiFrame(t, cols, rows) {
-  const film = new Film({ energy: () => Array.from({ length: 48 }, (_, i) => 0.35 + 0.3 * Math.sin(i / 3 + t)) })
-  const picture = film.render(t, cols, rows, { ready: false })
-  const hex = color => { const n = parseInt(color.slice(1), 16); return `${(n >> 16) & 255};${(n >> 8) & 255};${n & 255}` }
-  let out = '\x1b[2J\x1b[H'
-  for (let y = 0; y < picture.h; y++) {
-    out += `\x1b[${y + 1};1H`
-    for (const run of rowRuns(picture.cells[y])) out += `\x1b[${run.x + 1}G\x1b[${BOLD[run.style] ? 1 : 22};38;2;${hex(PALETTE[run.style] ?? PALETTE[1])}m${run.text}`
-  }
-  return out + '\x1b[0m'
-}
 
 // 0.5.0 mocks: lyrics engine, LRCLIB, analysis files and calibration writes.
 const engineState = query.get('engine') || 'ready'
@@ -75,7 +59,11 @@ const jobEvents = () => {
   return { ratio, stage, done: ratio >= 1 }
 }
 
-let sent = false
+const assetCache = new Map()
+const assetBytes = name => {
+  if (!assetCache.has(name)) assetCache.set(name, fetch(`/assets/${DSHPV_ASSETS[name]}`).then(r => (r.ok ? r.arrayBuffer().then(b => new Uint8Array(b)) : null)))
+  return assetCache.get(name)
+}
 const api = {
   engineInfo: () => ok(ENGINE_INFO),
   engineProbe: () => { jobStarted = Date.now(); return ok({ jobId: 'mvjob-0123456789ab', steps: [{ id: 'probe', label: '检查' }] }) },
@@ -95,19 +83,13 @@ const api = {
     return ok({ exists: true, name, size: bytes.length + offset, offset, bytes: bytes.length, done: true, base64: b64(bytes) })
   },
   packWriteText: ({ file, text }) => { files.set({ 'mv.json': 'manifest', 'timing.json': 'timing', 'sections.json': 'sections', 'lyrics.lrc': 'lyrics' }[file], text); return ok({ path: `${PACK_DIR}\\${file}`, backup: `${PACK_DIR}\\.dsh-mv-backup\\${file}.20261003-120000`, bytes: text.length }) },
-  info: () => ok({ hostVersion: query.get('stale') ? '0.2.0' : __DSH_MV_CLIENT_VERSION__, platform: 'win32', backend: 'pty', canvasFontSize: 14, aiPacksDir: 'C:\\Users\\Alice\\AppData\\Local\\dsh-mv\\packs', agentTools: { registered: true }, lrclib: true }),
-  terminalCheck: launch => launch.player === 'python' && launch.pythonPath && launch.packageDir
-    ? ok({ ok: true, display: `${PY} ${DIR}\\_tools\\tui_live.py --audio-file ${launch.audioFile ?? SONG} --start 60`, cwd: DIR, file: PY, args: [], audio: { format: 'mp4', label: 'MP4/AAC（DASH 分片）', mciPlayable: false, note: NOTE }, backend: 'pty' })
-    : fail('找不到 Python 解释器，或它不是文件'),
-  terminalStart: () => ok({ sessionId: 'mvterm-preview01', backend: 'pty' }),
-  terminalRead: async ({ cursor }) => {
-    if (sent) { await new Promise(resolve => setTimeout(resolve, 800)); return { ok: true, value: { ok: true, value: { data: '', cursor } } } }
-    sent = true
-    return ok({ data: ansiFrame(70.4, 140, 40), cursor: 1 })
+  info: () => ok({ hostVersion: query.get('stale') ? '0.2.0' : __DSH_MV_CLIENT_VERSION__, platform: 'win32', canvasFontSize: 14, aiPacksDir: 'C:\\Users\\Alice\\AppData\\Local\\dsh-mv\\packs', agentTools: { registered: true }, lrclib: true }),
+  dshpvAsset: async ({ name, offset = 0 }) => {
+    const bytes = await assetBytes(name)
+    if (!bytes) return ok({ exists: false, name, size: 0, offset, bytes: 0, done: true, base64: '' })
+    const part = bytes.subarray(offset, offset + DSHPV_CHUNK)
+    return ok({ exists: true, name, size: bytes.length, offset, bytes: part.length, done: offset + part.length >= bytes.length, base64: b64(part) })
   },
-  terminalWrite: () => ok({}), terminalResize: () => ok({}), terminalStop: () => ok({}),
-  consoleInfo: () => ok({ supported: true, platform: 'win32', consoles: [] }),
-  consoleStart: () => ok({ consoleId: 'mvcon-preview01', pid: 4242 }), consoleStop: () => ok({}),
   packLoad: ({ path }) => ok(/Starlight/.test(path)
     ? { manifestPath: path, pack: { title: 'Starlight Run', artist: 'Alice', credits: ['由 AI 制作的示例 MV 包（仅用于界面预览）'], audio: { file: 'audio.wav' }, lyrics: { file: 'lyrics.lrc' }, canvas: { renderer: scene === 'ai' || scene === 'auto' ? 'generic' : 'script', script: 'scenes.js' } }, files: { audio: { exists: true, size: 960044 }, lyrics: { exists: true, size: 200 }, scene: { exists: true, size: EXAMPLE_SCENE.length } }, warnings: [] }
     : { manifestPath: path, pack: { title: 'Ghost Rule', artist: 'DECO*27', credits: ['示例 MV 包（仅用于界面预览）'], canvas: { renderer: 'generic' } }, files: {}, warnings: [] }),
@@ -117,8 +99,6 @@ const api = {
     return ok({ name: role === 'audio' ? 'audio.wav' : role === 'scene' ? 'scenes.js' : 'lyrics.lrc', size: bytes.length, offset, bytes: part.length, done: offset + part.length >= bytes.length, base64: b64(part) })
   },
   packTemplate: () => fail('preview'),
-  audioProbe: ({ path }) => ok(/\.wav$/i.test(path) ? { format: 'wav', label: 'WAV（PCM 16 bit）', size: 1, mci: true, mciPlayable: true, note: '' } : { format: 'mp4', label: 'MP4/AAC（DASH 分片）', size: 3752292, chromium: true, mciPlayable: false, note: NOTE, sha256: 'f98eaa'.padEnd(64, '0'), cachedWav: 'C:\\Users\\Alice\\AppData\\Local\\dsh-mv\\audio-cache\\f98eaa.wav' }),
-  wavBegin: () => fail('preview'), wavWrite: () => fail('preview'), wavFinish: () => fail('preview'),
   audioRead: () => fail('preview'), ffmpegInfo: () => ok({ available: true, path: 'D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe', source: 'known' }), audioConvert: () => fail('preview'),
   aiPackCreate: async request => { await new Promise(resolve => setTimeout(resolve, 300)); return ok({ packDir: PACK_DIR, manifestPath: `${PACK_DIR}\\mv.json`, files: ['mv.json', 'AGENT.md', 'scenes.js'], request }) },
   packUploadBegin: ({ role }) => ok({ uploadId: `pack-${role}0123456789`, name: role, chunkBytes: 524288 }),
@@ -152,10 +132,15 @@ async function setup() {
     await putMedia(db, 'audio', { file, name: file.name, sha: 'f98eaa58d0c2d5'.padEnd(64, '0') })
     await putMedia(db, 'lyrics', { name: 'lyrics.lrc', text: '[00:00.00](示例歌词，仅用于预览)\n[01:05.00]（示例）第一句\n[01:09.50]（示例）第二句\n[01:14.00]（示例）第三句\n' })
   }
-  if (!['first', 'canvas', 'ai', 'script', 'auto', 'calib'].includes(scene)) {
-    localStorage.setItem('dsh-mv.terminal.form.v1', JSON.stringify({ player: 'python', packageDir: DIR, pythonPath: PY, audioFile: SONG, start: '60' }))
+  if (scene === 'dshpv') {
+    localStorage.setItem('dsh-mv.packs.active.v1', DSH_PV_ID)
+    const rate = 8000, seconds = 212, samples = new Float32Array(rate * seconds)
+    for (let i = 0; i < samples.length; i++) { const t = i / rate, beat = (t * 2.1) % 1; samples[i] = 0.25 * Math.sin(i * 2 * Math.PI * 110 / rate) * Math.exp(-beat * 6) + 0.05 * Math.sin(i * 2 * Math.PI * 440 / rate) }
+    const file = new File([encodeWav([samples], rate)], 'world.execute(me).m4a', { type: 'audio/wav' })
+    await putMedia(db, 'audio', { file, name: file.name, sha: '5a1e'.padEnd(64, '0') })
+    const local = await fetch('/local/lyrics.lrc').then(r => (r.ok ? r.text() : ''))
+    await putMedia(db, 'lyrics', { name: 'lyrics.lrc', text: local || '[00:00.00](示例歌词，仅用于预览)\n[01:00.50]（示例）第一句\n[01:05.00]（示例）第二句\n' })
   }
-  localStorage.setItem('dsh-mv.panel.destination', { first: 'canvas', canvas: 'canvas', terminal: 'panel', termplay: 'panel', console: 'console' }[scene] ?? 'canvas')
   createRoot(document.getElementById('root')).render(<MvPanel api={api} harness={harness} initialAi={scene === 'ai' || scene === 'auto'} />)
 }
 void setup()

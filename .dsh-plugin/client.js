@@ -5529,6 +5529,7 @@ function finish2(lines, duration) {
   });
   return lines;
 }
+var cueText = (cue) => String(cue?.en || cue?.text || cue?.zh || "").trim();
 async function matchBand(band, cues, { duration = 211.913, hash = sha256Text } = {}) {
   const want = /* @__PURE__ */ new Map();
   band.lines.forEach((ln, k) => {
@@ -5539,7 +5540,7 @@ async function matchBand(band, cues, { duration = 211.913, hash = sha256Text } =
   });
   const found = /* @__PURE__ */ new Map();
   for (const cue of cues ?? []) {
-    for (const v of lineVariants(cue.text)) {
+    for (const v of lineVariants(cueText(cue))) {
       const sha = await hash(v);
       if (want.has(sha)) {
         found.set(sha, v);
@@ -5568,7 +5569,7 @@ async function matchBand(band, cues, { duration = 211.913, hash = sha256Text } =
 function fromCues(cues, duration = 211.913) {
   const out = [];
   for (const cue of cues ?? []) {
-    const text4 = String(cue.text ?? "").trim();
+    const text4 = cueText(cue);
     if (!text4) continue;
     const end = Number.isFinite(cue.end) ? cue.end : cue.time + 3;
     const span = Math.max(0.3, Math.min(4, (end - cue.time) * 0.6));

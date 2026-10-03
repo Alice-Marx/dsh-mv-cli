@@ -43,15 +43,17 @@ function finish(lines, duration) {
 }
 
 /**
- * band: parsed band.json; cues: [{time, end, text}] from the user's file.
+ * band: parsed band.json; cues: [{time, end, en | text}] from the user's file (parseLyrics gives en/zh).
  * Returns { lines: [{text, start, end, words: [[c0, c1, onset, typeDur]], showUntil, fadeUntil}], matched, total }.
  */
+const cueText = cue => String(cue?.en || cue?.text || cue?.zh || '').trim()
+
 export async function matchBand(band, cues, { duration = 211.913, hash = sha256Text } = {}) {
   const want = new Map()
   band.lines.forEach((ln, k) => { if (ln.sha256) { if (!want.has(ln.sha256)) want.set(ln.sha256, []); want.get(ln.sha256).push(k) } })
   const found = new Map()
   for (const cue of cues ?? []) {
-    for (const v of lineVariants(cue.text)) {
+    for (const v of lineVariants(cueText(cue))) {
       const sha = await hash(v)
       if (want.has(sha)) { found.set(sha, v); break }
       // the timeline keeps a line after its patch: try the patched text of every patched line
@@ -80,7 +82,7 @@ export async function matchBand(band, cues, { duration = 211.913, hash = sha256T
 export function fromCues(cues, duration = 211.913) {
   const out = []
   for (const cue of cues ?? []) {
-    const text = String(cue.text ?? '').trim()
+    const text = cueText(cue)
     if (!text) continue
     const end = Number.isFinite(cue.end) ? cue.end : cue.time + 3
     const span = Math.max(0.3, Math.min(4, (end - cue.time) * 0.6))

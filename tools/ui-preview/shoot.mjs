@@ -1,14 +1,21 @@
 // Screenshot script for tools/ui-preview (not shipped). Needs puppeteer-core and Chrome:
-//   node tools/ui-preview/build-preview.mjs && node tools/ui-preview/shoot.mjs <outDir>
+//   node tools/ui-preview/build-preview.mjs && node tools/ui-preview/shoot.mjs <outDir> [filter]
+// The dsh-pv scenes read the preset's files from .dsh-plugin/assets over HTTP. LOCAL_LRC may point at
+// a lyrics file of your own copy of the song for the screenshots; it is served, never copied or shipped.
 import puppeteer from 'puppeteer-core'
 import http from 'node:http'
 import fs from 'node:fs'
 import path from 'node:path'
+const ASSETS = process.env.DSH_MV_ASSETS ?? new URL('../../.dsh-plugin/assets/', import.meta.url).pathname // set it when running a copy of this script
 const DIR = '/tmp/mv-ui-preview', OUT = process.argv[2] || '/workspace/dsh-mv-cli-ui-shots'
 fs.mkdirSync(OUT, { recursive: true })
+const TYPES = { '.js': 'text/javascript', '.json': 'application/json', '.webp': 'image/webp', '.lrc': 'text/plain; charset=utf-8', '.html': 'text/html; charset=utf-8' }
 const server = http.createServer((req, res) => {
-  const f = path.join(DIR, req.url.split('?')[0] === '/' ? 'index.html' : req.url.split('?')[0])
-  fs.readFile(f, (e, d) => { if (e) { res.statusCode = 404; return res.end() } res.setHeader('content-type', f.endsWith('.js') ? 'text/javascript' : 'text/html; charset=utf-8'); res.end(d) })
+  const url = decodeURIComponent(req.url.split('?')[0])
+  const f = url === '/local/lyrics.lrc' ? process.env.LOCAL_LRC ?? ''
+    : url.startsWith('/assets/') && !url.includes('..') ? path.join(ASSETS, url.slice(8))
+      : path.join(DIR, url === '/' ? 'index.html' : url)
+  fs.readFile(f, (e, d) => { if (e) { res.statusCode = 404; return res.end() } res.setHeader('content-type', TYPES[path.extname(f)] ?? 'text/html; charset=utf-8'); res.end(d) })
 }).listen(8799)
 const browser = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: 'new', args: ['--no-sandbox', '--autoplay-policy=no-user-gesture-required', '--font-render-hinting=none', '--lang=zh-CN'] })
 const sleep = ms => new Promise(r => setTimeout(r, ms))
@@ -16,29 +23,30 @@ const only = process.argv[3]
 const shots = [
   ['01-first-run-light', 'first', 'light'], ['02-first-run-dark', 'first', 'dark'],
   ['03-canvas-playing-light', 'canvas', 'light', 'play'], ['04-canvas-playing-dark', 'canvas', 'dark', 'play'],
-  ['05-terminal-ready-light', 'terminal', 'light'], ['06-terminal-ready-dark', 'terminal', 'dark'],
-  ['07-terminal-confirm-light', 'terminal', 'light', 'confirm'],
-  ['08-terminal-playing-dark', 'termplay', 'dark', 'termplay'], ['09-terminal-playing-light', 'termplay', 'light', 'termplay'],
-  ['10-console-confirm-dark', 'console', 'dark', 'confirm'],
-  ['11-settings-open-light', 'terminal', 'light', 'settings'],
-  ['12-about-popover-dark', 'canvas', 'dark', 'about'],
-  ['13-stale-host-light', 'canvas', 'light', '', '&stale=1'],
-  ['14-import-dialog-light', 'canvas', 'light', 'import'],
-  ['15-ai-dialog-light', 'ai', 'light', 'aiform'],
-  ['16-ai-dialog-dark', 'ai', 'dark', 'aiform'],
-  ['17-ai-created-light', 'ai', 'light', 'aicreate'],
-  ['18-ai-session-started-dark', 'ai', 'dark', 'aisend'],
-  ['19-ai-copy-fallback-light', 'ai', 'light', 'aicreate', '&session=0'],
-  ['20-script-pack-playing-dark', 'script', 'dark', 'scriptplay'],
-  ['21-script-pack-playing-light', 'script', 'light', 'scriptplay'],
-  ['22-auto-make-form-light', 'auto', 'light', 'autoform'],
-  ['23-auto-make-running-dark', 'auto', 'dark', 'autorun'],
-  ['24-auto-make-done-light', 'auto', 'light', 'autodone'],
-  ['25-engine-install-confirm-light', 'auto', 'light', 'engineconfirm', '&engine=missing'],
-  ['26-engine-install-confirm-dark', 'auto', 'dark', 'engineconfirm', '&engine=missing'],
-  ['27-calibration-editor-dark', 'calib', 'dark', 'calib'],
-  ['28-calibration-editor-light', 'calib', 'light', 'calib'],
-  ['29-calibration-editing-light', 'calib', 'light', 'calibedit'],
+  ['05-dshpv-ready-light', 'dshpv', 'light', 'dshready'],
+  ['06-dshpv-playing-satisfaction-dark', 'dshpv', 'dark', 'dsh:66.5'],
+  ['07-dshpv-playing-chat-light', 'dshpv', 'light', 'dsh:96'],
+  ['08-dshpv-playing-execution-dark', 'dshpv', 'dark', 'dsh:151'],
+  ['09-dshpv-playing-whale-fall-dark', 'dshpv', 'dark', 'dsh:197'],
+  ['10-dshpv-library-card-light', 'dshpv', 'light', 'library'],
+  ['11-about-popover-dark', 'canvas', 'dark', 'about'],
+  ['12-stale-host-light', 'canvas', 'light', '', '&stale=1'],
+  ['13-import-dialog-light', 'canvas', 'light', 'import'],
+  ['14-ai-dialog-light', 'ai', 'light', 'aiform'],
+  ['15-ai-dialog-dark', 'ai', 'dark', 'aiform'],
+  ['16-ai-created-light', 'ai', 'light', 'aicreate'],
+  ['17-ai-session-started-dark', 'ai', 'dark', 'aisend'],
+  ['18-ai-copy-fallback-light', 'ai', 'light', 'aicreate', '&session=0'],
+  ['19-script-pack-playing-dark', 'script', 'dark', 'scriptplay'],
+  ['20-script-pack-playing-light', 'script', 'light', 'scriptplay'],
+  ['21-auto-make-form-light', 'auto', 'light', 'autoform'],
+  ['22-auto-make-running-dark', 'auto', 'dark', 'autorun'],
+  ['23-auto-make-done-light', 'auto', 'light', 'autodone'],
+  ['24-engine-install-confirm-light', 'auto', 'light', 'engineconfirm', '&engine=missing'],
+  ['25-engine-install-confirm-dark', 'auto', 'dark', 'engineconfirm', '&engine=missing'],
+  ['26-calibration-editor-dark', 'calib', 'dark', 'calib'],
+  ['27-calibration-editor-light', 'calib', 'light', 'calib'],
+  ['28-calibration-editing-light', 'calib', 'light', 'calibedit'],
 ]
 // A synthetic, silent-ish WAV for the AI dialog's file chooser (no real media).
 const AUDIO = path.join(OUT, '..', 'starlight-run-preview.wav')
@@ -68,9 +76,15 @@ for (const [name, scene, theme, action, extra = ''] of shots) {
     await page.evaluate(() => { const r = document.querySelector('.mv-seek'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(r, '70'); r.dispatchEvent(new Event('input', { bubbles: true })) })
     await sleep(2500)
   }
-  if (action === 'confirm' || action === 'termplay') { await sleep(800); await page.click('.mv-play-big'); await sleep(800) }
-  if (action === 'termplay') { await clickText(page, '.mv-confirm button', '确认启动'); await sleep(2000) }
-  if (action === 'settings') { await page.evaluate(() => { document.querySelector('.mv-term-tab details').open = true }); await sleep(500) }
+  if (action === 'dshready') await sleep(2500)
+  if (String(action ?? '').startsWith('dsh:')) {
+    await sleep(2500); await page.click('.mv-play-big'); await sleep(400)
+    await page.evaluate(t => { const r = document.querySelector('.mv-seek'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(r, t); r.dispatchEvent(new Event('input', { bubbles: true })) }, action.slice(4))
+    await sleep(3000)
+    const stage = await page.$('.mv-stage')
+    if (stage) await stage.screenshot({ path: `${OUT}/${name}-stage.png` })
+  }
+  if (action === 'library') { await page.evaluate(() => document.querySelector('.mv-card-art-dshpv')?.scrollIntoView({ block: 'center' })); await sleep(400) }
   if (action === 'import') { await clickText(page, '.mv-card-ghost', '导入 MV 包'); await sleep(400) }
   if (String(action ?? '').startsWith('ai')) {
     const [chooser] = await Promise.all([page.waitForFileChooser(), clickText(page, '.mv-ai button', '选择音频')])

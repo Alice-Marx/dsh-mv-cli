@@ -62,7 +62,8 @@ test('band: user lines matched by sha256, patched, fixed; fallback from cues', a
     { sha256: sha('Un deux Trios'), start: 10, end: 12, displayEnd: 12.5, words: [[0, 2, 10, 0.2], [3, 7, 10.5, 0.2], [8, 13, 11, 0.2]], patch: [{ op: 'reorder_words', order: [0, 1, 2] }] },
   ] }
   for (let i = 0; i < 8; i++) fake.lines.push({ sha256: sha(`line ${i}`), start: 20 + i * 3, end: 21 + i * 3, displayEnd: 21.5 + i * 3, words: [[0, 4, 20 + i * 3, 0.3], [5, 6, 20.5 + i * 3, 0.3]] })
-  const cues = [{ time: 0.9, end: 4, text: `  ${text} ` }, { time: 9.8, end: 13, text: 'Un  deux Trios' }, ...Array.from({ length: 8 }, (_, i) => ({ time: 20 + i * 3, end: 22 + i * 3, text: `line ${i}` }))]
+  // parseLyrics yields { en, zh }; other callers may pass { text }
+  const cues = [{ time: 0.9, end: 4, en: `  ${text} `, zh: '甲乙' }, { time: 9.8, end: 13, text: 'Un  deux Trios' }, ...Array.from({ length: 8 }, (_, i) => ({ time: 20 + i * 3, end: 22 + i * 3, en: `line ${i}`, zh: '' }))]
   const hash = async v => Buffer.from(await webcrypto.subtle.digest('SHA-256', new TextEncoder().encode(v))).toString('hex')
   const res = await matchBand(fake, cues, { duration: 60, hash })
   assert.equal(res.matched, 10)
@@ -76,6 +77,7 @@ test('band: user lines matched by sha256, patched, fixed; fallback from cues', a
   const poor = await matchBand(fake, [{ time: 1, end: 3, text: 'something else entirely' }], { hash })
   assert.equal(poor.matched, 0); assert.equal(poor.lines[0].text, 'something else entirely')
   assert.equal(fromCues([{ time: 2, end: 4, text: 'a b' }])[0].words.length, 2)
+  assert.equal(fromCues([{ time: 2, end: 4, en: '', zh: '只有中文' }])[0].text, '只有中文')
   assert.deepEqual(attentionTokens([{ start: 61, text: 'Then I can be your only one', words: [] }, { start: 63, text: 'Next Line here', words: [] }]), ['If', 'I', 'can', 'be', 'your', 'only', 'next', 'line'])
   assert.deepEqual(tokenize('Be your only satisfaction'), ['Be', 'your', 'only', 'satisfa', 'ction'])
   assert.equal(tokenId('the'), 83078, 'crc32 % 100000 as upstream')
