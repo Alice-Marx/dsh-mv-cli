@@ -11,13 +11,20 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 
 > **非官方同人作品。** 插件**不附带**任何音频、视频、歌词文本、频谱数据或美术素材；歌曲与歌词的权利归 Mili。画面场景与时间轴移植自 [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii)（Bilibili「野生大K」），**经原作者许可**。详见 [NOTICE.md](NOTICE.md)。
 
-## 安装（本地安装包，尚未发布到 npm）
+## 安装
 
-1. 拿到 `ljwei-stak-dsh-mv-cli-0.1.0.tgz`，用 PowerShell 核对：
-   `Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.1.0.tgz'`
-2. **DeepSeek Harness Desktop → 插件 → 添加插件**，填该 `.tgz` 的绝对路径；安装并启用。
-3. **完全退出 Harness（包括托盘图标）后重新打开**：Host 进程只有完全重启才会加载新的插件代码。界面顶部若出现「后台版本与界面不一致」，就是没有完全重启。
-4. 侧边栏出现 **MV 放映室**；插件详情页也有「打开 MV 放映室」按钮。
+**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.1.2`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
+
+**用本地安装包：** 从 GitHub Release 下载 `ljwei-stak-dsh-mv-cli-0.1.2.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
+`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.1.2.tgz'`，
+然后在 **插件 → 添加插件** 里填该 `.tgz` 的绝对路径。
+
+两种方式装好后：
+
+1. **完全退出 Harness（包括托盘图标）后重新打开**：Host 进程只有完全重启才会加载新的插件代码。界面顶部若出现「后台版本与界面不一致」，就是没有完全重启。
+2. 左侧边栏在内置入口（插件 / 自动化任务 / …）下面出现 **MV 放映室**，点它就在主区域打开面板；插件详情页（插件 → dsh-mv-cli）也有「打开 MV 放映室」按钮。
+
+> 从 0.1.1 升级：0.1.1 的侧边栏入口不会出现（原因见 CHANGELOG），请升级到 0.1.2 并完全重启。
 
 MV 终端依赖可选依赖 `@lydell/node-pty`（含 Windows 预编译二进制）。若安装时它没装上，面板会提示「管道模式」，此时 tui_live.py 无法正常显示，画布 MV 不受影响。
 
@@ -98,7 +105,6 @@ npm run pack:local        # dist/ljwei-stak-dsh-mv-cli-<版本>.tgz（prepack �
 - 与原版 Python 渲染逐帧对照：1232 个参考帧中约 2% 不一致，全部位于 75–81 s 的 legacy mesh 段，是浮点末位 / z-buffer 平局造成的个别字符差异。
 - MV 终端的画面有长轮询延迟（见上）；Windows 上 tui_live.py 需要 PTY（ConPTY）。tui_live.py 用 Windows MCI 播放音频，能否播放扩展名不符的 AAC 文件取决于系统解码器。
 - `79c4e5…` 的偏移为推测值。
-- 尚未发布到 npm。
 
 ## 许可
 

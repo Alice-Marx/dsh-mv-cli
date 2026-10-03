@@ -40,13 +40,20 @@ function OpenMvPanel({ subject, openPanel }) {
   return <button type="button" style={OPEN_BUTTON} onClick={openPanel}>打开 MV 放映室</button>
 }
 
-const UI_INJECT = ['slots', 'configForms', 'remote', `remote.${MV_REMOTE_NAMESPACE}`, 'layout']
+const UI_INJECT = ['slots', 'remote', `remote.${MV_REMOTE_NAMESPACE}`, 'layout']
 
-/** Registrations live only while the Host serves this plugin's Config namespace. */
+/**
+ * Registers the panel, sidebar entry and open action for as long as this client runs.
+ *
+ * Not gated on `configForms.whileServed`: the Host's settings describe only lists
+ * entries whose Config declares `.volatile()` fields, and dsh-mv's Config has none,
+ * so a `whileServed(['dsh-mv'])` gate never fired and nothing was registered (0.1.1).
+ * The client half already lives and dies with this bundle, which is the gate we need.
+ */
 export function registerUi(ctx) {
   const api = Object.freeze(panelApi(ctx.remote))
-  const served = (slot, item, component, label) => ctx.effect(() => ctx.configForms.whileServed([PLUGIN_NAME],
-    () => ctx.slots.inject(slot, () => ctx.slots.register(item, component))), `dsh-mv: ${label}`)
+  const served = (slot, item, component, label) => ctx.effect(
+    () => ctx.slots.inject(slot, () => ctx.slots.register(item, component)), `dsh-mv: ${label}`)
   served('main', { name: 'main', key: PANEL, inject: () => ({ api }) }, MvPanel, 'main workspace')
   served('sidebar.panellist', { name: 'sidebar.panellist', id: PANEL, order: 60, label: 'MV 放映室' }, MvIcon, 'sidebar entry')
   served('plugins.detail.actions', {

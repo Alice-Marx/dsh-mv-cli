@@ -11,12 +11,18 @@ A DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `d
 
 > **Unofficial fan work.** The plugin ships **no** audio, video, lyric text, spectrum data or artwork. The song and lyrics belong to Mili. The scenes and timing are ported from [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (Bilibili: 野生大K) **with the author's permission**. See [NOTICE.md](NOTICE.md).
 
-## Install (local archive; not on npm yet)
+## Install
 
-1. Verify `ljwei-stak-dsh-mv-cli-0.1.0.tgz` with `Get-FileHash -Algorithm SHA256 -LiteralPath <path>`.
-2. **DeepSeek Harness Desktop → Plugins → Add plugin**, enter the absolute path of the `.tgz`, install and enable.
-3. **Fully quit Harness (including the tray icon) and start it again.** The Host only loads new plugin code after a full restart. If the panel shows a version-mismatch banner, the restart was incomplete.
-4. The sidebar shows **MV 放映室**. The plugin details page has an open button.
+**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.1.2` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.
+
+**From a local archive:** download `ljwei-stak-dsh-mv-cli-0.1.2.tgz` and its `.sha256` from the GitHub Release. Check it with `Get-FileHash -Algorithm SHA256 -LiteralPath <path>`, then enter the archive's absolute path in **Plugins → Add plugin**.
+
+After installing either way:
+
+1. **Fully quit Harness (including the tray icon) and start it again.** The Host only loads new plugin code after a full restart. If the panel shows a version-mismatch banner, the restart was incomplete.
+2. The left sidebar shows **MV 放映室** below the built-in entries (插件 / 自动化任务 / …). Click it to open the panel in the main area. The plugin details page (Plugins → dsh-mv-cli) also has an **打开 MV 放映室** button.
+
+> Upgrading from 0.1.1: that version never showed the sidebar entry (see CHANGELOG). Update to 0.1.2 and restart fully.
 
 The MV terminal uses the optional dependency `@lydell/node-pty` (prebuilt for Windows). Without it the panel reports pipe mode, and tui_live.py cannot display. The canvas MV is unaffected.
 
@@ -75,7 +81,6 @@ The MV terminal uses the optional dependency `@lydell/node-pty` (prebuilt for Wi
 - About 2% of the 1232 reference frames differ from the Python renderer. All of them are in the 75–81 s legacy-mesh section, caused by float-ulp / z-buffer ties.
 - The MV terminal has long-poll latency. tui_live.py needs ConPTY on Windows and plays audio via MCI.
 - The `79c4e5…` offset is inferred.
-- Not published to npm yet.
 
 ## License
 

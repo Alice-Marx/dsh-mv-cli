@@ -37,7 +37,7 @@ test('client bundle registers under the npm package name and embeds the version'
   assert.doesNotMatch(bundle, /Switch on the power line|接通电源/, 'no lyric text in the bundle')
 })
 
-test('client apply mounts the remote and registers panel, sidebar and open action while served', async () => {
+test('client apply mounts the remote and registers panel, sidebar and open action unconditionally', async () => {
   const { exports } = load()
   const mounted = [], slots = [], effects = []
   let injected
@@ -45,7 +45,8 @@ test('client apply mounts the remote and registers panel, sidebar and open actio
     remote: { $mount: async contribution => { mounted.push(contribution); return async () => {} }, dshMv: { info: async () => ({ ok: true }) } },
     inject(names, fn) { injected = names; const promise = Promise.resolve(fn(ctx)); promise.dispose = async () => {}; return promise },
     effect: (fn, label) => { effects.push(label); fn() },
-    configForms: { whileServed: (names, fn) => { assert.deepEqual(plain(names), ['dsh-mv']); return fn() } },
+    // No configForms: a Config without volatile fields is never served by settings.describe.
+    configForms: { whileServed: () => { throw new Error('registration must not depend on whileServed') } },
     slots: { inject: (name, fn) => fn(), register: (item, component) => { slots.push({ item, component }); return () => {} } },
     layout: { selectPanel: id => slots.push({ selected: id }) },
   }
@@ -53,9 +54,11 @@ test('client apply mounts the remote and registers panel, sidebar and open actio
   assert.equal(typeof dispose, 'function')
   assert.equal(mounted[0].package, pkg.name)
   assert.equal(mounted[0].descriptors.length, 10)
-  assert.deepEqual(plain(injected), ['slots', 'configForms', 'remote', 'remote.dshMv', 'layout'])
+  assert.deepEqual(plain(injected), ['slots', 'remote', 'remote.dshMv', 'layout'])
   assert.deepEqual(slots.map(s => s.item.name), ['main', 'sidebar.panellist', 'plugins.detail.actions'])
   assert.equal(slots[0].item.key, 'dsh-mv.main')
+  assert.equal(slots[1].item.id, 'dsh-mv.main')
+  assert.equal(slots[1].item.label, 'MV 放映室')
   assert.equal(typeof slots[0].item.inject().api.terminalStart, 'function')
   slots[2].item.inject().openPanel()
   assert.equal(slots.at(-1).selected, 'dsh-mv.main')

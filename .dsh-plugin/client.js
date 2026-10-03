@@ -18022,7 +18022,7 @@ var xterm_default = `/**
 `;
 
 // .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.1.1" : "";
+var CLIENT_VERSION = true ? "0.1.2" : "";
 var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u7EC8\u7AEF\u3002";
 function isMissingRemoteMethod(message) {
   const value = String(message ?? "");
@@ -18851,13 +18851,13 @@ function OpenMvPanel({ subject, openPanel }) {
   if (subject?.kind !== "bundle" || subject.pkg?.name !== MV_REMOTE_PACKAGE) return null;
   return /* @__PURE__ */ import_react4.default.createElement("button", { type: "button", style: OPEN_BUTTON, onClick: openPanel }, "\u6253\u5F00 MV \u653E\u6620\u5BA4");
 }
-var UI_INJECT = ["slots", "configForms", "remote", `remote.${MV_REMOTE_NAMESPACE}`, "layout"];
+var UI_INJECT = ["slots", "remote", `remote.${MV_REMOTE_NAMESPACE}`, "layout"];
 function registerUi(ctx) {
   const api = Object.freeze(panelApi(ctx.remote));
-  const served = (slot, item, component, label) => ctx.effect(() => ctx.configForms.whileServed(
-    [PLUGIN_NAME],
-    () => ctx.slots.inject(slot, () => ctx.slots.register(item, component))
-  ), `dsh-mv: ${label}`);
+  const served = (slot, item, component, label) => ctx.effect(
+    () => ctx.slots.inject(slot, () => ctx.slots.register(item, component)),
+    `dsh-mv: ${label}`
+  );
   served("main", { name: "main", key: PANEL, inject: () => ({ api }) }, MvPanel, "main workspace");
   served("sidebar.panellist", { name: "sidebar.panellist", id: PANEL, order: 60, label: "MV \u653E\u6620\u5BA4" }, MvIcon, "sidebar entry");
   served("plugins.detail.actions", {
