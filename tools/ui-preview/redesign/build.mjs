@@ -11,5 +11,5 @@ await esbuild.build({
   define: { 'process.env.NODE_ENV': '"production"' }, outfile: join(OUT, 'mock.js'),
 })
 if (existsSync('/tmp/mv-ui-preview/covers')) cpSync('/tmp/mv-ui-preview/covers', join(OUT, 'covers'), { recursive: true })
-writeFileSync(join(OUT, 'index.html'), '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>dsh-mv redesign</title></head><body><div id="root"></div><script src="mock.js"></script></body></html>')
+writeFileSync(join(OUT, 'index.html'), '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>dsh-mv redesign</title><link rel="icon" href="data:,"></head><body><div id="root"></div><script src="mock.js"></script></body></html>')
 console.log('mockups at', OUT)

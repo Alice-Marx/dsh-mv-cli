@@ -30,7 +30,7 @@ export function useClock(t0 = 0, playing0 = false, duration = 120) {
 export const bandsAt = (t, n = 48) => Array.from({ length: n }, (_, i) => Math.max(0, Math.min(1, 0.55 + 0.4 * Math.sin(t * 3.1 + i * 0.37) * (1 - i / (n * 1.4)) + 0.15 * Math.sin(t * 7.7 + i))))
 
 // ---------- generated covers ----------
-const wrap = (text, max) => { const out = []; let line = ''; for (const w of text.split(/\s+/)) { if ((line + ' ' + w).trim().length > max && line) { out.push(line); line = w } else line = (line + ' ' + w).trim() } if (line) out.push(line); return out.slice(0, 3) }
+const wrap = (text, max) => { const out = []; let line = ''; for (const w of text.split(/\s+/).flatMap(w => w.length > max ? w.match(new RegExp(`.{1,${max}}`, 'g')) : [w])) { if ((line + ' ' + w).trim().length > max && line) { out.push(line); line = w } else line = (line + ' ' + w).trim() } if (line) out.push(line); return out.slice(0, 3) }
 export function Cover({ item, variant = 'A', className = '', alt = '' }) {
   if (item.cover) return <img className={`cover ${className}`} src={item.cover} alt={alt} draggable="false" />
   const h = hash(item.id + item.title), hue = h % 360, id = `g${h}`

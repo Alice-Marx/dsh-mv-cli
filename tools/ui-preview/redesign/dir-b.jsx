@@ -35,7 +35,7 @@ function Shell({ screen, go, clock, item, theme, toggleTheme, children }) {
   </div>
 }
 
-function Library({ go, clock }) {
+function Library({ go, clock, theme }) {
   const [sel, setSel] = useState(2), p = LIBRARY[sel]
   return <div className="b-page">
     <div className="b-prompt"><span className="b-user">alice@harness</span>:<span className="b-path">~/dsh-mv</span>$ ls --covers library/ <span className="b-cursor" /></div>
@@ -51,7 +51,7 @@ function Library({ go, clock }) {
         <Panel label="PREVIEW" right={p.id + '.mv'}>
           <div className="b-preview"><Cover item={p} variant="B" /><div><h2>{p.title}</h2><p className="dim">{p.artist} · {p.kind} · {fmt(p.dur)}</p>
             <div className="b-kv"><span>renderer</span><b>script</b><span>sections</span><b>6</b><span>lyrics</span><b>lyrics.lrc · 21</b><span>audio</span><b className="ok">matched ✓</b></div></div></div>
-          <Stage scene={p.scene} t={p.t} palette="B" cols={84} rows={22} className="b-stage sm" />
+          <Stage scene={p.scene} t={p.t} palette={theme === 'light' ? 'Bl' : 'B'} cols={84} rows={22} className="b-stage sm" />
           <div className="b-actions"><button className="b-btn accent lg" onClick={() => go('now')}><Icon name="play" size={14} stroke={0} className="fill" />ENTER 播放</button><button className="b-btn" onClick={() => go('calib')}><Icon name="wave" size={14} />校准</button><button className="b-btn" onClick={() => go('workshop')}><Icon name="upload" size={14} />发布</button></div>
         </Panel>
         <Panel label="WORKSHOP.FEED" right="raw@main">
@@ -62,14 +62,14 @@ function Library({ go, clock }) {
   </div>
 }
 
-function NowPlaying({ clock, item, calib }) {
+function NowPlaying({ clock, item, calib, theme }) {
   const [cues, setCues] = useCues(), sec = sectionAt(clock.t), cur = cueAt(CUES, clock.t)
   const idx = cur ? CUES.indexOf(cur) : Math.max(0, CUES.findIndex(c => c.time > clock.t) - 1)
   return <div className="b-page">
     <div className="b-prompt"><span className="b-user">alice@harness</span>:<span className="b-path">~/dsh-mv</span>$ play {item.id}.mv --audio my-own-copy.flac <span className="b-cursor" /></div>
     <div className={`b-now${calib ? ' calib' : ''}`}>
       <Panel label={`STAGE · ${item.title}`} right={<><span className="ok">● audio matched</span> 96×30</>} className="b-stage-panel">
-        <Stage scene={item.scene} t={clock.t} palette="B" className="b-stage" />
+        <Stage scene={item.scene} t={clock.t} palette={theme === 'light' ? 'Bl' : 'B'} className="b-stage" />
         <div className="b-transport">
           <button className="b-btn" aria-label="后退" onClick={() => clock.seek(clock.t - 5)}><Icon name="back" size={14} /></button>
           <button className="b-btn accent" onClick={clock.toggle}><Icon name={clock.playing ? 'pause' : 'play'} size={14} stroke={0} className="fill" />{clock.playing ? 'PAUSE' : 'PLAY'}</button>
@@ -159,7 +159,7 @@ function WsDetail({ go }) {
 
 export default function DirB({ screen, go, clock, theme, toggleTheme }) {
   const item = LIBRARY[2]
-  const body = screen === 'now' ? <NowPlaying clock={clock} item={item} /> : screen === 'calib' ? <NowPlaying clock={clock} item={item} calib />
-    : screen === 'workshop' || screen === 'wsdetail' ? <Workshop go={go} /> : <Library go={go} clock={clock} />
+  const body = screen === 'now' ? <NowPlaying clock={clock} item={item} theme={theme} /> : screen === 'calib' ? <NowPlaying clock={clock} item={item} calib theme={theme} />
+    : screen === 'workshop' || screen === 'wsdetail' ? <Workshop go={go} /> : <Library go={go} clock={clock} theme={theme} />
   return <Shell screen={screen} go={go} clock={clock} item={item} theme={theme} toggleTheme={toggleTheme}>{body}{screen === 'ai' && <AiDialog go={go} />}{screen === 'wsdetail' && <WsDetail go={go} />}</Shell>
 }
