@@ -13,6 +13,7 @@ import { openMediaStore, getMedia, putMedia, deleteMedia } from './mv/media-stor
 import { FilmClock, frameTime, keyAction, stepCue, stepOffset } from './mv/player-state.mjs'
 import { GenericFilm, genericChapters, timeText } from './mv/generic-film.mjs'
 import { ScriptFilm } from './mv/script-film.mjs'
+import { CalibEditor } from './mv-calib.jsx'
 import { BUILTIN_PACK, fetchPackAudio, fetchPackText } from './mv-pack-state.mjs'
 import { readHostAudio } from './mv-wav.mjs'
 import { unwrapRemote } from './remote-state.mjs'
@@ -56,6 +57,9 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const [volume, setVolume] = React.useState({ level: 1, muted: false })
   const [sceneNote, setSceneNote] = React.useState('')
   const [decodeFail, setDecodeFail] = React.useState(null) // { path, label, ffmpeg, confirming, busy }
+  const [audioFile, setAudioFile] = React.useState(null)
+  const [lyricsText, setLyricsText] = React.useState('')
+  const cuesRef = React.useRef([])
 
   // Engine setup and the render loop.
   React.useEffect(() => {
@@ -128,6 +132,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       state.clock.audioOffset = loaded.audioOffset
       state.started = false
       setAudioInfo({ name: file.name, sha, known: loaded.known, saved: loaded.saved, duration: null, label: sniff.label })
+      setAudioFile(file)
       if (remember && packRef.current?.builtin) await putMedia(dbRef.current, 'audio', { file, name: file.name, sha })
     } catch (failure) {
       setError(`无法读取音频：${failure?.message ?? failure}`)
@@ -143,7 +148,9 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       if (!cues.length) throw new Error('文件里没有带时间的歌词行。')
       if (shift) for (const cue of cues) { cue.time += shift; cue.end += shift }
       for (const film of generic ? [state.generic, state.script] : [state.wem]) film.setLyrics(cues)
+      cuesRef.current = cues
       setLyricsInfo({ name, count: cues.length })
+      if (!packRef.current?.builtin) setLyricsText(body)
       if (remember && packRef.current?.builtin) await putMedia(dbRef.current, 'lyrics', { name, text: body })
     } catch (failure) { setError(`无法解析歌词：${failure?.message ?? failure}`) }
   }, [])
@@ -173,7 +180,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       state.wem.setLyrics([]); state.generic.setLyrics([]); state.script.setLyrics([])
       state.script.stop()
       state.energy = () => state.live.energy()
-      setLyricsInfo(null); setSpectrumInfo(null); setError(''); setPackStatus(''); setSceneNote(''); setDecodeFail(null)
+      setLyricsInfo(null); setSpectrumInfo(null); setError(''); setPackStatus(''); setSceneNote(''); setDecodeFail(null); setLyricsText(''); cuesRef.current = []
       const generic = isGeneric(pack)
       state.film = generic ? state.generic : state.wem
       const length = generic ? (pack.pack.duration ?? 0) : (pack.pack.duration ?? DURATION)
@@ -240,6 +247,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     audio.current.removeAttribute('src'); audio.current.load?.()
     if (old?.startsWith('blob:')) URL.revokeObjectURL(old)
     engine.current.sha = ''
+    setAudioFile(null)
     engine.current.clock.audioOffset = 0
     setAudioInfo(null)
     setOffsets({ audioOffset: 0, subtitleOffset: 0 })
@@ -331,6 +339,19 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       await useAudioFile(new File([bytes], done.path.split(/[\\/]/).pop(), { type: 'audio/wav' }), { remember: false, packOffset: packRef.current?.pack?.audio?.offset ?? 0 })
     } catch (failure) { setDecodeFail(value => value && ({ ...value, busy: '', confirming: false })); setError(`ffmpeg 转换失败：${failure?.message ?? failure}`) }
   }
+
+  const player = React.useMemo(() => ({
+    time: () => engine.current?.clock.time() ?? 0,
+    seek: t => { const state = engine.current; if (!state) return; state.clock.seek(t); state.started = true },
+    play: () => { if (!engine.current?.clock.playing) void play() },
+    pause: () => engine.current?.clock.pause(),
+    playing: () => Boolean(engine.current?.clock.playing),
+  }), [])
+  const previewCues = React.useCallback(cues => {
+    const state = engine.current
+    if (!state) return
+    for (const film of [state.generic, state.script]) film.setLyrics(cues ?? cuesRef.current)
+  }, [])
 
   const known = audioInfo?.known
   const generic = isGeneric(pack)
@@ -432,6 +453,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         <Popover label="键盘快捷键" icon={<Icon.keyboard />}><KeyHelp /></Popover>
         <button type="button" className="mv-icon-button" aria-label={fullscreen ? '退出全屏' : '全屏'} title="全屏（F）" onClick={toggleFullscreen}><Icon.fullscreen /></button>
       </div>
+      {!pack.builtin && api?.packWriteText && <CalibEditor api={api} pack={pack} lyricsText={lyricsText} audioFile={audioFile} duration={duration} player={player} onPreview={previewCues} />}
       <details className="mv-details">
         <summary>设置 <span className="mv-caption">字号 {fontSize} · 字幕偏移 {formatOffset(offsets.subtitleOffset)}{syncLabel ? ` · ${syncLabel}` : ''}</span></summary>
         <div className="mv-details-body">

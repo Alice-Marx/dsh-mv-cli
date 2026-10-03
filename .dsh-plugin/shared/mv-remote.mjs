@@ -19,6 +19,8 @@ import { parsePackLoad, parsePackRead, parseTemplateWrite } from './mv-pack.mjs'
 import { parseAudioConvert, parseAudioProbe, parseAudioRead, parseFfmpegInfo, parseWavBegin, parseWavFinish, parseWavWrite } from './mv-audio-protocol.mjs'
 import { parseAiPackCreate } from './mv-ai-prompt.mjs'
 import { parsePackUploadBegin, parsePackUploadFinish, parsePackUploadWrite } from './mv-ai-upload.mjs'
+import { parseAnalysisRead, parseLyricsLookup, parsePackWriteText } from './mv-calib-protocol.mjs'
+import { parseEngineInfo, parseEngineInstall, parseEngineModel, parseEngineTranscribe, parseJobCancel, parseJobRead } from './mv-engine-protocol.mjs'
 
 export const MV_REMOTE_PACKAGE = '@ljwei-stak/dsh-mv-cli'
 export const MV_REMOTE_NAMESPACE = 'dshMv'
@@ -82,6 +84,16 @@ export const MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor('packUploadBegin', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackUploadBegin`, parsePackUploadBegin))], anyObjectCodec('MvPackUploadBegun')),
   descriptor('packUploadWrite', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackUploadWrite`, parsePackUploadWrite))], anyObjectCodec('MvPackUploadWritten')),
   descriptor('packUploadFinish', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackUploadFinish`, parsePackUploadFinish))], anyObjectCodec('MvPackUploadFinished')),
+  descriptor('lyricsLookup', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvLyricsLookup`, parseLyricsLookup))], anyObjectCodec('MvLyricsLookupResult')),
+  descriptor('engineInfo', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvEngineInfo`, parseEngineInfo))], anyObjectCodec('MvEngineInfoResult')),
+  descriptor('engineProbe', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvEngineProbe`, parseEngineInfo))], anyObjectCodec('MvEngineProbeResult')),
+  descriptor('engineInstall', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvEngineInstall`, parseEngineInstall))], anyObjectCodec('MvEngineInstallResult')),
+  descriptor('engineModel', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvEngineModel`, parseEngineModel))], anyObjectCodec('MvEngineModelResult')),
+  descriptor('engineTranscribe', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvEngineTranscribe`, parseEngineTranscribe))], anyObjectCodec('MvEngineTranscribeResult')),
+  descriptor('jobRead', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvJobRead`, parseJobRead))], anyObjectCodec('MvJobReadResult')),
+  descriptor('jobCancel', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvJobCancel`, parseJobCancel))], anyObjectCodec('MvJobCancelResult')),
+  descriptor('packWriteText', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackWriteText`, parsePackWriteText))], anyObjectCodec('MvPackWriteTextResult')),
+  descriptor('analysisRead', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvAnalysisRead`, parseAnalysisRead))], anyObjectCodec('MvAnalysisReadResult')),
 ])
 
 export const MV_CLIENT_REMOTE = Object.freeze({ package: MV_REMOTE_PACKAGE, descriptors: MV_REMOTE_DESCRIPTORS })

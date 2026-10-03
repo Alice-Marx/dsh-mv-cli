@@ -25,9 +25,9 @@ The panel has an opaque background and follows the Harness light/dark theme.
 
 ## Install
 
-**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.4.0` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.
+**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.5.0` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.
 
-**From a local archive:** download `ljwei-stak-dsh-mv-cli-0.4.0.tgz` and its `.sha256` from the GitHub Release. Check it with `Get-FileHash -Algorithm SHA256 -LiteralPath <path>`, then enter the archive's absolute path in **Plugins → Add plugin**.
+**From a local archive:** download `ljwei-stak-dsh-mv-cli-0.5.0.tgz` and its `.sha256` from the GitHub Release. Check it with `Get-FileHash -Algorithm SHA256 -LiteralPath <path>`, then enter the archive's absolute path in **Plugins → Add plugin**.
 
 After installing either way:
 
@@ -115,6 +115,42 @@ Fields:
 
 Safety: the plugin never runs external programs for this flow, scene scripts run sandboxed (Web Worker in the panel; `node:vm` with time limits and no `require`/`process` for the agent tools), and the agent tools are read-only. The tools can be turned off with the `agentTools` setting.
 
+## Automatic lyric timing (自动制作) and calibration
+
+In the **用 AI 制作新 MV** dialog you only pick the audio; **自动制作** does the rest and shows a stepper (you can **停止** at any step):
+
+1. **建 MV 包**: as above (local decode, spectrum, pack folder). Title / artist / album are read from the file's tags (ID3, MP4, FLAC, Vorbis/Opus) or its name.
+2. **LRCLIB** (optional, setting `lrclib`, default on): asks <https://lrclib.net> for ready-made synced lyrics. **Only the title, artist, album and duration are sent** — no audio, no file names, no account. The dialog shows exactly what will be sent; untick it, or turn the setting off for a fully offline flow. Synced lyrics are used directly; plain lyrics are aligned by the engine. The request honours `HTTPS_PROXY`.
+3. **本机歌词引擎** (only when no timing was found, or — by default with a GPU — to cross-check LRCLIB timings): optional Demucs **htdemucs** vocal separation, then **faster-whisper** (large-v3 / medium / small, language auto / zh / ja / en / ko / yue, VAD on, word timestamps). Everything runs locally.
+4. **对齐**: your lyrics (pasted or from LRCLIB) are aligned to the recognised words (Needleman–Wunsch on words / CJK characters). Every line gets a **confidence**; LRCLIB and engine times are merged (global offset + per-line agreement). Without any lyric text the recognised words become lines.
+5. **段落**: verse / chorus / bridge / instrumental / intro / outro from lyric repetition, pauses and the spectrum's energy → `sections.json` and `mv.json` → `x-dsh-mv-ai.sections`.
+6. **保存**: `lyrics.lrc`, `timing.json` (per-line confidence), `sections.json`, and `mv.json` now points at `lyrics.lrc`. Then hand the pack to the AI as before; the prompt tells the agent to keep the timing and to use the sections (sending it is up to you and uses your model quota).
+
+### Lyrics engine install
+
+The engine is a separate Python runtime under `%LOCALAPPDATA%\dsh-mv\engine` (it never touches your own Python). In the dialog (or when the engine is missing) click **一键安装…**; a confirm card shows the choice and the **download size before anything is downloaded**:
+
+| Choice | Download | Disk |
+| --- | --- | --- |
+| NVIDIA GPU (PyTorch 2.8.0 + CUDA 12.6) + large-v3 + htdemucs | ≈ 5.9 GB | ≈ 9.6 GB |
+| NVIDIA GPU + small | ≈ 3.5 GB | ≈ 7.1 GB |
+| CPU only + small | ≈ 1.4 GB | ≈ 2.3 GB |
+
+- Needs [uv](https://docs.astral.sh/uv/) (on `PATH`, `%USERPROFILE%\.local\bin`, or the `uvPath` setting). uv creates a Python **3.12** venv (PyTorch has no wheels for 3.14), installs `torch==2.8.0` from download.pytorch.org and pinned `faster-whisper==1.2.1`, `ctranslate2==4.8.2`, `demucs==4.1.0`, `julius==0.2.8` with a full constraints file; models come from huggingface.co (resumable downloads; `hfEndpoint` setting for a mirror). Progress and logs are shown; **停止** kills the whole process tree, and a later install resumes.
+- The Host only runs fixed argument lists (uv, and `python -X utf8 -u dsh_mv_engine.py probe|prefetch|transcribe <args.json>`), never a shell or arbitrary commands. Recognition runs with the Hugging Face hub offline.
+- Own environment: set `enginePython` to a `python.exe` that already has those packages; the panel then only probes it.
+- GPU is used when CUDA works (checked by the probe), otherwise CPU with a warning — choose **small** on CPU.
+
+### Calibration editor (歌词校准)
+
+Under the canvas player of every pack there is a **歌词校准** section (open automatically when some lines need checking):
+
+- Waveform (the vocal stem when the engine made one, else the song) with lyric blocks; drag a block's edges to change start / end, drag the middle to move it, click empty space to seek; Ctrl+wheel or ＋/− zooms.
+- Click a line to play from 2 s before it. **Yellow** lines have low confidence; **下一个不确定** (N) jumps to the next one.
+- Keys (click the editor first): ←/→ nudge the start ±50 ms (Shift ±500 ms, Alt moves the end), ↑/↓ select, Enter play, **T** tap mode (Space marks the current line's start at the playhead and advances), S split at the playhead, M merge with the next line, C confirm, Delete, Ctrl+Z / Ctrl+Y. Double-click a line to edit text and translation.
+- **整体偏移** shifts all lines. Every edit previews live on the MV canvas.
+- **保存** writes `lyrics.lrc`, `timing.json` and `mv.json`; the previous versions are kept in `.dsh-mv-backup\` (newest 10 per file). Only these fixed file names can be written, and `mv.json` is validated first.
+
 ## Audio formats
 
 The format is always detected from the file's **content**, not its extension (a DASH MP4 renamed `.mp3` is recognised as MP4).
@@ -184,6 +220,7 @@ The format is always detected from the file's **content**, not its extension (a 
 - 用 AI 制作新 MV needs the agent session API of the Harness client (otherwise copy & paste the prompt). Scene scripts run in a Blob Web Worker; if a Harness build forbids blob workers, script packs play with the generic renderer. The agent tools need the Host `tools` service; without it the agent checks its work by reading AGENT.md.
 - Audio files over 1 GB are refused; the WAV cache is limited to 1.5 GB per file (about 2.5 hours).
 - The `79c4e5…` offset is inferred.
+- Automatic timing: recognition quality depends on the mix; fast rap, heavy effects and spoken parts produce yellow lines to check. LRCLIB only knows songs others have uploaded and needs lrclib.net to be reachable (it is skipped with a note otherwise). The CPU-only PyTorch profile was not installed on a test machine; GPU needs an NVIDIA driver for CUDA 12.6. Ja/zh alignment works per character and was only unit-tested.
 
 ## License
 

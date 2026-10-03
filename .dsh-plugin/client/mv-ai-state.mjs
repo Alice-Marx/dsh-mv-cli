@@ -124,7 +124,7 @@ export async function createAiPack(api, { file, title, artist = '', lyrics = '',
   await uploadPackFile(api, created.packDir, 'audio', source, { onProgress: ratio => onProgress({ stage: 'copy', ratio }) })
   await uploadPackFile(api, created.packDir, 'spectrum', new TextEncoder().encode(JSON.stringify(spec)), { onProgress: ratio => onProgress({ stage: 'spectrum-save', ratio }) })
   onProgress({ stage: 'done', ratio: 1 })
-  return { created, duration: decoded.duration, sniff, lyricsTimed: looksTimed(lyrics), prompt: agentPrompt({ packDir: created.packDir, title: title.trim(), artist: artist.trim(), toolsAvailable }) }
+  return { created, duration: decoded.duration, sniff, spectrum: spec, channels: decoded.channels, sampleRate: decoded.sampleRate, lyricsTimed: looksTimed(lyrics), prompt: agentPrompt({ packDir: created.packDir, title: title.trim(), artist: artist.trim(), toolsAvailable }) }
 }
 
 export class SessionApiMissing extends Error {

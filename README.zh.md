@@ -25,10 +25,10 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 
 ## 安装
 
-**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.4.0`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
+**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.5.0`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
 
-**用本地安装包：** 从 GitHub Release 下载 `ljwei-stak-dsh-mv-cli-0.4.0.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
-`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.4.0.tgz'`，
+**用本地安装包：** 从 GitHub Release 下载 `ljwei-stak-dsh-mv-cli-0.5.0.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
+`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.5.0.tgz'`，
 然后在 **插件 → 添加插件** 里填该 `.tgz` 的绝对路径。
 
 两种方式装好后：
@@ -125,6 +125,42 @@ MV 终端依赖可选依赖 `@lydell/node-pty`（含 Windows 预编译二进制�
 
 安全：这个流程里插件不会运行任何外部程序；场景脚本在沙箱中运行（面板里是 Web Worker，Agent 工具里是带时间限制、没有 `require`/`process` 的 `node:vm`）；两个 Agent 工具都是只读的，可以在插件设置里用 `agentTools` 关掉。
 
+## 自动制作歌词时间轴与校准
+
+在 **用 AI 制作新 MV** 对话框里只要选好音频，点 **自动制作**，其余都自动完成，并有步骤进度（任何一步都可以 **停止**）：
+
+1. **建 MV 包**：同上（本机解码、频谱、建文件夹）。歌名 / 歌手 / 专辑从文件标签（ID3、MP4、FLAC、Vorbis/Opus）或文件名读取。
+2. **LRCLIB**（可选，设置 `lrclib`，默认开）：到 <https://lrclib.net> 查现成的带时间轴歌词。**只发送歌名、歌手、专辑和时长**，不上传音频、不发送文件名、不需要账号。对话框会显示将要发送的内容；取消勾选或在设置里关掉即完全离线。找到带时间轴的歌词就直接用；只有纯文本时交给引擎对齐。请求会走 `HTTPS_PROXY` 代理。
+3. **本机歌词引擎**（没找到时间轴时；有 GPU 时默认也用来核对 LRCLIB 的时间）：可选 Demucs **htdemucs** 分离人声，再用 **faster-whisper**（large-v3 / medium / small；语言 自动 / 中 / 日 / 英 / 韩 / 粤；开启 VAD 和逐词时间）识别。全部在本机运行。
+4. **对齐**：把歌词（你粘贴的或 LRCLIB 的）和识别出的词对齐（按词 / 汉字做 Needleman–Wunsch），每句得到一个 **置信度**；LRCLIB 和引擎的时间会合并（整体偏移 + 逐句比对）。完全没有歌词文本时，用识别结果直接成句。
+5. **段落**：根据歌词重复、停顿和频谱能量识别主歌 / 副歌 / 桥段 / 间奏 / 前奏 / 尾奏，写入 `sections.json` 和 `mv.json` 的 `x-dsh-mv-ai.sections`。
+6. **保存**：`lyrics.lrc`、`timing.json`（逐句置信度）、`sections.json`，并让 `mv.json` 指向 `lyrics.lrc`。之后照常交给 AI；提示词会要求 Agent 保留时间轴、按段落安排场景（是否发送由你决定，发送会消耗模型额度）。
+
+### 安装歌词引擎
+
+引擎是装在 `%LOCALAPPDATA%\dsh-mv\engine` 的独立 Python 环境，不影响你自己的 Python。在对话框里（引擎未安装时）点 **一键安装…**，确认卡片会先显示选项和**下载大小**，确认后才开始下载：
+
+| 选项 | 下载 | 占用磁盘 |
+| --- | --- | --- |
+| NVIDIA GPU（PyTorch 2.8.0 + CUDA 12.6）+ large-v3 + htdemucs | 约 5.9 GB | 约 9.6 GB |
+| NVIDIA GPU + small | 约 3.5 GB | 约 7.1 GB |
+| 仅 CPU + small | 约 1.4 GB | 约 2.3 GB |
+
+- 需要 [uv](https://docs.astral.sh/uv/)（在 `PATH`、`%USERPROFILE%\.local\bin` 里，或在设置 `uvPath` 中指定）。uv 会建一个 Python **3.12** 虚拟环境（PyTorch 没有 3.14 的安装包），从 download.pytorch.org 装 `torch==2.8.0`，再按完整的版本约束装 `faster-whisper==1.2.1`、`ctranslate2==4.8.2`、`demucs==4.1.0`、`julius==0.2.8`；模型从 huggingface.co 下载（可断点续传；镜像可填设置 `hfEndpoint`）。面板显示进度和日志；**停止** 会结束整个进程树，下次安装会接着装。
+- Host 只运行固定的参数列表（uv，以及 `python -X utf8 -u dsh_mv_engine.py probe|prefetch|transcribe <args.json>`），不经过 shell，也不接受任意命令。识别时 Hugging Face 处于离线模式。
+- 想用自己的环境：在设置 `enginePython` 填一个已装好上述依赖的 `python.exe`，面板只做检查。
+- CUDA 可用（检查结果为准）时用 GPU，否则用 CPU 并提示较慢——CPU 请选 **small**。
+
+### 歌词校准编辑器
+
+每个 MV 包的画布播放器下面都有 **歌词校准**（有待确认的句子时自动展开）：
+
+- 波形（引擎分离出人声时显示人声，否则显示原曲）上叠着歌词色块：拖两端改开始 / 结束，拖中间整体移动，点空白处跳转；Ctrl+滚轮或 ＋/− 缩放。
+- 点一句从它前 2 秒开始播放。**黄色** 的是置信度低的句子，**下一个不确定**（N）跳到下一句。
+- 快捷键（先点一下编辑器）：←/→ 把开始时间微调 ±50 ms（Shift ±500 ms，Alt 调结束时间），↑/↓ 选句，Enter 播放，**T** 打点模式（播放时按空格把当前句的开始设为此刻并跳到下一句），S 在播放头处拆分，M 与下一句合并，C 确认，Delete 删除，Ctrl+Z / Ctrl+Y 撤销 / 重做。双击一句可修改歌词和翻译。
+- **整体偏移** 让所有句子一起前后移动。每次修改都会立即在 MV 画布上预览。
+- **保存** 写回 `lyrics.lrc`、`timing.json` 和 `mv.json`，旧版本保存在 `.dsh-mv-backup\`（每个文件保留最近 10 份）。只能写这几个固定文件名，`mv.json` 会先校验。
+
 ## 音频格式
 
 格式一律按文件**内容**判断，不看扩展名（改名为 `.mp3` 的 DASH MP4 会被正确识别为 MP4）。
@@ -216,6 +252,7 @@ npm run pack:local        # dist/ljwei-stak-dsh-mv-cli-<版本>.tgz（prepack �
 - 「用 AI 制作新 MV」需要 Harness 客户端提供 Agent 会话接口（否则请复制粘贴提示词）。场景脚本运行在 Blob Web Worker 里；如果某个 Harness 版本禁止 blob worker，脚本包会用通用画面播放。Agent 工具依赖 Host 的 `tools` 服务；没有时 Agent 按 AGENT.md 自查。
 - 超过 1 GB 的音频文件会被拒绝；单个 WAV 缓存最大 1.5 GB（约 2.5 小时）。
 - `79c4e5…` 的偏移为推测值。
+- 自动时间轴：识别效果取决于混音；快速说唱、重度效果和念白会出现需要检查的黄色句子。LRCLIB 只收录别人上传过的歌，且需要能连上 lrclib.net（连不上时会跳过并提示）。仅 CPU 的 PyTorch 方案没有在测试机上实装；GPU 需要支持 CUDA 12.6 的 NVIDIA 驱动。中文 / 日文按字对齐，只做了单元测试。
 
 ## 许可
 

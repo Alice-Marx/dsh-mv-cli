@@ -116,7 +116,7 @@ ${bullet([
 3. 写场景脚本 \`${SCENE_FILE}\`：定义 \`function render(t, cols, rows, ctx)\`，返回当前时刻的 ASCII 画面（见下方接口）。
    画面要配合歌曲结构（前奏、主歌、副歌、间奏、尾声）变化，用 ctx.bands / ctx.energy 跟随音乐，用 ctx.lyric 显示歌词。
    ${style ? `用户的风格要求：${style.replace(/\n+/g, ' ')}` : '风格自定，保持终端 ASCII 美感。'}
-4. 写最终的 \`mv.json\`：\`"canvas": { "renderer": "script", "script": "${SCENE_FILE}" }\`，保留 audio${spectrumFile ? '、spectrum' : ''}，${lyricsFile ? '加上 lyrics，' : ''}填好 title / artist / credits / duration，删除 \`x-dsh-mv-ai\` 字段或把 status 改成 "done"。
+4. 写最终的 \`mv.json\`：\`"canvas": { "renderer": "script", "script": "${SCENE_FILE}" }\`，保留 audio${spectrumFile ? '、spectrum' : ''}，${lyricsFile ? '加上 lyrics，' : ''}填好 title / artist / credits / duration，把 \`x-dsh-mv-ai\` 的 status 改成 "done"（保留其中的 timing / sections 字段，校准编辑器会用到）。如果文件夹里有 sections.json，按其中的段落（主歌 / 副歌 / 间奏）安排场景。
 5. 用工具检查：\`${AI_TOOL_NAMES.validate}\`（参数 path = 本文件夹）必须没有错误；用 \`${AI_TOOL_NAMES.preview}\` 看几个时间点（如 0 秒、副歌、结尾）的画面，确认好看、不空白、不越界。
    如果这两个工具不可用，就仔细自查：mv.json 是合法 JSON 且符合 schema，scenes.js 没有语法错误、没有 import/require、每帧计算量小。
 6. 最后用一两句话告诉用户：在「MV 放映室 → 曲库」里打开这个包（或「导入 MV 包…」选这个文件夹）即可播放。
@@ -147,4 +147,15 @@ export function agentPrompt({ packDir, title, artist, toolsAvailable = true }) {
       : `如果没有 ${AI_TOOL_NAMES.validate} / ${AI_TOOL_NAMES.preview} 工具，请自行仔细检查 JSON 和脚本。`,
     '只修改这个文件夹里的文件；不要修改或上传音频，不要运行外部程序，不要联网下载歌词或素材。',
   ].join('\n')
+}
+
+/** Extra prompt text after 「自动制作」 timed the lyrics locally. */
+export function autoTimingNote({ lines = 0, low = 0, source = '', sections = [] }) {
+  const kinds = sections.filter(s => s.kind !== 'intro' && s.kind !== 'outro').map(s => `${s.label ?? s.kind} ${s.start}–${s.end}s`).slice(0, 16)
+  return [
+    lines
+      ? `插件已在本机自动对齐歌词：lyrics.lrc（${lines} 行，来源 ${source}${low ? `，其中 ${low} 行置信度低、用户会在校准编辑器里修正` : ''}）和 timing.json（每行置信度）。请直接使用 lyrics.lrc，不要重新估计或改动时间轴；mv.json 里保留 "lyrics": { "file": "lyrics.lrc" }。`
+      : '插件没有找到歌词（可能是纯音乐）：做纯音乐 MV，不要编造歌词。',
+    sections.length ? `sections.json（也写在 mv.json 的 x-dsh-mv-ai.sections）给出了段落：${kinds.join('；')}。请按这些段落安排场景（副歌更强烈、间奏用纯视觉），并在写最终 mv.json 时保留 x-dsh-mv-ai.sections。` : '',
+  ].filter(Boolean).join('\n')
 }

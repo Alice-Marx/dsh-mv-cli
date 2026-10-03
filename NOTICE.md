@@ -44,3 +44,15 @@ this repository does not cover the ported files.
   Rust 重写版。0.2.x–0.3.x 的 MV 终端可以启动用户自己下载的这个程序；**自 0.4.0 起已移除该支持**，本插件从未复制其任何代码或数据。
 - world-execute-me-dsh-pv（DeepSeek Harness 风格 PV）——本插件的音频版本识别表里包含其音频文件的 sha256（只存哈希）。
 - xterm.js（MIT）、@lydell/node-pty（MIT）、React（MIT）随客户端/宿主依赖使用，许可证见各自包内。
+- **King-LRC-Waveform-Editor**（<https://github.com/TKCB/King-LRC-Waveform-Editor>，作者 TKCB，MIT）：0.5.0 的歌词校准编辑器
+  （波形上拖动歌词块、打点、微调快捷键等交互）参考了它的设计；代码为重新编写，未复制其源文件。Calibration editor interaction
+  ideas adapted from King-LRC-Waveform-Editor (MIT, © TKCB); no source files were copied.
+
+## 5. 歌词引擎与在线服务（不随包分发）/ Lyrics engine and online service (not bundled)
+
+用户确认后，插件用 uv 把下列软件和模型下载到 `%LOCALAPPDATA%\dsh-mv\engine`，它们按各自许可证使用，不随本包分发：
+PyTorch（BSD-3-Clause）、faster-whisper（MIT，SYSTRAN）、CTranslate2（MIT）、Demucs / htdemucs（MIT，Meta）、
+julius（MIT）、PyAV（BSD-3-Clause，FFmpeg 为 LGPL）、Hugging Face Hub 客户端（Apache-2.0）、
+OpenAI Whisper 模型权重（MIT，经 Systran 转换为 CTranslate2 格式）。
+**LRCLIB**（<https://lrclib.net>）是社区维护的免费歌词库；查询只发送歌名、歌手、专辑和时长，歌词内容的权利归原权利人所有，
+可以在设置 `lrclib` 中关闭。

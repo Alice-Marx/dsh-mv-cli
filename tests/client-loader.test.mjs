@@ -53,7 +53,7 @@ test('client apply mounts the remote and registers panel, sidebar and open actio
   const dispose = await exports.apply(ctx)
   assert.equal(typeof dispose, 'function')
   assert.equal(mounted[0].package, pkg.name)
-  assert.equal(mounted[0].descriptors.length, 24)
+  assert.equal(mounted[0].descriptors.length, 34)
   assert.deepEqual(plain(injected), ['slots', 'remote', 'remote.dshMv', 'layout'])
   assert.deepEqual(slots.map(s => s.item.name), ['main', 'sidebar.panellist', 'plugins.detail.actions'])
   assert.equal(slots[0].item.key, 'dsh-mv.main')

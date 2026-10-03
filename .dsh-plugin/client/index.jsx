@@ -47,6 +47,16 @@ export function panelApi(remote) {
     packUploadBegin: request => service.packUploadBegin(request),
     packUploadWrite: request => service.packUploadWrite(request),
     packUploadFinish: request => service.packUploadFinish(request),
+    lyricsLookup: request => service.lyricsLookup(request),
+    engineInfo: request => service.engineInfo(request),
+    engineProbe: request => service.engineProbe(request),
+    engineInstall: request => service.engineInstall(request),
+    engineModel: request => service.engineModel(request),
+    engineTranscribe: request => service.engineTranscribe(request),
+    jobRead: request => service.jobRead(request),
+    jobCancel: request => service.jobCancel(request),
+    packWriteText: request => service.packWriteText(request),
+    analysisRead: request => service.analysisRead(request),
   }
 }
 

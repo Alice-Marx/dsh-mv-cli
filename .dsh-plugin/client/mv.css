@@ -203,3 +203,37 @@ body[data-ds-dark-theme] .mv-root, .mv-root.mv-dark { --mv-fb-bg: #151517; --mv-
 .mv-card-ai[aria-expanded="true"] { background: var(--mv-accent-soft); border-style: solid; }
 .mv-ai .mv-form { margin: 8px 0 10px; }
 .mv-ai textarea:disabled { opacity: .6; }
+
+/* 0.5.0 calibration editor + auto stepper + engine card */
+.mv-calib .mv-details-body { outline: none; }
+.mv-calib .mv-details-body:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); border-radius: 8px; }
+.mv-calib-tools { flex-wrap: wrap; gap: 6px; align-items: center; }
+.mv-calib-offset { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+.mv-calib-offset input { width: 120px; }
+.mv-calib-wave { width: 100%; height: 120px; display: block; border: 1px solid var(--mv-border); border-radius: 8px; margin-top: 8px; touch-action: none; cursor: pointer; }
+.mv-calib-hint { margin: 4px 0 6px; }
+.mv-calib-lines { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; border: 1px solid var(--mv-border); border-radius: 8px; }
+.mv-calib-lines li { display: flex; gap: 10px; align-items: center; padding: 3px 8px; font-size: 12.5px; cursor: pointer; border-left: 3px solid transparent; }
+.mv-calib-lines li:hover { background: var(--mv-hover); }
+.mv-calib-lines li.mv-uncertain { background: rgba(230, 180, 34, 0.16); border-left-color: #e6b422; }
+.mv-calib-lines li.mv-selected { border-left-color: var(--mv-accent); background: var(--mv-hover); }
+.mv-calib-lines li.mv-active .mv-calib-text { font-weight: 600; }
+.mv-calib-time { font-variant-numeric: tabular-nums; color: var(--mv-muted); min-width: 58px; }
+.mv-calib-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv-calib-edit { flex: 1; display: flex; gap: 6px; }
+.mv-calib-edit input { flex: 1; min-width: 0; }
+.mv-calib-flag { color: #b88a00; font-weight: 700; }
+.mv-steps { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; }
+.mv-steps li { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; }
+.mv-step-dot { width: 18px; text-align: center; flex: none; }
+.mv-steps li.mv-step-running { font-weight: 600; }
+.mv-steps li.mv-step-failed { color: var(--mv-danger, #d33); }
+.mv-steps li.mv-step-skipped, .mv-steps li.mv-step-pending { color: var(--mv-muted); }
+.mv-engine-card { border: 1px solid var(--mv-border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }
+.mv-progress { height: 6px; border-radius: 3px; background: var(--mv-border); overflow: hidden; }
+.mv-progress > span { display: block; height: 100%; background: var(--mv-accent); }
+.mv-log { max-height: 110px; overflow: auto; font: 11px/1.4 "Cascadia Mono", Consolas, monospace; white-space: pre-wrap; color: var(--mv-muted); margin: 0; }
+.mv-auto { border: 1px solid var(--mv-border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; margin: 10px 0; }
+.mv-auto .mv-check { height: auto; align-items: flex-start; align-self: auto; }
+.mv-auto .mv-check input { margin-top: 2px; flex: none; }
+.mv-auto .mv-field { min-width: 150px; }

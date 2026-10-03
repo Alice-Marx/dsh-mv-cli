@@ -92,6 +92,18 @@ export class MvRemoteService extends TypertRemoteService {
   packUploadBegin(request) { return settled(() => (this.services.packUploadBegin ?? unavailable)(request)) }
   packUploadWrite(request) { return settled(() => (this.services.packUploadWrite ?? unavailable)(request)) }
   packUploadFinish(request) { return settled(() => (this.services.packUploadFinish ?? unavailable)(request)) }
+
+  /** 0.5.0: LRCLIB lookup (title/artist/album/duration only), lyrics engine jobs, calibration writes. */
+  lyricsLookup(request) { return settled(() => (this.services.lyricsLookup ?? unavailable)(request ?? {})) }
+  engineInfo(request) { return settled(() => (this.services.engineInfo ?? unavailable)(request ?? {})) }
+  engineProbe(request) { return settled(() => (this.services.engineProbe ?? unavailable)(request ?? {})) }
+  engineInstall(request) { return settled(() => (this.services.engineInstall ?? unavailable)(request ?? {})) }
+  engineModel(request) { return settled(() => (this.services.engineModel ?? unavailable)(request ?? {})) }
+  engineTranscribe(request) { return settled(() => (this.services.engineTranscribe ?? unavailable)(request ?? {})) }
+  jobRead(request) { return settled(() => (this.services.jobRead ?? unavailable)(request ?? {})) }
+  jobCancel(request) { return settled(() => (this.services.jobCancel ?? unavailable)(request ?? {})) }
+  packWriteText(request) { return settled(() => (this.services.packWriteText ?? unavailable)(request ?? {})) }
+  analysisRead(request) { return settled(() => (this.services.analysisRead ?? unavailable)(request ?? {})) }
 }
 
 /** Registration follows the Host plugin fiber; unload withdraws all endpoints. */

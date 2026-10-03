@@ -31,6 +31,14 @@ const shots = [
   ['19-ai-copy-fallback-light', 'ai', 'light', 'aicreate', '&session=0'],
   ['20-script-pack-playing-dark', 'script', 'dark', 'scriptplay'],
   ['21-script-pack-playing-light', 'script', 'light', 'scriptplay'],
+  ['22-auto-make-form-light', 'auto', 'light', 'autoform'],
+  ['23-auto-make-running-dark', 'auto', 'dark', 'autorun'],
+  ['24-auto-make-done-light', 'auto', 'light', 'autodone'],
+  ['25-engine-install-confirm-light', 'auto', 'light', 'engineconfirm', '&engine=missing'],
+  ['26-engine-install-confirm-dark', 'auto', 'dark', 'engineconfirm', '&engine=missing'],
+  ['27-calibration-editor-dark', 'calib', 'dark', 'calib'],
+  ['28-calibration-editor-light', 'calib', 'light', 'calib'],
+  ['29-calibration-editing-light', 'calib', 'light', 'calibedit'],
 ]
 // A synthetic, silent-ish WAV for the AI dialog's file chooser (no real media).
 const AUDIO = path.join(OUT, '..', 'starlight-run-preview.wav')
@@ -68,12 +76,31 @@ for (const [name, scene, theme, action, extra = ''] of shots) {
     const [chooser] = await Promise.all([page.waitForFileChooser(), clickText(page, '.mv-ai button', '选择音频')])
     await chooser.accept([AUDIO]); await sleep(500)
     await page.evaluate(() => { const t = document.querySelector('.mv-ai input[placeholder="歌名"]'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(t, 'Starlight Run'); t.dispatchEvent(new Event('input', { bubbles: true })) })
-    await typeInto(page, '.mv-ai input[placeholder="可选"]', 'Alice')
+    await typeInto(page, '.mv-ai input[placeholder="可选（自动从标签读取）"]', 'Alice')
     await typeInto(page, '.mv-ai textarea', '[00:20.00]Running through the neon rain\n[00:20.00]在霓虹雨里奔跑\n[00:26.00]Every light a name\n[00:26.00]每一盏灯都是一个名字')
     const areas = await page.$$('.mv-ai textarea'); await areas[1].type('赛博朋克雨夜，副歌时满屏代码雨，结尾慢慢熄灭')
     await sleep(300)
-    if (action !== 'aiform') { await clickText(page, '.mv-ai button', '创建 MV 包'); await sleep(3500) }
+    if (action !== 'aiform') { await clickText(page, '.mv-ai button', '只建包'); await sleep(3500) }
     if (action === 'aisend') { await clickText(page, '.mv-ai button', '在新会话中交给 AI'); await sleep(800) }
+  }
+  if (['autoform', 'autorun', 'autodone', 'engineconfirm'].includes(action)) {
+    const [chooser] = await Promise.all([page.waitForFileChooser(), clickText(page, '.mv-ai button', '选择音频')])
+    await chooser.accept([AUDIO]); await sleep(500)
+    await page.evaluate(() => { const t = document.querySelector('.mv-ai input[placeholder="歌名"]'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(t, 'Starlight Run'); t.dispatchEvent(new Event('input', { bubbles: true })) })
+    await typeInto(page, '.mv-ai input[placeholder="可选（自动从标签读取）"]', 'Alice')
+    await typeInto(page, '.mv-ai textarea', 'Running through the neon rain / 在霓虹雨里奔跑\nEvery light a name / 每一盏灯都是一个名字\nStarlight, starlight, run with me\nInto the night we go\nCounting every heartbeat\nStarlight, starlight, run with me')
+    await sleep(300)
+    if (action === 'engineconfirm') { await clickText(page, '.mv-engine-card button', '一键安装'); await sleep(400) }
+    if (action === 'autorun' || action === 'autodone') { await clickText(page, '.mv-ai button', '自动制作'); await sleep(action === 'autorun' ? 3200 : 9000) }
+  }
+  if (action === 'calib' || action === 'calibedit') {
+    await sleep(1500); await page.click('.mv-play-big'); await sleep(400)
+    await page.evaluate(() => { const r = document.querySelector('.mv-seek'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(r, '30.5'); r.dispatchEvent(new Event('input', { bubbles: true })) })
+    await sleep(1200)
+    await page.evaluate(() => { const li = document.querySelectorAll('.mv-calib-lines li')[2]; li?.click() })
+    await sleep(1000)
+    if (action === 'calibedit') { await page.evaluate(() => { const li = document.querySelectorAll('.mv-calib-lines li')[4]; li?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true })) }); await sleep(400) }
+    await page.evaluate(() => document.querySelector('.mv-calib')?.scrollIntoView({ block: 'center' }))
   }
   if (action === 'scriptplay') {
     await sleep(1500); await page.click('.mv-play-big'); await sleep(400)

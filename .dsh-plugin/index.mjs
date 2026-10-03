@@ -32,6 +32,10 @@ import {
 } from './shared/mv-audio.mjs'
 import { createAiPackManager, parsePackUploadBegin, parsePackUploadFinish, parsePackUploadWrite } from './shared/mv-ai-pack.mjs'
 import { buildMvAgentTools } from './shared/mv-agent-tools.mjs'
+import { createEngineManager, createJobManager } from './shared/mv-engine.mjs'
+import { parseEngineInfo, parseEngineInstall, parseEngineModel, parseEngineTranscribe, parseJobCancel, parseJobRead } from './shared/mv-engine-protocol.mjs'
+import { createLrclibClient, parseLyricsLookup } from './shared/mv-lrclib.mjs'
+import { parseAnalysisRead, parsePackWriteText, readAnalysis, writePackText } from './shared/mv-pack-edit.mjs'
 
 /** Cordis plugin name; equals the profile entry id in cordis.patch.yml. */
 export const name = 'dsh-mv'
@@ -41,6 +45,10 @@ export const inject = ['typert']
 export const Config = z.object({
   canvasFontSize: z.number().step(1).min(8).max(32).default(14).description('画布 MV 的默认字号（像素）。'),
   ffmpegPath: z.string().default('').description('可选：ffmpeg.exe 的完整路径。留空时在 PATH 和 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe 中查找；只在面板无法解码某个音频、并且你确认后才会运行。'),
+  lrclib: z.boolean().default(true).description('「自动制作」时到 LRCLIB（lrclib.net）查现成的歌词时间轴。只发送歌名、歌手、专辑和时长，不上传音频；关掉后完全离线。'),
+  enginePython: z.string().default('').description('可选：已有 Python 环境里 python.exe 的完整路径（需已装 faster-whisper / torch / demucs）。留空时使用 %LOCALAPPDATA%\\dsh-mv\\engine 下由面板一键安装的引擎。'),
+  uvPath: z.string().default('').description('可选：uv.exe 的完整路径，用于一键安装歌词引擎。留空时在 PATH 和常见位置查找。'),
+  hfEndpoint: z.string().default('').description('可选：Hugging Face 镜像地址（例如 https://hf-mirror.com），只在下载模型时使用。'),
   agentTools: z.boolean().default(true).description('向 Harness 的 Agent 提供只读工具 mv_pack_validate / mv_pack_preview_frame（用于 AI 制作 MV 包）。'),
 }).description('MV 放映室')
 
@@ -60,9 +68,10 @@ export function mvRemoteServices(terminals, config = {}, consoles = null, packs 
   const noWav = () => { throw new Error('WAV 缓存未加载。') }
   const noAi = () => { throw new Error('AI 制作 MV 功能未加载。') }
   const noFfmpeg = () => { throw new Error('ffmpeg 功能未加载。') }
-  const { aiPacks = null, ffmpeg = null, toolsState = () => ({ registered: false }) } = extras
+  const noEngine = () => { throw new Error('歌词引擎功能未加载。') }
+  const { aiPacks = null, ffmpeg = null, toolsState = () => ({ registered: false }), engine = null, lrclib = null, packEdit = { write: writePackText, read: readAnalysis } } = extras
   return {
-    info: async () => ({ ...terminals.info(), canvasFontSize: config.canvasFontSize ?? 14, aiPacksDir: aiPacks?.root ?? null, agentTools: toolsState() }),
+    info: async () => ({ ...terminals.info(), canvasFontSize: config.canvasFontSize ?? 14, aiPacksDir: aiPacks?.root ?? null, agentTools: toolsState(), lrclib: config.lrclib !== false }),
     terminalCheck: async request => terminals.check(parseMvTerminalCheck(request)),
     terminalStart: async request => terminals.start(parseMvTerminalStart(request)),
     terminalRead: async request => terminals.read(parseMvTerminalRead(request)),
@@ -83,6 +92,21 @@ export function mvRemoteServices(terminals, config = {}, consoles = null, packs 
     packUploadBegin: async request => (aiPacks ?? noAi()).uploadBegin(parsePackUploadBegin(request)),
     packUploadWrite: async request => (aiPacks ?? noAi()).uploadWrite(parsePackUploadWrite(request)),
     packUploadFinish: async request => (aiPacks ?? noAi()).uploadFinish(parsePackUploadFinish(request)),
+    lyricsLookup: async request => {
+      const query = parseLyricsLookup(request)
+      if (config.lrclib === false) throw new Error('LRCLIB 查询已在插件设置里关闭。')
+      if (!lrclib) throw new Error('LRCLIB 查询未加载。')
+      return lrclib.lookup(query)
+    },
+    engineInfo: async request => { parseEngineInfo(request); return (engine ?? noEngine()).info() },
+    engineProbe: async request => { parseEngineInfo(request); return (engine ?? noEngine()).probe() },
+    engineInstall: async request => (engine ?? noEngine()).install(parseEngineInstall(request)),
+    engineModel: async request => (engine ?? noEngine()).model(parseEngineModel(request)),
+    engineTranscribe: async request => (engine ?? noEngine()).transcribe(parseEngineTranscribe(request)),
+    jobRead: async request => (engine ?? noEngine()).read(parseJobRead(request)),
+    jobCancel: async request => (engine ?? noEngine()).cancel(parseJobCancel(request)),
+    packWriteText: async request => packEdit.write(parsePackWriteText(request)),
+    analysisRead: async request => packEdit.read(parseAnalysisRead(request)),
     wavBegin: async request => (wavCache ?? noWav()).begin(parseWavBegin(request)),
     wavWrite: async request => (wavCache ?? noWav()).write(parseWavWrite(request)),
     wavFinish: async request => (wavCache ?? noWav()).finish(parseWavFinish(request)),
@@ -123,7 +147,10 @@ export function apply(ctx, config = {}) {
   ctx.effect(() => () => aiPacks.abort(), 'dsh-mv: ai packs')
   const tools = { registered: false, error: '' }
   if (config.agentTools !== false) registerAgentTools(ctx, tools)
-  registerMvRemote(ctx, mvRemoteServices(terminals, config, consoles, defaultPackOps, wavCache, { aiPacks, ffmpeg, toolsState: () => ({ ...tools }) }))
+  const engine = createEngineManager({ jobs: createJobManager(), config: () => config, loadPack })
+  ctx.effect(() => () => engine.disposeAll(), 'dsh-mv: lyrics engine jobs')
+  const lrclib = createLrclibClient({ userAgent: `dsh-mv-cli/${HOST_PLUGIN_VERSION ?? ''} (https://github.com/Alice-Marx/dsh-mv-cli)` })
+  registerMvRemote(ctx, mvRemoteServices(terminals, config, consoles, defaultPackOps, wavCache, { aiPacks, ffmpeg, toolsState: () => ({ ...tools }), engine, lrclib }))
   const logger = optionalService(ctx, 'logger')
   logger?.info?.(`dsh-mv ${HOST_PLUGIN_VERSION ?? ''} loaded`)
 }
