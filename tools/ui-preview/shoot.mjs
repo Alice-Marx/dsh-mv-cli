@@ -9,7 +9,7 @@ import path from 'node:path'
 const ASSETS = process.env.DSH_MV_ASSETS ?? new URL('../../.dsh-plugin/assets/', import.meta.url).pathname // set it when running a copy of this script
 const DIR = '/tmp/mv-ui-preview', OUT = process.argv[2] || '/workspace/dsh-mv-cli-ui-shots'
 fs.mkdirSync(OUT, { recursive: true })
-const TYPES = { '.js': 'text/javascript', '.json': 'application/json', '.webp': 'image/webp', '.lrc': 'text/plain; charset=utf-8', '.html': 'text/html; charset=utf-8' }
+const TYPES = { '.png': 'image/png', '.js': 'text/javascript', '.json': 'application/json', '.webp': 'image/webp', '.lrc': 'text/plain; charset=utf-8', '.html': 'text/html; charset=utf-8' }
 const server = http.createServer((req, res) => {
   const url = decodeURIComponent(req.url.split('?')[0])
   const f = url === '/local/lyrics.lrc' ? process.env.LOCAL_LRC ?? ''
@@ -47,6 +47,28 @@ const shots = [
   ['26-calibration-editor-dark', 'calib', 'dark', 'calib'],
   ['27-calibration-editor-light', 'calib', 'light', 'calib'],
   ['28-calibration-editing-light', 'calib', 'light', 'calibedit'],
+  // 0.7.0: 创意工坊 and template examples (covers: node tools/ui-preview/make-covers.mjs first)
+  ['29-workshop-browse-light', 'workshop', 'light', 'ws'],
+  ['30-workshop-browse-dark', 'workshop', 'dark', 'ws'],
+  ['31-workshop-search-filter-light', 'workshop', 'light', 'wssearch'],
+  ['32-workshop-details-dark', 'workshop', 'dark', 'wsdetail'],
+  ['33-workshop-update-available-light', 'workshop', 'light', 'wsupdate'],
+  ['34-workshop-installed-dark', 'workshop', 'dark', 'wsinstall'],
+  ['35-workshop-pack-own-audio-mismatch-dark', 'wsplay', 'dark', 'wsplay:44.3'],
+  ['36-workshop-pack-own-audio-matched-light', 'wsplay', 'light', 'wsplay:80.4', '&seconds=120.4'],
+  ['37-publish-form-light', 'wspublish', 'light', 'wspub'],
+  ['38-publish-ready-dark', 'wspublish', 'dark', 'wspubdone'],
+  ['39-example-chat-window-dark', 'example', 'dark', 'ex:25.2', '&example=chat-window'],
+  ['40-example-heartbeat-dark', 'example', 'dark', 'ex:66.3', '&example=heartbeat'],
+  ['41-example-ops-ticker-dark', 'example', 'dark', 'ex:44.6', '&example=ops-ticker'],
+  ['42-example-token-bar-light', 'example', 'light', 'ex:21.3', '&example=token-bar'],
+  ['43-example-execution-split-dark', 'example', 'dark', 'ex:44.2', '&example=execution-split'],
+  ['44-example-whale-fall-dark', 'example', 'dark', 'ex:104', '&example=whale-fall'],
+  ['45-example-post-effects-dark', 'example', 'dark', 'ex:52.4', '&example=post-effects'],
+  ['46-example-rich-pack-intro-dark', 'example', 'dark', 'ex:5.5', '&example=rich-pack'],
+  ['47-example-rich-pack-verse-light', 'example', 'light', 'ex:14.6', '&example=rich-pack'],
+  ['48-example-rich-pack-chorus-dark', 'example', 'dark', 'ex:44.1', '&example=rich-pack'],
+  ['49-example-rich-pack-outro-dark', 'example', 'dark', 'ex:110', '&example=rich-pack'],
 ]
 // A synthetic, silent-ish WAV for the AI dialog's file chooser (no real media).
 const AUDIO = path.join(OUT, '..', 'starlight-run-preview.wav')
@@ -120,6 +142,31 @@ for (const [name, scene, theme, action, extra = ''] of shots) {
     await sleep(1500); await page.click('.mv-play-big'); await sleep(400)
     await page.evaluate(() => { const r = document.querySelector('.mv-seek'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(r, '22'); r.dispatchEvent(new Event('input', { bubbles: true })) })
     await sleep(2500)
+  }
+  const seek = async t => page.evaluate(t => { const r = document.querySelector('.mv-seek'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(r, t); r.dispatchEvent(new Event('input', { bubbles: true })) }, t)
+  if (String(action ?? '').startsWith('ws')) await sleep(1500)
+  if (action === 'wssearch') { await typeInto(page, '.mv-ws-search', 'token'); await page.select('.mv-ws-filters select', 'CC-BY-4.0'); await sleep(600) }
+  if (action === 'wsdetail') { await clickText(page, '.mv-ws-card', 'heartbeat.exe'); await sleep(1200) }
+  if (action === 'wsupdate') { await clickText(page, '.mv-ws-card', 'Neon Terminal'); await sleep(1200) }
+  if (action === 'wsinstall') { await clickText(page, '.mv-ws-card', 'Whale Fall'); await sleep(800); await clickText(page, '.mv-ws button', '安装到曲库'); await sleep(3000); await page.evaluate(() => window.scrollTo(0, 0)) }
+  if (String(action ?? '').startsWith('wsplay:') || String(action ?? '').startsWith('ex:')) {
+    await sleep(2500); await page.click('.mv-play-big'); await sleep(400)
+    await seek(action.split(':')[1]); await sleep(2800)
+    const stage = await page.$('.mv-stage')
+    if (stage) await stage.screenshot({ path: `${OUT}/${name}-stage.png` })
+  }
+  if (action === 'wspub' || action === 'wspubdone') {
+    await sleep(1200); await page.click('.mv-play-big'); await sleep(300); await seek('22'); await sleep(1500); await page.click('.mv-play-big'); await sleep(300)
+    await clickText(page, '.mv-ws button', '发布到工坊'); await sleep(500)
+    const inputs = await page.$$('.mv-confirm .mv-field input')
+    await inputs[3].type('Alice-Marx'); await inputs[4].type('赛博朋克雨夜的 ASCII MV，副歌满屏代码雨。'); await inputs[5].type('cyberpunk, rain')
+    await sleep(300)
+    if (action === 'wspubdone') {
+      await clickText(page, '.mv-confirm button', '检查并打包'); await sleep(2500)
+      await page.evaluate(() => { const box = document.querySelector('.mv-ws-publish .mv-check input'); box?.click() }); await sleep(300)
+      await page.evaluate(() => document.querySelector('.mv-ws-publish')?.scrollIntoView({ block: 'center' }))
+    } else await page.evaluate(() => document.querySelector('.mv-confirm')?.scrollIntoView({ block: 'start' }))
+    await sleep(300)
   }
   if (action === 'about') { await page.click('.mv-head .mv-icon-button'); await sleep(400) }
   const full = true
