@@ -96,6 +96,33 @@ Fields:
 
 Safety: the plugin never runs external programs for this flow, scene scripts run sandboxed (Web Worker in the panel; `node:vm` with time limits and no `require`/`process` for the agent tools), and the agent tools are read-only. The tools can be turned off with the `agentTools` setting.
 
+## MV template: prompts and examples (0.7.0)
+
+**下载模板** and every pack made with **用 AI 制作新 MV** now contain material that helps an AI (or you) write a good MV instead of a bare example:
+
+- `prompts/zh/` and `prompts/en/`: `01-creative-brief.md` (overall concept from song, lyrics and sections), `02-storyboard.md` (per-section storyboard), `03-scene-script-guide.md` (scene API, frame budget, sandbox limits, ASCII / layout techniques, sync to lyrics, word timings, spectrum and beat), `04-qa-checklist.md` (self-check before finishing) and `05-iteration.md` (prompts for revision rounds). `AGENT.md` and the 在新会话中交给 AI prompt walk the agent through them in that order.
+- `examples/`: seven small, commented scene modules adapted from [world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (MIT, © 2026 MisakaZentai; see `examples/NOTICE.md`): `chat-window`, `heartbeat`, `ops-ticker`, `token-bar`, `execution-split`, `whale-fall` (silhouette drawn in code, **no artwork**) and `post-effects`. Each one runs in the sandboxed script renderer as is.
+- `examples/rich-pack/`: a complete multi-section pack (120 s, 6 sections, transitions, karaoke word highlight, spectrum ring, beat pulses, glitch chorus, whale-fall ending) with **placeholder lyrics and no audio**: add your own audio to try it.
+- New scene `ctx` fields: `ctx.section` / `ctx.sections` (from `x-dsh-mv-ai.sections`), `ctx.beat` (from `canvas.bpm` / `canvas.beatOffset`), and `ctx.lyric.words` / `word` / `progress` (enhanced LRC `<mm:ss.xx>` word stamps or `timing.json`).
+
+## 创意工坊 (MV workshop, 0.7.0)
+
+A community gallery of MV packs that lives in the public GitHub repository [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop); there is no server of our own. Each pack is a folder `packs/<id>/` (`mv.json`, scenes, `cover.png`/`.webp`, README, optional `lyrics.timing.json`). GitHub Actions validates every pull request (schema, size limits, no audio or lyric-text files, licence field, static sandbox checks, scenes run at sample times) and, after a merge, regenerates `index.json` with each file's sha256.
+
+**Install and play**
+
+1. **曲库 → 创意工坊**: browse covers, search by title / artist / author / tag, filter by licence or renderer, or show only installed packs. Click a card for details (licence, duration, files with sha256, source link).
+2. **安装到曲库**: the panel downloads the files from `raw.githubusercontent.com` at the commit named in the index, checks size and sha256, validates the pack again and stores it in `%LOCALAPPDATA%\dsh-mv\workshop\<id>`. Cards show **有更新** when the index has a newer version (**更新到 …**); **卸载** removes the folder.
+3. Play it with **your own** audio (and optionally lyrics): the panel remembers them per pack. It compares the duration (±2 s) and, when the pack stores one, a coarse audio fingerprint, and warns when they do not match (a different edit or a different song). If the pack has `lyrics.timing.json`, your lyric lines are retimed to the pack's timing by matching line hashes; packs never contain lyric text.
+
+**Publish**
+
+1. Load your pack, open 创意工坊 and click **发布到工坊…**. Fill in id, version, licence (required), author, description and tags; choose whether to include the audio fingerprint and a cover (the current frame).
+2. **检查并打包**: the Host validates the pack, **removes audio, spectrum and lyric text** (keeping only line times and hashes in `lyrics.timing.json`), writes the cover and README, and prepares the folder `%LOCALAPPDATA%\dsh-mv\workshop-publish\<id>\packs\<id>\`. The dialog lists every file and the steps, with a ready PR title and description.
+3. Tick the confirmation box, then **在 GitHub 上提交…** opens GitHub's upload page for `packs/<id>` in your browser: drag the files in; GitHub forks the repository for you and you open the pull request yourself. Nothing is submitted automatically. (Device-flow sign-in needs an OAuth app client id and was not added.)
+
+Trust: workshop packs are written by other people. Their scene scripts always run in the same sandbox as other script packs (Web Worker without network, storage or DOM, frame time limits, automatic fallback), and the panel shows this note in the workshop. Packs contain no audio or lyrics; respect the song's rights and each pack's licence (repository default CC BY-NC-SA 4.0 unless the pack says otherwise).
+
 ## Automatic lyric timing (自动制作) and calibration
 
 In the **用 AI 制作新 MV** dialog you only pick the audio; **自动制作** does the rest and shows a stepper (you can **停止** at any step):
@@ -207,6 +234,7 @@ The format is always detected from the file's **content**, not its extension (a 
 - Audio files over 1 GB are refused; the WAV cache is limited to 1.5 GB per file (about 2.5 hours).
 - The `79c4e5…` offset is inferred.
 - Automatic timing: recognition quality depends on the mix; fast rap, heavy effects and spoken parts produce yellow lines to check. LRCLIB only knows songs others have uploaded and needs lrclib.net to be reachable (it is skipped with a note otherwise). The CPU-only PyTorch profile was not installed on a test machine; GPU needs an NVIDIA driver for CUDA 12.6. Ja/zh alignment works per character and was only unit-tested.
+- 创意工坊: the audio fingerprint is coarse (energy envelope only) and can miss or mis-flag edits; lyric retiming works only for lines whose text matches the pack's hashes; GitHub's upload page needs the files dragged in by hand; raw.githubusercontent.com caches for about 5 minutes, so new packs appear with a delay; the CI's `node:vm` run is a check, not a security boundary (the panel's Worker sandbox is).
 
 ## License
 

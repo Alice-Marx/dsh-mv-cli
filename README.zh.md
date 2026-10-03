@@ -106,6 +106,33 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 
 安全：这个流程里插件不会运行任何外部程序；场景脚本在沙箱中运行（面板里是 Web Worker，Agent 工具里是带时间限制、没有 `require`/`process` 的 `node:vm`）；两个 Agent 工具都是只读的，可以在插件设置里用 `agentTools` 关掉。
 
+## MV 模板：提示词与示例（0.7.0）
+
+**下载模板** 以及每个用 **用 AI 制作新 MV** 新建的包，现在都附带帮助 AI（或你自己）写出高质量 MV 的材料，而不只是一个简单示例：
+
+- `prompts/zh/` 和 `prompts/en/`：`01-creative-brief.md`（根据歌曲、歌词和段落写整体创意）、`02-storyboard.md`（逐段分镜）、`03-scene-script-guide.md`（场景接口、每帧耗时预算、沙箱限制、ASCII / 版式技巧，以及与歌词、逐词时间、频谱和节拍同步）、`04-qa-checklist.md`（完成前自查清单）、`05-iteration.md`（迭代修改用的提示词）。`AGENT.md` 和「在新会话中交给 AI」的提示词会引导 Agent 按这个顺序使用它们。
+- `examples/`：七个带注释的小场景模块，改编自 [world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv)（MIT，© 2026 MisakaZentai，见 `examples/NOTICE.md`）：`chat-window`（聊天窗口）、`heartbeat`（心跳线）、`ops-ticker`（运维滚动条）、`token-bar`（stdout token 条）、`execution-split`（EXECUTION 分屏）、`whale-fall`（鲸落结尾，剪影由代码绘制，**不含立绘**）和 `post-effects`（后期效果）。每个都能直接在沙箱脚本渲染器里运行。
+- `examples/rich-pack/`：完整的多段落示例包（120 秒、6 段、转场、逐词卡拉 OK 高亮、频谱环、节拍脉冲、副歌故障效果、鲸落结尾），**歌词为占位文字、不含音频**：放入你自己的音频即可试看。
+- 场景 `ctx` 新增：`ctx.section` / `ctx.sections`（来自 `x-dsh-mv-ai.sections`）、`ctx.beat`（来自 `canvas.bpm` / `canvas.beatOffset`）、`ctx.lyric.words` / `word` / `progress`（来自增强 LRC 的 `<mm:ss.xx>` 逐词时间或 `timing.json`）。
+
+## 创意工坊（0.7.0）
+
+社区 MV 包画廊，基于公开 GitHub 仓库 [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop)，没有自建服务器。每个包是一个 `packs/<id>/` 文件夹（`mv.json`、场景脚本、`cover.png`/`.webp`、README，可选 `lyrics.timing.json`）。GitHub Actions 检查每个 PR（结构、大小限制、不得含音频或歌词文本文件、必须声明许可、沙箱安全的静态检查、在几个时间点试运行场景），合并后重新生成带每个文件 sha256 的 `index.json`。
+
+**安装与播放**
+
+1. **曲库 → 创意工坊**：浏览封面，按歌名 / 歌手 / 作者 / 标签搜索，按许可或渲染方式筛选，或只看已安装。点卡片查看详情（许可、时长、文件及 sha256、源码链接）。
+2. **安装到曲库**：面板从 `raw.githubusercontent.com` 按索引记录的提交下载文件，核对大小和 sha256，再校验一遍后保存到 `%LOCALAPPDATA%\dsh-mv\workshop\<id>`。索引里有新版本时卡片显示 **有更新**（**更新到 …**）；**卸载** 会删除该文件夹。
+3. 用**你自己的**音频（以及可选的歌词）播放，面板按包记住你的选择。会比较时长（±2 秒）以及包里存的粗略音频指纹（若有），不一致时提示（可能是其他剪辑版本或别的歌）。包里有 `lyrics.timing.json` 时，按每句的哈希把你的歌词对齐到包的时间轴；工坊包本身从不包含歌词文字。
+
+**发布**
+
+1. 载入你的包，打开创意工坊，点 **发布到工坊…**。填写 id、版本、许可（必填）、作者、简介和标签，选择是否附带音频指纹和封面（当前画面）。
+2. **检查并打包**：Host 校验这个包，**去掉音频、频谱和歌词文本**（`lyrics.timing.json` 只保留每句的时间和哈希），写好封面和 README，整理到 `%LOCALAPPDATA%\dsh-mv\workshop-publish\<id>\packs\<id>\`。对话框列出所有文件和步骤，并给出可直接使用的 PR 标题和说明。
+3. 勾选确认框后，**在 GitHub 上提交…** 会在浏览器里打开 `packs/<id>` 的 GitHub 上传页面：把文件拖进去，GitHub 会自动帮你 fork，由你自己创建 Pull Request。插件不会自动提交任何东西。（设备码登录需要 OAuth 应用的 client id，本版未实现。）
+
+信任提示：工坊里的包由其他人编写。它们的场景脚本始终和其他脚本包一样在沙箱中运行（没有网络、存储和 DOM 的 Web Worker，限制每帧耗时，出错自动回退），工坊界面也会显示这条提示。包内不含音频和歌词；请尊重歌曲权利和每个包的许可（仓库默认 CC BY-NC-SA 4.0，包内另有声明的除外）。
+
 ## 自动制作歌词时间轴与校准
 
 在 **用 AI 制作新 MV** 对话框里只要选好音频，点 **自动制作**，其余都自动完成，并有步骤进度（任何一步都可以 **停止**）：
@@ -229,6 +256,7 @@ npm run pack:local        # dist/ljwei-stak-dsh-mv-cli-<版本>.tgz（prepack �
 - 超过 1 GB 的音频文件会被拒绝；单个 WAV 缓存最大 1.5 GB（约 2.5 小时）。
 - `79c4e5…` 的偏移为推测值。
 - 自动时间轴：识别效果取决于混音；快速说唱、重度效果和念白会出现需要检查的黄色句子。LRCLIB 只收录别人上传过的歌，且需要能连上 lrclib.net（连不上时会跳过并提示）。仅 CPU 的 PyTorch 方案没有在测试机上实装；GPU 需要支持 CUDA 12.6 的 NVIDIA 驱动。中文 / 日文按字对齐，只做了单元测试。
+- 创意工坊：音频指纹很粗略（只看能量包络），可能漏判或误判不同剪辑；只有文字与包内哈希一致的歌词句子才能对齐时间；GitHub 上传页需要手动拖入文件；raw.githubusercontent.com 有约 5 分钟缓存，新包会延迟出现；CI 里的 `node:vm` 只是检查，不是安全边界（真正的边界是面板的 Worker 沙箱）。
 
 ## 许可
 

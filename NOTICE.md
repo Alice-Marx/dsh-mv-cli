@@ -71,6 +71,9 @@ this repository does not cover the ported files.
   （波形上拖动歌词块、打点、微调快捷键等交互）参考了它的设计；代码为重新编写，未复制其源文件。Calibration editor interaction
   ideas adapted from King-LRC-Waveform-Editor (MIT, © TKCB); no source files were copied.
 
+- **0.7.0 模板示例 / template examples**：模板 `examples/` 里的七个场景模块和 `rich-pack` 是对 world-execute-me-dsh-pv（MIT，Copyright (c) 2026 MisakaZentai）中聊天窗口、心跳线、运维滚动条、stdout token 条、EXECUTION 分屏、鲸落结尾和后期效果的简化改编，随附该 MIT 许可文本（`examples/NOTICE.md`）。**不含**立绘（鲸鱼剪影由代码绘制）、歌曲音频或歌词文字（示例歌词为占位文字）。Simplified adaptations of the dsh PV scenes (MIT, © 2026 MisakaZentai), shipped with the MIT notice; no artwork, audio or lyric text.
+- **创意工坊 / workshop**：工坊中的包由各自作者按包内声明的许可发布（仓库默认 CC BY-NC-SA 4.0），不属于本 npm 包；本插件只按用户操作下载。Workshop packs are licensed by their authors and are not part of this package.
+
 ## 5. 歌词引擎与在线服务（不随包分发）/ Lyrics engine and online service (not bundled)
 
 用户确认后，插件用 uv 把下列软件和模型下载到 `%LOCALAPPDATA%\dsh-mv\engine`，它们按各自许可证使用，不随本包分发：
