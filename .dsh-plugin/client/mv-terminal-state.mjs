@@ -10,9 +10,11 @@ import {
   RUST_BASENAME,
   displayCommand,
   isAbsolutePathText,
+  isMvConsoleId,
   isMvSessionId,
   mvTerminalArgs,
   rustTerminalArgs,
+  consoleCommandDisplay,
 } from '../shared/mv-terminal-protocol.mjs'
 
 const text = value => typeof value === 'string' ? value.trim() : ''
@@ -100,6 +102,57 @@ export function confirmationDetails(form, checked) {
       '关闭面板、结束会话或约 2 分钟无人查看时，进程会被结束。',
     ],
   }
+}
+
+/** The {file, args, cwd} the Host will resolve for this form (paths unverified). */
+export function plannedLaunch(form) {
+  const launch = launchFromForm(form)
+  if (launch.player === 'rust') return { file: launch.exePath, args: rustTerminalArgs(launch), cwd: launch.exePath.replace(/[\\/][^\\/]*$/, '') }
+  const sep = sepOf(launch.packageDir || launch.pythonPath)
+  return { file: launch.pythonPath, args: mvTerminalArgs(launch, [launch.packageDir, ...MV_TERMINAL_SCRIPT].join(sep)), cwd: launch.packageDir }
+}
+
+/** Exact cmd.exe line the Host runs for a separate window. */
+export function consoleCommandPreview(form) {
+  try { return consoleCommandDisplay(plannedLaunch(form)) } catch (error) { return error.message }
+}
+
+/** Paths cmd.exe cannot carry safely (it expands %VAR% even inside quotes). */
+export function consoleProblem(form, { platform } = {}) {
+  if (platform && platform !== 'win32') return '独立控制台窗口只在 Windows 上可用；当前系统请用面板内的 MV 终端。'
+  const launch = launchFromForm(form)
+  for (const value of [launch.pythonPath, launch.packageDir, launch.exePath, launch.audioFile]) {
+    if (typeof value === 'string' && /%/.test(value)) return `路径里含有 %，独立窗口模式无法安全传递：${value}`
+  }
+  return formProblem(form)
+}
+
+export function consoleConfirmationDetails(form) {
+  return {
+    title: '在独立的 Windows 控制台窗口中播放？',
+    command: consoleCommandPreview(form),
+    player: commandPreview(form),
+    points: [
+      '将用 cmd.exe 的 start 打开一个新的控制台窗口（若系统默认终端是 Windows Terminal，会在其中打开），在里面运行上面这一个固定的播放器；不经过 Harness 沙箱。',
+      '所有路径都加引号传递；不能附加任何其他命令或参数。',
+      '画面直接由真实控制台显示，没有面板转发的延迟；按键请在那个窗口里按。',
+      '面板里的「结束」会用 taskkill /T 结束播放器进程树；插件卸载或 Harness 退出时也会结束这些窗口。',
+    ],
+  }
+}
+
+export async function loadConsoles(api) {
+  return unwrapRemote(await api.consoleInfo({}), '无法读取独立窗口状态。')
+}
+
+export async function startConsole(api, form) {
+  const started = unwrapRemote(await api.consoleStart({ ...launchFromForm(form), confirmed: true }), '无法打开独立窗口。')
+  if (!isMvConsoleId(started?.consoleId)) throw new Error('启动结果缺少有效的窗口 ID。')
+  return started
+}
+
+export async function stopConsole(api, consoleId) {
+  return unwrapRemote(await api.consoleStop({ consoleId }), '无法结束独立窗口。')
 }
 
 export function endDescription({ endReason, exitCode } = {}) {

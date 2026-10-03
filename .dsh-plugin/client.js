@@ -18022,7 +18022,7 @@ var xterm_default = `/**
 `;
 
 // .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.1.0" : "";
+var CLIENT_VERSION = true ? "0.1.1" : "";
 var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u7EC8\u7AEF\u3002";
 function isMissingRemoteMethod(message) {
   const value = String(message ?? "");
@@ -18080,6 +18080,8 @@ var MV_PLAYER_LABELS = Object.freeze({ python: "world_execute_me\uFF08tui_live.p
 var PYTHON_BASENAME = /^(?:python(?:3(?:\.\d{1,2})?)?w?|py)(?:\.exe)?$/i;
 var SESSION_ID = /^mvterm-[a-z0-9]{6,40}$/;
 var isMvSessionId = (value) => typeof value === "string" && SESSION_ID.test(value);
+var CONSOLE_ID = /^mvcon-[a-z0-9]{6,40}$/;
+var isMvConsoleId = (value) => typeof value === "string" && CONSOLE_ID.test(value);
 function plainObject(value, subject) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError(`${subject} must be an object`);
   return value;
@@ -18217,6 +18219,47 @@ function displayCommand(file, args) {
   const quote = (text3) => /[\s"]/.test(text3) ? `"${text3}"` : text3;
   return [file, ...args].map(quote).join(" ");
 }
+function parseMvConsoleStart(value) {
+  const request2 = plainObject(value, "console start request");
+  const { confirmed, ...launch } = request2;
+  if (confirmed !== void 0 && typeof confirmed !== "boolean") throw new TypeError("confirmed must be a boolean");
+  return { launch: parseMvLaunch(launch), confirmed: confirmed === true };
+}
+function parseMvConsoleStop(value) {
+  const request2 = plainObject(value, "console stop request");
+  const extra = Object.keys(request2).filter((key) => key !== "consoleId");
+  if (extra.length) throw new TypeError(`console stop request has unexpected fields: ${extra.join(", ")}`);
+  if (!isMvConsoleId(request2.consoleId)) throw new TypeError("consoleId is invalid");
+  return { consoleId: request2.consoleId };
+}
+function parseMvConsoleInfo(value) {
+  if (value === void 0 || value === null) return {};
+  const request2 = plainObject(value, "console info request");
+  if (Object.keys(request2).length) throw new TypeError("console info request takes no fields");
+  return {};
+}
+var CONSOLE_TITLE = "world.execute(me)";
+var UNSAFE_FOR_CMD = /[%"\r\n\0]/;
+var SAFE_BARE_ARG = /^(?:--[a-z][a-z-]*|-?\d+(?:\.\d+)?)$/;
+function cmdQuote(text3, subject = "\u53C2\u6570") {
+  const value = String(text3);
+  if (UNSAFE_FOR_CMD.test(value)) throw new Error(`${subject}\u542B\u6709\u72EC\u7ACB\u7A97\u53E3\u6A21\u5F0F\u65E0\u6CD5\u5B89\u5168\u4F20\u9012\u7684\u5B57\u7B26\uFF08% \u6216\u6362\u884C\uFF09\uFF1A${value}`);
+  return `"${value}"`;
+}
+function consoleCwd(dir) {
+  const trimmed = String(dir).replace(/[\\/]+$/, "");
+  return /^[A-Za-z]:$/.test(trimmed) ? `${trimmed}\\.` : trimmed;
+}
+function startCommandLine(resolved) {
+  const args = resolved.args.map((arg) => SAFE_BARE_ARG.test(arg) ? arg : cmdQuote(arg, "\u8DEF\u5F84"));
+  return ["start", `"${CONSOLE_TITLE}"`, "/D", cmdQuote(consoleCwd(resolved.cwd), "\u5DE5\u4F5C\u76EE\u5F55"), cmdQuote(resolved.file, "\u7A0B\u5E8F\u8DEF\u5F84"), ...args].join(" ");
+}
+function consoleCommandDisplay(resolved, cmdPath = "cmd.exe") {
+  return `${cmdPath} ${cmdArgv(resolved).join(" ")}`;
+}
+function cmdArgv(resolved) {
+  return ["/d", "/v:off", "/s", "/c", `"${startCommandLine(resolved)}"`];
+}
 
 // .dsh-plugin/client/mv-terminal-state.mjs
 var text2 = (value) => typeof value === "string" ? value.trim() : "";
@@ -18297,6 +18340,51 @@ function confirmationDetails(form, checked) {
       "\u5173\u95ED\u9762\u677F\u3001\u7ED3\u675F\u4F1A\u8BDD\u6216\u7EA6 2 \u5206\u949F\u65E0\u4EBA\u67E5\u770B\u65F6\uFF0C\u8FDB\u7A0B\u4F1A\u88AB\u7ED3\u675F\u3002"
     ]
   };
+}
+function plannedLaunch(form) {
+  const launch = launchFromForm(form);
+  if (launch.player === "rust") return { file: launch.exePath, args: rustTerminalArgs(launch), cwd: launch.exePath.replace(/[\\/][^\\/]*$/, "") };
+  const sep = sepOf(launch.packageDir || launch.pythonPath);
+  return { file: launch.pythonPath, args: mvTerminalArgs(launch, [launch.packageDir, ...MV_TERMINAL_SCRIPT].join(sep)), cwd: launch.packageDir };
+}
+function consoleCommandPreview(form) {
+  try {
+    return consoleCommandDisplay(plannedLaunch(form));
+  } catch (error) {
+    return error.message;
+  }
+}
+function consoleProblem(form, { platform } = {}) {
+  if (platform && platform !== "win32") return "\u72EC\u7ACB\u63A7\u5236\u53F0\u7A97\u53E3\u53EA\u5728 Windows \u4E0A\u53EF\u7528\uFF1B\u5F53\u524D\u7CFB\u7EDF\u8BF7\u7528\u9762\u677F\u5185\u7684 MV \u7EC8\u7AEF\u3002";
+  const launch = launchFromForm(form);
+  for (const value of [launch.pythonPath, launch.packageDir, launch.exePath, launch.audioFile]) {
+    if (typeof value === "string" && /%/.test(value)) return `\u8DEF\u5F84\u91CC\u542B\u6709 %\uFF0C\u72EC\u7ACB\u7A97\u53E3\u6A21\u5F0F\u65E0\u6CD5\u5B89\u5168\u4F20\u9012\uFF1A${value}`;
+  }
+  return formProblem(form);
+}
+function consoleConfirmationDetails(form) {
+  return {
+    title: "\u5728\u72EC\u7ACB\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u64AD\u653E\uFF1F",
+    command: consoleCommandPreview(form),
+    player: commandPreview(form),
+    points: [
+      "\u5C06\u7528 cmd.exe \u7684 start \u6253\u5F00\u4E00\u4E2A\u65B0\u7684\u63A7\u5236\u53F0\u7A97\u53E3\uFF08\u82E5\u7CFB\u7EDF\u9ED8\u8BA4\u7EC8\u7AEF\u662F Windows Terminal\uFF0C\u4F1A\u5728\u5176\u4E2D\u6253\u5F00\uFF09\uFF0C\u5728\u91CC\u9762\u8FD0\u884C\u4E0A\u9762\u8FD9\u4E00\u4E2A\u56FA\u5B9A\u7684\u64AD\u653E\u5668\uFF1B\u4E0D\u7ECF\u8FC7 Harness \u6C99\u7BB1\u3002",
+      "\u6240\u6709\u8DEF\u5F84\u90FD\u52A0\u5F15\u53F7\u4F20\u9012\uFF1B\u4E0D\u80FD\u9644\u52A0\u4EFB\u4F55\u5176\u4ED6\u547D\u4EE4\u6216\u53C2\u6570\u3002",
+      "\u753B\u9762\u76F4\u63A5\u7531\u771F\u5B9E\u63A7\u5236\u53F0\u663E\u793A\uFF0C\u6CA1\u6709\u9762\u677F\u8F6C\u53D1\u7684\u5EF6\u8FDF\uFF1B\u6309\u952E\u8BF7\u5728\u90A3\u4E2A\u7A97\u53E3\u91CC\u6309\u3002",
+      "\u9762\u677F\u91CC\u7684\u300C\u7ED3\u675F\u300D\u4F1A\u7528 taskkill /T \u7ED3\u675F\u64AD\u653E\u5668\u8FDB\u7A0B\u6811\uFF1B\u63D2\u4EF6\u5378\u8F7D\u6216 Harness \u9000\u51FA\u65F6\u4E5F\u4F1A\u7ED3\u675F\u8FD9\u4E9B\u7A97\u53E3\u3002"
+    ]
+  };
+}
+async function loadConsoles(api) {
+  return unwrapRemote(await api.consoleInfo({}), "\u65E0\u6CD5\u8BFB\u53D6\u72EC\u7ACB\u7A97\u53E3\u72B6\u6001\u3002");
+}
+async function startConsole(api, form) {
+  const started = unwrapRemote(await api.consoleStart({ ...launchFromForm(form), confirmed: true }), "\u65E0\u6CD5\u6253\u5F00\u72EC\u7ACB\u7A97\u53E3\u3002");
+  if (!isMvConsoleId(started?.consoleId)) throw new Error("\u542F\u52A8\u7ED3\u679C\u7F3A\u5C11\u6709\u6548\u7684\u7A97\u53E3 ID\u3002");
+  return started;
+}
+async function stopConsole(api, consoleId) {
+  return unwrapRemote(await api.consoleStop({ consoleId }), "\u65E0\u6CD5\u7ED3\u675F\u72EC\u7ACB\u7A97\u53E3\u3002");
 }
 function endDescription({ endReason, exitCode } = {}) {
   const code = exitCode === null || exitCode === void 0 ? "" : `\uFF0C\u9000\u51FA\u7801 ${exitCode}`;
@@ -18519,10 +18607,32 @@ function MvTerminal({ api, info, reloadInfo }) {
   const [session, setSession] = import_react2.default.useState(null);
   const [ended, setEnded] = import_react2.default.useState(null);
   const [fontSize, setFontSize] = import_react2.default.useState(13);
+  const [consoleMode, setConsoleMode] = import_react2.default.useState(false);
+  const [consoles, setConsoles] = import_react2.default.useState({ supported: null, reason: "", consoles: [] });
+  const [consoleNote, setConsoleNote] = import_react2.default.useState("");
   const mounted = import_react2.default.useRef(true);
   import_react2.default.useEffect(() => () => {
     mounted.current = false;
   }, []);
+  const refreshConsoles = import_react2.default.useCallback(async () => {
+    try {
+      const value = await loadConsoles(api);
+      if (mounted.current) setConsoles(value);
+    } catch (error) {
+      if (mounted.current) setConsoles((previous) => ({ ...previous, supported: previous.supported ?? false, reason: errorText(error, "\u65E0\u6CD5\u8BFB\u53D6\u72EC\u7ACB\u7A97\u53E3\u72B6\u6001\u3002") }));
+    }
+  }, [api]);
+  import_react2.default.useEffect(() => {
+    void refreshConsoles();
+  }, [refreshConsoles]);
+  const liveConsoles = consoles.consoles.filter((item) => !item.exited);
+  import_react2.default.useEffect(() => {
+    if (!liveConsoles.length) return void 0;
+    const timer = setInterval(() => {
+      void refreshConsoles();
+    }, 3e3);
+    return () => clearInterval(timer);
+  }, [liveConsoles.length, refreshConsoles]);
   const setForm = (patch) => {
     setFormState((previous) => {
       const next = { ...previous, ...patch };
@@ -18550,6 +18660,23 @@ function MvTerminal({ api, info, reloadInfo }) {
       if (mounted.current) setChecking(false);
     }
   };
+  const openConsole = async () => {
+    setStarting(true);
+    setProblemText("");
+    setConsoleNote("");
+    try {
+      const value = await startConsole(api, form);
+      if (!mounted.current) return;
+      setConfirming(false);
+      setConsoleMode(false);
+      setConsoleNote(value.warning ?? `\u5DF2\u6253\u5F00\u72EC\u7ACB\u7A97\u53E3\uFF08\u64AD\u653E\u5668 PID ${value.pid}\uFF09\u3002`);
+      await refreshConsoles();
+    } catch (error) {
+      if (mounted.current) setProblemText(errorText(error, "\u65E0\u6CD5\u6253\u5F00\u72EC\u7ACB\u7A97\u53E3\u3002"));
+    } finally {
+      if (mounted.current) setStarting(false);
+    }
+  };
   const start = async () => {
     setStarting(true);
     setProblemText("");
@@ -18575,6 +18702,9 @@ function MvTerminal({ api, info, reloadInfo }) {
     }
   }, [reloadInfo]);
   const details = confirmationDetails(form, checked);
+  const consoleDetails = consoleConfirmationDetails(form);
+  const platform = consoles.platform ?? info?.platform;
+  const consoleBlocked = consoles.supported === false ? consoles.reason || "\u72EC\u7ACB\u7A97\u53E3\u4E0D\u53EF\u7528\u3002" : consoleProblem(form, { platform });
   const backendText = info ? info.backend === "pty" ? "\u4F2A\u7EC8\u7AEF\uFF08PTY\uFF09\u53EF\u7528\u3002" : `PTY \u4E0D\u53EF\u7528\uFF0C\u53EA\u80FD\u7528\u7BA1\u9053\u6A21\u5F0F\uFF08\u64AD\u653E\u5668\u591A\u534A\u65E0\u6CD5\u663E\u793A\uFF09\u3002${info.ptyError ? `\u539F\u56E0\uFF1A${info.ptyError}` : ""}` : "";
   return /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-term-tab" }, /* @__PURE__ */ import_react2.default.createElement("style", null, xterm_default), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u5728\u9762\u677F\u91CC\u8FD0\u884C\u4F60\u672C\u673A\u5DF2\u6709\u7684\u7EC8\u7AEF\u64AD\u653E\u5668\u3002", backendText), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u64AD\u653E\u5668"), /* @__PURE__ */ import_react2.default.createElement("select", { value: form.player, onChange: (event) => setForm({ player: event.target.value }) }, /* @__PURE__ */ import_react2.default.createElement("option", { value: "python" }, MV_PLAYER_LABELS.python), /* @__PURE__ */ import_react2.default.createElement("option", { value: "rust" }, MV_PLAYER_LABELS.rust))), !rust && /* @__PURE__ */ import_react2.default.createElement(import_react2.default.Fragment, null, /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u64AD\u653E\u5668\u76EE\u5F55\uFF08\u542B _tools\\tui_live.py\uFF09"), /* @__PURE__ */ import_react2.default.createElement(
     "input",
@@ -18588,12 +18718,31 @@ function MvTerminal({ api, info, reloadInfo }) {
       }
     }
   )), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "Python \u89E3\u91CA\u5668"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.pythonPath, spellCheck: false, placeholder: "F:\\everyAI\\dsh-mv-cli\\world_execute_me\\python\\python.exe", onChange: (event) => setForm({ pythonPath: event.target.value }) }))), rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "world-execute-me-rust.exe\uFF08\u81EA\u884C\u4ECE\u5176 GitHub Release \u4E0B\u8F7D\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.exePath, spellCheck: false, placeholder: "D:\\tools\\world-execute-me-rust\\world-execute-me-rust.exe", onChange: (event) => setForm({ exePath: event.target.value }) })), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react2.default.createElement("span", null, rust ? "\u97F3\u9891\u6587\u4EF6\uFF08\u53EF\u9009\uFF0C\u4EC5 MP3\uFF1B\u7559\u7A7A\u64AD\u653E\u5176\u5185\u5D4C\u97F3\u4E50\uFF09" : "\u97F3\u9891\u6587\u4EF6\uFF08\u53EF\u9009\uFF1B\u7559\u7A7A\u7528\u64AD\u653E\u5668\u9ED8\u8BA4\u7684 input\\song.mp3\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.audioFile, spellCheck: false, disabled: !rust && form.noAudio, placeholder: "D:\\music\\world.execute(me).mp3", onChange: (event) => setForm({ audioFile: event.target.value }) })), !rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react2.default.createElement("input", { type: "checkbox", checked: form.noAudio, onChange: (event) => setForm({ noAudio: event.target.checked }) }), " \u4E0D\u64AD\u653E\u58F0\u97F3\uFF08--no-audio\uFF09"), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u8D77\u59CB\u79D2\u6570"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.start, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ start: event.target.value }) })), !rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u97F3\u9891\u5EF6\u8FDF\u8865\u507F\uFF08\u79D2\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.audioLatency, placeholder: "\u9ED8\u8BA4", inputMode: "decimal", onChange: (event) => setForm({ audioLatency: event.target.value }) })), rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react2.default.createElement("span", null, "\u5B57\u5E55\u504F\u79FB\uFF08\u79D2\uFF09"), /* @__PURE__ */ import_react2.default.createElement("input", { value: form.offset, placeholder: "0", inputMode: "decimal", onChange: (event) => setForm({ offset: event.target.value }) })), rust && /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react2.default.createElement("input", { type: "checkbox", checked: form.autoplay, onChange: (event) => setForm({ autoplay: event.target.checked }) }), " \u7ACB\u5373\u64AD\u653E\uFF08--autoplay\uFF09")), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u5C06\u8FD0\u884C\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, problem ? "\u2014" : checked?.display ?? commandPreview(form))), !confirming && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-actions" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(problem) || checking, onClick: () => void check() }, checking ? "\u68C0\u67E5\u4E2D\u2026" : "\u68C0\u67E5\u8DEF\u5F84"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(problem) || Boolean(session && !ended), onClick: () => {
+    setConsoleMode(false);
     setConfirming(true);
-  } }, "\u542F\u52A8\u2026"), session && !ended && /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => void api.terminalStop({ sessionId: session.sessionId }) }, "\u7ED3\u675F"), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-inline" }, "\u5B57\u53F7", /* @__PURE__ */ import_react2.default.createElement("input", { type: "number", min: 8, max: 24, value: fontSize, onChange: (event) => setFontSize(Math.min(24, Math.max(8, Number(event.target.value) || 13))) })), /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-caption" }, problem || (checked ? "\u8DEF\u5F84\u68C0\u67E5\u901A\u8FC7\u3002" : ""))), confirming && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u542F\u52A8 MV \u7EC8\u7AEF" }, /* @__PURE__ */ import_react2.default.createElement("strong", null, details.title), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u547D\u4EE4\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, details.command), /* @__PURE__ */ import_react2.default.createElement("br", null), "\u5DE5\u4F5C\u76EE\u5F55\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, details.cwd)), /* @__PURE__ */ import_react2.default.createElement("ul", null, details.points.map((point2) => /* @__PURE__ */ import_react2.default.createElement("li", { key: point2 }, point2))), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-actions" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", disabled: starting, onClick: () => void start() }, starting ? "\u6B63\u5728\u542F\u52A8\u2026" : "\u786E\u8BA4\u542F\u52A8"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: starting, onClick: () => setConfirming(false) }, "\u53D6\u6D88"))), problemText && /* @__PURE__ */ import_react2.default.createElement("pre", { className: "mv-error", role: "alert" }, problemText), session && /* @__PURE__ */ import_react2.default.createElement(TerminalScreen, { key: session.sessionId, api, session, onEnded, fontSize }), ended && /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, endDescription(ended)));
+  } }, "\u5728\u9762\u677F\u4E2D\u542F\u52A8\u2026"), /* @__PURE__ */ import_react2.default.createElement(
+    "button",
+    {
+      type: "button",
+      className: "mv-button mv-button-secondary",
+      disabled: Boolean(consoleBlocked),
+      title: consoleBlocked || "\u5728\u771F\u5B9E\u7684 Windows \u63A7\u5236\u53F0\u7A97\u53E3\u4E2D\u64AD\u653E",
+      onClick: () => {
+        setConsoleMode(true);
+        setConfirming(true);
+      }
+    },
+    "\u5728\u72EC\u7ACB\u7A97\u53E3\u64AD\u653E\u2026"
+  ), session && !ended && /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => void api.terminalStop({ sessionId: session.sessionId }) }, "\u7ED3\u675F"), /* @__PURE__ */ import_react2.default.createElement("label", { className: "mv-inline" }, "\u5B57\u53F7", /* @__PURE__ */ import_react2.default.createElement("input", { type: "number", min: 8, max: 24, value: fontSize, onChange: (event) => setFontSize(Math.min(24, Math.max(8, Number(event.target.value) || 13))) })), /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-caption" }, problem || (checked ? "\u8DEF\u5F84\u68C0\u67E5\u901A\u8FC7\u3002" : ""))), !confirming && !problem && consoleBlocked && /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u72EC\u7ACB\u7A97\u53E3\uFF1A", consoleBlocked), confirming && consoleMode && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u5728\u72EC\u7ACB\u7A97\u53E3\u64AD\u653E" }, /* @__PURE__ */ import_react2.default.createElement("strong", null, consoleDetails.title), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "Host \u5C06\u6267\u884C\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, consoleDetails.command), /* @__PURE__ */ import_react2.default.createElement("br", null), "\u7A97\u53E3\u91CC\u8FD0\u884C\u7684\u64AD\u653E\u5668\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, consoleDetails.player)), /* @__PURE__ */ import_react2.default.createElement("ul", null, consoleDetails.points.map((point2) => /* @__PURE__ */ import_react2.default.createElement("li", { key: point2 }, point2))), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-actions" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", disabled: starting, onClick: () => void openConsole() }, starting ? "\u6B63\u5728\u6253\u5F00\u2026" : "\u786E\u8BA4\u6253\u5F00\u7A97\u53E3"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: starting, onClick: () => {
+    setConfirming(false);
+    setConsoleMode(false);
+  } }, "\u53D6\u6D88"))), confirming && !consoleMode && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u542F\u52A8 MV \u7EC8\u7AEF" }, /* @__PURE__ */ import_react2.default.createElement("strong", null, details.title), /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, "\u547D\u4EE4\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, details.command), /* @__PURE__ */ import_react2.default.createElement("br", null), "\u5DE5\u4F5C\u76EE\u5F55\uFF1A", /* @__PURE__ */ import_react2.default.createElement("code", null, details.cwd)), /* @__PURE__ */ import_react2.default.createElement("ul", null, details.points.map((point2) => /* @__PURE__ */ import_react2.default.createElement("li", { key: point2 }, point2))), /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-actions" }, /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button", disabled: starting, onClick: () => void start() }, starting ? "\u6B63\u5728\u542F\u52A8\u2026" : "\u786E\u8BA4\u542F\u52A8"), /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: starting, onClick: () => setConfirming(false) }, "\u53D6\u6D88"))), problemText && /* @__PURE__ */ import_react2.default.createElement("pre", { className: "mv-error", role: "alert" }, problemText), consoleNote && /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, consoleNote), consoles.consoles.length > 0 && /* @__PURE__ */ import_react2.default.createElement("div", { className: "mv-console-list", "aria-label": "\u72EC\u7ACB\u64AD\u653E\u7A97\u53E3" }, consoles.consoles.map((item) => /* @__PURE__ */ import_react2.default.createElement("div", { key: item.consoleId, className: "mv-console-item" }, /* @__PURE__ */ import_react2.default.createElement("code", { title: item.display }, item.pid ? `PID ${item.pid}` : "\u672A\u8DDF\u8E2A"), /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-caption" }, item.exited ? item.endReason === "stopped" ? "\u5DF2\u7531\u4F60\u7ED3\u675F" : item.endReason === "dispose" ? "\u63D2\u4EF6\u5378\u8F7D\u65F6\u5DF2\u7ED3\u675F" : "\u7A97\u53E3\u5DF2\u5173\u95ED" : "\u6B63\u5728\u64AD\u653E", " \xB7 ", new Date(item.startedAt).toLocaleTimeString()), !item.exited && item.tracked && /* @__PURE__ */ import_react2.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => {
+    void stopConsole(api, item.consoleId).catch((error) => setProblemText(errorText(error, "\u65E0\u6CD5\u7ED3\u675F\u72EC\u7ACB\u7A97\u53E3\u3002"))).then(refreshConsoles);
+  } }, "\u7ED3\u675F")))), session && /* @__PURE__ */ import_react2.default.createElement(TerminalScreen, { key: session.sessionId, api, session, onEnded, fontSize }), ended && /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-caption" }, endDescription(ended)));
 }
 
 // .dsh-plugin/client/mv.css
-var mv_default = '.mv-root { padding: 16px 20px 24px; color: var(--dsw-alias-label-primary, inherit); font-size: 13px; line-height: 20px; box-sizing: border-box; }\n.mv-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }\n.mv-title { margin: 0 0 4px; font-size: 18px; font-family: "Cascadia Mono", Consolas, monospace; }\n.mv-caption { color: var(--dsw-alias-label-secondary, #888); font-size: 12px; margin: 4px 0; }\n.mv-banner { margin: 10px 0; padding: 8px 12px; border-radius: 8px; background: rgba(255, 95, 95, .12); color: var(--dsw-alias-label-danger, #d33); }\n.mv-error { color: var(--dsw-alias-label-danger, #d33); white-space: pre-wrap; margin: 6px 0; }\n.mv-tabs { display: flex; gap: 4px; margin: 12px 0 10px; border-bottom: 1px solid var(--dsw-alias-border-l1, rgba(127,127,127,.3)); }\n.mv-tabs button { border: 0; background: transparent; color: inherit; padding: 6px 14px; cursor: pointer; font: inherit; border-bottom: 2px solid transparent; }\n.mv-tabs button[aria-selected="true"] { border-bottom-color: #ffaf5f; font-weight: 600; }\n.mv-toolbar, .mv-transport, .mv-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; }\n.mv-media-line { display: flex; flex-direction: column; gap: 2px; margin: 6px 0; font-size: 12px; }\n.mv-media-line code { font-size: 11px; }\n.mv-button { border: 1px solid #ffaf5f; background: #ffaf5f; color: #000; border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit; }\n.mv-button:disabled { opacity: .5; cursor: default; }\n.mv-button-secondary { background: transparent; color: inherit; border-color: var(--dsw-alias-border-l1, rgba(127,127,127,.5)); }\n.mv-link { border: 0; background: none; color: #d7875f; cursor: pointer; padding: 0 2px; font: inherit; text-decoration: underline; }\n.mv-inline { display: inline-flex; gap: 4px; align-items: center; font-size: 12px; }\n.mv-inline input { width: 52px; }\n.mv-chip { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; padding: 1px 8px; border-radius: 10px; background: rgba(127,127,127,.15); }\n.mv-clock { font-family: "Cascadia Mono", Consolas, monospace; min-width: 120px; }\n.mv-seek { flex: 1 1 260px; accent-color: #ffaf5f; }\n.mv-stage-wrap { background: #000; border-radius: 8px; outline: none; padding: 6px; box-sizing: border-box; }\n.mv-stage-wrap:focus-visible { box-shadow: 0 0 0 2px #ffaf5f; }\n.mv-stage { height: min(68vh, 760px); min-height: 360px; resize: vertical; overflow: hidden; display: flex; align-items: center; justify-content: center; }\n.mv-stage canvas { display: block; }\n.mv-fullscreen { border-radius: 0; padding: 0; width: 100vw; height: 100vh; }\n.mv-fullscreen .mv-stage { height: 100vh; resize: none; }\n.mv-form { display: flex; flex-wrap: wrap; gap: 10px 14px; margin: 8px 0; }\n.mv-field { display: flex; flex-direction: column; gap: 3px; font-size: 12px; min-width: 140px; }\n.mv-field input, .mv-field select { font: inherit; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--dsw-alias-border-l1, rgba(127,127,127,.4)); background: transparent; color: inherit; }\n.mv-wide { flex: 1 1 420px; }\n.mv-check { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; align-self: flex-end; }\n.mv-confirm { margin-top: 10px; padding: 12px; border: 1px solid #ffaf5f; border-radius: 8px; }\n.mv-confirm ul { margin: 6px 0; padding-left: 20px; }\n.mv-confirm code, .mv-term-tab code { word-break: break-all; }\n.mv-term-pane { margin-top: 10px; }\n.mv-term-screen { height: min(70vh, 760px); min-height: 300px; resize: vertical; overflow: hidden; padding: 4px; background: #000; border-radius: 8px; box-sizing: border-box; }\n';
+var mv_default = '.mv-root { padding: 16px 20px 24px; color: var(--dsw-alias-label-primary, inherit); font-size: 13px; line-height: 20px; box-sizing: border-box; }\n.mv-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }\n.mv-title { margin: 0 0 4px; font-size: 18px; font-family: "Cascadia Mono", Consolas, monospace; }\n.mv-caption { color: var(--dsw-alias-label-secondary, #888); font-size: 12px; margin: 4px 0; }\n.mv-banner { margin: 10px 0; padding: 8px 12px; border-radius: 8px; background: rgba(255, 95, 95, .12); color: var(--dsw-alias-label-danger, #d33); }\n.mv-error { color: var(--dsw-alias-label-danger, #d33); white-space: pre-wrap; margin: 6px 0; }\n.mv-tabs { display: flex; gap: 4px; margin: 12px 0 10px; border-bottom: 1px solid var(--dsw-alias-border-l1, rgba(127,127,127,.3)); }\n.mv-tabs button { border: 0; background: transparent; color: inherit; padding: 6px 14px; cursor: pointer; font: inherit; border-bottom: 2px solid transparent; }\n.mv-tabs button[aria-selected="true"] { border-bottom-color: #ffaf5f; font-weight: 600; }\n.mv-toolbar, .mv-transport, .mv-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; }\n.mv-media-line { display: flex; flex-direction: column; gap: 2px; margin: 6px 0; font-size: 12px; }\n.mv-media-line code { font-size: 11px; }\n.mv-button { border: 1px solid #ffaf5f; background: #ffaf5f; color: #000; border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit; }\n.mv-button:disabled { opacity: .5; cursor: default; }\n.mv-button-secondary { background: transparent; color: inherit; border-color: var(--dsw-alias-border-l1, rgba(127,127,127,.5)); }\n.mv-link { border: 0; background: none; color: #d7875f; cursor: pointer; padding: 0 2px; font: inherit; text-decoration: underline; }\n.mv-inline { display: inline-flex; gap: 4px; align-items: center; font-size: 12px; }\n.mv-inline input { width: 52px; }\n.mv-chip { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; padding: 1px 8px; border-radius: 10px; background: rgba(127,127,127,.15); }\n.mv-clock { font-family: "Cascadia Mono", Consolas, monospace; min-width: 120px; }\n.mv-seek { flex: 1 1 260px; accent-color: #ffaf5f; }\n.mv-stage-wrap { background: #000; border-radius: 8px; outline: none; padding: 6px; box-sizing: border-box; }\n.mv-stage-wrap:focus-visible { box-shadow: 0 0 0 2px #ffaf5f; }\n.mv-stage { height: min(68vh, 760px); min-height: 360px; resize: vertical; overflow: hidden; display: flex; align-items: center; justify-content: center; }\n.mv-stage canvas { display: block; }\n.mv-fullscreen { border-radius: 0; padding: 0; width: 100vw; height: 100vh; }\n.mv-fullscreen .mv-stage { height: 100vh; resize: none; }\n.mv-form { display: flex; flex-wrap: wrap; gap: 10px 14px; margin: 8px 0; }\n.mv-field { display: flex; flex-direction: column; gap: 3px; font-size: 12px; min-width: 140px; }\n.mv-field input, .mv-field select { font: inherit; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--dsw-alias-border-l1, rgba(127,127,127,.4)); background: transparent; color: inherit; }\n.mv-wide { flex: 1 1 420px; }\n.mv-check { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; align-self: flex-end; }\n.mv-confirm { margin-top: 10px; padding: 12px; border: 1px solid #ffaf5f; border-radius: 8px; }\n.mv-confirm ul { margin: 6px 0; padding-left: 20px; }\n.mv-confirm code, .mv-term-tab code { word-break: break-all; }\n.mv-term-pane { margin-top: 10px; }\n.mv-term-screen { height: min(70vh, 760px); min-height: 300px; resize: vertical; overflow: hidden; padding: 4px; background: #000; border-radius: 8px; box-sizing: border-box; }\n.mv-console-list { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }\n.mv-console-item { display: flex; gap: 10px; align-items: center; font-size: 12px; }\n';
 
 // .dsh-plugin/client/mv-panel.jsx
 var TAB_KEY = "dsh-mv.panel.tab";
@@ -18664,6 +18813,9 @@ var MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor("terminalRead", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalRead`, parseMvTerminalRead))], anyObjectCodec("MvTerminalOutput")),
   descriptor("terminalWrite", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalWrite`, parseMvTerminalWrite))], anyObjectCodec("MvTerminalWritten")),
   descriptor("terminalResize", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalResize`, parseMvTerminalResize))], anyObjectCodec("MvTerminalResized")),
+  descriptor("consoleInfo", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleInfo`, parseMvConsoleInfo))], anyObjectCodec("MvConsoleInfo")),
+  descriptor("consoleStart", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleStart`, parseMvConsoleStart))], anyObjectCodec("MvConsoleStarted")),
+  descriptor("consoleStop", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleStop`, parseMvConsoleStop))], anyObjectCodec("MvConsoleStopped")),
   descriptor("terminalStop", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalStop`, parseMvTerminalStop))], anyObjectCodec("MvTerminalStopped"))
 ]);
 var MV_CLIENT_REMOTE = Object.freeze({ package: MV_REMOTE_PACKAGE, descriptors: MV_REMOTE_DESCRIPTORS });

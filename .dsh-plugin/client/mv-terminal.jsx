@@ -11,6 +11,7 @@ import xtermCss from '@xterm/xterm/css/xterm.css'
 import {
   TerminalConnection, checkLaunch, commandPreview, confirmationDetails, endDescription, errorText,
   formProblem, loadForm, loadInfo, saveForm, startSession, suggestedPython,
+  consoleConfirmationDetails, consoleProblem, loadConsoles, startConsole, stopConsole,
 } from './mv-terminal-state.mjs'
 import { MV_PLAYER_LABELS } from '../shared/mv-terminal-protocol.mjs'
 
@@ -78,8 +79,24 @@ export function MvTerminal({ api, info, reloadInfo }) {
   const [session, setSession] = React.useState(null)
   const [ended, setEnded] = React.useState(null)
   const [fontSize, setFontSize] = React.useState(13)
+  const [consoleMode, setConsoleMode] = React.useState(false)
+  const [consoles, setConsoles] = React.useState({ supported: null, reason: '', consoles: [] })
+  const [consoleNote, setConsoleNote] = React.useState('')
   const mounted = React.useRef(true)
   React.useEffect(() => () => { mounted.current = false }, [])
+
+  const refreshConsoles = React.useCallback(async () => {
+    try { const value = await loadConsoles(api); if (mounted.current) setConsoles(value) }
+    catch (error) { if (mounted.current) setConsoles(previous => ({ ...previous, supported: previous.supported ?? false, reason: errorText(error, '无法读取独立窗口状态。') })) }
+  }, [api])
+  React.useEffect(() => { void refreshConsoles() }, [refreshConsoles])
+  const liveConsoles = consoles.consoles.filter(item => !item.exited)
+  // While a window is open, poll whether its player is still running.
+  React.useEffect(() => {
+    if (!liveConsoles.length) return undefined
+    const timer = setInterval(() => { void refreshConsoles() }, 3000)
+    return () => clearInterval(timer)
+  }, [liveConsoles.length, refreshConsoles])
 
   const setForm = patch => {
     setFormState(previous => { const next = { ...previous, ...patch }; saveForm(next); return next })
@@ -95,6 +112,18 @@ export function MvTerminal({ api, info, reloadInfo }) {
     finally { if (mounted.current) setChecking(false) }
   }
 
+  const openConsole = async () => {
+    setStarting(true); setProblemText(''); setConsoleNote('')
+    try {
+      const value = await startConsole(api, form)
+      if (!mounted.current) return
+      setConfirming(false); setConsoleMode(false)
+      setConsoleNote(value.warning ?? `已打开独立窗口（播放器 PID ${value.pid}）。`)
+      await refreshConsoles()
+    } catch (error) { if (mounted.current) setProblemText(errorText(error, '无法打开独立窗口。')) }
+    finally { if (mounted.current) setStarting(false) }
+  }
+
   const start = async () => {
     setStarting(true); setProblemText('')
     try {
@@ -107,6 +136,9 @@ export function MvTerminal({ api, info, reloadInfo }) {
 
   const onEnded = React.useCallback((sessionId, event) => { if (mounted.current) { setEnded(event); void reloadInfo?.() } }, [reloadInfo])
   const details = confirmationDetails(form, checked)
+  const consoleDetails = consoleConfirmationDetails(form)
+  const platform = consoles.platform ?? info?.platform
+  const consoleBlocked = consoles.supported === false ? (consoles.reason || '独立窗口不可用。') : consoleProblem(form, { platform })
   const backendText = info ? (info.backend === 'pty' ? '伪终端（PTY）可用。' : `PTY 不可用，只能用管道模式（播放器多半无法显示）。${info.ptyError ? `原因：${info.ptyError}` : ''}`) : ''
 
   return (
@@ -139,12 +171,24 @@ export function MvTerminal({ api, info, reloadInfo }) {
       <p className="mv-caption">将运行：<code>{problem ? '—' : (checked?.display ?? commandPreview(form))}</code></p>
       {!confirming && <div className="mv-actions">
         <button type="button" className="mv-button mv-button-secondary" disabled={Boolean(problem) || checking} onClick={() => void check()}>{checking ? '检查中…' : '检查路径'}</button>
-        <button type="button" className="mv-button" disabled={Boolean(problem) || Boolean(session && !ended)} onClick={() => { setConfirming(true) }}>启动…</button>
+        <button type="button" className="mv-button" disabled={Boolean(problem) || Boolean(session && !ended)} onClick={() => { setConsoleMode(false); setConfirming(true) }}>在面板中启动…</button>
+        <button type="button" className="mv-button mv-button-secondary" disabled={Boolean(consoleBlocked)} title={consoleBlocked || '在真实的 Windows 控制台窗口中播放'}
+          onClick={() => { setConsoleMode(true); setConfirming(true) }}>在独立窗口播放…</button>
         {session && !ended && <button type="button" className="mv-button mv-button-secondary" onClick={() => void api.terminalStop({ sessionId: session.sessionId })}>结束</button>}
         <label className="mv-inline">字号<input type="number" min={8} max={24} value={fontSize} onChange={event => setFontSize(Math.min(24, Math.max(8, Number(event.target.value) || 13)))} /></label>
         <span className="mv-caption">{problem || (checked ? '路径检查通过。' : '')}</span>
       </div>}
-      {confirming && <div className="mv-confirm" role="dialog" aria-label="确认启动 MV 终端">
+      {!confirming && !problem && consoleBlocked && <p className="mv-caption">独立窗口：{consoleBlocked}</p>}
+      {confirming && consoleMode && <div className="mv-confirm" role="dialog" aria-label="确认在独立窗口播放">
+        <strong>{consoleDetails.title}</strong>
+        <p className="mv-caption">Host 将执行：<code>{consoleDetails.command}</code><br />窗口里运行的播放器：<code>{consoleDetails.player}</code></p>
+        <ul>{consoleDetails.points.map(point => <li key={point}>{point}</li>)}</ul>
+        <div className="mv-actions">
+          <button type="button" className="mv-button" disabled={starting} onClick={() => void openConsole()}>{starting ? '正在打开…' : '确认打开窗口'}</button>
+          <button type="button" className="mv-button mv-button-secondary" disabled={starting} onClick={() => { setConfirming(false); setConsoleMode(false) }}>取消</button>
+        </div>
+      </div>}
+      {confirming && !consoleMode && <div className="mv-confirm" role="dialog" aria-label="确认启动 MV 终端">
         <strong>{details.title}</strong>
         <p className="mv-caption">命令：<code>{details.command}</code><br />工作目录：<code>{details.cwd}</code></p>
         <ul>{details.points.map(point => <li key={point}>{point}</li>)}</ul>
@@ -154,6 +198,14 @@ export function MvTerminal({ api, info, reloadInfo }) {
         </div>
       </div>}
       {problemText && <pre className="mv-error" role="alert">{problemText}</pre>}
+      {consoleNote && <p className="mv-caption">{consoleNote}</p>}
+      {consoles.consoles.length > 0 && <div className="mv-console-list" aria-label="独立播放窗口">
+        {consoles.consoles.map(item => <div key={item.consoleId} className="mv-console-item">
+          <code title={item.display}>{item.pid ? `PID ${item.pid}` : '未跟踪'}</code>
+          <span className="mv-caption">{item.exited ? (item.endReason === 'stopped' ? '已由你结束' : item.endReason === 'dispose' ? '插件卸载时已结束' : '窗口已关闭') : '正在播放'} · {new Date(item.startedAt).toLocaleTimeString()}</span>
+          {!item.exited && item.tracked && <button type="button" className="mv-button mv-button-secondary" onClick={() => { void stopConsole(api, item.consoleId).catch(error => setProblemText(errorText(error, '无法结束独立窗口。'))).then(refreshConsoles) }}>结束</button>}
+        </div>)}
+      </div>}
       {session && <TerminalScreen key={session.sessionId} api={api} session={session} onEnded={onEnded} fontSize={fontSize} />}
       {ended && <p className="mv-caption">{endDescription(ended)}</p>}
     </div>

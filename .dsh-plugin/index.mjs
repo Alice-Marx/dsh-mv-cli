@@ -7,8 +7,13 @@
  */
 import z from '@deepseek-ai/schemastery'
 import { HOST_PLUGIN_VERSION, registerMvRemote } from './remote-service.mjs'
+import { spawnSync } from 'node:child_process'
+import { createMvConsoleManager } from './shared/mv-console.mjs'
 import { createMvTerminalManager } from './shared/mv-terminal.mjs'
 import {
+  parseMvConsoleInfo,
+  parseMvConsoleStart,
+  parseMvConsoleStop,
   parseMvTerminalCheck,
   parseMvTerminalRead,
   parseMvTerminalResize,
@@ -35,7 +40,8 @@ export function optionalService(ctx, serviceName) {
   try { return typeof ctx?.get === 'function' ? ctx.get(serviceName) : undefined } catch { return undefined }
 }
 
-export function mvRemoteServices(terminals, config = {}) {
+export function mvRemoteServices(terminals, config = {}, consoles = null) {
+  const noConsoles = async () => { throw new Error('独立窗口功能未加载。') }
   return {
     info: async () => ({ ...terminals.info(), canvasFontSize: config.canvasFontSize ?? 14 }),
     terminalCheck: async request => terminals.check(parseMvTerminalCheck(request)),
@@ -44,18 +50,23 @@ export function mvRemoteServices(terminals, config = {}) {
     terminalWrite: async request => terminals.write(parseMvTerminalWrite(request)),
     terminalResize: async request => terminals.resize(parseMvTerminalResize(request)),
     terminalStop: async request => terminals.stop(parseMvTerminalStop(request)),
+    consoleInfo: async request => { parseMvConsoleInfo(request); return consoles ? consoles.info() : noConsoles() },
+    consoleStart: async request => consoles ? consoles.start(parseMvConsoleStart(request)) : noConsoles(),
+    consoleStop: async request => consoles ? consoles.stop(parseMvConsoleStop(request)) : noConsoles(),
   }
 }
 
 export function apply(ctx, config = {}) {
   const terminals = createMvTerminalManager()
-  // Plugin unload, patch reload or Host exit kills every MV terminal.
+  const consoles = createMvConsoleManager()
+  // Plugin unload, patch reload or Host exit kills every MV terminal and
+  // every separate console window this plugin opened.
   ctx.effect(() => {
-    const onExit = () => { terminals.disposeAll('dispose') }
+    const onExit = () => { terminals.disposeAll('dispose'); consoles.disposeAllSync(spawnSync) }
     process.once('exit', onExit)
-    return () => { process.off('exit', onExit); terminals.disposeAll('dispose') }
+    return () => { process.off('exit', onExit); terminals.disposeAll('dispose'); return consoles.disposeAll('dispose') }
   }, 'dsh-mv: terminals')
-  registerMvRemote(ctx, mvRemoteServices(terminals, config))
+  registerMvRemote(ctx, mvRemoteServices(terminals, config, consoles))
   const logger = optionalService(ctx, 'logger')
   logger?.info?.(`dsh-mv ${HOST_PLUGIN_VERSION ?? ''} loaded`)
 }

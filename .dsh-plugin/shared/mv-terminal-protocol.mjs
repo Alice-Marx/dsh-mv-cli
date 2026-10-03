@@ -50,6 +50,11 @@ export const PYTHON_BASENAME = /^(?:python(?:3(?:\.\d{1,2})?)?w?|py)(?:\.exe)?$/
 const SESSION_ID = /^mvterm-[a-z0-9]{6,40}$/
 export const isMvSessionId = value => typeof value === 'string' && SESSION_ID.test(value)
 
+const CONSOLE_ID = /^mvcon-[a-z0-9]{6,40}$/
+export const isMvConsoleId = value => typeof value === 'string' && CONSOLE_ID.test(value)
+/** At most this many separate console windows at once. */
+export const MV_CONSOLE_LIMIT = 2
+
 function plainObject(value, subject) {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new TypeError(`${subject} must be an object`)
   return value
@@ -205,3 +210,70 @@ export function displayCommand(file, args) {
   const quote = text => /[\s"]/.test(text) ? `"${text}"` : text
   return [file, ...args].map(quote).join(' ')
 }
+
+/**
+ * Start the fixed player in its own Windows console window. Same launch shape
+ * as the embedded terminal; no size (the console owns its window).
+ */
+export function parseMvConsoleStart(value) {
+  const request = plainObject(value, 'console start request')
+  const { confirmed, ...launch } = request
+  if (confirmed !== undefined && typeof confirmed !== 'boolean') throw new TypeError('confirmed must be a boolean')
+  return { launch: parseMvLaunch(launch), confirmed: confirmed === true }
+}
+
+export function parseMvConsoleStop(value) {
+  const request = plainObject(value, 'console stop request')
+  const extra = Object.keys(request).filter(key => key !== 'consoleId')
+  if (extra.length) throw new TypeError(`console stop request has unexpected fields: ${extra.join(', ')}`)
+  if (!isMvConsoleId(request.consoleId)) throw new TypeError('consoleId is invalid')
+  return { consoleId: request.consoleId }
+}
+
+export function parseMvConsoleInfo(value) {
+  if (value === undefined || value === null) return {}
+  const request = plainObject(value, 'console info request')
+  if (Object.keys(request).length) throw new TypeError('console info request takes no fields')
+  return {}
+}
+
+// ---- separate console window (Windows): the exact cmd.exe line ----------
+
+export const CONSOLE_TITLE = 'world.execute(me)'
+
+/** Characters cmd.exe would still interpret inside double quotes, or that cannot be quoted. */
+const UNSAFE_FOR_CMD = /[%"\r\n\0]/
+const SAFE_BARE_ARG = /^(?:--[a-z][a-z-]*|-?\d+(?:\.\d+)?)$/
+
+/** cmd.exe-safe quoting of one token, or a thrown error. */
+export function cmdQuote(text, subject = '参数') {
+  const value = String(text)
+  if (UNSAFE_FOR_CMD.test(value)) throw new Error(`${subject}含有独立窗口模式无法安全传递的字符（% 或换行）：${value}`)
+  return `"${value}"`
+}
+
+/** Strip trailing separators so `"F:\dir\"` never reaches a parser; keep drive roots valid. */
+export function consoleCwd(dir) {
+  const trimmed = String(dir).replace(/[\\/]+$/, '')
+  return /^[A-Za-z]:$/.test(trimmed) ? `${trimmed}\\.` : trimmed
+}
+
+/**
+ * The inner `start` command line. Flags and numbers stay bare (validated by
+ * the protocol); everything else is quoted.
+ */
+export function startCommandLine(resolved) {
+  const args = resolved.args.map(arg => SAFE_BARE_ARG.test(arg) ? arg : cmdQuote(arg, '路径'))
+  return ['start', `"${CONSOLE_TITLE}"`, '/D', cmdQuote(consoleCwd(resolved.cwd), '工作目录'), cmdQuote(resolved.file, '程序路径'), ...args].join(' ')
+}
+
+/** What the confirmation card shows: the full cmd.exe invocation. */
+export function consoleCommandDisplay(resolved, cmdPath = 'cmd.exe') {
+  return `${cmdPath} ${cmdArgv(resolved).join(' ')}`
+}
+
+/** argv for cmd.exe; passed with windowsVerbatimArguments so Node adds no quoting. */
+export function cmdArgv(resolved) {
+  return ['/d', '/v:off', '/s', '/c', `"${startCommandLine(resolved)}"`]
+}
+

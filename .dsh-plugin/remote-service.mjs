@@ -48,6 +48,15 @@ export class MvRemoteService extends TypertRemoteService {
 
   terminalResize(request) { return settled(() => (this.services.terminalResize ?? unavailable)(request)) }
 
+  /** Separate Windows console windows opened by this plugin. */
+  consoleInfo(request) { return settled(() => (this.services.consoleInfo ?? unavailable)(request ?? {})) }
+
+  /** Open the fixed player in a new console window (confirmed launches only). */
+  consoleStart(request) { return settled(() => (this.services.consoleStart ?? unavailable)(request)) }
+
+  /** taskkill /T the tracked player of one console window. */
+  consoleStop(request) { return settled(() => (this.services.consoleStop ?? unavailable)(request)) }
+
   terminalStop(request) { return settled(() => (this.services.terminalStop ?? unavailable)(request)) }
 }
 

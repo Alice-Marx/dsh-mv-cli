@@ -24,7 +24,7 @@ function harness() {
 }
 
 test('descriptors: ids, namespace and strict codecs', () => {
-  assert.deepEqual(MV_REMOTE_DESCRIPTORS.map(d => d.method), ['info', 'terminalCheck', 'terminalStart', 'terminalRead', 'terminalWrite', 'terminalResize', 'terminalStop'])
+  assert.deepEqual(MV_REMOTE_DESCRIPTORS.map(d => d.method), ['info', 'terminalCheck', 'terminalStart', 'terminalRead', 'terminalWrite', 'terminalResize', 'consoleInfo', 'consoleStart', 'consoleStop', 'terminalStop'])
   for (const d of MV_REMOTE_DESCRIPTORS) {
     assert.equal(d.id, `${MV_REMOTE_PACKAGE}#${MV_REMOTE_NAMESPACE}/${d.method}`)
     assert.equal(d.result.mode, 'strict')

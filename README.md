@@ -58,6 +58,10 @@ The MV terminal uses the optional dependency `@lydell/node-pty` (prebuilt for Wi
 - **Start…**: shows the exact command and working directory, and runs only after you confirm. The panel cannot pass arbitrary commands or arguments.
 - **Latency**: output is relayed by long polling and adds about 30–150 ms.
 
+### Play in a separate window (Windows only)
+
+**在独立窗口播放…** runs the same fixed player and arguments in a **real Windows console window** (Windows Terminal when that is the default terminal), with no relay latency. The confirmation card shows the exact command, `cmd.exe /d /v:off /s /c "start "world.execute(me)" /D "<dir>" "<player>" <fixed args>"`. Every path is quoted; paths containing `%` are refused because cmd expands `%VAR%` even inside quotes. The Host finds the player's pid; **结束** runs `taskkill /PID <pid> /T /F` after checking the pid still belongs to that executable. Windows opened by the plugin are also closed on plugin unload / Harness exit. The button is disabled with an explanation on macOS / Linux.
+
 ## Development
 
 `pnpm install`, `pnpm test`, `npm run build:client`, `npm run check:client`, `npm run pack:local`.

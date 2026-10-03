@@ -5,6 +5,9 @@
  * command line or argument vector: the MV terminal takes a fixed-shape launch.
  */
 import {
+  parseMvConsoleInfo,
+  parseMvConsoleStart,
+  parseMvConsoleStop,
   parseMvTerminalCheck,
   parseMvTerminalRead,
   parseMvTerminalResize,
@@ -57,6 +60,9 @@ export const MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor('terminalRead', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalRead`, parseMvTerminalRead))], anyObjectCodec('MvTerminalOutput')),
   descriptor('terminalWrite', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalWrite`, parseMvTerminalWrite))], anyObjectCodec('MvTerminalWritten')),
   descriptor('terminalResize', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalResize`, parseMvTerminalResize))], anyObjectCodec('MvTerminalResized')),
+  descriptor('consoleInfo', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleInfo`, parseMvConsoleInfo))], anyObjectCodec('MvConsoleInfo')),
+  descriptor('consoleStart', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleStart`, parseMvConsoleStart))], anyObjectCodec('MvConsoleStarted')),
+  descriptor('consoleStop', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvConsoleStop`, parseMvConsoleStop))], anyObjectCodec('MvConsoleStopped')),
   descriptor('terminalStop', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvTerminalStop`, parseMvTerminalStop))], anyObjectCodec('MvTerminalStopped')),
 ])
 

@@ -35,3 +35,5 @@
 .mv-confirm code, .mv-term-tab code { word-break: break-all; }
 .mv-term-pane { margin-top: 10px; }
 .mv-term-screen { height: min(70vh, 760px); min-height: 300px; resize: vertical; overflow: hidden; padding: 4px; background: #000; border-radius: 8px; box-sizing: border-box; }
+.mv-console-list { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }
+.mv-console-item { display: flex; gap: 10px; align-items: center; font-size: 12px; }
