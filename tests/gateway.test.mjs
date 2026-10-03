@@ -55,3 +55,16 @@ test('gateway: dshpvAsset only serves its named files, nothing else under the pl
   const art = await hostReader(api)('whale-cheerful')
   assert.equal(new TextDecoder().decode(art.subarray(8, 12)), 'WEBP')
 })
+
+test('gateway: workshop endpoints validate requests at the boundary; publish never takes a token', async () => {
+  const { api } = harness()
+  for (const [method, request] of [['workshopInstall', { id: '../../x' }], ['workshopInstall', { id: 'ok-id', url: 'https://evil' }], ['workshopUninstall', { id: 'C:\\Windows' }], ['workshopIndex', { url: 'https://evil' }], ['workshopPublish', { manifestPath: 'C:\\x\\mv.json', id: 'ok-id', version: '1.0.0', license: 'MIT', author: 'a', token: 'ghp_x' }]]) {
+    const raw = await api[method](request)
+    assert.equal(raw.ok, false, `${method} ${JSON.stringify(request)}`)
+  }
+  // Without the workshop service wired, valid requests fail politely.
+  const raw = await api.workshopInstalled({})
+  assert.equal(unwrapRemoteSafe(raw), '创意工坊功能未加载。')
+})
+
+function unwrapRemoteSafe(raw) { try { unwrapRemote(raw); return '' } catch (error) { return error.message } }
