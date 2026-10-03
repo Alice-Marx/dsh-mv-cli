@@ -29,12 +29,29 @@ function finish(cues, duration) {
       sorted[i].end = next ? next.time : Math.min(duration, sorted[i].time + 5)
     }
   }
-  return sorted.map(({ time, end, en, zh }) => ({ time: round3(time), end: round3(end), en: en ?? '', zh: zh ?? '' }))
+  return sorted.map(({ time, end, en, zh, words }) => ({ time: round3(time), end: round3(end), en: en ?? '', zh: zh ?? '', ...(words?.length ? { words } : {}) }))
 }
 
 const round3 = v => Math.round(v * 1000) / 1000
 
-/** `[mm:ss.xx]` LRC (several stamps per line and `[offset:±ms]` supported). */
+const WORD_STAMP = /<(\d{1,3}):(\d{1,2}(?:[.:]\d{1,3})?)>/g
+
+/** Enhanced LRC (A2): `<mm:ss.xx>word <mm:ss.xx>word` → plain text + [{ text, time }]. */
+export function splitWordStamps(line, shift = 0) {
+  if (!/<\d{1,3}:\d{1,2}/.test(line)) return { text: line, words: null }
+  const words = []
+  let text = '', at = null, m, last = 0
+  WORD_STAMP.lastIndex = 0
+  const push = chunk => {
+    text += chunk
+    if (at !== null && chunk.trim()) words.push({ text: chunk.trim(), time: round3(at + shift) })
+  }
+  while ((m = WORD_STAMP.exec(line))) { push(line.slice(last, m.index)); at = Number(m[1]) * 60 + Number(m[2].replace(':', '.')); last = m.index + m[0].length }
+  push(line.slice(last))
+  return { text: text.replace(/\s+/g, ' ').trim(), words: words.length ? words : null }
+}
+
+/** `[mm:ss.xx]` LRC (several stamps per line, `[offset:±ms]` and enhanced `<mm:ss.xx>` word stamps supported). */
 export function parseLrc(text, { duration = 1e9 } = {}) {
   const byTime = new Map()
   let offsetMs = 0
@@ -62,7 +79,9 @@ export function parseLrc(text, { duration = 1e9 } = {}) {
   for (const t of order) {
     const lines = byTime.get(t)
     if (lines.every(line => !line.trim())) { cues.push({ time: t + shift, blank: true }); continue }
-    cues.push({ time: t + shift, ...splitBilingual(lines) })
+    let words = null
+    const plain = lines.map(line => { const split = splitWordStamps(line, shift); if (split.words && !words) words = split.words; return split.text })
+    cues.push({ time: t + shift, ...splitBilingual(plain), ...(words ? { words } : {}) })
   }
   // A blank stamped line ends the previous cue.
   cues.sort((a, b) => a.time - b.time)

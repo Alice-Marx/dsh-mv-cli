@@ -224,6 +224,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       const length = generic ? (pack.pack.duration ?? 0) : (pack.pack.duration ?? DURATION)
       state.clock.duration = length || DURATION
       for (const film of [state.generic, state.script]) { film.duration = length; film.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? '' }) }
+      state.script.setStructure({ sections: pack.pack.sections ?? [], bpm: pack.pack.canvas?.bpm ?? 0, beatOffset: pack.pack.canvas?.beatOffset ?? 0 })
       state.wem.duration = generic ? DURATION : (pack.pack.duration ?? DURATION)
       setDuration(state.clock.duration)
       if (pack.pack.canvas?.fontSize) setFontSize(pack.pack.canvas.fontSize)

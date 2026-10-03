@@ -23,6 +23,8 @@
  * ignored (the loader reports a warning).
  */
 
+import { normalizeSections } from './mv-scene.mjs'
+
 export const MV_PACK_FORMAT = 'dsh-mv-pack'
 export const MV_PACK_VERSION = 1
 export const MV_PACK_MANIFEST = 'mv.json'
@@ -159,7 +161,7 @@ export function parseMvPack(input) {
   const canvas = data.canvas ?? {}
   if (!isObject(canvas)) problems.push('canvas 必须是对象')
   else {
-    unknownKeys(canvas, new Set(['renderer', 'fontSize', 'script']), 'canvas', problems)
+    unknownKeys(canvas, new Set(['renderer', 'fontSize', 'script', 'bpm', 'beatOffset']), 'canvas', problems)
     const renderer = canvas.renderer ?? (canvas.script ? 'script' : 'generic')
     if (!MV_CANVAS_RENDERERS.includes(renderer)) problems.push(`canvas.renderer 必须是 ${MV_CANVAS_RENDERERS.join(' / ')}`)
     let script
@@ -168,12 +170,36 @@ export function parseMvPack(input) {
       if (script && !['.js', '.mjs'].includes(extOf(script))) problems.push('canvas.script 应是 .js 文件（定义 render(t, cols, rows, ctx) 的场景脚本）')
     }
     if (renderer === 'script' && !script && !problems.some(p => p.startsWith('canvas.script'))) problems.push('canvas.renderer 为 script 时必须提供 canvas.script（如 "scenes.js"）')
-    pack.canvas = { renderer, ...(script ? { script } : {}), fontSize: optionalNumber(canvas, 'fontSize', 8, 32, problems, 'canvas.fontSize') }
+    pack.canvas = {
+      renderer, ...(script ? { script } : {}), fontSize: optionalNumber(canvas, 'fontSize', 8, 32, problems, 'canvas.fontSize'),
+      bpm: optionalNumber(canvas, 'bpm', 20, 400, problems, 'canvas.bpm'), beatOffset: optionalNumber(canvas, 'beatOffset', -60, 60, problems, 'canvas.beatOffset'),
+    }
   }
+  // Song sections written by 自动制作 (x-dsh-mv-ai.sections): passed to scene scripts as ctx.section.
+  const sections = normalizeSections(data['x-dsh-mv-ai']?.sections)
+  if (sections.length) pack.sections = sections
+  // Workshop metadata (x-dsh-mv-workshop): license, author, audio match info.
+  const workshop = workshopMeta(data['x-dsh-mv-workshop'])
+  if (workshop) pack.workshop = workshop
   // 0.6.0 removed the 面板终端 / 独立窗口 players: an old "terminal" section is ignored, not an error.
   if (data.terminal !== undefined) pack.ignored = ['terminal']
   if (problems.length) throw new MvPackError(problems)
   return stripUndefined(pack)
+}
+
+/** The parts of x-dsh-mv-workshop the panel uses (anything malformed is dropped, never an error). */
+export function workshopMeta(value) {
+  if (!isObject(value)) return null
+  const str = (v, n) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, n) : undefined)
+  const audio = isObject(value.audio) ? value.audio : {}
+  const fp = isObject(audio.fingerprint) && typeof audio.fingerprint.values === 'string' && /^[A-Za-z0-9+/=]{1,4096}$/.test(audio.fingerprint.values)
+    ? { kind: str(audio.fingerprint.kind, 40) ?? 'energy-2hz-v1', values: audio.fingerprint.values } : undefined
+  return stripUndefined({
+    id: str(value.id, 64), version: str(value.version, 32), license: str(value.license, 120), author: str(value.author, 120),
+    homepage: str(value.homepage, 300),
+    audio: stripUndefined({ duration: Number.isFinite(audio.duration) && audio.duration > 0 ? Math.round(audio.duration * 1000) / 1000 : undefined, fingerprint: fp, sha256: typeof audio.sha256 === 'string' && /^[0-9a-f]{64}$/.test(audio.sha256) ? audio.sha256 : undefined }),
+    lyricsTiming: typeof value.lyricsTiming === 'string' && /^[\w.-]{1,64}\.json$/.test(value.lyricsTiming) ? value.lyricsTiming : undefined,
+  })
 }
 
 function stripUndefined(value) {

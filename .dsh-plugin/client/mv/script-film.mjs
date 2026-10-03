@@ -33,6 +33,9 @@ export class ScriptFilm extends GenericFilm {
     this.error = ''
   }
 
+  /** Song structure for ctx.section / ctx.beat (from mv.json). */
+  setStructure({ sections = [], bpm = 0, beatOffset = 0 } = {}) { this.sections = sections; this.bpm = bpm; this.beatOffset = beatOffset }
+
   /** Start the script; resolves when it is ready, rejects with the reason. */
   load(source) {
     this.stop()
@@ -57,7 +60,7 @@ export class ScriptFilm extends GenericFilm {
         }
         this.receive(msg)
       }
-      worker.postMessage({ type: 'init', info: { title: this.title, artist: this.artist, duration: this.duration } })
+      worker.postMessage({ type: 'init', info: { title: this.title, artist: this.artist, duration: this.duration, sections: this.sections ?? [], bpm: this.bpm ?? 0 } })
     })
   }
 
@@ -97,7 +100,7 @@ export class ScriptFilm extends GenericFilm {
       return
     }
     const at = t + (opts.offset ?? 0)
-    const ctx = sceneContext({ t, duration: this.duration, title: this.title, artist: this.artist, cue: this.cue(at), next: this.nextCue(at), bands: this.energy(t), ready: Boolean(opts.ready), paused: Boolean(opts.paused) })
+    const ctx = sceneContext({ t, duration: this.duration, title: this.title, artist: this.artist, cue: this.cue(at), next: this.nextCue(at), bands: this.energy(t), ready: Boolean(opts.ready), paused: Boolean(opts.paused), sections: this.sections ?? [], bpm: this.bpm ?? 0, beatOffset: this.beatOffset ?? 0 })
     const id = this.nextId++
     this.pending = { id, at: now }
     this.worker.postMessage({ type: 'frame', id, t, cols: w, rows: h, ctx })

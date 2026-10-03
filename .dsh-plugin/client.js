@@ -4397,9 +4397,27 @@ function finish(cues, duration) {
       sorted[i].end = next ? next.time : Math.min(duration, sorted[i].time + 5);
     }
   }
-  return sorted.map(({ time, end, en, zh }) => ({ time: round3(time), end: round3(end), en: en ?? "", zh: zh ?? "" }));
+  return sorted.map(({ time, end, en, zh, words }) => ({ time: round3(time), end: round3(end), en: en ?? "", zh: zh ?? "", ...words?.length ? { words } : {} }));
 }
 var round3 = (v) => Math.round(v * 1e3) / 1e3;
+var WORD_STAMP = /<(\d{1,3}):(\d{1,2}(?:[.:]\d{1,3})?)>/g;
+function splitWordStamps(line, shift = 0) {
+  if (!/<\d{1,3}:\d{1,2}/.test(line)) return { text: line, words: null };
+  const words = [];
+  let text4 = "", at = null, m, last = 0;
+  WORD_STAMP.lastIndex = 0;
+  const push = (chunk) => {
+    text4 += chunk;
+    if (at !== null && chunk.trim()) words.push({ text: chunk.trim(), time: round3(at + shift) });
+  };
+  while (m = WORD_STAMP.exec(line)) {
+    push(line.slice(last, m.index));
+    at = Number(m[1]) * 60 + Number(m[2].replace(":", "."));
+    last = m.index + m[0].length;
+  }
+  push(line.slice(last));
+  return { text: text4.replace(/\s+/g, " ").trim(), words: words.length ? words : null };
+}
 function parseLrc(text4, { duration = 1e9 } = {}) {
   const byTime = /* @__PURE__ */ new Map();
   let offsetMs = 0;
@@ -4435,7 +4453,13 @@ function parseLrc(text4, { duration = 1e9 } = {}) {
       cues.push({ time: t + shift, blank: true });
       continue;
     }
-    cues.push({ time: t + shift, ...splitBilingual(lines) });
+    let words = null;
+    const plain2 = lines.map((line) => {
+      const split = splitWordStamps(line, shift);
+      if (split.words && !words) words = split.words;
+      return split.text;
+    });
+    cues.push({ time: t + shift, ...splitBilingual(plain2), ...words ? { words } : {} });
   }
   cues.sort((a, b) => a.time - b.time);
   const out = [];
@@ -5011,23 +5035,66 @@ var avg = (bands, from, to) => {
   for (let i = from; i < to; i++) s += bands[i] ?? 0;
   return s / Math.max(1, to - from);
 };
-var cueInfo = (cue) => cue ? { text: cue.en || cue.zh || "", en: cue.en || "", zh: cue.zh || "", start: cue.time, end: cue.end } : null;
-function sceneContext({ t = 0, duration = 0, title = "", artist = "", cue = null, next = null, bands = SILENT4, ready = false, paused = false } = {}) {
-  const b = Array.from({ length: 48 }, (_, i) => Math.max(0, Math.min(1, Number(bands?.[i]) || 0)));
+var clamp01 = (v) => Math.max(0, Math.min(1, v));
+var r3 = (v) => Math.round(v * 1e3) / 1e3;
+var CJK_CHAR = /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]/;
+function cueWords(cue) {
+  if (!cue) return [];
+  const end = Number.isFinite(cue.end) ? cue.end : cue.time + 4;
+  if (Array.isArray(cue.words) && cue.words.length) {
+    return cue.words.map((w, i, all) => ({ text: String(w.text ?? ""), start: r3(w.time), end: r3(all[i + 1]?.time ?? end) }));
+  }
+  const text4 = String(cue.en || cue.zh || "");
+  const parts = [];
+  for (const token of text4.split(/\s+/).filter(Boolean)) {
+    if (CJK_CHAR.test(token)) for (const ch of token) parts.push(ch);
+    else parts.push(token);
+  }
+  const span = Math.max(0.3, (end - cue.time) * 0.7);
+  return parts.map((part2, i) => ({ text: part2, start: r3(cue.time + span * i / parts.length), end: r3(cue.time + span * (i + 1) / parts.length) }));
+}
+function cueInfo(cue, t, withWords) {
+  if (!cue) return null;
+  const end = Number.isFinite(cue.end) ? cue.end : cue.time + 4;
+  const info = { text: cue.en || cue.zh || "", en: cue.en || "", zh: cue.zh || "", start: cue.time, end, progress: r3(clamp01((t - cue.time) / Math.max(1e-3, end - cue.time))) };
+  if (!withWords) return info;
+  const words = cueWords(cue);
+  let word = -1;
+  for (let i = 0; i < words.length; i++) if (words[i].start <= t) word = i;
+  return { ...info, words, word };
+}
+function normalizeSections(list) {
+  if (!Array.isArray(list)) return [];
+  return list.filter((s) => s && Number.isFinite(s.start) && Number.isFinite(s.end) && s.end > s.start).slice(0, 200).map((s) => ({ kind: String(s.kind ?? "section").slice(0, 40), ...s.label ? { label: String(s.label).slice(0, 80) } : {}, start: r3(s.start), end: r3(s.end) })).sort((a, b) => a.start - b.start);
+}
+function sceneContext({ t = 0, duration = 0, title = "", artist = "", cue = null, next = null, bands = SILENT4, ready = false, paused = false, sections = [], bpm = 0, beatOffset = 0 } = {}) {
+  const b = Array.from({ length: 48 }, (_, i) => clamp01(Number(bands?.[i]) || 0));
+  const list = normalizeSections(sections);
+  const index2 = list.findIndex((s) => s.start <= t && t < s.end);
+  const section = index2 < 0 ? null : { ...list[index2], index: index2, progress: r3(clamp01((t - list[index2].start) / (list[index2].end - list[index2].start))) };
+  let beat = null;
+  if (Number.isFinite(bpm) && bpm > 0) {
+    const pos = Math.max(0, (t - beatOffset) * bpm / 60);
+    const phase = pos - Math.floor(pos);
+    beat = { bpm, index: Math.floor(pos), bar: Math.floor(pos / 4), phase: r3(phase), pulse: r3(Math.exp(-phase * 6)) };
+  }
   return {
     duration,
-    progress: duration > 0 ? Math.max(0, Math.min(1, t / duration)) : 0,
+    progress: duration > 0 ? clamp01(t / duration) : 0,
     title,
     artist,
-    lyric: cueInfo(cue),
-    next: cueInfo(next),
+    lyric: cueInfo(cue, t, true),
+    next: cueInfo(next, t, false),
     bands: b,
     energy: avg(b, 0, 48),
     bass: avg(b, 0, 8),
     mid: avg(b, 8, 28),
     treble: avg(b, 28, 48),
     ready,
-    paused
+    paused,
+    section,
+    sections: list,
+    beat
   };
 }
 var EXAMPLE_SCENE = String.raw`// scenes.js — scene script of a dsh-mv MV pack (canvas.renderer: "script").
@@ -5036,8 +5103,11 @@ var EXAMPLE_SCENE = String.raw`// scenes.js — scene script of a dsh-mv MV pack
 // render(t, cols, rows, ctx) returns the frame: an array of rows lines (strings),
 // or { lines, styles } where styles[y] has one digit per cell:
 // 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
-// ctx: { duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }
-//   lyric / next: { text, en, zh, start, end } or null
+// ctx: { duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused,
+//        section, sections, beat }
+//   lyric: { text, en, zh, start, end, progress, words: [{ text, start, end }], word } or null
+//   section: { kind, label, start, end, index, progress } or null; beat: { bpm, index, bar, phase, pulse } or null
+// More techniques: examples/README.md and examples/*.scene.js in the pack template.
 
 function setup(info) {
   // Optional, called once: info = { title, artist, duration }.
@@ -5096,6 +5166,12 @@ var ScriptFilm = class extends GenericFilm {
     this.nextId = 1;
     this.error = "";
   }
+  /** Song structure for ctx.section / ctx.beat (from mv.json). */
+  setStructure({ sections = [], bpm = 0, beatOffset = 0 } = {}) {
+    this.sections = sections;
+    this.bpm = bpm;
+    this.beatOffset = beatOffset;
+  }
   /** Start the script; resolves when it is ready, rejects with the reason. */
   load(source) {
     this.stop();
@@ -5131,7 +5207,7 @@ var ScriptFilm = class extends GenericFilm {
         }
         this.receive(msg);
       };
-      worker.postMessage({ type: "init", info: { title: this.title, artist: this.artist, duration: this.duration } });
+      worker.postMessage({ type: "init", info: { title: this.title, artist: this.artist, duration: this.duration, sections: this.sections ?? [], bpm: this.bpm ?? 0 } });
     });
   }
   receive(msg) {
@@ -5177,7 +5253,7 @@ var ScriptFilm = class extends GenericFilm {
       return;
     }
     const at = t + (opts.offset ?? 0);
-    const ctx = sceneContext({ t, duration: this.duration, title: this.title, artist: this.artist, cue: this.cue(at), next: this.nextCue(at), bands: this.energy(t), ready: Boolean(opts.ready), paused: Boolean(opts.paused) });
+    const ctx = sceneContext({ t, duration: this.duration, title: this.title, artist: this.artist, cue: this.cue(at), next: this.nextCue(at), bands: this.energy(t), ready: Boolean(opts.ready), paused: Boolean(opts.paused), sections: this.sections ?? [], bpm: this.bpm ?? 0, beatOffset: this.beatOffset ?? 0 });
     const id = this.nextId++;
     this.pending = { id, at: now };
     this.worker.postMessage({ type: "frame", id, t, cols: w, rows: h, ctx });
@@ -6813,8 +6889,8 @@ function linesToLrc(lines, { title = "", artist = "", gap = 1.5 } = {}) {
 var NUDGE = Object.freeze({ small: 0.05, large: 0.5 });
 var MIN_LINE = 0.2;
 var HISTORY = 200;
-var r3 = (v) => Math.round(v * 1e3) / 1e3;
-var clean = (line) => ({ start: r3(line.start), end: r3(line.end ?? line.start + 2), text: String(line.text ?? ""), alt: String(line.alt ?? ""), confidence: line.confidence ?? 1, source: line.source ?? "import" });
+var r32 = (v) => Math.round(v * 1e3) / 1e3;
+var clean = (line) => ({ start: r32(line.start), end: r32(line.end ?? line.start + 2), text: String(line.text ?? ""), alt: String(line.alt ?? ""), confidence: line.confidence ?? 1, source: line.source ?? "import" });
 function createCalib(lines = [], { duration = 0, offset = 0 } = {}) {
   const sorted = lines.map(clean).sort((a, b) => a.start - b.start);
   return { lines: sorted, duration, offset, selected: sorted.length ? 0 : -1, past: [], future: [], dirty: false };
@@ -6829,7 +6905,7 @@ function setStart(state, lines, i, t) {
   const prev = lines[i - 1], next = lines[i + 1];
   const lo = prev ? prev.start + MIN_LINE : 0;
   const hi = next ? next.start - MIN_LINE : state.duration || Infinity;
-  const start = r3(Math.min(Math.max(clampTime(state, t), lo), hi));
+  const start = r32(Math.min(Math.max(clampTime(state, t), lo), hi));
   const line = touch({ ...lines[i], start, end: Math.max(lines[i].end, start + MIN_LINE) });
   const out = lines.slice();
   out[i] = line;
@@ -6839,7 +6915,7 @@ function setStart(state, lines, i, t) {
 function setEnd(state, lines, i, t) {
   const next = lines[i + 1];
   const hi = next ? next.start : state.duration || Infinity;
-  const end = r3(Math.min(Math.max(clampTime(state, t), lines[i].start + MIN_LINE), hi));
+  const end = r32(Math.min(Math.max(clampTime(state, t), lines[i].start + MIN_LINE), hi));
   const out = lines.slice();
   out[i] = touch({ ...lines[i], end });
   return out;
@@ -6895,7 +6971,7 @@ function calibReduce(state, action) {
       return commit(state, next, { selected: Math.min(lines.length - 1, i + 1) });
     }
     case "offset":
-      return commit(state, lines, { offset: r3(Math.max(-30, Math.min(30, action.value))) });
+      return commit(state, lines, { offset: r32(Math.max(-30, Math.min(30, action.value))) });
     case "text": {
       if (!valid) return state;
       const out = lines.slice();
@@ -6908,7 +6984,7 @@ function calibReduce(state, action) {
       const [a, b] = splitText(line.text, action.ratio ?? 0.5);
       if (!b) return state;
       const [altA, altB] = line.alt ? splitText(line.alt, action.ratio ?? 0.5) : ["", ""];
-      const at = r3(action.time !== void 0 && action.time > line.start + MIN_LINE && action.time < line.end - MIN_LINE ? action.time : line.start + (line.end - line.start) * (action.ratio ?? 0.5));
+      const at = r32(action.time !== void 0 && action.time > line.start + MIN_LINE && action.time < line.end - MIN_LINE ? action.time : line.start + (line.end - line.start) * (action.ratio ?? 0.5));
       const out = [...lines.slice(0, i), touch({ ...line, text: a, alt: altA, end: at }), touch({ ...line, text: b, alt: altB, start: at }), ...lines.slice(i + 1)];
       return commit(state, out, { selected: i });
     }
@@ -6926,7 +7002,7 @@ function calibReduce(state, action) {
     }
     case "insert": {
       const t = clampTime(state, action.time ?? 0);
-      const line = touch({ start: r3(t), end: r3(t + 2), text: action.text ?? "\u266A", alt: "", confidence: 1 });
+      const line = touch({ start: r32(t), end: r32(t + 2), text: action.text ?? "\u266A", alt: "", confidence: 1 });
       const out = [...lines, line].sort((a, b) => a.start - b.start);
       const k = out.indexOf(line);
       if (out[k + 1] && line.end > out[k + 1].start) line.end = out[k + 1].start;
@@ -6978,7 +7054,7 @@ function lineAt2(state, t) {
   return found;
 }
 function exportLines(state) {
-  return state.lines.map((line) => ({ ...line, start: r3(Math.max(0, line.start + state.offset)), end: r3(Math.max(0, line.end + state.offset)) }));
+  return state.lines.map((line) => ({ ...line, start: r32(Math.max(0, line.start + state.offset)), end: r32(Math.max(0, line.end + state.offset)) }));
 }
 function linesToCues(lines) {
   return lines.map((line) => ({ time: line.start, end: line.end, en: line.text, zh: line.alt ?? "" }));
@@ -9044,6 +9120,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
         film.duration = length;
         film.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? "" });
       }
+      state.script.setStructure({ sections: pack.pack.sections ?? [], bpm: pack.pack.canvas?.bpm ?? 0, beatOffset: pack.pack.canvas?.beatOffset ?? 0 });
       state.wem.duration = generic2 ? DURATION : pack.pack.duration ?? DURATION;
       setDuration(state.clock.duration);
       if (pack.pack.canvas?.fontSize) setFontSize(pack.pack.canvas.fontSize);

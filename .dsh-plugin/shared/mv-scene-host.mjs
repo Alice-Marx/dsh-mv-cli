@@ -68,10 +68,10 @@ export function checkScene(source, { times = [0], cols = 100, rows = 32, info = 
   const problems = []
   try { scene.setup(info) } catch (error) { return { ok: false, problems: [`setup() 出错：${errorText(error)}`], frames: [] } }
   const frames = []
-  const cueAt = t => { let found = null; for (const cue of cues) if (cue.time <= t) found = cue; return found }
+  const cueAt = t => { let found = null; for (const cue of cues) if (cue.time <= t && !(cue.end <= t)) found = cue; return found }
   const nextAt = t => cues.find(cue => cue.time > t) ?? null
   for (const t of times) {
-    const ctx = sceneContext({ t, duration: info.duration ?? 0, title: info.title ?? '', artist: info.artist ?? '', cue: cueAt(t), next: nextAt(t), bands: bandsAt(t) })
+    const ctx = sceneContext({ t, duration: info.duration ?? 0, title: info.title ?? '', artist: info.artist ?? '', cue: cueAt(t), next: nextAt(t), bands: bandsAt(t), sections: info.sections ?? [], bpm: info.bpm ?? 0, beatOffset: info.beatOffset ?? 0 })
     try {
       const frame = scene.renderFrame(t, cols, rows, ctx)
       if (frame.ms > SCENE_LIMITS.frameBudgetMs) problems.push(`t=${t}s 这一帧用了 ${frame.ms.toFixed(1)} ms，超过 ${SCENE_LIMITS.frameBudgetMs} ms 的预算（面板里会被判为太慢）。`)

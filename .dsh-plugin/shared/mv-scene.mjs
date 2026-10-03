@@ -11,9 +11,16 @@
  * cell: 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
  *
  * ctx = { duration, progress, title, artist, lyric, next, bands, energy, bass,
- *         mid, treble, ready, paused }
- *   lyric / next: { text, en, zh, start, end } or null
+ *         mid, treble, ready, paused, section, sections, beat }
+ *   lyric / next: { text, en, zh, start, end, progress, words, word } or null
+ *     words: [{ text, start, end }] from enhanced LRC <mm:ss.xx> word stamps,
+ *     otherwise estimated (spread over the first 70 % of the line); word: index
+ *     of the word being sung at t (-1 before the first)
  *   bands: 48 numbers 0..1 (low → high frequencies); energy/bass/mid/treble 0..1
+ *   section: { kind, label, start, end, index, progress } of the current song
+ *     section (mv.json x-dsh-mv-ai.sections) or null; sections: all of them
+ *   beat: { bpm, index, bar, phase, pulse } when mv.json sets canvas.bpm, else
+ *     null (phase 0..1 inside the beat, pulse = 1 on the beat decaying to 0)
  *
  * The panel runs the script in a Web Worker with network and storage APIs
  * removed and a per-frame time budget; the Host runs the same code in a
@@ -132,15 +139,64 @@ __listen('message', event => {
 
 const SILENT = new Array(48).fill(0)
 const avg = (bands, from, to) => { let s = 0; for (let i = from; i < to; i++) s += bands[i] ?? 0; return s / Math.max(1, to - from) }
-const cueInfo = cue => cue ? { text: cue.en || cue.zh || '', en: cue.en || '', zh: cue.zh || '', start: cue.time, end: cue.end } : null
+const clamp01 = v => Math.max(0, Math.min(1, v))
+const r3 = v => Math.round(v * 1000) / 1000
+const CJK_CHAR = /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]/
+
+/** Words of a cue with times: enhanced-LRC stamps when present, otherwise spread over 70 % of the line. */
+export function cueWords(cue) {
+  if (!cue) return []
+  const end = Number.isFinite(cue.end) ? cue.end : cue.time + 4
+  if (Array.isArray(cue.words) && cue.words.length) {
+    return cue.words.map((w, i, all) => ({ text: String(w.text ?? ''), start: r3(w.time), end: r3(all[i + 1]?.time ?? end) }))
+  }
+  const text = String(cue.en || cue.zh || '')
+  const parts = []
+  for (const token of text.split(/\s+/).filter(Boolean)) {
+    if (CJK_CHAR.test(token)) for (const ch of token) parts.push(ch)
+    else parts.push(token)
+  }
+  const span = Math.max(0.3, (end - cue.time) * 0.7)
+  return parts.map((part, i) => ({ text: part, start: r3(cue.time + span * i / parts.length), end: r3(cue.time + span * (i + 1) / parts.length) }))
+}
+
+function cueInfo(cue, t, withWords) {
+  if (!cue) return null
+  const end = Number.isFinite(cue.end) ? cue.end : cue.time + 4
+  const info = { text: cue.en || cue.zh || '', en: cue.en || '', zh: cue.zh || '', start: cue.time, end, progress: r3(clamp01((t - cue.time) / Math.max(0.001, end - cue.time))) }
+  if (!withWords) return info
+  const words = cueWords(cue)
+  let word = -1
+  for (let i = 0; i < words.length; i++) if (words[i].start <= t) word = i
+  return { ...info, words, word }
+}
+
+/** Sanitised sections ([{ kind, label?, start, end }], sorted). */
+export function normalizeSections(list) {
+  if (!Array.isArray(list)) return []
+  return list.filter(s => s && Number.isFinite(s.start) && Number.isFinite(s.end) && s.end > s.start)
+    .slice(0, 200)
+    .map(s => ({ kind: String(s.kind ?? 'section').slice(0, 40), ...(s.label ? { label: String(s.label).slice(0, 80) } : {}), start: r3(s.start), end: r3(s.end) }))
+    .sort((a, b) => a.start - b.start)
+}
 
 /** The ctx argument of render() (plain JSON data only). */
-export function sceneContext({ t = 0, duration = 0, title = '', artist = '', cue = null, next = null, bands = SILENT, ready = false, paused = false } = {}) {
-  const b = Array.from({ length: 48 }, (_, i) => Math.max(0, Math.min(1, Number(bands?.[i]) || 0)))
+export function sceneContext({ t = 0, duration = 0, title = '', artist = '', cue = null, next = null, bands = SILENT, ready = false, paused = false, sections = [], bpm = 0, beatOffset = 0 } = {}) {
+  const b = Array.from({ length: 48 }, (_, i) => clamp01(Number(bands?.[i]) || 0))
+  const list = normalizeSections(sections)
+  const index = list.findIndex(s => s.start <= t && t < s.end)
+  const section = index < 0 ? null : { ...list[index], index, progress: r3(clamp01((t - list[index].start) / (list[index].end - list[index].start))) }
+  let beat = null
+  if (Number.isFinite(bpm) && bpm > 0) {
+    const pos = Math.max(0, (t - beatOffset) * bpm / 60)
+    const phase = pos - Math.floor(pos)
+    beat = { bpm, index: Math.floor(pos), bar: Math.floor(pos / 4), phase: r3(phase), pulse: r3(Math.exp(-phase * 6)) }
+  }
   return {
-    duration, progress: duration > 0 ? Math.max(0, Math.min(1, t / duration)) : 0, title, artist,
-    lyric: cueInfo(cue), next: cueInfo(next), bands: b,
+    duration, progress: duration > 0 ? clamp01(t / duration) : 0, title, artist,
+    lyric: cueInfo(cue, t, true), next: cueInfo(next, t, false), bands: b,
     energy: avg(b, 0, 48), bass: avg(b, 0, 8), mid: avg(b, 8, 28), treble: avg(b, 28, 48), ready, paused,
+    section, sections: list, beat,
   }
 }
 
@@ -151,8 +207,11 @@ export const EXAMPLE_SCENE = String.raw`// scenes.js — scene script of a dsh-m
 // render(t, cols, rows, ctx) returns the frame: an array of rows lines (strings),
 // or { lines, styles } where styles[y] has one digit per cell:
 // 0 dim, 1 normal, 2 bright, 3 white, 4 red, 5 brown, 6 olive.
-// ctx: { duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused }
-//   lyric / next: { text, en, zh, start, end } or null
+// ctx: { duration, progress, title, artist, lyric, next, bands[48], energy, bass, mid, treble, ready, paused,
+//        section, sections, beat }
+//   lyric: { text, en, zh, start, end, progress, words: [{ text, start, end }], word } or null
+//   section: { kind, label, start, end, index, progress } or null; beat: { bpm, index, bar, phase, pulse } or null
+// More techniques: examples/README.md and examples/*.scene.js in the pack template.
 
 function setup(info) {
   // Optional, called once: info = { title, artist, duration }.
