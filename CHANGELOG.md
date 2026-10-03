@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (branch feat/ui-redesign)
+## 0.3.0 — 2026-10-03
 
 - **Redesigned MV 放映室 panel** as a music-player flow:
   - Library cards: the built-in preset, recent packs (× removes one), 导入 MV 包 and 新建（模板）. This replaces the drop-down and buttons bar.

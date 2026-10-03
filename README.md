@@ -25,9 +25,9 @@ The panel has an opaque background and follows the Harness light/dark theme.
 
 ## Install
 
-**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.2.1` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.
+**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.3.0` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.
 
-**From a local archive:** download `ljwei-stak-dsh-mv-cli-0.2.1.tgz` and its `.sha256` from the GitHub Release. Check it with `Get-FileHash -Algorithm SHA256 -LiteralPath <path>`, then enter the archive's absolute path in **Plugins → Add plugin**.
+**From a local archive:** download `ljwei-stak-dsh-mv-cli-0.3.0.tgz` and its `.sha256` from the GitHub Release. Check it with `Get-FileHash -Algorithm SHA256 -LiteralPath <path>`, then enter the archive's absolute path in **Plugins → Add plugin**.
 
 After installing either way:
 

@@ -25,10 +25,10 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 
 ## 安装
 
-**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.2.1`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
+**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.3.0`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
 
-**用本地安装包：** 从 GitHub Release 下载 `ljwei-stak-dsh-mv-cli-0.2.1.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
-`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.2.1.tgz'`，
+**用本地安装包：** 从 GitHub Release 下载 `ljwei-stak-dsh-mv-cli-0.3.0.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
+`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.3.0.tgz'`，
 然后在 **插件 → 添加插件** 里填该 `.tgz` 的绝对路径。
 
 两种方式装好后：
