@@ -13,6 +13,7 @@ import { openMediaStore, getMedia, putMedia, deleteMedia } from './mv/media-stor
 import { FilmClock, frameTime, keyAction, stepCue, stepOffset } from './mv/player-state.mjs'
 import { GenericFilm, genericChapters, timeText } from './mv/generic-film.mjs'
 import { BUILTIN_PACK, fetchPackAudio, fetchPackText } from './mv-pack-state.mjs'
+import { Alert, Icon, KeyHelp, Popover } from './mv-ui.jsx'
 
 const FONT_KEY = 'dsh-mv.canvas.fontSize'
 const readFont = fallback => { try { const v = Number(globalThis.localStorage?.getItem(FONT_KEY)); return v >= 8 && v <= 32 ? v : fallback } catch { return fallback } }
@@ -22,7 +23,7 @@ const HINT = 'SPACE 播放/暂停  ←/→ 5s  [ ] 字幕  Alt+[ ] 音频同步 
 
 const isGeneric = pack => pack?.pack?.canvas?.renderer !== 'world-execute-me'
 
-export function CanvasMv({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null }) {
+export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null, onState = () => {} }, ref) {
   const wrap = React.useRef(null)
   const stage = React.useRef(null)
   const canvas = React.useRef(null)
@@ -43,6 +44,7 @@ export function CanvasMv({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null
   packRef.current = pack
   const [duration, setDuration] = React.useState(DURATION)
   const [packStatus, setPackStatus] = React.useState('')
+  const [volume, setVolume] = React.useState({ level: 1, muted: false })
 
   // Engine setup and the render loop.
   React.useEffect(() => {
@@ -273,40 +275,104 @@ export function CanvasMv({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null
   const chapterList = generic ? genericChapters(duration) : CHAPTERS
   const chapter = chapterList.reduce((current, item) => (item[0] <= Math.max(0, status.t) ? item : current), chapterList[0])
 
+  React.useImperativeHandle(ref, () => ({ toggle: () => act({ type: 'toggle' }), pause: () => engine.current?.clock.pause(), focus: () => wrap.current?.focus() }))
+  React.useEffect(() => { onState({ playing: status.playing, hasAudio: Boolean(audioInfo) }) }, [status.playing, Boolean(audioInfo)])
+  const setLevel = level => { const el = audio.current; el.volume = Math.min(1, Math.max(0, level)); if (el.muted && level > 0) el.muted = false }
+  const resetSync = () => { resetOffsets(audioInfo.sha); const v = loadOffsets(audioInfo.sha, KNOWN_AUDIO); applyOffsets(v); resetOffsets(audioInfo.sha) }
+  const syncLabel = known ? `已识别：${known.label}` : audioInfo ? '未识别的版本：听着不同步就用 Alt+[ / Alt+] 校准' : ''
+
   return (
     <div className="mv-canvas-tab">
-      <div className="mv-toolbar">
-        <button type="button" className="mv-button" onClick={pickAudio}>选择音频…</button>
-        <button type="button" className="mv-button" onClick={() => pickText('.lrc,.srt,.vtt,.json,.txt', useLyricsText)}>选择歌词（LRC / SRT / lyrics.json）…</button>
-        <button type="button" className="mv-button mv-button-secondary" onClick={() => pickText('.json', useSpectrumText)}>频谱 spectrum.json（可选）…</button>
-        <label className="mv-inline">字号
-          <input type="number" min={8} max={32} value={fontSize} onChange={event => setFontSize(Math.min(32, Math.max(8, Number(event.target.value) || 14)))} />
-        </label>
-        <button type="button" className="mv-button mv-button-secondary" onClick={toggleFullscreen}>{fullscreen ? '退出全屏' : '全屏 (F)'}</button>
+      {!audioInfo && !packStatus && <div className="mv-onboard">
+        <span className="mv-onboard-badge">&gt;_</span>
+        <div>
+          <h2>{pack.builtin ? '第一次使用？先选一首歌' : '这个 MV 包没有可用的音频'}</h2>
+          <ol>
+            <li>选择你自己的音频文件（mp3 / m4a / aac / mp4 都行，在本机解码，不上传）。</li>
+            <li>可选：选择歌词（LRC / SRT / lyrics.json），画面会显示字幕。</li>
+            <li>点 <b>▶ 播放</b>。也可以不选音频，直接静音观看画面。</li>
+          </ol>
+          <div className="mv-row">
+            <button type="button" className="mv-button" onClick={pickAudio}>选择音频…</button>
+            <button type="button" className="mv-button mv-button-secondary" onClick={() => pickText('.lrc,.srt,.vtt,.json,.txt', useLyricsText)}>选择歌词…</button>
+          </div>
+        </div>
+      </div>}
+      {packStatus && <Alert kind="info"><p>{packStatus}</p></Alert>}
+      <div className="mv-sources" aria-label="媒体文件">
+        <div className={`mv-source${audioInfo ? '' : ' mv-source-empty'}`}>
+          <span className="mv-source-icon" aria-hidden="true">♪</span>
+          <div className="mv-source-main">
+            <div className="mv-source-label">音频</div>
+            <div className="mv-source-value" title={audioInfo ? `${audioInfo.name}\nsha256 ${audioInfo.sha}` : ''}>{audioInfo ? audioInfo.name : '未选择 · 静音模式'}</div>
+          </div>
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" onClick={pickAudio}>{audioInfo ? '更换' : '选择…'}</button>
+        </div>
+        <div className={`mv-source${lyricsInfo ? '' : ' mv-source-empty'}`}>
+          <span className="mv-source-icon" aria-hidden="true">“</span>
+          <div className="mv-source-main">
+            <div className="mv-source-label">歌词</div>
+            <div className="mv-source-value">{lyricsInfo ? `${lyricsInfo.name}（${lyricsInfo.count} 句）` : '未加载 · 只显示 [ 间奏 ]'}</div>
+          </div>
+          {lyricsInfo && <button type="button" className="mv-link" onClick={() => void clearLyrics()}>移除</button>}
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" onClick={() => pickText('.lrc,.srt,.vtt,.json,.txt', useLyricsText)}>{lyricsInfo ? '更换' : '选择…'}</button>
+        </div>
+        <div className="mv-source">
+          <span className="mv-source-icon" aria-hidden="true">▮▮</span>
+          <div className="mv-source-main">
+            <div className="mv-source-label">频谱</div>
+            <div className="mv-source-value">{spectrumInfo ? spectrumInfo.name : '实时分析'}</div>
+          </div>
+          {spectrumInfo && <button type="button" className="mv-link" onClick={() => void clearSpectrum()}>改用实时</button>}
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" title="可选：spectrum.json" onClick={() => pickText('.json', useSpectrumText)}>{spectrumInfo ? '更换' : '文件…'}</button>
+        </div>
       </div>
-      <div className="mv-media-line">
-        <span>音频：{audioInfo ? <><b>{audioInfo.name}</b> <code title={audioInfo.sha}>{audioInfo.sha.slice(0, 12)}…</code>{known ? ` · 已识别：${known.label}` : ' · 未识别的版本，请用 Alt+[ / Alt+] 校准'}</> : '未选择（静音模式，画面照常播放）'}</span>
-        <span>歌词：{lyricsInfo ? <>{lyricsInfo.name}（{lyricsInfo.count} 句） <button type="button" className="mv-link" onClick={() => void clearLyrics()}>移除</button></> : '未加载（只显示 [ 间奏 ]）'}</span>
-        <span>频谱：{spectrumInfo ? <>{spectrumInfo.name} <button type="button" className="mv-link" onClick={() => void clearSpectrum()}>改用实时</button></> : '实时分析（AnalyserNode）'}</span>
-      </div>
-      {error && <p className="mv-error" role="alert">{error}</p>}
+      {error && <Alert kind="error" actions={<button type="button" className="mv-link" onClick={() => setError('')}>关闭</button>}><p>{error}</p></Alert>}
       <div ref={wrap} className={`mv-stage-wrap${fullscreen ? ' mv-fullscreen' : ''}`} tabIndex={0} onKeyDown={onKeyDown}
         onDoubleClick={toggleFullscreen} aria-label="画布 MV（点击后可用键盘控制）">
         <div ref={stage} className="mv-stage" onClick={() => wrap.current?.focus()}><canvas ref={canvas} /></div>
       </div>
-      <div className="mv-transport">
-        <button type="button" className="mv-button" onClick={() => act({ type: 'toggle' })}>{status.playing ? '暂停' : '播放'}</button>
-        <input className="mv-seek" type="range" min={0} max={Math.max(1, duration)} step={0.1} value={Math.max(0, Math.min(duration, status.t))}
-          onChange={event => { engine.current.clock.seek(Number(event.target.value)); engine.current.started = true }} aria-label="进度" />
-        <span className="mv-clock">{generic ? `${timeText(status.t)} / ${timeText(duration)}` : clockText(Math.max(0, status.t))}</span>
-        <span className="mv-chip">{chapter[1]} {chapter[2]}</span>
+      <div className="mv-playerbar" aria-label="播放控制">
+        <button type="button" className="mv-round" aria-label={status.playing ? '暂停' : '播放'} title={status.playing ? '暂停（空格）' : '播放（空格）'} onClick={() => act({ type: 'toggle' })}>
+          {status.playing ? <Icon.pause /> : <Icon.play />}
+        </button>
+        <div className="mv-seek-wrap">
+          <span className="mv-time">{generic ? timeText(status.t) : clockText(Math.max(0, status.t)).split('/')[0].trim()}</span>
+          <input className="mv-seek" type="range" min={0} max={Math.max(1, duration)} step={0.1} value={Math.max(0, Math.min(duration, status.t))}
+            onChange={event => { engine.current.clock.seek(Number(event.target.value)); engine.current.started = true }} aria-label="进度" />
+          <span className="mv-time">{timeText(Math.round(duration))}</span>
+        </div>
+        <span className="mv-chip" title="当前章节（1–5 跳转）">{chapter[1]} {chapter[2]}</span>
+        <span className="mv-volume">
+          <button type="button" className="mv-icon-button" aria-label={volume.muted ? '取消静音' : '静音'} title="静音（M）" onClick={() => act({ type: 'mute' })}>{volume.muted || volume.level === 0 ? <Icon.mute /> : <Icon.volume />}</button>
+          <input type="range" min={0} max={1} step={0.05} value={volume.muted ? 0 : volume.level} aria-label="音量" onChange={event => setLevel(Number(event.target.value))} />
+        </span>
+        <span className="mv-stepper" title={`音频同步（Alt+[ / Alt+]）${syncLabel ? `\n${syncLabel}` : ''}`}>
+          <button type="button" aria-label="音频同步 −0.1 秒" onClick={() => act({ type: 'audioOffset', delta: -0.1 })}>−</button>
+          <span>同步 {formatOffset(offsets.audioOffset)}</span>
+          <button type="button" aria-label="音频同步 +0.1 秒" onClick={() => act({ type: 'audioOffset', delta: 0.1 })}>+</button>
+        </span>
+        <Popover label="键盘快捷键" icon={<Icon.keyboard />}><KeyHelp /></Popover>
+        <button type="button" className="mv-icon-button" aria-label={fullscreen ? '退出全屏' : '全屏'} title="全屏（F）" onClick={toggleFullscreen}><Icon.fullscreen /></button>
       </div>
-      <div className="mv-transport">
-        <span className="mv-chip">字幕偏移 {formatOffset(offsets.subtitleOffset)}（[ / ]）</span>
-        <span className="mv-chip">音频同步 {formatOffset(offsets.audioOffset)}（Alt+[ / Alt+]）</span>
-        {audioInfo && <button type="button" className="mv-link" onClick={() => { resetOffsets(audioInfo.sha); const v = loadOffsets(audioInfo.sha, KNOWN_AUDIO); applyOffsets(v); resetOffsets(audioInfo.sha) }}>恢复默认偏移</button>}
-        <span className="mv-caption">网格 {status.cols}×{status.rows}（最小 64×24，最大 240×85）· 偏移按音频 sha256 记在本机</span>
-      </div>
+      <details className="mv-details">
+        <summary>设置 <span className="mv-caption">字号 {fontSize} · 字幕偏移 {formatOffset(offsets.subtitleOffset)}{syncLabel ? ` · ${syncLabel}` : ''}</span></summary>
+        <div className="mv-details-body">
+          <div className="mv-form">
+            <label className="mv-field"><span>画面字号（像素）</span>
+              <input type="number" min={8} max={32} value={fontSize} onChange={event => setFontSize(Math.min(32, Math.max(8, Number(event.target.value) || 14)))} /></label>
+            <div className="mv-field"><span>字幕偏移（[ / ]）</span>
+              <span className="mv-stepper" style={{ alignSelf: 'flex-start' }}>
+                <button type="button" aria-label="字幕偏移 −0.1 秒" onClick={() => act({ type: 'subtitleOffset', delta: -0.1 })}>−</button>
+                <span>{formatOffset(offsets.subtitleOffset)}</span>
+                <button type="button" aria-label="字幕偏移 +0.1 秒" onClick={() => act({ type: 'subtitleOffset', delta: 0.1 })}>+</button>
+              </span></div>
+            <div className="mv-field"><span>偏移</span>
+              <button type="button" className="mv-button mv-button-secondary" disabled={!audioInfo} onClick={resetSync} style={{ alignSelf: 'flex-start' }}>恢复默认偏移</button></div>
+          </div>
+          <p className="mv-caption">偏移按音频文件的 sha256 记在本机。{audioInfo && <>当前音频 <code title={audioInfo.sha}>{audioInfo.sha.slice(0, 12)}…</code>。</>}网格 {status.cols}×{status.rows}（最小 64×24，最大 240×85）。</p>
+        </div>
+      </details>
       <audio ref={audio} preload="auto" onLoadedMetadata={event => {
         const length = event.currentTarget.duration
         setAudioInfo(info => info ? { ...info, duration: length } : info)
@@ -315,7 +381,8 @@ export function CanvasMv({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null
           state.clock.duration = length; state.generic.duration = length; setDuration(length)
         }
       }}
+        onVolumeChange={event => setVolume({ level: event.currentTarget.volume, muted: event.currentTarget.muted })}
         onEnded={() => { if (engine.current) engine.current.started = true }} />
     </div>
   )
-}
+})

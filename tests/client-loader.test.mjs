@@ -12,7 +12,7 @@ const bundle = readFileSync(new URL('../.dsh-plugin/client.js', import.meta.url)
 
 function load() {
   let registration
-  const React = { createElement: (type, props, ...children) => ({ type, props, children }), Fragment: 'Fragment', useState: () => [], useRef: () => ({}), useEffect() {}, useCallback: f => f }
+  const React = { createElement: (type, props, ...children) => ({ type, props, children }), Fragment: 'Fragment', useState: () => [], useRef: () => ({}), useEffect() {}, useCallback: f => f, forwardRef: f => f, useImperativeHandle() {} }
   // xterm reads navigator.userAgent / platform at module load, as in the Harness renderer.
   vm.runInNewContext(bundle, { window: { __ModuleLoader__: { load(entry) { registration = entry } } }, navigator: { userAgent: 'Mozilla/5.0 (Windows NT 10.0) Electron', platform: 'Win32', language: 'zh-CN', maxTouchPoints: 0 }, document: {}, queueMicrotask, setTimeout, clearTimeout, setInterval, clearInterval, console, TextEncoder, TextDecoder, URL }, { timeout: 5000 })
   const exports = registration.factory(name => {

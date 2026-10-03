@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased (branch feat/ui-redesign)
+
+- **Redesigned MV 放映室 panel** as a music-player flow:
+  - Library cards: the built-in preset, recent packs (× removes one), 导入 MV 包 and 新建（模板）. This replaces the drop-down and buttons bar.
+  - A **正在播放** card with title/artist, a **画布 / 面板终端 / 独立窗口** segmented control (it replaces the two tabs) and one big ▶ Play button.
+  - Canvas: media tiles (音频 / 歌词 / 频谱), a player bar (round play/pause, seek with times, chapter, volume + mute, audio sync −/+, keyboard-shortcut popover, fullscreen) and a collapsed 设置 section (font size, subtitle offset, reset offsets).
+  - Terminal modes: a 播放器 card with a player switch and automatic, debounced path checks (the 检查路径 button is gone; 重新检查 lives in settings). Problems appear inline with fixes (使用建议的 python.exe, 打开设置, 转换为 WAV…, 不播放声音). First-run guidance asks for the world_execute_me folder (folder picker when available) and fills python.exe. Paths, start, latency, no-audio and font size are in a collapsed 设置 / 高级 section.
+  - Credits and the legal notice moved to an ⓘ popover. The version banner became a compact "请完全重启 Harness" pill shown only on a mismatch.
+  - Opaque background using Harness design tokens (`--dsw-alias-*`), with light/dark fallbacks (`body[data-ds-dark-theme]`, `prefers-color-scheme`). Consistent spacing, Chinese labels and empty states.
+- Unchanged safety: every start still goes through the confirmation card with the exact command (and per-argument list for packs). Pack launches are still bound to the confirmed command, and the Host re-validates everything.
+- `tools/ui-preview/`: a mock-Host preview bundle used to render screenshots (not shipped).
+
 ## 0.2.1 — 2026-10-03
 
 - Fix (diagnosis): **MV 终端 / 独立窗口 had no sound** with world_execute_me `tui_live.py`. The cause was not ConPTY or Electron; the command line did carry `--audio-file`. The file `song.mp3` is really a DASH-fragmented MP4 with AAC (`ftyp iso5 … dash`, "Packed by Bilibili XCoder"). tui_live.py plays sound through Windows MCI (`open … type mpegvideo`), and MCI cannot open that container (error 277, "初始化 MCI 时发生问题") on any extension. The player printed `no music: …` right before its full-screen picture covered it. Verified under the Harness exe's ConPTY and outside it: a real WAV plays in both, the MP4 fails in both.

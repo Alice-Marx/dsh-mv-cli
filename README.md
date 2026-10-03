@@ -11,6 +11,18 @@ A DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `d
 
 > **Unofficial fan work.** The plugin ships **no** audio, video, lyric text, spectrum data or artwork. The song and lyrics belong to Mili. The scenes and timing are ported from [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (Bilibili: 野生大K) **with the author's permission**. See [NOTICE.md](NOTICE.md).
 
+## The panel at a glance
+
+The panel reads top to bottom like a music player:
+
+1. **曲库 (library)**: cards for the built-in world.execute(me) preset and recently imported MV packs, plus **导入 MV 包** (import) and **新建（模板）** (new from template).
+2. **正在播放 (now playing)**: the title and artist. On the right you choose **where to play** (画布 canvas / 面板终端 panel terminal / 独立窗口 separate window), then press the big **▶ 播放** button.
+3. **Stage**: in canvas mode, the canvas plus a player bar (play/pause, seek, time, chapter, volume, audio sync, keyboard shortcuts, fullscreen). In terminal modes, the player status (paths are checked automatically, and problems appear inline with one-click fixes), the confirmation card and the terminal.
+4. **设置 / 高级 (settings)**, collapsed by default: paths, start second, latency, no-audio, font size.
+5. **ⓘ** at the top right: about, credits and legal notice. A compact "请完全重启 Harness" pill appears only when the Host runs older plugin code.
+
+The panel has an opaque background and follows the Harness light/dark theme.
+
 ## Install
 
 **From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.2.1` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.
@@ -35,14 +47,14 @@ An **MV pack** is a folder with an `mv.json` manifest. It names your audio, lyri
 
 The built-in world.execute(me) preset is still the default entry in the pack list.
 
-In the panel's **MV 包** bar:
+In the panel's **曲库** (library):
 
-1. **下载模板…**: choose a folder. The plugin creates `dsh-mv-pack-template` there and never overwrites existing files. The folder contains `mv.json`, `mv.schema.json` (completion and validation in VS Code), README.md / README.zh.md, a placeholder `lyrics.example.lrc`, and `examples/` (a python player, and world.execute(me) written as a pack). **或下载 zip** gives the same files as a zip.
+1. **新建（模板）**: choose a folder. The plugin creates `dsh-mv-pack-template` there and never overwrites existing files. The folder contains `mv.json`, `mv.schema.json` (completion and validation in VS Code), README.md / README.zh.md, a placeholder `lyrics.example.lrc`, and `examples/` (a python player, and world.execute(me) written as a pack). **下载模板 zip** in the import dialog gives the same files as a zip.
 2. Put your own `song.mp3` and lyrics in the folder, and edit `mv.json`.
-3. **导入 MV 包…** → **选择文件夹…**, or paste the path of the folder or of `mv.json`. Importing only reads the manifest.
-   - Recently used packs (up to 8) are remembered on this computer and appear in the drop-down.
+3. **导入 MV 包** → **选择文件夹…**, or paste the path of the folder or of `mv.json`. Importing only reads the manifest.
+   - Recently used packs (up to 8) are remembered on this computer and appear as cards in the library (× on a card removes it).
    - The last active pack is reopened next time.
-4. **画布 MV** plays the pack: the audio is streamed from the Host in chunks, and lyrics/spectrum are loaded with it. **MV 终端** gets a player option **MV 包：…** when the pack has a `terminal` section.
+4. **画布** plays the pack: the audio is streamed from the Host in chunks, and lyrics/spectrum are loaded with it. When the pack has a `terminal` section, the terminal modes offer the player **MV 包渲染程序**.
 
 Minimal `mv.json`:
 
@@ -87,7 +99,7 @@ Fields:
 
 ## Canvas MV
 
-- **Audio**: pick your own audio file (mp3/m4a/aac/mp4, decoded by Chromium).
+- **Audio**: choose **画布**, then **选择…** in the audio tile to pick your own audio file (mp3/m4a/aac/mp4, decoded by Chromium).
   - Its sha256 is computed locally, and the file is remembered in IndexedDB. It is never uploaded.
 - **Lyrics**:
   - LRC: two lines per timestamp (English and Chinese), or `English / 中文` on one line.
@@ -116,19 +128,19 @@ Fields:
 
 ## MV terminal
 
-- **Player**:
+- **Where**: choose **面板终端** or **独立窗口** next to the Play button, then pick the player in the 播放器 card:
   - **world_execute_me**: give the player folder and its `python\python.exe`. Audio is optional, or tick "no audio".
   - **world-execute-me-ascii-rust**: give the `world-execute-me-rust.exe` you downloaded from [its releases](https://github.com/bilixxb/world-execute-me-ascii-rust/releases). It decodes MP3 only and plays its embedded track when no audio is given.
-- **Check paths**: the Host verifies every path on disk and sniffs the audio file's **real format** from its first bytes (the extension does not count).
+- **Automatic checks**: after each change the Host verifies every path on disk and sniffs the audio file's **real format** from its first bytes (the extension does not count).
 
   > **No sound?** tui_live.py plays audio through Windows MCI, which opens only real **MP3 / WAV** files. An MP4/AAC download (often a DASH-fragmented MP4) renamed to `.mp3` fails with "初始化 MCI 时发生问题" (MCI error 277). The player prints `no music: …` just before the full-screen picture hides it, then plays silently, both in the panel and in the separate window.
-  > Since 0.2.1 the panel shows a red warning under the audio field and offers **转换为 WAV…**: pick the same file, the panel decodes it with Chromium into a 16-bit PCM WAV (about 10 MB per minute), stores it in the plugin's own cache `%LOCALAPPDATA%\dsh-mv\audio-cache\` (newest 6 kept) and switches the audio field to it. Your file and the player folder are never modified. Or convert yourself: `ffmpeg -i song.mp3 -vn -c:a libmp3lame -q:a 2 song-real.mp3`.
-- **Start…**: shows the exact command and working directory, and runs only after you confirm. The panel cannot pass arbitrary commands or arguments.
+  > The 播放器 card shows a warning with **转换为 WAV…** and **不播放声音** right there: pick the same file, the panel decodes it with Chromium into a 16-bit PCM WAV (about 10 MB per minute), stores it in the plugin's own cache `%LOCALAPPDATA%\dsh-mv\audio-cache\` (newest 6 kept) and switches the audio field to it. Your file and the player folder are never modified. Or convert yourself: `ffmpeg -i song.mp3 -vn -c:a libmp3lame -q:a 2 song-real.mp3`.
+- **▶ 在面板终端播放**: shows the exact command and working directory, and runs only after you confirm. The panel cannot pass arbitrary commands or arguments.
 - **Latency**: output is relayed by long polling and adds about 30–150 ms.
 
 ### Play in a separate window (Windows only)
 
-**在独立窗口播放…** runs the same fixed player and arguments in a **real Windows console window** (Windows Terminal when that is the default terminal), with no relay latency. The confirmation card shows the exact command, `cmd.exe /d /v:off /s /c "start "world.execute(me)" /D "<dir>" "<player>" <fixed args>"`. Every path is quoted; paths containing `%` are refused because cmd expands `%VAR%` even inside quotes. The Host finds the player's pid; **结束** runs `taskkill /PID <pid> /T /F` after checking the pid still belongs to that executable. Windows opened by the plugin are also closed on plugin unload / Harness exit. The button is disabled with an explanation on macOS / Linux.
+**独立窗口** + **▶ 在独立窗口播放** runs the same fixed player and arguments in a **real Windows console window** (Windows Terminal when that is the default terminal), with no relay latency. The confirmation card shows the exact command, `cmd.exe /d /v:off /s /c "start "world.execute(me)" /D "<dir>" "<player>" <fixed args>"`. Every path is quoted; paths containing `%` are refused because cmd expands `%VAR%` even inside quotes. The Host finds the player's pid; **结束** runs `taskkill /PID <pid> /T /F` after checking the pid still belongs to that executable. Windows opened by the plugin are also closed on plugin unload / Harness exit. The button is disabled with an explanation on macOS / Linux.
 
 ## Development
 

@@ -11,6 +11,18 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 
 > **非官方同人作品。** 插件**不附带**任何音频、视频、歌词文本、频谱数据或美术素材；歌曲与歌词的权利归 Mili。画面场景与时间轴移植自 [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii)（Bilibili「野生大K」），**经原作者许可**。详见 [NOTICE.md](NOTICE.md)。
 
+## 界面一览
+
+像音乐播放器一样从上到下：
+
+1. **曲库**：卡片列出内置的 world.execute(me) 预设和最近导入的 MV 包，以及「导入 MV 包」「新建（模板）」。
+2. **正在播放**：当前曲目的标题和艺术家；右侧选择**在哪里播放**（画布 / 面板终端 / 独立窗口），再点一个大的 **▶ 播放** 按钮。
+3. **画面**：画布模式下是画布和播放条（播放/暂停、进度、时间、章节、音量、音频同步、键盘快捷键、全屏）；终端模式下是播放器状态（自动检查路径，问题就地显示并给出一键修复）、确认卡片和终端画面。
+4. **设置 / 高级**（默认折叠）：路径、起始秒数、延迟补偿、不播放声音、字号等。
+5. 右上角 **ⓘ**：关于、版权与署名。后台版本与界面不一致时，标题栏会出现一个提示「请完全重启 Harness」。
+
+面板使用不透明背景，跟随 Harness 的浅色 / 深色主题。
+
 ## 安装
 
 **从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.2.1`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
@@ -37,21 +49,21 @@ MV 终端依赖可选依赖 `@lydell/node-pty`（含 Windows 预编译二进制�
 
 内置的 world.execute(me) 预设仍是列表里的默认项。
 
-在面板的 **MV 包** 栏里：
+在面板顶部的 **曲库** 里：
 
-1. **下载模板…**：选一个文件夹，插件在其中新建 `dsh-mv-pack-template`（不会覆盖已有文件）。里面有：
+1. **新建（模板）**：选一个文件夹，插件在其中新建 `dsh-mv-pack-template`（不会覆盖已有文件）。里面有：
    - `mv.json`；
    - `mv.schema.json`（VS Code 补全与校验）；
    - 中英文 README；
    - 占位的 `lyrics.example.lrc`；
    - `examples/`（Python 播放器示例，以及用 MV 包写法表示的 world.execute(me)）。
 
-   **或下载 zip** 得到同样的文件。
+   导入对话框里的 **下载模板 zip** 得到同样的文件。
 2. 把你自己的 `song.mp3` 和歌词放进去，编辑 `mv.json`。
-3. **导入 MV 包…** → **选择文件夹…**，或粘贴文件夹 / `mv.json` 的路径。导入只读取清单。
-   - 最近用过的包（最多 8 个）记在本机，出现在下拉列表里。
+3. **导入 MV 包** → **选择文件夹…**，或粘贴文件夹 / `mv.json` 的路径。导入只读取清单。
+   - 最近用过的包（最多 8 个）记在本机，作为卡片出现在曲库里（卡片右上角 × 可移除）。
    - 下次打开会恢复上次的包。
-4. **画布 MV** 播放该包：音频由 Host 分块读取，歌词和频谱一起载入。包里有 `terminal` 时，**MV 终端** 的播放器列表会多出 **MV 包：…**。
+4. 选「画布」播放该包：音频由 Host 分块读取，歌词和频谱一起载入。包里有 `terminal` 时，终端模式的播放器里可以选 **MV 包渲染程序**。
 
 最小的 `mv.json`：
 
@@ -97,13 +109,13 @@ MV 终端依赖可选依赖 `@lydell/node-pty`（含 Windows 预编译二进制�
 
 ## 画布 MV
 
-1. 点 **选择音频…**，选你自己的歌曲文件（mp3 / m4a / aac / mp4 均可，交给 Chromium 解码）。插件在本机计算 sha256，**下次打开自动恢复**（文件保存在 Harness 的 IndexedDB 里，不上传）。
-2. 点 **选择歌词…**：
+1. 在「正在播放」右侧选 **画布**，然后在音频一栏点 **选择…**，选你自己的歌曲文件（mp3 / m4a / aac / mp4 均可，交给 Chromium 解码）。插件在本机计算 sha256，**下次打开自动恢复**（文件保存在 Harness 的 IndexedDB 里，不上传）。
+2. 在歌词一栏点 **选择…**：
    - LRC：同一时间戳写两行（英文一行、中文一行），或一行写 `English / 中文`；支持 `[offset:]`。
    - SRT / VTT：每个字幕块两行文本。
    - 或直接选你本地 world.execute-me-ascii 目录下的 `lyrics.json`（`[{time,end,en,zh}]`）。
 3. 可选：选该目录下的 `spectrum.json`，画面就和原版终端播放器的频谱逐帧一致；不选则用实时 AnalyserNode。
-4. 点画面获得焦点后用键盘：
+4. 点 **▶ 播放**（或播放条左侧的圆形按钮）。音频同步可以在播放条上用 −/+ 调整，字幕偏移、字号在「设置」里。点画面获得焦点后用键盘（播放条上的键盘图标也列出了这些按键）：
 
 | 按键 | 作用 |
 | --- | --- |
@@ -132,14 +144,14 @@ MV 终端依赖可选依赖 `@lydell/node-pty`（含 Windows 预编译二进制�
 
 ## MV 终端
 
-1. 切到 **MV 终端** 标签，选择播放器：
-   - **world_execute_me（tui_live.py）**：填播放器目录（例如 `F:\everyAI\dsh-mv-cli\world_execute_me`），Python 会自动建议为 `<目录>\python\python.exe`；音频可留空（用播放器默认的 `input\song.mp3`）、指定文件，或勾选「不播放声音」。
+1. 在「正在播放」右侧选 **面板终端**（或 **独立窗口**），在「播放器」卡片里选择播放器：
+   - **world_execute_me（tui_live.py）**：第一次使用时选择或粘贴播放器目录（例如 `F:\everyAI\dsh-mv-cli\world_execute_me`），Python 会自动建议为 `<目录>\python\python.exe`；音频可留空（用播放器默认的 `input\song.mp3`）、指定文件，或勾选「不播放声音」。
    - **world-execute-me-ascii-rust**：填你从 [其 Release](https://github.com/bilixxb/world-execute-me-ascii-rust/releases) 自行下载解压的 `world-execute-me-rust.exe`。它只能解码 **MP3**，不填音频时播放其内嵌音乐。
-2. **检查路径**：Host 在磁盘上核对每个路径（解释器、`_tools\tui_live.py`、音频文件），并读取音频文件开头的字节判断**真实格式**（扩展名不算数）。
+2. **自动检查**：每次修改后 Host 都会在磁盘上核对每个路径（解释器、`_tools\tui_live.py`、音频文件），并读取音频文件开头的字节判断**真实格式**（扩展名不算数）。
 
    > **没有声音？** tui_live.py 用 Windows MCI 放音，MCI 只能打开真正的 **MP3 / WAV**。从视频网站下载的 MP4/AAC（常见的是 DASH 分片 MP4）即使改名为 `.mp3`，MCI 也会报“初始化 MCI 时发生问题”，播放器只在启动前一闪而过地打印 `no music: …`，然后**静音**播放画面——面板和独立窗口都一样。
-   > 0.2.1 起面板会在音频框下方标红提示，并提供 **转换为 WAV…**：在弹出的对话框里选择同一个文件，面板用 Chromium 解码成 16 位 PCM WAV（约 10 MB/分钟），写入插件自己的缓存目录 `%LOCALAPPDATA%\dsh-mv\audio-cache\`（只保留最近 6 个），并把音频文件改为它。原文件和播放器目录不会被修改。也可以自己用 ffmpeg 转：`ffmpeg -i song.mp3 -vn -c:a libmp3lame -q:a 2 song-real.mp3`。
-3. **启动…** 会显示**将要执行的完整命令**和工作目录，确认后才运行。面板只能启动这两个固定的播放器，不能传任意命令或参数。
+   > 面板会在「播放器」卡片里显示提示，并就地提供 **转换为 WAV…** 和 **不播放声音**：在弹出的对话框里选择同一个文件，面板用 Chromium 解码成 16 位 PCM WAV（约 10 MB/分钟），写入插件自己的缓存目录 `%LOCALAPPDATA%\dsh-mv\audio-cache\`（只保留最近 6 个），并把音频文件改为它。原文件和播放器目录不会被修改。也可以自己用 ffmpeg 转：`ffmpeg -i song.mp3 -vn -c:a libmp3lame -q:a 2 song-real.mp3`。
+3. **▶ 在面板终端播放** 会先显示**将要执行的完整命令**和工作目录，确认后才运行。面板只能启动这两个固定的播放器，不能传任意命令或参数。
 4. 点进终端后按键直接发给播放器（tui_live.py 用 Q 退出）；**结束**按钮会结束进程。关闭面板约 2 分钟后，Host 也会自动结束无人查看的会话。
 
 ### 在独立窗口播放（仅 Windows）
