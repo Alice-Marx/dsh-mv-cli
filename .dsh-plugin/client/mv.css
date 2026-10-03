@@ -239,3 +239,26 @@ body[data-ds-dark-theme] .mv-root, .mv-root.mv-dark { --mv-fb-bg: #151517; --mv-
 .mv-auto .mv-field { min-width: 150px; }
 .mv-stage canvas.mv-pixel { width: 100%; height: 100%; }
 .mv-card-art-dshpv { font-family: var(--mv-mono, monospace); font-size: 13px; letter-spacing: .02em; background: linear-gradient(135deg, #0d1528, #1a2a6c); color: #c4d4ff; }
+
+/* 0.7.0 MV 创意工坊 */
+.mv-card-ws .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent-strong); }
+.mv-ws { display: flex; flex-direction: column; gap: 10px; }
+.mv-ws-filters { gap: 8px; }
+.mv-ws-filters select, .mv-ws-search { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); color: var(--mv-text); }
+.mv-ws-search { flex: 1 1 220px; min-width: 160px; }
+.mv-ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.mv-ws-card { position: relative; text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); cursor: pointer; color: var(--mv-text); min-width: 0; }
+.mv-ws-card:hover { background: var(--mv-hover); }
+.mv-ws-cover { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: #0a0c10; margin-bottom: 6px; }
+.mv-ws-cover-empty { display: grid; place-items: center; color: #ffaf5f; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; font-size: 20px; }
+.mv-ws-badge { position: absolute; top: 14px; right: 14px; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: rgba(10, 12, 16, .78); color: #4ade80; }
+.mv-ws-badge-update { color: #ffaf5f; }
+.mv-ws-detail { display: grid; grid-template-columns: minmax(220px, 380px) 1fr; gap: 16px; align-items: start; }
+@media (max-width: 720px) { .mv-ws-detail { grid-template-columns: 1fr; } }
+.mv-ws-detail-body { min-width: 0; }
+.mv-ws-files { margin: 6px 0; padding-left: 18px; max-height: 140px; overflow: auto; }
+.mv-ws-files code { font-size: 11.5px; }
+.mv-ws-steps { padding-left: 18px; }
+.mv-ws-steps li { margin: 3px 0; }
+.mv-ws-publish { margin-top: 8px; }
+a.mv-button { text-decoration: none; }

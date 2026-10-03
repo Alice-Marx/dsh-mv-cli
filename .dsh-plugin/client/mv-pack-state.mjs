@@ -61,7 +61,7 @@ function saveRecent(list, storage) {
 
 /** Move a loaded pack to the front of the recent list. */
 export function rememberPack(loaded, { storage = globalThis.localStorage, now = Date.now } = {}) {
-  const entry = { manifestPath: loaded.manifestPath, title: loaded.pack.title, artist: loaded.pack.artist ?? '', usedAt: now() }
+  const entry = { manifestPath: loaded.manifestPath, title: loaded.pack.title, artist: loaded.pack.artist ?? '', usedAt: now(), ...(loaded.pack.workshop?.id ? { workshop: loaded.pack.workshop.id } : {}) }
   const list = [entry, ...loadRecent(storage).filter(item => item.manifestPath.toLowerCase() !== entry.manifestPath.toLowerCase())]
   saveRecent(list, storage)
   return list.slice(0, MV_PACK_LIMITS.recentPacks)

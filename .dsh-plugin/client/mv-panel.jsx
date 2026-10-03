@@ -31,13 +31,13 @@ function About({ pack }) {
         {credits.length > 0 ? <ul>{credits.map(item => <li key={item}>{item}</li>)}</ul> : <p>清单里没有署名信息。</p>}
         <p className="mv-wrap"><code>{pack.manifestPath}</code></p>
       </>}
-      <p>其他歌曲：在曲库里点「用 AI 制作新 MV」让 Harness 的 Agent 帮你做，或「新建（模板）」手写一个 MV 包再「导入」。</p>
+      <p>其他歌曲：在曲库里打开「创意工坊」安装社区投稿的 MV 包（不含音频和歌词，用你自己的文件播放；脚本在沙箱里运行），点「用 AI 制作新 MV」让 Harness 的 Agent 帮你做，或「新建（模板）」手写一个 MV 包再「导入」。</p>
     </>
   )
 }
 
 
-export function MvPanel({ api, harness = null, initialAi = false }) {
+export function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = false, workshopIndex = null }) {
   const [info, setInfo] = React.useState({ status: 'loading', value: null, error: '' })
   const [canvasState, setCanvasState] = React.useState({ playing: false, hasAudio: false })
   const canvasRef = React.useRef(null)
@@ -76,7 +76,7 @@ export function MvPanel({ api, harness = null, initialAi = false }) {
         <Popover label="关于与版权" icon={<Icon.info />}><About pack={pack} /></Popover>
       </header>
 
-      <Library api={api} harness={harness} info={info.value} initialAi={initialAi} active={pack} recent={recent} onSelect={id => void selectPack(id)} onLoaded={onLoaded} onRecent={setRecent} />
+      <Library api={api} harness={harness} info={info.value} initialAi={initialAi} initialWorkshop={initialWorkshop} workshopIndex={workshopIndex} canvas={() => canvasRef.current} active={pack} recent={recent} onSelect={id => void selectPack(id)} onLoaded={onLoaded} onRecent={setRecent} />
       {packError && <Alert kind="error"><p className="mv-wrap">{packError}</p></Alert>}
       {info.status === 'error' && <Alert kind="warn"><p className="mv-wrap">{info.error}（画布播放不受影响；MV 包、AI 制作和歌词引擎需要后台。）</p></Alert>}
 

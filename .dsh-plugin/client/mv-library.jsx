@@ -9,6 +9,7 @@ import { errorText } from './mv-info.mjs'
 import { unwrapRemote } from './remote-state.mjs'
 import { Alert, Icon } from './mv-ui.jsx'
 import { AiPackDialog } from './mv-ai.jsx'
+import { WorkshopDialog } from './mv-workshop.jsx'
 import { BUILTIN_ID, DSH_PV_ID, TEMPLATE_ZIP_NAME, directoryPicker, forgetPack, loadPackFromHost, rememberPack, templateZip } from './mv-pack-state.mjs'
 
 function downloadZip() {
@@ -27,9 +28,10 @@ const initials = title => {
   return /[\u3400-\u9fff]/.test(clean[0]) ? clean[0] : (words[0][0] + (words[1]?.[0] ?? '')).toUpperCase()
 }
 
-export function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false }) {
+export function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false, initialWorkshop = false, canvas = () => null, workshopIndex = null }) {
   const [importing, setImporting] = React.useState(false)
   const [aiOpen, setAiOpen] = React.useState(initialAi)
+  const [workshopOpen, setWorkshopOpen] = React.useState(initialWorkshop)
   const [path, setPath] = React.useState('')
   const [busy, setBusy] = React.useState('')
   const [note, setNote] = React.useState('')
@@ -89,16 +91,21 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
                 onClick={event => { event.stopPropagation(); onRecent(forgetPack(item.manifestPath)); if (active.id === id) onSelect(BUILTIN_ID) }}><Icon.close /></button>
               <span className="mv-card-art">{initials(item.title)}</span>
               <span className="mv-card-title">{item.title || item.manifestPath}</span>
-              <span className="mv-card-sub">{item.artist ? `${item.artist} · MV 包` : 'MV 包'}</span>
+              <span className="mv-card-sub">{item.artist ? `${item.artist} · ` : ''}{item.workshop ? '创意工坊' : 'MV 包'}</span>
             </div>
           )
         })}
-        <button type="button" className="mv-card mv-card-ghost mv-card-ai" aria-expanded={aiOpen} onClick={() => { setAiOpen(value => !value); setImporting(false); setError('') }}
+        <button type="button" className="mv-card mv-card-ghost mv-card-ws" aria-expanded={workshopOpen} onClick={() => { setWorkshopOpen(value => !value); setAiOpen(false); setImporting(false); setError('') }}
+          title="浏览社区投稿的 MV 包，一键安装到曲库；也可以把你的 MV 包发布到工坊">
+          <span className="mv-card-art"><Icon.shop /></span>
+          <span>创意工坊</span>
+        </button>
+        <button type="button" className="mv-card mv-card-ghost mv-card-ai" aria-expanded={aiOpen} onClick={() => { setAiOpen(value => !value); setImporting(false); setWorkshopOpen(false); setError('') }}
           title="选一首你的歌，让 Harness 的 Agent 写歌词时间轴、mv.json 和 ASCII 场景脚本">
           <span className="mv-card-art"><Icon.spark /></span>
           <span>用 AI 制作新 MV</span>
         </button>
-        <button type="button" className="mv-card mv-card-ghost" aria-expanded={importing} onClick={() => { setImporting(value => !value); setAiOpen(false); setError('') }}>
+        <button type="button" className="mv-card mv-card-ghost" aria-expanded={importing} onClick={() => { setImporting(value => !value); setAiOpen(false); setWorkshopOpen(false); setError('') }}>
           <span className="mv-card-art"><Icon.plus /></span>
           <span>导入 MV 包</span>
         </button>
@@ -108,7 +115,8 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
           <span>{busy === 'template' ? '正在写入…' : '新建（模板）'}</span>
         </button>
       </div>
-      {recent.length === 0 && !importing && !aiOpen && <p className="mv-caption">想放别的歌？点「用 AI 制作新 MV」让 Agent 帮你做，或「新建（模板）」得到带说明的 mv.json，放入你自己的音频和歌词后「导入」。</p>}
+      {recent.length === 0 && !importing && !aiOpen && !workshopOpen && <p className="mv-caption">想放别的歌？到「创意工坊」安装别人做好的 MV 包，点「用 AI 制作新 MV」让 Agent 帮你做，或「新建（模板）」得到带说明的 mv.json 和示例场景，放入你自己的音频和歌词后「导入」。</p>}
+      {workshopOpen && <WorkshopDialog api={api} active={active} canvas={canvas} initialIndex={workshopIndex} onClose={() => setWorkshopOpen(false)} onLoaded={onLoaded} onRecent={onRecent} />}
       {aiOpen && <AiPackDialog api={api} harness={harness} info={info} onClose={() => setAiOpen(false)} onLoaded={onLoaded} onRecent={onRecent} />}
       {importing && <div className="mv-dialog" role="dialog" aria-label="导入 MV 包">
         <h2>导入 MV 包</h2>
