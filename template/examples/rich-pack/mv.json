@@ -1,0 +1,32 @@
+{
+  "$schema": "../../mv.schema.json",
+  "format": "dsh-mv-pack",
+  "version": 1,
+  "title": "Neon Terminal (example)",
+  "artist": "dsh-mv",
+  "credits": [
+    "Example scenes: dsh-mv-cli template (MIT)",
+    "Techniques adapted from MisakaZentai/world-execute-me-dsh-pv (code MIT, © MisakaZentai); no artwork, audio or lyrics included"
+  ],
+  "notice": "Example pack with placeholder lyrics and no audio. Add your own song and lyrics to turn it into a real MV.",
+  "duration": 120,
+  "lyrics": { "file": "lyrics.placeholder.lrc" },
+  "canvas": { "renderer": "script", "script": "scenes.js", "bpm": 120, "beatOffset": 0 },
+  "x-dsh-mv-ai": {
+    "sections": [
+      { "kind": "intro", "label": "boot", "start": 0, "end": 12 },
+      { "kind": "verse", "label": "chat", "start": 12, "end": 40 },
+      { "kind": "chorus", "label": "spectrum ring", "start": 40, "end": 60 },
+      { "kind": "bridge", "label": "heartbeat", "start": 60, "end": 76 },
+      { "kind": "chorus", "label": "EXECUTE", "start": 76, "end": 96 },
+      { "kind": "outro", "label": "sinking", "start": 96, "end": 120 }
+    ]
+  },
+  "x-dsh-mv-workshop": {
+    "id": "neon-terminal-example",
+    "version": "1.0.0",
+    "license": "MIT",
+    "author": "Alice-Marx",
+    "audio": { "duration": 120 }
+  }
+}

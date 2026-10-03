@@ -26,6 +26,7 @@ function karaoke(g, y, ctx, sungStyle, restStyle) {
   var line = ctx.lyric.text, words = ctx.lyric.words || [], sung = 0
   for (var i = 0; i <= ctx.lyric.word && i < words.length; i++) { var at = line.indexOf(words[i].text, sung); if (at >= 0) sung = at + words[i].text.length }
   var x = Math.floor((g.cols - textWidth(line)) / 2)
+  fill(g, x - 2, y, textWidth(line) + 4, 1, ' ', 0)   // clear a band so the lyric stays readable
   put(g, x, y, line.slice(0, sung), sungStyle)
   put(g, x + textWidth(line.slice(0, sung)), y, line.slice(sung), restStyle)
 }
@@ -36,7 +37,7 @@ function heartbeat(g, y0, h, t, ctx, bright) {
     var age = (g.cols - 1 - x) / g.cols * 4, pos = (t - age) * bpm / 60
     var v = pqrst(pos - Math.floor(pos)) * (0.4 + 0.6 * energyOf(ctx, t))
     var y = y0 - Math.round(v * h), s = age < 0.4 ? bright : age < 2 ? 1 : 0
-    if (prev !== null) for (var k = Math.min(prev, y); k <= Math.max(prev, y); k++) setCell(g, x, k, k === y ? '•' : '│', s)
+    if (prev !== null) for (var k = Math.min(prev, y); k <= Math.max(prev, y); k++) setCell(g, x, k, k !== y ? '│' : Math.abs(v) < 0.05 ? '─' : '•', s)
     prev = y
   }
 }
@@ -96,9 +97,10 @@ function bridge(g, t, ctx) {
 
 var FONT = { E: ['###', '#  ', '## ', '#  ', '###'], X: ['# #', ' # ', ' # ', ' # ', '# #'], C: ['###', '#  ', '#  ', '#  ', '###'], U: ['# #', '# #', '# #', '# #', '###'], T: ['###', ' # ', ' # ', ' # ', ' # '], I: ['###', ' # ', ' # ', ' # ', '###'], O: ['###', '# #', '# #', '# #', '###'], N: ['# #', '###', '###', '###', '# #'] }
 function chorus2(g, t, ctx) {
-  var word = 'EXECUTE', s = Math.max(1, Math.floor(g.cols / (word.length * 4 * 2)))
-  var x0 = Math.floor((g.cols - word.length * 4 * s) / 2), y0 = Math.floor(g.rows / 2 - 2.5 * s) - 2
-  for (var i = 0; i < word.length; i++) { var gl = FONT[word[i]]; for (var r = 0; r < 5; r++) for (var c = 0; c < 3; c++) if (gl[r][c] === '#') fill(g, x0 + (i * 4 + c) * s, y0 + r * s, s, s, '█', 4) }
+  // block letters: cells are about twice as tall as wide, so a pixel is sx wide and sy = sx / 2 tall
+  var word = 'EXECUTE', sx = Math.max(1, Math.floor(g.cols * 0.85 / (word.length * 4))), sy = Math.max(1, Math.round(sx / 2))
+  var x0 = Math.floor((g.cols - word.length * 4 * sx) / 2), y0 = Math.floor(g.rows / 2 - 2.5 * sy) - 2
+  for (var i = 0; i < word.length; i++) { var gl = FONT[word[i]]; for (var r = 0; r < 5; r++) for (var c = 0; c < 3; c++) if (gl[r][c] === '#') fill(g, x0 + (i * 4 + c) * sx, y0 + r * sy, sx, sy, '█', 4) }
   karaoke(g, g.rows - 4, ctx, 4, 0)
   var pulse = ctx.beat ? ctx.beat.pulse : 0, seed = ctx.beat ? ctx.beat.index : Math.floor(t * 2)
   if (pulse > 0.6) for (var y = 0; y < g.rows; y++) if (hash(y, seed) < 0.2 && g.ch[y].indexOf('') < 0) {

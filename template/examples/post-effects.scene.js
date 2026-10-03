@@ -11,7 +11,7 @@
 var DOWN = { '3': '2', '2': '1', '1': '0', '0': '0' }  // one step darker (colours 4–6 are kept)
 function darker(s) { return DOWN[s] || s }
 
-// The base scene: a ring of spectrum spokes around the centre, plus the lyric.
+// The base scene: a ring of spectrum spokes around the centre (the lyric is added after bloom).
 function base(g, t, ctx, style) {
   var cx = g.cols / 2, cy = g.rows / 2, spokes = 48
   for (var i = 0; i < spokes; i++) {
@@ -19,7 +19,6 @@ function base(g, t, ctx, style) {
     var len = 3 + bandOf(ctx, i, t) * Math.min(cx * 0.45, cy * 0.9)
     for (var r = 3; r < len; r += 0.7) setCell(g, Math.round(cx + Math.cos(a) * r * 2), Math.round(cy + Math.sin(a) * r), r > len - 1.4 ? '●' : '·', style)
   }
-  if (ctx.lyric) center(g, Math.round(cy), ctx.lyric.text, style)
 }
 
 // Pass 1 — trails: earlier copies, each one step dimmer, drawn underneath.
@@ -72,6 +71,11 @@ function glitch(g, ctx, t) {
 function render(t, cols, rows, ctx) {
   var g = withTrails(cols, rows, t, ctx)
   bloom(g)
+  if (ctx.lyric) {   // text goes on top of a cleared band, after bloom, so it stays crisp
+    var w = textWidth(ctx.lyric.text), y = Math.round(rows / 2)
+    fill(g, Math.floor((cols - w) / 2) - 2, y, w + 4, 1, ' ', 0)
+    center(g, y, ctx.lyric.text, '3')
+  }
   scanlines(g, t)
   vignette(g)
   glitch(g, ctx, t)
