@@ -8,6 +8,7 @@ import React from 'react'
 import { errorText } from './mv-info.mjs'
 import { unwrapRemote } from './remote-state.mjs'
 import { Alert, Icon } from './mv-ui.jsx'
+import { coverHue, coverInitials } from './mv-skin.mjs'
 import { AiPackDialog } from './mv-ai.jsx'
 import { WorkshopDialog } from './mv-workshop.jsx'
 import { BUILTIN_ID, DSH_PV_ID, TEMPLATE_ZIP_NAME, directoryPicker, forgetPack, loadPackFromHost, rememberPack, templateZip } from './mv-pack-state.mjs'
@@ -21,12 +22,8 @@ function downloadZip() {
   setTimeout(() => URL.revokeObjectURL(url), 30_000)
 }
 
-const initials = title => {
-  const clean = String(title ?? '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
-  if (!clean) return '♪'
-  const words = clean.split(' ')
-  return /[\u3400-\u9fff]/.test(clean[0]) ? clean[0] : (words[0][0] + (words[1]?.[0] ?? '')).toUpperCase()
-}
+const initials = coverInitials
+const hue = title => ({ '--mv-hue': coverHue(title) })
 
 export function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false, initialWorkshop = false, canvas = () => null, workshopIndex = null }) {
   const [importing, setImporting] = React.useState(false)
@@ -72,13 +69,13 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
       <p className="mv-section-label">曲库</p>
       <div className="mv-library">
         <button type="button" className="mv-card" aria-pressed={active.id === BUILTIN_ID} onClick={() => onSelect(BUILTIN_ID)} title="内置预设：使用你自己的音频和歌词文件">
-          <span className="mv-card-art">&gt;_</span>
+          <span className="mv-card-art" style={{ '--mv-hue': 18 }}>&gt;_</span>
           <span className="mv-card-title">world.execute(me);</span>
           <span className="mv-card-sub">Mili · 内置预设</span>
         </button>
         <button type="button" className="mv-card" aria-pressed={active.id === DSH_PV_ID} onClick={() => onSelect(DSH_PV_ID)}
           title={'内置画布预设：MisakaZentai 的 world-execute-me-dsh-pv（代码 MIT）实时移植，鲸鱼娘立绘 CC BY-NC-SA 4.0。\n使用你自己的音频和歌词文件。'}>
-          <span className="mv-card-art mv-card-art-dshpv">dsh</span>
+          <span className="mv-card-art mv-card-art-dshpv" style={{ '--mv-hue': 222 }}>dsh</span>
           <span className="mv-card-title">world.execute(me); dsh PV</span>
           <span className="mv-card-sub">MisakaZentai · 画布预设</span>
         </button>
@@ -89,7 +86,7 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
               onClick={() => onSelect(id)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(id) } }}>
               <button type="button" className="mv-card-remove" aria-label={`从曲库移除「${item.title}」`} title="从曲库移除（不删除文件）"
                 onClick={event => { event.stopPropagation(); onRecent(forgetPack(item.manifestPath)); if (active.id === id) onSelect(BUILTIN_ID) }}><Icon.close /></button>
-              <span className="mv-card-art">{initials(item.title)}</span>
+              <span className="mv-card-art" style={hue(item.title)}>{initials(item.title)}</span>
               <span className="mv-card-title">{item.title || item.manifestPath}</span>
               <span className="mv-card-sub">{item.artist ? `${item.artist} · ` : ''}{item.workshop ? '创意工坊' : 'MV 包'}</span>
             </div>

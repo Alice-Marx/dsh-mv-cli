@@ -142,7 +142,7 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
             </div>
             <p className="mv-caption">{current.files.length} 个文件 · {sizeText(current.size)}{current.updated ? ` · 更新于 ${current.updated.slice(0, 10)}` : ''}{current.homepage ? <> · <a href={current.homepage} target="_blank" rel="noreferrer">主页</a></> : null}
               {' · '}<a href={`${REPO_URL}/tree/${index?.commit ?? 'main'}/packs/${current.id}`} target="_blank" rel="noreferrer">在 GitHub 上查看源码</a></p>
-            <ul className="mv-caption mv-ws-files">{current.files.map(f => <li key={f.path}><code>{f.path}</code> {sizeText(f.size)} <span className="mv-faint">sha256 {f.sha256.slice(0, 12)}…</span></li>)}</ul>
+            <ul className="mv-caption mv-ws-files">{current.files.map(f => <li key={f.path}><code title={f.path}>{f.path}</code><span className="mv-ws-size">{sizeText(f.size)}</span><span className="mv-faint mv-ws-sha" title={`sha256 ${f.sha256}`}>sha256 {f.sha256.slice(0, 12)}…</span></li>)}</ul>
             <div className="mv-row">
               {!installed[current.id] && <button type="button" className="mv-button" disabled={Boolean(busy)} onClick={() => void install(current)}>{busy === `install:${current.id}` ? '正在下载并校验…' : '安装到曲库'}</button>}
               {installed[current.id] && updates.has(current.id) && <button type="button" className="mv-button" disabled={Boolean(busy)} onClick={() => void install(current)}>{busy === `install:${current.id}` ? '正在更新…' : `更新到 v${current.version}（已装 v${installed[current.id].version}）`}</button>}
@@ -234,7 +234,7 @@ export function PublishDialog({ api, pack, canvas = () => null, onClose }) {
         <Alert kind="ok"><p className="mv-wrap">已通过检查并打包到：<code>{result.dir}</code>
           {result.stripped.length > 0 && <><br />已去掉：{result.stripped.join('；')}</>}{result.timingLines ? <><br />歌词时间轴：{result.timingLines} 行（只有时间和哈希）</> : null}</p></Alert>
         {result.warnings.length > 0 && <Alert kind="warn"><p className="mv-wrap" style={{ whiteSpace: 'pre-wrap' }}>{result.warnings.join('\n')}</p></Alert>}
-        <ul className="mv-caption mv-ws-files">{result.files.map(f => <li key={f.path}><code>{f.path}</code> {sizeText(f.size)}</li>)}</ul>
+        <ul className="mv-caption mv-ws-files">{result.files.map(f => <li key={f.path}><code title={f.path}>{f.path}</code><span className="mv-ws-size">{sizeText(f.size)}</span><span /></li>)}</ul>
         <ol className="mv-caption mv-ws-steps">
           <li>复制上面的文件夹路径，在资源管理器里打开它。<button type="button" className="mv-link" onClick={() => void doCopy('dir', result.dir)}>{copied === 'dir' ? '已复制' : '复制路径'}</button></li>
           <li>点下面的按钮，浏览器会打开工坊仓库 <code>packs/{result.id}/</code> 的上传页面（需要登录 GitHub；GitHub 会自动 fork）。</li>

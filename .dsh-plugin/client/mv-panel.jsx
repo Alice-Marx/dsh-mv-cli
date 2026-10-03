@@ -11,6 +11,9 @@ import { Library } from './mv-library.jsx'
 import { Alert, Icon, Popover } from './mv-ui.jsx'
 import { BUILTINS, BUILTIN_ID, BUILTIN_PACK, loadActive, loadPackFromHost, loadRecent, saveActive } from './mv-pack-state.mjs'
 import css from './mv.css'
+import skinCss from './mv-skins.css'
+import { SkinPicker, useSkin } from './mv-skin-ui.jsx'
+import { coverHue, coverInitials } from './mv-skin.mjs'
 
 /** Keys of the removed 面板终端 / 独立窗口 modes (0.5.x and older); cleared once. */
 export const LEGACY_KEYS = Object.freeze(['dsh-mv.panel.destination', 'dsh-mv.panel.tab', 'dsh-mv.terminal.form.v1'])
@@ -41,6 +44,7 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
   const [info, setInfo] = React.useState({ status: 'loading', value: null, error: '' })
   const [canvasState, setCanvasState] = React.useState({ playing: false, hasAudio: false })
   const canvasRef = React.useRef(null)
+  const skin = useSkin()
   React.useEffect(() => { clearLegacy() }, [])
   const reloadInfo = React.useCallback(async () => {
     try { const value = await loadInfo(api); setInfo({ status: 'ready', value, error: '' }) }
@@ -67,12 +71,13 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
   const renderer = { 'world-execute-me': 'world.execute(me) 场景', 'dsh-pv': 'dsh-pv（大肥鱼眼中的 world.execute(me)）', script: '场景脚本（scenes.js）' }[pack.pack.canvas?.renderer] ?? '通用画面（频谱 + 歌词）'
 
   return (
-    <div className="mv-root">
-      <style>{css}</style>
+    <div className={`mv-root ${skin.className}`} data-mv-skin={skin.settings.skin}>
+      <style>{css + skinCss}</style>
       <header className="mv-head">
         <h1 className="mv-title">MV 放映室</h1>
         <span className="mv-spacer" />
         {notice && <span className="mv-pill mv-pill-warn" role="status" title={notice}>⚠ 后台版本不一致 · 请完全重启 Harness</span>}
+        <SkinPicker skin={skin} />
         <Popover label="关于与版权" icon={<Icon.info />}><About pack={pack} /></Popover>
       </header>
 
@@ -80,7 +85,8 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
       {packError && <Alert kind="error"><p className="mv-wrap">{packError}</p></Alert>}
       {info.status === 'error' && <Alert kind="warn"><p className="mv-wrap">{info.error}（画布播放不受影响；MV 包、AI 制作和歌词引擎需要后台。）</p></Alert>}
 
-      <section className="mv-hero" aria-label="正在播放">
+      <section className="mv-hero" aria-label="正在播放" style={{ '--mv-hue': pack.builtin ? (pack.pack.canvas?.renderer === 'dsh-pv' ? 222 : 18) : coverHue(pack.pack.title) }}>
+        <span className="mv-hero-art" aria-hidden="true">{pack.builtin ? (pack.pack.canvas?.renderer === 'dsh-pv' ? 'dsh' : '>_') : coverInitials(pack.pack.title)}</span>
         <div style={{ minWidth: 0 }}>
           <p className="mv-section-label" style={{ margin: 0 }}>正在播放</p>
           <h2 className="mv-hero-title">{pack.pack.title}</h2>
