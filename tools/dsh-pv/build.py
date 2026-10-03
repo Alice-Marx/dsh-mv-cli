@@ -24,6 +24,8 @@ FONTS = {'DejaVuSansMono.ttf': 0, 'DejaVuSansMono-Bold.ttf': 1, 'SpaceMono-Bold.
 PAL = {}
 def ci(c):
     if not isinstance(c, list) or len(c) < 3: return -1
+    # ImageDraw on L / 1 masks records plain grey levels (r == g == b); those never reach the picture
+    if c[0] == c[1] == c[2]: return -1
     c = (c + [255])[:4]
     k = '%02x%02x%02x%02x' % tuple(max(0, min(255, int(v))) for v in c)
     if k not in PAL: PAL[k] = len(PAL)
@@ -44,6 +46,7 @@ def conv(op, out, dots, ticker):
         if y < 41 or y >= 612: return                        # header / lyric band / footer: drawn by the port
         if 1180 <= x <= 1256 and 56 <= y <= 604 and abs(x - 1188) < 2:
             ticker.append((y, s)); return                    # the ops ticker scrolls at runtime
+        if ci(op['fill']) < 0: return
         e = ['t', round(x), round(y), op.get('size') or 12, ci(op['fill']), fidx(op.get('font', '')), s]
         if op.get('anchor'): e.append(op['anchor'])
         out.append(e); return
@@ -54,9 +57,11 @@ def conv(op, out, dots, ticker):
     q = [round(v) for v in xy]
     if k == 'point':
         c = ci(op['fill'])
+        if c < 0: return
         for j in range(0, len(q) - 1, 2): dots[(c, 1, 1)].extend(q[j:j + 2])
         return
     fill = ci(op.get('fill')); ol = ci(op.get('outline')); w = op.get('width') or 1
+    if fill < 0 and ol < 0: return
     if not isinstance(w, (int, float)): w = 1
     if k == 'rectangle':
         if len(q) != 4: return

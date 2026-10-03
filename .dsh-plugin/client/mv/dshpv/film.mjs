@@ -513,11 +513,10 @@ export class DshPvFilm {
     if (prev && strength > 0) {
       ctx.save()
       ctx.globalCompositeOperation = 'lighter'
-      ctx.globalAlpha = 0.18 * strength
-      ctx.drawImage(prev, 0, 0)
-      if ('filter' in ctx) {
-        ctx.filter = 'blur(4px)'; ctx.globalAlpha = 0.22 * strength
-        ctx.drawImage(this.buffer, 0, 0, W / 2, H / 2, 0, 0, W, H)
+      if (this.lastT !== undefined && Math.abs(t - this.lastT) < 0.2) { ctx.globalAlpha = 0.1 * strength; ctx.drawImage(prev, 0, 0) }
+      if ('filter' in ctx && this.bloom !== false) {
+        ctx.filter = 'blur(4px)'; ctx.globalAlpha = 0.3 * strength
+        ctx.drawImage(this.buffer, 0, 0)
         ctx.filter = 'none'
       }
       ctx.restore()
@@ -527,6 +526,7 @@ export class DshPvFilm {
     const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.95)
     g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.45)')
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H)
+    this.lastT = t
     if (prev) { const p = prev.getContext('2d'); p.globalCompositeOperation = 'copy'; p.drawImage(this.buffer, 0, 0); p.globalCompositeOperation = 'source-over' }
   }
 }
