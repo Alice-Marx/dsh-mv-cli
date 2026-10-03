@@ -34,7 +34,7 @@ export const DSH_PV_PACK = Object.freeze({
   id: DSH_PV_ID,
   builtin: true,
   pack: Object.freeze({
-    title: 'world.execute(me); · 大肥鱼眼中的 world.execute(me)', artist: 'Mili',
+    title: 'world.execute(me); dsh PV', artist: 'Mili',
     credits: [
       'Song and lyrics © Mili',
       'PV: MisakaZentai / world-execute-me-dsh-pv (code MIT), ported to a real-time canvas renderer',

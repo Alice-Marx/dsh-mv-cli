@@ -6,7 +6,7 @@
 /* global __DSH_MV_CLIENT_VERSION__ */
 export const CLIENT_VERSION = typeof __DSH_MV_CLIENT_VERSION__ === 'string' ? __DSH_MV_CLIENT_VERSION__ : ''
 
-export const STALE_HOST_MESSAGE = 'MV 插件后台版本与界面不一致，请完全退出并重启 Harness（包括托盘图标）后再使用 MV 终端。'
+export const STALE_HOST_MESSAGE = 'MV 插件后台版本与界面不一致，请完全退出并重启 Harness（包括托盘图标）后再使用 MV 放映室。'
 
 export function isMissingRemoteMethod(message) {
   const value = String(message ?? '')

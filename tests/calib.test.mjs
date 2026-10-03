@@ -233,7 +233,7 @@ test('auto make: pack → LRCLIB synced → (engine skipped) → align → secti
   const dir = await tmp(t)
   const manifestPath = join(dir, 'mv.json')
   await writeFile(manifestPath, JSON.stringify({ format: 'dsh-mv-pack', version: 1, title: 'T', audio: { file: 'a.mp3' }, 'x-dsh-mv-ai': { status: 'waiting-for-agent' } }))
-  const services = mvRemoteServices({ info: () => ({}) }, { lrclib: true }, null, undefined, null, {
+  const services = mvRemoteServices({ lrclib: true }, undefined, {
     lrclib: { lookup: async q => ({ found: true, sent: q, synced: '[00:05.00]oh oh baby\n[00:09.00]dance tonight\n[00:20.00]oh oh baby\n[00:24.00]dance tonight\n', id: 1 }) },
   })
   const api = Object.fromEntries(Object.entries(services).map(([k, fn]) => [k, wrap(fn)]))
@@ -248,7 +248,7 @@ test('auto make: pack → LRCLIB synced → (engine skipped) → align → secti
   assert.ok(manifest['x-dsh-mv-ai'].sections.some(s => s.kind === 'chorus'))
   assert.match(await readFile(join(dir, 'lyrics.lrc'), 'utf8'), /\[00:05\.00\]oh oh baby/)
   assert.match(result.prompt, /不要重新估计或改动时间轴/)
-  const off = mvRemoteServices({ info: () => ({}) }, { lrclib: false }, null, undefined, null, { lrclib: { lookup: async () => ({ found: true }) } })
+  const off = mvRemoteServices({ lrclib: false }, undefined, { lrclib: { lookup: async () => ({ found: true }) } })
   await assert.rejects(off.lyricsLookup({ title: 'x' }), /已在插件设置里关闭/)
   const ac = new AbortController(); ac.abort()
   await assert.rejects(runAutoMake(api, { file: {}, title: 'T' }, { signal: ac.signal, deps: { createAiPack: async () => made } }), /已停止/)

@@ -9,7 +9,7 @@ import { parseAudioConvert, parseAudioRead, parseFfmpegInfo } from './mv-audio-p
 import { parseAiPackCreate } from './mv-ai-prompt.mjs'
 import { parsePackUploadBegin, parsePackUploadFinish, parsePackUploadWrite } from './mv-ai-upload.mjs'
 import { parseAnalysisRead, parseLyricsLookup, parsePackWriteText } from './mv-calib-protocol.mjs'
-import { parseDshPvAsset } from './mv-dshpv-assets.mjs'
+import { parseDshPvAsset } from './mv-dshpv-protocol.mjs'
 import { parseEngineInfo, parseEngineInstall, parseEngineModel, parseEngineTranscribe, parseJobCancel, parseJobRead } from './mv-engine-protocol.mjs'
 
 export const MV_REMOTE_PACKAGE = '@ljwei-stak/dsh-mv-cli'

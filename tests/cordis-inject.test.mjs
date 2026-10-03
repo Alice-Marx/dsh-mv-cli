@@ -1,5 +1,5 @@
 // Real Cordis runtime: the Host plugin reads only injected services, registers
-// its Typert descriptors and kills every MV terminal on unload.
+// its Typert descriptors and withdraws them on unload.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Context } from '@deepseek-ai/cordis'

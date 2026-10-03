@@ -1,25 +1,18 @@
-// MV packs: manifest parsing/validation, placeholder substitution, Host loading,
-// launches (exact argv, confirmation binding, cmd.exe safety), template and zip.
+// MV packs: manifest parsing/validation, Host loading and chunked reads,
+// the ignored pre-0.6.0 "terminal" section, template and zip.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import {
-  MvPackError, parseMvPack, substitute, expandPackArgs, placeholdersOf, cmdSafetyProblems, parsePackLaunch, parsePackRead, numberArg, CMD_UNSAFE,
-} from '../.dsh-plugin/shared/mv-pack.mjs'
-import { loadPack, readPackFile, resolvePackLaunch, writeTemplate } from '../.dsh-plugin/shared/mv-pack-host.mjs'
-import { templateFiles, TEMPLATE_MANIFEST, TERMINAL_EXAMPLE, WORLD_EXECUTE_ME_EXAMPLE, MV_PACK_JSON_SCHEMA } from '../.dsh-plugin/shared/mv-pack-template.mjs'
-import { parseMvLaunch } from '../.dsh-plugin/shared/mv-terminal-protocol.mjs'
-import { createMvTerminalManager, resolveMvLaunch } from '../.dsh-plugin/shared/mv-terminal.mjs'
-import { createMvConsoleManager } from '../.dsh-plugin/shared/mv-console.mjs'
+import { MvPackError, parseMvPack, parsePackRead, parsePackLoad } from '../.dsh-plugin/shared/mv-pack.mjs'
+import { loadPack, readPackFile, writeTemplate, TERMINAL_IGNORED } from '../.dsh-plugin/shared/mv-pack-host.mjs'
+import { templateFiles, TEMPLATE_MANIFEST, WORLD_EXECUTE_ME_EXAMPLE, DSH_PV_EXAMPLE, MV_PACK_JSON_SCHEMA } from '../.dsh-plugin/shared/mv-pack-template.mjs'
 import { MvRemoteService } from '../.dsh-plugin/remote-service.mjs'
 import { MV_REMOTE_DESCRIPTORS, MV_REMOTE_NAMESPACE } from '../.dsh-plugin/shared/mv-remote.mjs'
-import { mvRemoteServices } from '../.dsh-plugin/index.mjs'
+import { defaultPackOps, mvRemoteServices } from '../.dsh-plugin/index.mjs'
 import { gatewayClient } from './helpers/typert-gateway.mjs'
-import { fakePty } from './helpers/fake-pty.mjs'
 import { unwrapRemote } from '../.dsh-plugin/client/remote-state.mjs'
-import { EMPTY_FORM, checkLaunch, startSession, formProblem, launchFromForm, confirmationDetails, consoleProblem } from '../.dsh-plugin/client/mv-terminal-state.mjs'
 import { crc32, zipFiles, templateZip, fetchPackText, loadRecent, rememberPack, forgetPack } from '../.dsh-plugin/client/mv-pack-state.mjs'
 import { GenericFilm, genericChapters } from '../.dsh-plugin/client/mv/generic-film.mjs'
 
@@ -27,7 +20,7 @@ const base = { format: 'dsh-mv-pack', version: 1, title: 'Song' }
 const problemsOf = input => { try { parseMvPack(input); return [] } catch (error) { assert.ok(error instanceof MvPackError); return error.problems } }
 
 test('pack: template manifests are valid and minimal packs normalise', () => {
-  for (const manifest of [TEMPLATE_MANIFEST, TERMINAL_EXAMPLE, WORLD_EXECUTE_ME_EXAMPLE]) parseMvPack(JSON.stringify(manifest))
+  for (const manifest of [TEMPLATE_MANIFEST, WORLD_EXECUTE_ME_EXAMPLE, DSH_PV_EXAMPLE]) parseMvPack(JSON.stringify(manifest))
   const pack = parseMvPack({ ...base, audio: 'music/song.mp3', 'x-mine': 1 })
   assert.deepEqual(pack.audio, { file: 'music/song.mp3', offset: 0 })
   assert.equal(pack.canvas.renderer, 'generic')
@@ -47,53 +40,22 @@ test('pack: every problem is reported', () => {
   assert.ok(problemsOf({ ...base, audio: { file: 'a|b.mp3' } }).some(p => /不允许的字符/.test(p)))
 })
 
-test('pack: terminal validation (programs, placeholders, groups)', () => {
-  const term = (terminal, extra = {}) => problemsOf({ ...base, ...extra, terminal })
-  assert.deepEqual(term({ program: 'p.exe', args: ['--x'] }), [])
-  assert.ok(term({ program: 'run.bat', args: [] }).some(p => /\.bat/.test(p)))
-  assert.ok(term({ program: 'run.ps1', args: [] }).some(p => /\.ps1/.test(p)))
-  assert.ok(term({ program: 'p.exe', args: 'a b' }).some(p => /必须是数组/.test(p)))
-  assert.ok(term({ program: 'p.exe', args: ['{nope}'] }).some(p => /未知占位符 \{nope\}/.test(p)))
-  assert.ok(term({ program: 'p.exe', args: ['{audio}'] }).some(p => /\{audio\}，但清单没有/.test(p)))
-  assert.deepEqual(term({ program: 'p.exe', args: [{ when: 'audio', args: ['--a', '{audio}'] }] }), [], 'conditional group allows {audio}')
-  assert.deepEqual(term({ program: 'p.exe', args: ['--a', '{audio}'] }, { audio: 'a.mp3' }), [])
-  assert.ok(term({ program: 'p.exe', args: ['{script}'] }).some(p => /terminal\.script/.test(p)))
-  assert.ok(term({ program: 'p.exe', args: ['a{b'] }).some(p => /缺少 \}/.test(p)))
-  assert.ok(term({ program: 'p.exe', args: ['a}b'] }).some(p => /多余的 \}/.test(p)))
-  assert.ok(term({ program: 'p.exe', args: ['a\nb'] }).some(p => /换行/.test(p)))
-  assert.ok(term({ program: 'p.exe', args: [{ when: 'weather', args: ['x'] }] }).some(p => /when/.test(p)))
-  assert.ok(term({ program: 'p.exe', args: [], cwd: 'script' }).some(p => /cwd 为 script/.test(p)))
-  assert.ok(term({ program: 'p.exe', args: new Array(65).fill('x') }).some(p => /最多 64/.test(p)))
-  assert.deepEqual(placeholdersOf('{{x}} {audio}-{start}'), ['audio', 'start'])
+test('pack: a pre-0.6.0 "terminal" section is ignored with a warning, never run', async () => {
+  const old = { ...base, audio: 'song.mp3', terminal: { program: 'bin/player.exe', script: 'play.py', args: ['{script}', '--audio', '{audio}'] } }
+  const pack = parseMvPack(old)
+  assert.equal(pack.terminal, undefined)
+  assert.deepEqual(pack.ignored, ['terminal'])
+  assert.equal(parseMvPack({ ...base, terminal: 'anything at all' }).ignored[0], 'terminal', 'not validated any more')
+  const dir = fixture(old, { 'song.mp3': Buffer.alloc(16) })
+  try {
+    const loaded = await loadPack(dir)
+    assert.ok(loaded.warnings.includes(TERMINAL_IGNORED))
+    assert.equal(JSON.stringify(loaded).includes('player.exe'), false, 'the program path never reaches the panel')
+  } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test('pack: placeholder substitution and argument expansion', () => {
-  assert.equal(substitute('--file={audio}', { audio: 'C:\\a b\\s.mp3' }), '--file=C:\\a b\\s.mp3')
-  assert.equal(substitute('{{literal}}', {}), '{literal}')
-  assert.throws(() => substitute('{lyrics}', {}), /没有值/)
-  assert.throws(() => substitute('{bad}', {}), /未知占位符/)
-  assert.equal(numberArg(1.23456), '1.235')
-  assert.equal(numberArg(-0), '0')
-  const args = ['{script}', { when: 'audio', args: ['--audio', '{audio}'] }, { when: 'start', args: ['--start', '{start}'] }, { when: 'offset', args: ['--offset', '{offset}'] }, '--dir', '{packDir}']
-  assert.deepEqual(expandPackArgs(args, { script: '/p/s.py', packDir: '/p', start: 0, offset: 0 }), ['/p/s.py', '--dir', '/p'])
-  assert.deepEqual(expandPackArgs(args, { script: '/p/s.py', audio: '/p/a.mp3', packDir: '/p', start: 12.5, offset: -0.25 }),
-    ['/p/s.py', '--audio', '/p/a.mp3', '--start', '12.5', '--offset', '-0.25', '--dir', '/p'])
-  assert.throws(() => expandPackArgs(['{audio}'], { audio: 'x\ny' }), /换行/)
-})
-
-test('pack: cmd.exe safety rejects metacharacters and %, allows parentheses', () => {
-  assert.deepEqual(cmdSafetyProblems('D:\\p.exe', ['D:\\Music\\world.execute(me).mp3', '--start', '3'], 'D:\\'), [])
-  for (const bad of ['100%.mp3', 'a&b', 'a|b', 'a<b', 'a>b', 'a^b', 'a!b', 'a"b']) {
-    assert.ok(CMD_UNSAFE.test(bad), bad)
-    assert.equal(cmdSafetyProblems('D:\\p.exe', [bad], 'D:\\').length, 1, bad)
-  }
-  assert.equal(cmdSafetyProblems('D:\\50%\\p.exe', [], 'D:\\').length, 1)
-})
-
-test('pack: launch and read requests carry only a manifest path and numbers', () => {
-  assert.deepEqual(parseMvLaunch({ player: 'pack', manifestPath: '/m/mv.json', start: 3 }), { player: 'pack', manifestPath: '/m/mv.json', start: 3, offset: 0 })
-  assert.throws(() => parseMvLaunch({ player: 'pack', manifestPath: '/m/mv.json', program: 'calc.exe' }), /unexpected fields: program/)
-  assert.throws(() => parsePackLaunch({ manifestPath: 'relative/mv.json' }), /绝对路径/)
+test('pack: read and load requests carry only a manifest path, a role and numbers', () => {
+  assert.throws(() => parsePackLoad({ path: '/m', program: 'calc.exe' }), /unexpected fields: program/)
   assert.throws(() => parsePackRead({ manifestPath: '/m/mv.json', role: 'program' }), /role/)
   assert.throws(() => parsePackRead({ manifestPath: '/m/mv.json', role: 'audio', length: 10 * 1024 * 1024 }), /length/)
 })
@@ -108,11 +70,8 @@ function fixture(manifest, files = {}) {
   return dir
 }
 
-const PLAYER_PACK = {
-  ...base, artist: 'A', audio: { file: 'song.mp3', offset: 0.5 }, lyrics: { file: 'lyrics.lrc' },
-  terminal: { program: 'bin/player', script: 'play.py', args: ['{script}', { when: 'audio', args: ['--audio', '{audio}'] }, '--offset', '{offset}', { when: 'start', args: ['--start', '{start}'] }] },
-}
-const PLAYER_FILES = { 'song.mp3': Buffer.alloc(1_300_000, 7), 'lyrics.lrc': '[00:01.00]Hello\n[00:01.00]你好\n', 'bin/player': '#!/bin/true\n', 'play.py': 'print(1)\n' }
+const PLAYER_PACK = { ...base, artist: 'A', audio: { file: 'song.mp3', offset: 0.5 }, lyrics: { file: 'lyrics.lrc' } }
+const PLAYER_FILES = { 'song.mp3': Buffer.alloc(1_300_000, 7), 'lyrics.lrc': '[00:01.00]Hello\n[00:01.00]你好\n' }
 
 test('pack host: load reports files and warnings, runs nothing', async () => {
   const dir = fixture({ ...PLAYER_PACK, spectrum: { file: 'spectrum.json' } }, PLAYER_FILES)
@@ -123,7 +82,6 @@ test('pack host: load reports files and warnings, runs nothing', async () => {
     assert.equal(loaded.files.audio.size, 1_300_000)
     assert.equal(loaded.files.spectrum.exists, false)
     assert.match(loaded.warnings.join(), /spectrum 文件不存在/)
-    assert.equal(loaded.terminal.program, join(dir, 'bin', 'player'))
     assert.equal(JSON.stringify(loaded).includes('undefined'), false)
     await assert.rejects(loadPack(join(dir, 'song.mp3')), /\.json/)
     await assert.rejects(loadPack(join(dir, 'missing')), /找不到/)
@@ -147,80 +105,18 @@ test('pack host: chunked reads of the files the manifest names', async () => {
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test('pack host: exact argv, Windows .exe rule, confirmation bound to the command', async () => {
+test('pack gateway: import and read through the Typert boundary', async () => {
   const dir = fixture(PLAYER_PACK, PLAYER_FILES)
-  try {
-    const manifestPath = join(dir, 'mv.json')
-    const resolved = await resolvePackLaunch({ player: 'pack', manifestPath, start: 30, offset: 0.25 }, { platform: 'linux' })
-    assert.equal(resolved.file, join(dir, 'bin', 'player'))
-    assert.deepEqual(resolved.args, [join(dir, 'play.py'), '--audio', join(dir, 'song.mp3'), '--offset', '0.75', '--start', '30'])
-    assert.equal(resolved.cwd, dir)
-    await assert.rejects(resolvePackLaunch({ player: 'pack', manifestPath }, { platform: 'win32' }), /必须是 \.exe/)
-    await resolvePackLaunch({ player: 'pack', manifestPath, start: 30, offset: 0.25, expectDisplay: resolved.display }, { platform: 'linux' })
-    writeFileSync(manifestPath, JSON.stringify({ ...PLAYER_PACK, terminal: { ...PLAYER_PACK.terminal, args: ['--evil'] } }))
-    await assert.rejects(resolvePackLaunch({ player: 'pack', manifestPath, start: 30, offset: 0.25, expectDisplay: resolved.display }, { platform: 'linux' }), /确认之后发生了变化/)
-    rmSync(join(dir, 'play.py'))
-    await assert.rejects(resolvePackLaunch({ player: 'pack', manifestPath }, { platform: 'linux' }), /找不到脚本文件/)
-  } finally { rmSync(dir, { recursive: true, force: true }) }
-})
-
-function packHarness() {
-  const pty = fakePty()
-  const terminals = createMvTerminalManager({
-    loadPty: () => ({ ok: true, pty: pty.module, package: '@lydell/node-pty' }),
-    resolveLaunch: launch => resolveMvLaunch(launch, { platform: 'linux' }),
-    environment: () => ({ PATH: '/bin' }), setRepeating: () => ({ unref() {} }), clearRepeating: () => {},
-  })
   const service = Object.create(MvRemoteService.prototype)
-  service.services = mvRemoteServices(terminals, {})
-  return { api: gatewayClient(MV_REMOTE_DESCRIPTORS, service, MV_REMOTE_NAMESPACE), pty, terminals }
-}
-
-test('pack gateway: import, check, confirm, start — and nothing runs without the confirmed command', async () => {
-  const dir = fixture(PLAYER_PACK, PLAYER_FILES)
-  const { api, pty, terminals } = packHarness()
+  service.services = mvRemoteServices({}, defaultPackOps, {})
+  const api = gatewayClient(MV_REMOTE_DESCRIPTORS, service, MV_REMOTE_NAMESPACE)
   try {
     const loaded = unwrapRemote(await api.packLoad({ path: dir }))
     assert.equal(loaded.pack.title, 'Song')
-    assert.equal(pty.spawned.length, 0, 'import runs nothing')
-    const pack = { id: `pack:${loaded.manifestPath}`, ...loaded }
-    const form = { ...EMPTY_FORM, player: 'pack', packStart: '5' }
-    assert.equal(formProblem(form, { pack }), '')
-    assert.match(formProblem(form, { pack: { ...pack, terminal: null } }), /没有配置外部渲染程序/)
-    assert.deepEqual(launchFromForm(form, { pack }), { player: 'pack', manifestPath: loaded.manifestPath, start: 5 })
-    await assert.rejects(startSession(api, form, {}, { pack }), /先检查并确认/)
-    const raw = unwrapRemote.bind(null, await api.terminalStart({ player: 'pack', manifestPath: loaded.manifestPath, cols: 80, rows: 24, confirmed: true }))
-    assert.throws(raw, /确认它的完整命令/)
-    assert.equal(pty.spawned.length, 0)
-    const checked = await checkLaunch(api, form, { pack })
-    assert.deepEqual(checked.args, [join(dir, 'play.py'), '--audio', join(dir, 'song.mp3'), '--offset', '0.5', '--start', '5'])
-    const details = confirmationDetails(form, checked, { pack })
-    assert.equal(details.command, checked.display)
-    assert.match(details.points[0], /任意程序/)
-    await startSession(api, form, { cols: 100, rows: 30 }, { pack, checked })
-    assert.equal(pty.spawned.length, 1)
-    assert.equal(pty.spawned[0].file, join(dir, 'bin', 'player'))
-    assert.deepEqual(pty.spawned[0].args, checked.args)
     const chunk = unwrapRemote(await api.packRead({ manifestPath: loaded.manifestPath, role: 'audio', offset: 0, length: 16 }))
     assert.equal(chunk.bytes, 16)
-  } finally { terminals.disposeAll(); rmSync(dir, { recursive: true, force: true }) }
-})
-
-test('pack console: cmd.exe mode refuses metacharacters before anything is spawned', async () => {
-  let spawned = 0
-  const consoles = createMvConsoleManager({
-    platform: 'win32',
-    resolveLaunch: async () => ({ file: 'D:\\p\\player.exe', args: ['--title', 'Rock & Roll'], cwd: 'D:\\p', display: 'x', pack: { title: 'T' } }),
-    spawnImpl: () => { spawned++; throw new Error('must not spawn') },
-    probes: { children: async () => [], processPath: async () => null, killTree: async () => 0 },
-    env: { SystemRoot: 'C:\\Windows' }, wait: async () => {},
-  })
-  await assert.rejects(consoles.start({ launch: { player: 'pack', manifestPath: 'D:\\p\\mv.json', expectDisplay: 'x' }, confirmed: true }), /cmd\.exe）模式拒绝的字符 "&"/)
-  await assert.rejects(consoles.start({ launch: { player: 'pack', manifestPath: 'D:\\p\\mv.json' }, confirmed: true }), /确认它的完整命令/)
-  await assert.rejects(consoles.start({ launch: { player: 'pack', manifestPath: 'D:\\p\\mv.json', expectDisplay: 'x' }, confirmed: false }), /确认/)
-  assert.equal(spawned, 0)
-  const pack = { pack: { title: 'T' }, manifestPath: 'D:\\p\\mv.json', terminal: { label: 'p' } }
-  assert.match(consoleProblem({ ...EMPTY_FORM, player: 'pack' }, { platform: 'win32', pack, checked: { file: 'D:\\p\\p.exe', args: ['50%'], cwd: 'D:\\p' } }), /%/)
+    assert.equal((await api.packRead({ manifestPath: loaded.manifestPath, role: 'audio', command: 'x' })).ok, false)
+  } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
 test('pack template: written into a new folder, never overwriting, and every manifest parses', async () => {
@@ -236,7 +132,7 @@ test('pack template: written into a new folder, never overwriting, and every man
     assert.match(readFileSync(join(first.path, 'examples', 'scenes.example.js'), 'utf8'), /function render\(t, cols, rows, ctx\)/)
     assert.equal(JSON.parse(readFileSync(join(first.path, 'mv.schema.json'), 'utf8')).$id, MV_PACK_JSON_SCHEMA.$id)
     const readme = readFileSync(join(first.path, 'README.zh.md'), 'utf8')
-    for (const word of ['{audio}', '{start}', 'when', '% ! " ^ & | < >']) assert.ok(readme.includes(word), word)
+    for (const word of ['renderer', 'dsh-pv', 'x-', 'terminal']) assert.ok(readme.includes(word), word)
     await assert.rejects(writeTemplate({ dir: join(dir, 'nope') }), /不是已存在的文件夹/)
     const loaded = await loadPack(first.path)
     assert.match(loaded.warnings.join(), /audio 文件不存在/, 'the template expects your own song.mp3')

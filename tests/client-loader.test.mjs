@@ -13,7 +13,7 @@ const bundle = readFileSync(new URL('../.dsh-plugin/client.js', import.meta.url)
 function load() {
   let registration
   const React = { createElement: (type, props, ...children) => ({ type, props, children }), Fragment: 'Fragment', useState: () => [], useRef: () => ({}), useEffect() {}, useCallback: f => f, forwardRef: f => f, useImperativeHandle() {} }
-  // xterm reads navigator.userAgent / platform at module load, as in the Harness renderer.
+  // a Harness-like renderer global environment
   vm.runInNewContext(bundle, { window: { __ModuleLoader__: { load(entry) { registration = entry } } }, navigator: { userAgent: 'Mozilla/5.0 (Windows NT 10.0) Electron', platform: 'Win32', language: 'zh-CN', maxTouchPoints: 0 }, document: {}, queueMicrotask, setTimeout, clearTimeout, setInterval, clearInterval, console, TextEncoder, TextDecoder, URL }, { timeout: 5000 })
   const exports = registration.factory(name => {
     if (name === 'react') return React
@@ -53,13 +53,13 @@ test('client apply mounts the remote and registers panel, sidebar and open actio
   const dispose = await exports.apply(ctx)
   assert.equal(typeof dispose, 'function')
   assert.equal(mounted[0].package, pkg.name)
-  assert.equal(mounted[0].descriptors.length, 34)
+  assert.equal(mounted[0].descriptors.length, 22)
   assert.deepEqual(plain(injected), ['slots', 'remote', 'remote.dshMv', 'layout'])
   assert.deepEqual(slots.map(s => s.item.name), ['main', 'sidebar.panellist', 'plugins.detail.actions'])
   assert.equal(slots[0].item.key, 'dsh-mv.main')
   assert.equal(slots[1].item.id, 'dsh-mv.main')
   assert.equal(slots[1].item.label, 'MV 放映室')
-  assert.equal(typeof slots[0].item.inject().api.terminalStart, 'function')
+  assert.equal(typeof slots[0].item.inject().api.dshpvAsset, 'function')
   assert.equal(typeof slots[0].item.inject().api.aiPackCreate, 'function')
   assert.equal(typeof slots[0].item.inject().harness.get, 'function')
   assert.equal(slots[0].item.inject().harness.get('layout'), undefined, 'ctx.get is optional')

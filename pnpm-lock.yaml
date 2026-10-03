@@ -17,15 +17,6 @@ importers:
       '@deepseek-ai/schemastery':
         specifier: 3.18.4
         version: 3.18.4
-      '@xterm/addon-fit':
-        specifier: 0.11.0
-        version: 0.11.0
-      '@xterm/addon-webgl':
-        specifier: 0.19.0
-        version: 0.19.0
-      '@xterm/xterm':
-        specifier: 6.0.0
-        version: 6.0.0
       esbuild:
         specifier: 0.28.2
         version: 0.28.2
@@ -35,10 +26,6 @@ importers:
       react-dom:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
-    optionalDependencies:
-      '@lydell/node-pty':
-        specifier: 1.2.0-beta.15
-        version: 1.2.0-beta.15
 
 packages:
 
@@ -226,50 +213,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@lydell/node-pty-darwin-arm64@1.2.0-beta.15':
-    resolution: {integrity: sha512-6TSBbzdcLiNTHl1mTuzflqXrkmcC36USVGvERoDgvHk2ItEDaMaFZuAJ1CqPmwYj0DyhCS16TVS8OGK9xZnjyQ==}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@lydell/node-pty-darwin-x64@1.2.0-beta.15':
-    resolution: {integrity: sha512-yDT2oqPqYMBScyuk1U9Rg5VKcrbMOD9o9jWYYamDADA3NSbUISroPChrqYRQ74Y7BQtNH4gqYAiWOZRi5uQZ0Q==}
-    cpu: [x64]
-    os: [darwin]
-
-  '@lydell/node-pty-linux-arm64@1.2.0-beta.15':
-    resolution: {integrity: sha512-wkbNF7dYAmtJv+o2+iztVlNwnUB4B0uX0wh/UD+mwMcmE2gNMnW9GChXO7fEE5XJokD0vB5idiHpGegaN+G/sg==}
-    cpu: [arm64]
-    os: [linux]
-
-  '@lydell/node-pty-linux-x64@1.2.0-beta.15':
-    resolution: {integrity: sha512-+U/5AVvHT6W+8OCYcnJgN0Qgc0ycO3TfD6aaFJHK+WHij797f8gsi5dV1HEO9l6YQmWCD+VL5gaLDhx3mxHwCA==}
-    cpu: [x64]
-    os: [linux]
-
-  '@lydell/node-pty-win32-arm64@1.2.0-beta.15':
-    resolution: {integrity: sha512-pyAk91w7wnnKrD4mrHXtIXRfmzSWV5bEzvRhurXcMCtCc2TJ424ciUskIgWMhAPP6y3KyUnqElj+U6kY3iOt0A==}
-    cpu: [arm64]
-    os: [win32]
-
-  '@lydell/node-pty-win32-x64@1.2.0-beta.15':
-    resolution: {integrity: sha512-2f8twEmDVxZ7drchAXjtevpmSPhFok0avAnzXro4t5gmz0xsPNKkoZvymwtuIS3xo7PzQqZOPQ/YzwEMb7oIzQ==}
-    cpu: [x64]
-    os: [win32]
-
-  '@lydell/node-pty@1.2.0-beta.15':
-    resolution: {integrity: sha512-Br8wBxzbxFwdWgk9uQ+rdzE0xfoxOK4QuGH54swhRwc5IxP6H9Y1/bcyazRGvNUs6XkB5qNVkezuKSRxUwZe7A==}
-
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
-
-  '@xterm/addon-fit@0.11.0':
-    resolution: {integrity: sha512-jYcgT6xtVYhnhgxh3QgYDnnNMYTcf8ElbxxFzX0IZo+vabQqSPAjC3c1wJrKB5E19VwQei89QCiZZP86DCPF7g==}
-
-  '@xterm/addon-webgl@0.19.0':
-    resolution: {integrity: sha512-b3fMOsyLVuCeNJWxolACEUED0vm7qC0cy4wRvf3oURSzDTYVQiGPhTnhWZwIHdvC48Y+oLhvYXnY4XDXPoJo6A==}
-
-  '@xterm/xterm@6.0.0':
-    resolution: {integrity: sha512-TQwDdQGtwwDt+2cgKDLn0IRaSxYu1tSUjgKarSDkUM0ZNiSRXFpjxEsvc/Zgc5kq5omJ+V0a8/kIM2WD3sMOYg==}
 
   esbuild@0.28.2:
     resolution: {integrity: sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA==}
@@ -396,41 +341,7 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@lydell/node-pty-darwin-arm64@1.2.0-beta.15':
-    optional: true
-
-  '@lydell/node-pty-darwin-x64@1.2.0-beta.15':
-    optional: true
-
-  '@lydell/node-pty-linux-arm64@1.2.0-beta.15':
-    optional: true
-
-  '@lydell/node-pty-linux-x64@1.2.0-beta.15':
-    optional: true
-
-  '@lydell/node-pty-win32-arm64@1.2.0-beta.15':
-    optional: true
-
-  '@lydell/node-pty-win32-x64@1.2.0-beta.15':
-    optional: true
-
-  '@lydell/node-pty@1.2.0-beta.15':
-    optionalDependencies:
-      '@lydell/node-pty-darwin-arm64': 1.2.0-beta.15
-      '@lydell/node-pty-darwin-x64': 1.2.0-beta.15
-      '@lydell/node-pty-linux-arm64': 1.2.0-beta.15
-      '@lydell/node-pty-linux-x64': 1.2.0-beta.15
-      '@lydell/node-pty-win32-arm64': 1.2.0-beta.15
-      '@lydell/node-pty-win32-x64': 1.2.0-beta.15
-    optional: true
-
   '@standard-schema/spec@1.1.0': {}
-
-  '@xterm/addon-fit@0.11.0': {}
-
-  '@xterm/addon-webgl@0.19.0': {}
-
-  '@xterm/xterm@6.0.0': {}
 
   esbuild@0.28.2:
     optionalDependencies:

@@ -105,18 +105,3 @@ test('renderer: runs, wide glyphs and grid caps', () => {
   assert.deepEqual(gridSize(100000, 100000, { width: 8, height: 16 }), { cols: MAX_COLS, rows: MAX_ROWS })
   assert.equal(PALETTE.length, 7)
 })
-
-test('terminal form: validation, preview and suggested python', async () => {
-  const state = await import('../.dsh-plugin/client/mv-terminal-state.mjs')
-  const base = { ...state.EMPTY_FORM, packageDir: 'F:\\w\\world_execute_me\\' }
-  assert.equal(state.suggestedPython(base.packageDir), 'F:\\w\\world_execute_me\\python\\python.exe')
-  assert.match(state.formProblem(base), /Python/)
-  const form = { ...base, pythonPath: state.suggestedPython(base.packageDir), audioFile: 'D:\\My Music\\song.mp3', start: '30' }
-  assert.equal(state.formProblem(form), '')
-  assert.equal(state.commandPreview(form), 'F:\\w\\world_execute_me\\python\\python.exe F:\\w\\world_execute_me\\_tools\\tui_live.py --audio-file "D:\\My Music\\song.mp3" --start 30')
-  assert.match(state.formProblem({ ...form, pythonPath: 'C:\\Windows\\System32\\cmd.exe' }), /解释器/)
-  assert.match(state.formProblem({ ...form, start: '-3' }), /起始/)
-  assert.equal(state.loadForm({ getItem: () => JSON.stringify({ ...form, player: 'rust', exePath: 'D:\\x\\w.exe' }) }).player, 'python', 'an old Rust form falls back to python')
-  assert.equal(state.confirmationDetails(form).points.length, 4)
-  assert.match(state.endDescription({ endReason: 'orphan' }), /自动结束/)
-})

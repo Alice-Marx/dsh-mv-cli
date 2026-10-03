@@ -1,5 +1,5 @@
-// 0.4.0: relaxed audio formats — content sniffing, automatic WAV for
-// tui_live.py (cached by sha256), optional ffmpeg (located, never auto-run).
+// Relaxed audio formats: content sniffing, and the optional ffmpeg fallback
+// (located, never auto-run) for pack audio the panel cannot decode.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { EventEmitter } from 'node:events'
@@ -7,8 +7,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { sniffAudio, audioMimeOf, ffmpegArgs, parseAudioConvert, parseAudioRead } from '../.dsh-plugin/shared/mv-audio-protocol.mjs'
-import { createFfmpegConverter, createWavCache, findFfmpeg, probeForPanel, readAudioChunk, FFMPEG_FALLBACKS } from '../.dsh-plugin/shared/mv-audio.mjs'
-import { encodeWav, prepareTerminalAudio, readHostAudio } from '../.dsh-plugin/client/mv-wav.mjs'
+import { createFfmpegConverter, createWavCache, findFfmpeg, readAudioChunk, FFMPEG_FALLBACKS } from '../.dsh-plugin/shared/mv-audio.mjs'
+import { encodeWav, readHostAudio } from '../.dsh-plugin/client/mv-wav.mjs'
 import { audioMime } from '../.dsh-plugin/client/mv-pack-state.mjs'
 
 const B = (...parts) => Buffer.concat(parts.map(p => (typeof p === 'string' ? Buffer.from(p, 'latin1') : Buffer.from(p))))
@@ -33,14 +33,14 @@ test('sniffAudio: formats by content', () => {
     [B('FLV', [1, 5]), 'flv', 'video', false, false],
     [B('MZ', Buffer.alloc(20)), 'unknown', 'unknown', false, false],
   ]
-  for (const [bytes, format, kind, chromium, mci] of cases) {
+  for (const [bytes, format, kind, chromium] of cases) {
     const sniff = sniffAudio(bytes)
-    assert.deepEqual([sniff.format, sniff.kind, sniff.chromium, sniff.mci], [format, kind, chromium, mci], `${format}: ${sniff.label}`)
+    assert.deepEqual([sniff.format, sniff.kind, sniff.chromium], [format, kind, chromium], `${format}: ${sniff.label}`)
   }
-  // 32-bit float WAV: Chromium yes, MCI no (converted).
+  // 32-bit float WAV: Chromium decodes it.
   const float = Buffer.from(encodeWav([new Float32Array(8)], 44100))
   float.writeUInt16LE(3, 20); float.writeUInt16LE(32, 34)
-  assert.deepEqual([sniffAudio(float).chromium, sniffAudio(float).mci], [true, false])
+  assert.equal(sniffAudio(float).chromium, true)
   assert.match(audioMimeOf(sniffAudio(ftyp('M4A '))), /audio\/mp4/)
   assert.match(audioMime(new Uint8Array(B('OggS', Buffer.alloc(24), 'OpusHead'))), /ogg/)
 })
@@ -102,29 +102,4 @@ test('ffmpeg converter: fixed argv, shell:false, result checked and cached', asy
   const missing = createFfmpegConverter({ cache, locate: async () => null })
   assert.deepEqual(await missing.info(), { available: false })
   await assert.rejects(missing.convert({ path: 'D:\\x.wma' }), /没有找到 ffmpeg/)
-})
-
-test('prepareTerminalAudio: MP3 as is, cached WAV reused, otherwise decode + upload', async t => {
-  const dir = await mkdtemp(join(tmpdir(), 'mvprep-')); t.after(() => rm(dir, { recursive: true, force: true }))
-  const cache = createWavCache({ dir })
-  const mp3 = join(dir, 'a.mp3'), dash = join(dir, 'b.mp3'), amr = join(dir, 'c.amr')
-  await writeFile(mp3, B('ID3', [4, 0, 0, 0, 0, 0, 0], [0xff, 0xfb, 0x90, 0x64]))
-  await writeFile(dash, B(ftyp('iso5'), 'dash', Buffer.alloc(64)))
-  await writeFile(amr, B('#!AMR\n', Buffer.alloc(10)))
-  const api = {
-    audioProbe: wrap(r => probeForPanel(r, { cache })), audioRead: wrap(r => readAudioChunk(r)),
-    wavBegin: wrap(r => cache.begin(r)), wavWrite: wrap(r => cache.write(r)), wavFinish: wrap(r => cache.finish(r)),
-  }
-  const decode = async () => ({ channels: [new Float32Array(2000), new Float32Array(2000)], sampleRate: 44100, duration: 2000 / 44100 })
-  assert.deepEqual((await prepareTerminalAudio(api, mp3, { decode })).converted, false)
-  const stages = []
-  const first = await prepareTerminalAudio(api, dash, { decode, onProgress: p => stages.push(p.stage) })
-  assert.equal(first.converted, true); assert.match(first.path, /\.wav$/)
-  assert.ok(stages.includes('probe') && stages.includes('read'))
-  const again = await prepareTerminalAudio(api, dash, { decode: async () => { throw new Error('must not decode again') } })
-  assert.deepEqual([again.cached, again.path], [true, first.path])
-  await assert.rejects(prepareTerminalAudio(api, amr, { decode }), error => error.code === 'decode-failed')
-  const failing = async () => { throw new Error('无法解码这个音频') }
-  await writeFile(dash, B(ftyp('iso5'), 'dash', Buffer.alloc(65)))
-  await assert.rejects(prepareTerminalAudio(api, dash, { decode: failing }), error => error.code === 'decode-failed')
 })

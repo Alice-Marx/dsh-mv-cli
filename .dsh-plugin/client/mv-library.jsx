@@ -1,5 +1,6 @@
 /**
- * The library row: the built-in world.execute(me) preset and recent MV packs
+ * The library row: the built-in world.execute(me) presets (grid MV and the
+ * dsh-pv canvas port) and recent MV packs
  * as cards, plus "用 AI 制作新 MV", "导入" and "新建（模板）". Importing only
  * reads mv.json; nothing is ever run from here.
  */
@@ -8,7 +9,7 @@ import { errorText } from './mv-info.mjs'
 import { unwrapRemote } from './remote-state.mjs'
 import { Alert, Icon } from './mv-ui.jsx'
 import { AiPackDialog } from './mv-ai.jsx'
-import { BUILTIN_ID, TEMPLATE_ZIP_NAME, directoryPicker, forgetPack, loadPackFromHost, rememberPack, templateZip } from './mv-pack-state.mjs'
+import { BUILTIN_ID, DSH_PV_ID, TEMPLATE_ZIP_NAME, directoryPicker, forgetPack, loadPackFromHost, rememberPack, templateZip } from './mv-pack-state.mjs'
 
 function downloadZip() {
   const blob = new Blob([templateZip()], { type: 'application/zip' })
@@ -72,6 +73,12 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
           <span className="mv-card-art">&gt;_</span>
           <span className="mv-card-title">world.execute(me);</span>
           <span className="mv-card-sub">Mili · 内置预设</span>
+        </button>
+        <button type="button" className="mv-card" aria-pressed={active.id === DSH_PV_ID} onClick={() => onSelect(DSH_PV_ID)}
+          title={'内置画布预设：MisakaZentai 的 world-execute-me-dsh-pv（代码 MIT）实时移植，鲸鱼娘立绘 CC BY-NC-SA 4.0。\n使用你自己的音频和歌词文件。'}>
+          <span className="mv-card-art mv-card-art-dshpv">dsh</span>
+          <span className="mv-card-title">world.execute(me); dsh PV</span>
+          <span className="mv-card-sub">MisakaZentai · 画布预设</span>
         </button>
         {recent.map(item => {
           const id = `pack:${item.manifestPath}`
