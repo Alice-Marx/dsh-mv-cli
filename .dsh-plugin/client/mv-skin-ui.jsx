@@ -1,6 +1,6 @@
 /** Skin state hook and the 外观 picker in the panel header. */
 import React from 'react'
-import { SKINS, loadSkin, saveSkin, skinClasses, resolveDark } from './mv-skin.mjs'
+import { SKINS, SKIN_EVENT, loadSkin, saveSkin, skinClasses, resolveDark } from './mv-skin.mjs'
 import { Popover, Segmented } from './mv-ui.jsx'
 
 function readEnv() {
@@ -22,8 +22,11 @@ export function useSkin() {
   }, [])
   const update = React.useCallback(change => setSettings(current => saveSkin({ ...current, ...change(current) })), [])
   const mode = settings.modes[settings.skin]
+  const className = skinClasses(settings, env)
+  // Canvas widgets that read CSS colours (the calibration waveform) listen for this and redraw at once.
+  React.useEffect(() => { globalThis.dispatchEvent?.(new Event(SKIN_EVENT)) }, [className])
   return {
-    settings, className: skinClasses(settings, env), dark: resolveDark(mode, env), mode,
+    settings, className, dark: resolveDark(mode, env), mode,
     setSkin: skin => update(() => ({ skin })),
     setMode: value => update(current => ({ modes: { ...current.modes, [current.skin]: value } })),
   }

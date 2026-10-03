@@ -13,6 +13,6 @@ await esbuild.build({
 })
 // Optional: Harness design tokens extracted locally (not committed) for a faithful theme.
 const theme = process.env.HARNESS_THEME_CSS && existsSync(process.env.HARNESS_THEME_CSS) ? readFileSync(process.env.HARNESS_THEME_CSS, 'utf8') : ''
-writeFileSync(join(OUT, 'index.html'), `<!doctype html><html><head><meta charset="utf-8"><style>${theme}
+writeFileSync(join(OUT, 'index.html'), `<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"><style>${theme}
 html,body{margin:0;height:100%} body{background:var(--dsw-alias-bg-base,#fff)} #root{min-height:100%}</style></head><body><div id="root"></div><script src="preview.js"></script></body></html>`)
 console.log('preview at', OUT)

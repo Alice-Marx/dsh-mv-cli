@@ -43,10 +43,10 @@ __export(index_exports, {
   registerUi: () => registerUi
 });
 module.exports = __toCommonJS(index_exports);
-var import_react10 = __toESM(require("react"), 1);
+var import_react11 = __toESM(require("react"), 1);
 
 // .dsh-plugin/client/mv-panel.jsx
-var import_react9 = __toESM(require("react"), 1);
+var import_react10 = __toESM(require("react"), 1);
 
 // .dsh-plugin/client/canvas-mv.jsx
 var import_react3 = __toESM(require("react"), 1);
@@ -6551,6 +6551,60 @@ async function loadDshPv(read) {
 // .dsh-plugin/client/mv-calib.jsx
 var import_react2 = __toESM(require("react"), 1);
 
+// .dsh-plugin/client/mv-skin.mjs
+var SKIN_KEY = "dsh-mv.skin.v1";
+var SKIN_EVENT = "dsh-mv-skin-change";
+var SKINS = Object.freeze([
+  { id: "c", name: "Harness", title: "Harness \u539F\u751F", description: "\u4E0E DeepSeek Harness \u4E00\u81F4\u7684\u5361\u7247\u3001\u67D4\u548C\u9634\u5F71\u548C\u84DD\u8272\u5F3A\u8C03\u8272\u3002", defaultMode: "auto" },
+  { id: "a", name: "\u97F3\u4E50", title: "\u73B0\u4EE3\u97F3\u4E50\u5E94\u7528", description: "\u5927\u5C01\u9762\u3001\u6E10\u53D8\u5C01\u9762\u56FE\u3001\u9192\u76EE\u7684\u6B63\u5728\u64AD\u653E\u533A\uFF0C\u64AD\u653E\u6761\u5438\u9644\u5728\u5E95\u90E8\u3002", defaultMode: "dark" },
+  { id: "b", name: "\u7EC8\u7AEF", title: "\u7EC8\u7AEF / \u9ED1\u5BA2", description: "\u7B49\u5BBD\u5B57\u4F53\u3001\u9713\u8679\u7EFF\u914D\u7425\u73C0\u8272\u3001CRT \u626B\u63CF\u7EBF\uFF1B\u6D45\u8272\u4E3A\u300C\u7EB8\u8D28\u7EC8\u7AEF\u300D\u3002", defaultMode: "dark" }
+]);
+var DEFAULT_SKIN = "c";
+var MODES = Object.freeze(["auto", "light", "dark"]);
+var byId = (id) => SKINS.find((skin) => skin.id === id);
+function normalizeSkin(value) {
+  const skin = byId(value?.skin) ? value.skin : DEFAULT_SKIN;
+  const modes = {};
+  for (const s of SKINS) modes[s.id] = MODES.includes(value?.modes?.[s.id]) ? value.modes[s.id] : s.defaultMode;
+  return { skin, modes };
+}
+function loadSkin(storage = globalThis.localStorage) {
+  try {
+    return normalizeSkin(JSON.parse(storage?.getItem(SKIN_KEY) ?? "null"));
+  } catch {
+    return normalizeSkin(null);
+  }
+}
+function saveSkin(value, storage = globalThis.localStorage) {
+  const clean3 = normalizeSkin(value);
+  try {
+    storage?.setItem(SKIN_KEY, JSON.stringify(clean3));
+  } catch {
+  }
+  return clean3;
+}
+function resolveDark(mode, { hostDark = null, systemDark = false } = {}) {
+  if (mode === "dark") return true;
+  if (mode === "light") return false;
+  return hostDark ?? systemDark;
+}
+function skinClasses(settings, env) {
+  const { skin, modes } = normalizeSkin(settings);
+  const mode = modes[skin];
+  return `mv-skin-${skin} ${resolveDark(mode, env) ? "mv-dark" : "mv-light"}${mode === "auto" ? " mv-follow" : ""}`;
+}
+function coverHue(text4) {
+  let h = 2166136261;
+  for (const ch of String(text4 ?? "")) h = Math.imul(h ^ ch.codePointAt(0), 16777619);
+  return (h >>> 0) % 360;
+}
+function coverInitials(title) {
+  const clean3 = String(title ?? "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  if (!clean3) return "\u266A";
+  const words = clean3.split(" ");
+  return /[\u3400-\u9fff]/.test(clean3[0]) ? clean3[0] : (words[0][0] + (words[1]?.[0] ?? "")).toUpperCase();
+}
+
 // .dsh-plugin/client/mv-ui.jsx
 var import_react = __toESM(require("react"), 1);
 var svg = (children, size = 16) => /* @__PURE__ */ import_react.default.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, children);
@@ -8246,6 +8300,19 @@ function CalibEditor({ api, pack, lyricsText, audioFile, duration, player, onPre
   const left = Math.max(0, Math.min(Math.max(0, total - view.span), now - view.span * 0.3));
   const toX = (t, w) => (t - left) / view.span * w;
   const toT = (x, w) => left + x / w * view.span;
+  const [, repaint] = import_react2.default.useReducer((n) => n + 1, 0);
+  import_react2.default.useEffect(() => {
+    let raf = 0;
+    const on = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(repaint);
+    };
+    globalThis.addEventListener?.(SKIN_EVENT, on);
+    return () => {
+      cancelAnimationFrame(raf);
+      globalThis.removeEventListener?.(SKIN_EVENT, on);
+    };
+  }, []);
   import_react2.default.useEffect(() => {
     const el = canvas.current;
     if (!el) return;
@@ -10623,6 +10690,13 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     toggle: () => act({ type: "toggle" }),
     pause: () => engine.current?.clock.pause(),
     focus: () => wrap3.current?.focus(),
+    /** Transport for the skins' player bar / status line (polled; no per-frame panel renders). */
+    time: () => engine.current?.clock.time() ?? 0,
+    duration: () => engine.current?.clock.duration ?? 0,
+    playing: () => Boolean(engine.current?.clock.playing),
+    seek: (t) => player.seek(Math.max(0, t)),
+    seekBy: (delta) => act({ type: "seekBy", delta }),
+    fullscreen: () => toggleFullscreen(),
     /** PNG (base64, ≤ 960 px wide) of the current frame, for a workshop cover. */
     snapshotPng: () => {
       const source = isDshPv(packRef.current) ? pixel.current : canvas.current;
@@ -10725,59 +10799,6 @@ var errorText = (error, fallback) => remoteErrorText(text3(error?.message), fall
 
 // .dsh-plugin/client/mv-library.jsx
 var import_react7 = __toESM(require("react"), 1);
-
-// .dsh-plugin/client/mv-skin.mjs
-var SKIN_KEY = "dsh-mv.skin.v1";
-var SKINS = Object.freeze([
-  { id: "c", name: "Harness", title: "Harness \u539F\u751F", description: "\u4E0E DeepSeek Harness \u4E00\u81F4\u7684\u5361\u7247\u3001\u67D4\u548C\u9634\u5F71\u548C\u84DD\u8272\u5F3A\u8C03\u8272\u3002", defaultMode: "auto" },
-  { id: "a", name: "\u97F3\u4E50", title: "\u73B0\u4EE3\u97F3\u4E50\u5E94\u7528", description: "\u5927\u5C01\u9762\u3001\u6E10\u53D8\u5C01\u9762\u56FE\u3001\u9192\u76EE\u7684\u6B63\u5728\u64AD\u653E\u533A\uFF0C\u64AD\u653E\u6761\u5438\u9644\u5728\u5E95\u90E8\u3002", defaultMode: "dark" },
-  { id: "b", name: "\u7EC8\u7AEF", title: "\u7EC8\u7AEF / \u9ED1\u5BA2", description: "\u7B49\u5BBD\u5B57\u4F53\u3001\u9713\u8679\u7EFF\u914D\u7425\u73C0\u8272\u3001CRT \u626B\u63CF\u7EBF\uFF1B\u6D45\u8272\u4E3A\u300C\u7EB8\u8D28\u7EC8\u7AEF\u300D\u3002", defaultMode: "dark" }
-]);
-var DEFAULT_SKIN = "c";
-var MODES = Object.freeze(["auto", "light", "dark"]);
-var byId = (id) => SKINS.find((skin) => skin.id === id);
-function normalizeSkin(value) {
-  const skin = byId(value?.skin) ? value.skin : DEFAULT_SKIN;
-  const modes = {};
-  for (const s of SKINS) modes[s.id] = MODES.includes(value?.modes?.[s.id]) ? value.modes[s.id] : s.defaultMode;
-  return { skin, modes };
-}
-function loadSkin(storage = globalThis.localStorage) {
-  try {
-    return normalizeSkin(JSON.parse(storage?.getItem(SKIN_KEY) ?? "null"));
-  } catch {
-    return normalizeSkin(null);
-  }
-}
-function saveSkin(value, storage = globalThis.localStorage) {
-  const clean3 = normalizeSkin(value);
-  try {
-    storage?.setItem(SKIN_KEY, JSON.stringify(clean3));
-  } catch {
-  }
-  return clean3;
-}
-function resolveDark(mode, { hostDark = null, systemDark = false } = {}) {
-  if (mode === "dark") return true;
-  if (mode === "light") return false;
-  return hostDark ?? systemDark;
-}
-function skinClasses(settings, env) {
-  const { skin, modes } = normalizeSkin(settings);
-  const mode = modes[skin];
-  return `mv-skin-${skin} ${resolveDark(mode, env) ? "mv-dark" : "mv-light"}${mode === "auto" ? " mv-follow" : ""}`;
-}
-function coverHue(text4) {
-  let h = 2166136261;
-  for (const ch of String(text4 ?? "")) h = Math.imul(h ^ ch.codePointAt(0), 16777619);
-  return (h >>> 0) % 360;
-}
-function coverInitials(title) {
-  const clean3 = String(title ?? "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-  if (!clean3) return "\u266A";
-  const words = clean3.split(" ");
-  return /[\u3400-\u9fff]/.test(clean3[0]) ? clean3[0] : (words[0][0] + (words[1]?.[0] ?? "")).toUpperCase();
-}
 
 // .dsh-plugin/client/mv-ai.jsx
 var import_react5 = __toESM(require("react"), 1);
@@ -11254,7 +11275,7 @@ function downloadZip() {
 }
 var initials = coverInitials;
 var hue = (title) => ({ "--mv-hue": coverHue(title) });
-function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false, initialWorkshop = false, canvas = () => null, workshopIndex = null }) {
+function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false, initialWorkshop = false, canvas = () => null, workshopIndex = null, navRequest = null, onView = null }) {
   const [importing, setImporting] = import_react7.default.useState(false);
   const [aiOpen, setAiOpen] = import_react7.default.useState(initialAi);
   const [workshopOpen, setWorkshopOpen] = import_react7.default.useState(initialWorkshop);
@@ -11263,6 +11284,17 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
   const [note, setNote] = import_react7.default.useState("");
   const [error, setError] = import_react7.default.useState("");
   const pick2 = directoryPicker();
+  import_react7.default.useEffect(() => {
+    if (!navRequest) return;
+    setWorkshopOpen(navRequest.view === "workshop");
+    setAiOpen(navRequest.view === "ai");
+    setImporting(navRequest.view === "import");
+    setError("");
+  }, [navRequest]);
+  const view = workshopOpen ? "workshop" : aiOpen ? "ai" : importing ? "import" : null;
+  import_react7.default.useEffect(() => {
+    onView?.(view);
+  }, [view]);
   const importPath = async (value) => {
     setBusy("import");
     setError("");
@@ -11313,7 +11345,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
     }
   };
   const warnings = active.warnings ?? [];
-  return /* @__PURE__ */ import_react7.default.createElement("section", { "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-library" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-card", "aria-pressed": active.id === BUILTIN_ID, onClick: () => onSelect(BUILTIN_ID), title: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art", style: { "--mv-hue": 18 } }, ">_"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-title" }, "world.execute(me);"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, "Mili \xB7 \u5185\u7F6E\u9884\u8BBE")), /* @__PURE__ */ import_react7.default.createElement(
+  return /* @__PURE__ */ import_react7.default.createElement("section", { className: "mv-library-section", "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-library" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-card", "aria-pressed": active.id === BUILTIN_ID, onClick: () => onSelect(BUILTIN_ID), title: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art", style: { "--mv-hue": 18 } }, ">_"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-title" }, "world.execute(me);"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, "Mili \xB7 \u5185\u7F6E\u9884\u8BBE")), /* @__PURE__ */ import_react7.default.createElement(
     "button",
     {
       type: "button",
@@ -11540,7 +11572,7 @@ var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-
 }
 .mv-root.mv-skin-a:is(.mv-light, .mv-dark) {
   --mv-accent-ink: #fff; --mv-radius: 16px; --mv-stage-bg: #07070a;
-  font-family: "Inter", "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", "Noto Sans CJK SC", system-ui, sans-serif; font-size: 14px; padding: 24px 28px 0;
+  font-family: "Inter", "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", "Noto Sans CJK SC", system-ui, sans-serif; font-size: 14px; padding: 0;
 }
 .mv-skin-a .mv-title { font-size: 28px; line-height: 34px; font-weight: 800; letter-spacing: -.02em; }
 .mv-skin-a .mv-section-label { font-size: 20px; line-height: 28px; font-weight: 800; color: var(--mv-text); letter-spacing: -.01em; margin-bottom: 12px; }
@@ -11575,8 +11607,7 @@ var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-
 .mv-skin-a .mv-source { border-radius: 14px; border-color: transparent; }
 .mv-skin-a .mv-source-icon { border-radius: 10px; background: linear-gradient(135deg, #ff375f, #ff9f0a); color: #fff; }
 .mv-skin-a .mv-stage-wrap { border-radius: 20px 20px 0 0; padding: 12px; }
-.mv-skin-a .mv-playerbar { position: sticky; bottom: 0; z-index: 6; margin: 0 -28px 16px; padding: 14px 28px; border: 0; border-top: 1px solid var(--mv-border); border-radius: 0;
-  background: color-mix(in srgb, var(--mv-page) 86%, transparent); backdrop-filter: blur(20px) saturate(1.5); box-shadow: 0 -10px 30px #0004; }
+.mv-skin-a .mv-playerbar { border: 0; border-radius: 0 0 20px 20px; padding: 10px 16px; background: var(--mv-surface); }
 .mv-skin-a .mv-round { width: 44px; height: 44px; background: var(--mv-text); color: var(--mv-page); }
 .mv-skin-a .mv-round:hover { background: var(--mv-text); transform: scale(1.06); }
 .mv-skin-a .mv-seek, .mv-skin-a .mv-volume input { accent-color: var(--mv-text); }
@@ -11613,6 +11644,7 @@ var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-
   font-family: "JetBrains Mono", "Cascadia Mono", "Geist Mono", "IBM Plex Mono", Consolas, "DejaVu Sans Mono", "Noto Sans Mono CJK SC", "Microsoft YaHei UI", monospace; font-size: 13px; letter-spacing: 0;
 }
 .mv-root.mv-skin-b.mv-light:is(.mv-light) { --mv-stage-bg: #12130f; }
+/* CRT scanlines over the UI only: the MV canvas (stage) sits above the overlay, the sticky bars draw their own */
 .mv-root.mv-skin-b::after { content: ""; position: absolute; inset: 0; z-index: 20; pointer-events: none;
   background: repeating-linear-gradient(0deg, transparent 0 2px, var(--b-scan) 2px 3px), radial-gradient(ellipse at center, transparent 60%, color-mix(in srgb, var(--b-scan) 300%, transparent) 100%); }
 .mv-skin-b ::selection { background: var(--mv-accent); color: var(--mv-accent-ink); }
@@ -11681,6 +11713,105 @@ var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-
 .mv-skin-b .mv-calib-wave { height: 96px; }
 .mv-skin-b .mv-calib-lines { max-height: 168px; }
 .mv-skin-b .mv-calib-lines li { padding: 2px 8px; }
+
+/* =====================================================================================
+   Structure (mv-shell.jsx): A sidebar + bottom player bar, B tmux tabs + status line, C plain.
+   The panel width is a container so narrow Harness panes collapse the chrome.
+   ===================================================================================== */
+.mv-root[data-mv-skin] { container: mvroot / inline-size; }
+.mv-shell, .mv-main { min-width: 0; }
+.mv-thumb { display: inline-grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: -.02em; color: #fff;
+  background: radial-gradient(circle at 80% 15%, #ffffff55, transparent 55%), linear-gradient(135deg, hsl(var(--mv-hue, 340) 85% 58%), hsl(calc(var(--mv-hue, 340) + 60) 80% 32%)); }
+.mv-thumb-lg { width: 56px; height: 56px; border-radius: 10px; font-size: 18px; box-shadow: 0 6px 16px #0005; }
+
+/* ---------- A: sidebar | main, page-wide player bar ---------- */
+.mv-skin-a .mv-shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); grid-template-areas: "side main" "bar bar"; }
+.mv-skin-a .mv-side { grid-area: side; border-right: 1px solid var(--mv-border); background: color-mix(in srgb, var(--mv-text) 3%, var(--mv-page)); }
+.mv-skin-a.mv-dark .mv-side { background: #000; }
+.mv-skin-a .mv-side-in { position: sticky; top: 0; display: flex; flex-direction: column; gap: 2px; max-height: 100vh; overflow: auto; padding: 20px 12px 24px; box-sizing: border-box; }
+.mv-side-brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 18px; }
+.mv-side-brand b { display: block; font-size: 15px; line-height: 20px; }
+.mv-side-brand small { display: block; font-size: 11.5px; color: var(--mv-faint); }
+.mv-side-logo { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; font-weight: 800; color: #fff; background: linear-gradient(135deg, #ff375f, #ff9f0a); box-shadow: 0 6px 16px color-mix(in srgb, #ff375f 40%, transparent); font-family: "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+.mv-side-nav { display: grid; gap: 2px; }
+.mv-side-item { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; color: var(--mv-muted); font: inherit; font-weight: 600; cursor: pointer; text-align: left; }
+.mv-side-item:hover:not(:disabled) { background: var(--mv-hover); color: var(--mv-text); }
+.mv-side-item[aria-current="page"] { background: var(--mv-surface-2); color: var(--mv-text); }
+.mv-side-item[aria-current="page"] svg { color: var(--mv-accent); }
+.mv-side-item:disabled { opacity: .45; cursor: default; }
+.mv-side-h { margin: 18px 12px 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--mv-faint); }
+.mv-side-recent { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.mv-side-recent button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--mv-text); font: inherit; text-align: left; cursor: pointer; }
+.mv-side-recent button:hover { background: var(--mv-hover); }
+.mv-side-recent button[aria-pressed="true"] { background: var(--mv-surface-2); }
+.mv-side-recent button[aria-pressed="true"] b { color: var(--mv-accent); }
+.mv-side-recent-text { display: grid; min-width: 0; flex: 1; }
+.mv-side-recent-text b, .mv-side-recent-text small, .mv-bar-text b, .mv-bar-text small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv-side-recent-text b { font-size: 13px; font-weight: 600; }
+.mv-side-recent-text small { font-size: 12px; color: var(--mv-faint); }
+.mv-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+.mv-eq i { width: 3px; background: var(--mv-accent); border-radius: 1px; animation: mv-eq 0.9s ease-in-out infinite alternate; }
+.mv-eq i:nth-child(2) { animation-delay: -.3s; } .mv-eq i:nth-child(3) { animation-delay: -.6s; }
+@keyframes mv-eq { from { height: 3px; } to { height: 14px; } }
+@media (prefers-reduced-motion: reduce) { .mv-eq i { animation: none; height: 10px; } }
+.mv-skin-a .mv-main { grid-area: main; padding: 24px 28px 28px; }
+.mv-skin-a .mv-library { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); overflow: visible; gap: 12px 8px; }
+.mv-skin-a .mv-library > .mv-card-ghost { aspect-ratio: auto; min-height: 120px; }
+.mv-skin-a .mv-hero { background: #111; }
+.mv-skin-a .mv-hero::before { content: ""; position: absolute; inset: -30%; z-index: -2; filter: blur(56px) saturate(1.5); opacity: .95;
+  background: radial-gradient(circle at 18% 40%, hsl(var(--mv-hue, 340) 85% 58%), transparent 45%), radial-gradient(circle at 60% 70%, hsl(calc(var(--mv-hue, 340) + 60) 80% 40%), transparent 50%), radial-gradient(circle at 85% 20%, hsl(calc(var(--mv-hue, 340) + 120) 70% 45%), transparent 40%); }
+.mv-bar { grid-area: bar; position: sticky; bottom: 0; z-index: 30; display: grid; grid-template-columns: minmax(160px, 1fr) minmax(0, 2fr) minmax(60px, 1fr); align-items: center; gap: 16px; padding: 10px 20px;
+  border-top: 1px solid var(--mv-border); background: color-mix(in srgb, var(--mv-page) 86%, transparent); backdrop-filter: blur(20px) saturate(1.5); box-shadow: 0 -10px 30px #0004; }
+.mv-skin-a.mv-light .mv-bar { box-shadow: 0 -8px 24px #0000000f; }
+.mv-bar-now { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.mv-bar-text { display: grid; min-width: 0; }
+.mv-bar-text b { font-size: 14px; font-weight: 700; }
+.mv-bar-text small { font-size: 12px; color: var(--mv-muted); }
+.mv-bar-mid { display: grid; gap: 4px; justify-items: center; min-width: 0; }
+.mv-bar-transport { display: flex; align-items: center; gap: 14px; }
+.mv-bar-play { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--mv-text); color: var(--mv-page); cursor: pointer; transition: transform .15s; }
+.mv-bar-play:hover { transform: scale(1.06); }
+.mv-bar-play svg { width: 18px; height: 18px; }
+.mv-bar-seek { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 620px; }
+.mv-bar-seek input { flex: 1; min-width: 0; accent-color: var(--mv-accent); }
+.mv-bar-seek .mv-time { font-size: 11.5px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+.mv-bar-right { justify-self: end; display: flex; gap: 6px; }
+@container mvroot (max-width: 860px) {
+  .mv-skin-a .mv-shell { grid-template-columns: 64px minmax(0, 1fr); }
+  .mv-skin-a .mv-side-in { padding: 16px 8px; align-items: center; }
+  .mv-skin-a .mv-side-brand { padding: 0 0 12px; } .mv-skin-a .mv-side-brand > span:last-child, .mv-skin-a .mv-side-item span, .mv-skin-a .mv-side-h, .mv-skin-a .mv-side-recent { display: none; }
+  .mv-skin-a .mv-side-item { justify-content: center; width: 44px; padding: 0; }
+  .mv-skin-a .mv-main { padding: 18px 18px 24px; }
+}
+@container mvroot (max-width: 600px) {
+  .mv-bar { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 8px 12px; }
+  .mv-bar-mid { grid-column: 1 / -1; grid-row: 2; } .mv-bar-right { grid-row: 1; grid-column: 2; }
+  .mv-skin-a .mv-hero-art { width: 96px; height: 96px; font-size: 32px; } .mv-skin-a .mv-hero-title { font-size: 26px; line-height: 32px; }
+}
+
+/* ---------- B: tmux window list on top, status line at the bottom ---------- */
+.mv-root.mv-skin-b:is(.mv-light, .mv-dark) { padding: 0; }
+.mv-skin-b .mv-shell { display: flex; flex-direction: column; }
+.mv-skin-b .mv-main { flex: 1; padding: 14px 18px 18px; }
+.mv-tmux, .mv-status { position: sticky; z-index: 30; display: flex; align-items: center; min-height: 26px; font-size: 12px; line-height: 26px; white-space: nowrap; overflow: hidden;
+  background-image: repeating-linear-gradient(0deg, transparent 0 2px, var(--b-scan) 2px 3px); }
+.mv-tmux { top: 0; gap: 2px; padding-right: 8px; background-color: var(--mv-surface-2); border-bottom: 1px solid var(--mv-border); }
+.mv-tmux-session { padding: 0 10px; background: var(--mv-accent); color: var(--mv-accent-ink); font-weight: 700; }
+.mv-tmux-tab { height: 26px; padding: 0 10px; border: 0; background: transparent; color: var(--mv-muted); font: inherit; cursor: pointer; }
+.mv-tmux-tab:hover:not(:disabled) { color: var(--mv-accent); text-shadow: var(--b-glow); }
+.mv-tmux-tab[aria-current="page"] { color: var(--mv-accent); font-weight: 700; background: color-mix(in srgb, var(--mv-accent) 14%, transparent); text-shadow: var(--b-glow); }
+.mv-tmux-tab:disabled { opacity: .4; cursor: default; }
+.mv-status { bottom: 0; gap: 12px; padding-right: 10px; background-color: var(--mv-accent); color: var(--mv-accent-ink); }
+.mv-status-mode { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border: 0; background: var(--mv-accent-ink); color: var(--mv-accent); font: inherit; font-weight: 700; cursor: pointer; }
+.mv-status-mode svg { width: 12px; height: 12px; }
+.mv-status-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
+.mv-status-title em { font-style: normal; font-weight: 400; opacity: .8; }
+.mv-status-bar { letter-spacing: -.5px; }
+.mv-status-time, .mv-status-clock { font-variant-numeric: tabular-nums; }
+.mv-status-win { padding: 0 8px; background: color-mix(in srgb, var(--mv-accent-ink) 18%, transparent); }
+.mv-skin-b .mv-stage-wrap { z-index: 21; }
+@container mvroot (max-width: 700px) { .mv-status-bar, .mv-status-win { display: none; } }
+@container mvroot (max-width: 480px) { .mv-status-clock { display: none; } .mv-tmux-session { display: none; } }
 `;
 
 // .dsh-plugin/client/mv-skin-ui.jsx
@@ -11706,9 +11837,13 @@ function useSkin() {
   }, []);
   const update = import_react8.default.useCallback((change) => setSettings((current) => saveSkin({ ...current, ...change(current) })), []);
   const mode = settings.modes[settings.skin];
+  const className = skinClasses(settings, env);
+  import_react8.default.useEffect(() => {
+    globalThis.dispatchEvent?.(new Event(SKIN_EVENT));
+  }, [className]);
   return {
     settings,
-    className: skinClasses(settings, env),
+    className,
     dark: resolveDark(mode, env),
     mode,
     setSkin: (skin) => update(() => ({ skin })),
@@ -11731,7 +11866,123 @@ function SkinPicker({ skin }) {
   ), /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-caption" }, "\u6BCF\u4E2A\u76AE\u80A4\u5206\u522B\u8BB0\u4F4F\u660E\u6697\u8BBE\u7F6E\uFF1B\u53EA\u4FDD\u5B58\u5728\u672C\u673A\u3002"));
 }
 
+// .dsh-plugin/client/mv-shell.jsx
+var import_react9 = __toESM(require("react"), 1);
+var svg2 = (children, size = 18) => /* @__PURE__ */ import_react9.default.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, children);
+var NavIcon = {
+  library: () => svg2(/* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("path", { d: "M4 4v16M8 4v16" }), /* @__PURE__ */ import_react9.default.createElement("path", { d: "M12 5l4-1 4 15-4 1z" }))),
+  now: () => svg2(/* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("circle", { cx: "8", cy: "18", r: "3" }), /* @__PURE__ */ import_react9.default.createElement("path", { d: "M11 18V5l9-2v12" }), /* @__PURE__ */ import_react9.default.createElement("circle", { cx: "17", cy: "15", r: "3" }))),
+  workshop: () => Icon.shop(),
+  ai: () => Icon.spark(),
+  calib: () => svg2(/* @__PURE__ */ import_react9.default.createElement("path", { d: "M2 12h2l2-6 3 12 3-9 3 6 2-3h5" })),
+  back: () => svg2(/* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("path", { d: "M11 17l-5-5 5-5" }), /* @__PURE__ */ import_react9.default.createElement("path", { d: "M18 17l-5-5 5-5" }))),
+  forward: () => svg2(/* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("path", { d: "M13 17l5-5-5-5" }), /* @__PURE__ */ import_react9.default.createElement("path", { d: "M6 17l5-5-5-5" })))
+};
+var NAV = Object.freeze([
+  { id: "library", label: "\u66F2\u5E93", tab: "\u66F2\u5E93" },
+  { id: "now", label: "\u6B63\u5728\u64AD\u653E", tab: "\u64AD\u653E" },
+  { id: "workshop", label: "\u521B\u610F\u5DE5\u574A", tab: "\u5DE5\u574A" },
+  { id: "ai", label: "AI \u5236\u4F5C", tab: "AI \u5236\u4F5C" },
+  { id: "calib", label: "\u6B4C\u8BCD\u6821\u51C6", tab: "\u6821\u51C6" }
+]);
+function fmtTime(t) {
+  const s = Math.max(0, Math.floor(Number(t) || 0));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+function asciiBar(t, duration, width2 = 24) {
+  const p = duration > 0 ? Math.min(1, Math.max(0, t / duration)) : 0;
+  const n = Math.round(p * width2);
+  return `[${"\u2588".repeat(n)}${"\u2591".repeat(width2 - n)}]`;
+}
+function useTransport(canvasRef, enabled) {
+  const [state, setState] = import_react9.default.useState({ t: 0, duration: 0, playing: false });
+  import_react9.default.useEffect(() => {
+    if (!enabled) return void 0;
+    const read = () => {
+      const c = canvasRef.current;
+      if (!c?.time) return;
+      const next = { t: c.time(), duration: c.duration(), playing: c.playing() };
+      setState((prev) => Math.abs(prev.t - next.t) < 0.05 && prev.duration === next.duration && prev.playing === next.playing ? prev : next);
+    };
+    read();
+    const id = setInterval(read, 250);
+    return () => clearInterval(id);
+  }, [canvasRef, enabled]);
+  return state;
+}
+var Thumb = ({ cover, className = "mv-thumb" }) => /* @__PURE__ */ import_react9.default.createElement("span", { className, style: { "--mv-hue": cover.hue }, "aria-hidden": "true" }, cover.text);
+function SideNav({ active, go, calibOk, items, activeId, onSelect, playing }) {
+  return /* @__PURE__ */ import_react9.default.createElement("aside", { className: "mv-side", "aria-label": "\u5BFC\u822A" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-side-in" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-side-brand" }, /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-side-logo", "aria-hidden": "true" }, ">_"), /* @__PURE__ */ import_react9.default.createElement("span", null, /* @__PURE__ */ import_react9.default.createElement("b", null, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react9.default.createElement("small", null, "dsh-mv"))), /* @__PURE__ */ import_react9.default.createElement("nav", { className: "mv-side-nav" }, NAV.map((item) => {
+    const Ico = NavIcon[item.id];
+    const disabled = item.id === "calib" && !calibOk;
+    return /* @__PURE__ */ import_react9.default.createElement(
+      "button",
+      {
+        key: item.id,
+        type: "button",
+        className: "mv-side-item",
+        "aria-current": active === item.id ? "page" : void 0,
+        disabled,
+        title: disabled ? "\u9009\u62E9\u4E00\u4E2A MV \u5305\uFF08\u975E\u5185\u7F6E\u9884\u8BBE\uFF09\u540E\u53EF\u7528" : item.label,
+        onClick: () => go(item.id)
+      },
+      /* @__PURE__ */ import_react9.default.createElement(Ico, null),
+      /* @__PURE__ */ import_react9.default.createElement("span", null, item.label)
+    );
+  })), /* @__PURE__ */ import_react9.default.createElement("p", { className: "mv-side-h" }, "\u6700\u8FD1\u64AD\u653E"), /* @__PURE__ */ import_react9.default.createElement("ul", { className: "mv-side-recent" }, items.map((item) => /* @__PURE__ */ import_react9.default.createElement("li", { key: item.id }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", "aria-pressed": item.id === activeId, title: item.title, onClick: () => onSelect(item.id) }, /* @__PURE__ */ import_react9.default.createElement(Thumb, { cover: item.cover }), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-side-recent-text" }, /* @__PURE__ */ import_react9.default.createElement("b", null, item.title), /* @__PURE__ */ import_react9.default.createElement("small", null, item.sub)), item.id === activeId && playing && /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-eq", "aria-label": "\u64AD\u653E\u4E2D" }, /* @__PURE__ */ import_react9.default.createElement("i", null), /* @__PURE__ */ import_react9.default.createElement("i", null), /* @__PURE__ */ import_react9.default.createElement("i", null))))))));
+}
+function PlayerBar({ title, artist, cover, transport, canvas, onShow }) {
+  const { t, duration, playing } = transport;
+  const c = () => canvas();
+  return /* @__PURE__ */ import_react9.default.createElement("footer", { className: "mv-bar", "aria-label": "\u64AD\u653E\u6761" }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-bar-now", onClick: onShow, title: "\u56DE\u5230\u753B\u9762" }, /* @__PURE__ */ import_react9.default.createElement(Thumb, { cover, className: "mv-thumb mv-thumb-lg" }), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-bar-text" }, /* @__PURE__ */ import_react9.default.createElement("b", null, title), /* @__PURE__ */ import_react9.default.createElement("small", null, artist))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-bar-mid" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-bar-transport" }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u540E\u9000 5 \u79D2", title: "\u540E\u9000 5 \u79D2", onClick: () => c()?.seekBy(-5) }, /* @__PURE__ */ import_react9.default.createElement(NavIcon.back, null)), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-bar-play", "aria-label": playing ? "\u6682\u505C" : "\u64AD\u653E", onClick: () => c()?.toggle() }, playing ? /* @__PURE__ */ import_react9.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react9.default.createElement(Icon.play, null)), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u524D\u8FDB 5 \u79D2", title: "\u524D\u8FDB 5 \u79D2", onClick: () => c()?.seekBy(5) }, /* @__PURE__ */ import_react9.default.createElement(NavIcon.forward, null))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-bar-seek" }, /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-time" }, fmtTime(t)), /* @__PURE__ */ import_react9.default.createElement(
+    "input",
+    {
+      type: "range",
+      min: 0,
+      max: Math.max(1, duration),
+      step: 0.1,
+      value: Math.min(Math.max(0, t), Math.max(1, duration)),
+      "aria-label": "\u8FDB\u5EA6\uFF08\u64AD\u653E\u6761\uFF09",
+      style: { "--p": `${duration > 0 ? Math.min(100, t / duration * 100) : 0}%` },
+      onChange: (event) => c()?.seek(Number(event.target.value))
+    }
+  ), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-time" }, fmtTime(duration)))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-bar-right" }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u5168\u5C4F", title: "\u5168\u5C4F\uFF08F\uFF09", onClick: () => c()?.fullscreen() }, /* @__PURE__ */ import_react9.default.createElement(Icon.fullscreen, null))));
+}
+function TmuxTabs({ active, go, calibOk }) {
+  return /* @__PURE__ */ import_react9.default.createElement("nav", { className: "mv-tmux", "aria-label": "\u5BFC\u822A" }, /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-tmux-session" }, "[dsh-mv]"), NAV.map((item, i) => {
+    const disabled = item.id === "calib" && !calibOk;
+    return /* @__PURE__ */ import_react9.default.createElement(
+      "button",
+      {
+        key: item.id,
+        type: "button",
+        className: "mv-tmux-tab",
+        "aria-current": active === item.id ? "page" : void 0,
+        disabled,
+        title: disabled ? "\u9009\u62E9\u4E00\u4E2A MV \u5305\uFF08\u975E\u5185\u7F6E\u9884\u8BBE\uFF09\u540E\u53EF\u7528" : item.label,
+        onClick: () => go(item.id)
+      },
+      i,
+      ":",
+      item.tab,
+      active === item.id ? "*" : ""
+    );
+  }));
+}
+function StatusLine({ title, artist, transport, canvas, active }) {
+  const { t, duration, playing } = transport;
+  const [clock, setClock] = import_react9.default.useState(() => /* @__PURE__ */ new Date());
+  import_react9.default.useEffect(() => {
+    const id = setInterval(() => setClock(/* @__PURE__ */ new Date()), 3e4);
+    return () => clearInterval(id);
+  }, []);
+  const hhmm = `${String(clock.getHours()).padStart(2, "0")}:${String(clock.getMinutes()).padStart(2, "0")}`;
+  return /* @__PURE__ */ import_react9.default.createElement("footer", { className: "mv-status", "aria-label": "\u72B6\u6001\u680F" }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-status-mode", "aria-pressed": playing, onClick: () => canvas()?.toggle() }, playing ? /* @__PURE__ */ import_react9.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react9.default.createElement(Icon.play, null), playing ? "PLAYING" : "PAUSED"), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-status-title" }, title, /* @__PURE__ */ import_react9.default.createElement("em", null, " \u2014 ", artist)), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-status-bar", "aria-hidden": "true" }, asciiBar(t, duration)), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-status-time" }, fmtTime(t), "/", fmtTime(duration)), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-spacer" }), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-status-win" }, NAV.findIndex((item) => item.id === active), ":", NAV.find((item) => item.id === active)?.tab ?? "\u66F2\u5E93"), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-status-clock" }, hhmm));
+}
+
 // .dsh-plugin/client/mv-panel.jsx
+var builtinCover = (pack) => pack.pack.canvas?.renderer === "dsh-pv" ? { hue: 222, text: "dsh" } : { hue: 18, text: ">_" };
+var coverOf = (pack) => pack.builtin ? builtinCover(pack) : { hue: coverHue(pack.pack.title), text: coverInitials(pack.pack.title) };
 var LEGACY_KEYS = Object.freeze(["dsh-mv.panel.destination", "dsh-mv.panel.tab", "dsh-mv.terminal.form.v1"]);
 function clearLegacy(storage = globalThis.localStorage) {
   try {
@@ -11741,17 +11992,17 @@ function clearLegacy(storage = globalThis.localStorage) {
 }
 function About({ pack }) {
   const credits = [...pack.pack.credits ?? [], pack.pack.notice].filter(Boolean);
-  return /* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("h3", null, "\u5173\u4E8E MV \u653E\u6620\u5BA4 ", /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-faint" }, "v", CLIENT_VERSION || "?")), /* @__PURE__ */ import_react9.default.createElement("p", null, "\u975E\u5B98\u65B9\u540C\u4EBA\u5DE5\u5177\u3002\u63D2\u4EF6", /* @__PURE__ */ import_react9.default.createElement("b", null, "\u4E0D\u9644\u5E26"), "\u4EFB\u4F55\u97F3\u9891\u3001\u89C6\u9891\u6216\u6B4C\u8BCD\uFF0C\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\uFF1B\u97F3\u9891\u548C\u6B4C\u8BCD\u53EA\u5728\u672C\u673A\u8BFB\u53D6\uFF0C\u4E0D\u4F1A\u4E0A\u4F20\u3002"), /* @__PURE__ */ import_react9.default.createElement("p", null, "\u5185\u7F6E world.execute(me) \u9884\u8BBE\uFF1A\u6B4C\u66F2\u4E0E\u6B4C\u8BCD\u7248\u6743\u5F52 Mili\uFF1B\u753B\u9762\u573A\u666F\u79FB\u690D\u81EA yym8224961/world.execute-me-ascii\uFF08\u91CE\u751F\u5927K\uFF09\uFF0C\u7ECF\u539F\u4F5C\u8005\u8BB8\u53EF\u3002"), /* @__PURE__ */ import_react9.default.createElement("p", null, "\u5185\u7F6E dsh-pv \u9884\u8BBE\uFF1A\u79FB\u690D\u81EA MisakaZentai/world-execute-me-dsh-pv\uFF08\u4EE3\u7801 MIT\uFF09\u3002\u5176\u4E2D\u7684\u9CB8\u9C7C\u5A18\u7F8E\u672F\u6309 ", /* @__PURE__ */ import_react9.default.createElement("a", { href: "https://creativecommons.org/licenses/by-nc-sa/4.0/", target: "_blank", rel: "noreferrer" }, "CC BY-NC-SA 4.0"), " \u968F\u63D2\u4EF6\u5206\u53D1\uFF08\u5DF2\u7F29\u653E\u3001\u50CF\u7D20\u5316\u3001\u8C03\u8272\uFF09\uFF1A\u6E9F\u6708 \xA9 \u4E0A\u5584\u65E0\u5F62 \u2192 \u5973\u4EC6\u7248 ZipZipPipe \u2192 \u7ACB\u7ED8 Small-tailqwq / dsh-deep-whale \u2192 \u8868\u60C5 dsh-whale-galgame\u3002\u4EC5\u9650\u975E\u5546\u4E1A\u4F7F\u7528\uFF0C\u6539\u7F16\u987B\u540C\u534F\u8BAE\u5206\u4EAB\u3002"), !pack.builtin && /* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("h3", null, "\u5F53\u524D MV \u5305\uFF1A", pack.pack.title), credits.length > 0 ? /* @__PURE__ */ import_react9.default.createElement("ul", null, credits.map((item) => /* @__PURE__ */ import_react9.default.createElement("li", { key: item }, item))) : /* @__PURE__ */ import_react9.default.createElement("p", null, "\u6E05\u5355\u91CC\u6CA1\u6709\u7F72\u540D\u4FE1\u606F\u3002"), /* @__PURE__ */ import_react9.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react9.default.createElement("code", null, pack.manifestPath))), /* @__PURE__ */ import_react9.default.createElement("p", null, "\u5176\u4ED6\u6B4C\u66F2\uFF1A\u5728\u66F2\u5E93\u91CC\u6253\u5F00\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u793E\u533A\u6295\u7A3F\u7684 MV \u5305\uFF08\u4E0D\u542B\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\u64AD\u653E\uFF1B\u811A\u672C\u5728\u6C99\u7BB1\u91CC\u8FD0\u884C\uFF09\uFF0C\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Harness \u7684 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u624B\u5199\u4E00\u4E2A MV \u5305\u518D\u300C\u5BFC\u5165\u300D\u3002"));
+  return /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("h3", null, "\u5173\u4E8E MV \u653E\u6620\u5BA4 ", /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-faint" }, "v", CLIENT_VERSION || "?")), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u975E\u5B98\u65B9\u540C\u4EBA\u5DE5\u5177\u3002\u63D2\u4EF6", /* @__PURE__ */ import_react10.default.createElement("b", null, "\u4E0D\u9644\u5E26"), "\u4EFB\u4F55\u97F3\u9891\u3001\u89C6\u9891\u6216\u6B4C\u8BCD\uFF0C\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\uFF1B\u97F3\u9891\u548C\u6B4C\u8BCD\u53EA\u5728\u672C\u673A\u8BFB\u53D6\uFF0C\u4E0D\u4F1A\u4E0A\u4F20\u3002"), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u5185\u7F6E world.execute(me) \u9884\u8BBE\uFF1A\u6B4C\u66F2\u4E0E\u6B4C\u8BCD\u7248\u6743\u5F52 Mili\uFF1B\u753B\u9762\u573A\u666F\u79FB\u690D\u81EA yym8224961/world.execute-me-ascii\uFF08\u91CE\u751F\u5927K\uFF09\uFF0C\u7ECF\u539F\u4F5C\u8005\u8BB8\u53EF\u3002"), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u5185\u7F6E dsh-pv \u9884\u8BBE\uFF1A\u79FB\u690D\u81EA MisakaZentai/world-execute-me-dsh-pv\uFF08\u4EE3\u7801 MIT\uFF09\u3002\u5176\u4E2D\u7684\u9CB8\u9C7C\u5A18\u7F8E\u672F\u6309 ", /* @__PURE__ */ import_react10.default.createElement("a", { href: "https://creativecommons.org/licenses/by-nc-sa/4.0/", target: "_blank", rel: "noreferrer" }, "CC BY-NC-SA 4.0"), " \u968F\u63D2\u4EF6\u5206\u53D1\uFF08\u5DF2\u7F29\u653E\u3001\u50CF\u7D20\u5316\u3001\u8C03\u8272\uFF09\uFF1A\u6E9F\u6708 \xA9 \u4E0A\u5584\u65E0\u5F62 \u2192 \u5973\u4EC6\u7248 ZipZipPipe \u2192 \u7ACB\u7ED8 Small-tailqwq / dsh-deep-whale \u2192 \u8868\u60C5 dsh-whale-galgame\u3002\u4EC5\u9650\u975E\u5546\u4E1A\u4F7F\u7528\uFF0C\u6539\u7F16\u987B\u540C\u534F\u8BAE\u5206\u4EAB\u3002"), !pack.builtin && /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("h3", null, "\u5F53\u524D MV \u5305\uFF1A", pack.pack.title), credits.length > 0 ? /* @__PURE__ */ import_react10.default.createElement("ul", null, credits.map((item) => /* @__PURE__ */ import_react10.default.createElement("li", { key: item }, item))) : /* @__PURE__ */ import_react10.default.createElement("p", null, "\u6E05\u5355\u91CC\u6CA1\u6709\u7F72\u540D\u4FE1\u606F\u3002"), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react10.default.createElement("code", null, pack.manifestPath))), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u5176\u4ED6\u6B4C\u66F2\uFF1A\u5728\u66F2\u5E93\u91CC\u6253\u5F00\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u793E\u533A\u6295\u7A3F\u7684 MV \u5305\uFF08\u4E0D\u542B\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\u64AD\u653E\uFF1B\u811A\u672C\u5728\u6C99\u7BB1\u91CC\u8FD0\u884C\uFF09\uFF0C\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Harness \u7684 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u624B\u5199\u4E00\u4E2A MV \u5305\u518D\u300C\u5BFC\u5165\u300D\u3002"));
 }
 function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = false, workshopIndex = null }) {
-  const [info, setInfo] = import_react9.default.useState({ status: "loading", value: null, error: "" });
-  const [canvasState, setCanvasState] = import_react9.default.useState({ playing: false, hasAudio: false });
-  const canvasRef = import_react9.default.useRef(null);
+  const [info, setInfo] = import_react10.default.useState({ status: "loading", value: null, error: "" });
+  const [canvasState, setCanvasState] = import_react10.default.useState({ playing: false, hasAudio: false });
+  const canvasRef = import_react10.default.useRef(null);
   const skin = useSkin();
-  import_react9.default.useEffect(() => {
+  import_react10.default.useEffect(() => {
     clearLegacy();
   }, []);
-  const reloadInfo = import_react9.default.useCallback(async () => {
+  const reloadInfo = import_react10.default.useCallback(async () => {
     try {
       const value = await loadInfo(api);
       setInfo({ status: "ready", value, error: "" });
@@ -11759,13 +12010,13 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
       setInfo({ status: "error", value: null, error: errorText(error, "\u65E0\u6CD5\u8FDE\u63A5 MV \u63D2\u4EF6\u540E\u53F0\u3002") });
     }
   }, [api]);
-  import_react9.default.useEffect(() => {
+  import_react10.default.useEffect(() => {
     void reloadInfo();
   }, [reloadInfo]);
-  const [pack, setPack] = import_react9.default.useState(() => BUILTINS[loadActive()] ?? BUILTIN_PACK);
-  const [recent, setRecent] = import_react9.default.useState(loadRecent);
-  const [packError, setPackError] = import_react9.default.useState("");
-  const selectPack = import_react9.default.useCallback(async (id) => {
+  const [pack, setPack] = import_react10.default.useState(() => BUILTINS[loadActive()] ?? BUILTIN_PACK);
+  const [recent, setRecent] = import_react10.default.useState(loadRecent);
+  const [packError, setPackError] = import_react10.default.useState("");
+  const selectPack = import_react10.default.useCallback(async (id) => {
     setPackError("");
     if (BUILTINS[id]) {
       setPack(BUILTINS[id]);
@@ -11787,7 +12038,7 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
       saveActive(BUILTIN_ID);
     }
   }, [api]);
-  import_react9.default.useEffect(() => {
+  import_react10.default.useEffect(() => {
     const id = loadActive();
     if (!BUILTINS[id]) void selectPack(id);
   }, [selectPack]);
@@ -11796,11 +12047,52 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
     saveActive(loaded.id);
     setPackError("");
   };
+  const skinId = skin.settings.skin;
+  const rootRef = import_react10.default.useRef(null);
+  const transport = useTransport(canvasRef, skinId === "a" || skinId === "b");
+  const [navRequest, setNavRequest] = import_react10.default.useState(null);
+  const [nav, setNav] = import_react10.default.useState("library");
+  const calibOk = Boolean(!pack.builtin && api?.packWriteText);
+  const scrollTo = (selector) => requestAnimationFrame(() => rootRef.current?.querySelector(selector)?.scrollIntoView?.({ block: "start", behavior: "smooth" }));
+  const go = (id) => {
+    setNav(id);
+    if (id === "workshop" || id === "ai" || id === "import") {
+      setNavRequest({ view: id });
+      scrollTo(".mv-library-section");
+      return;
+    }
+    if (id === "library") {
+      setNavRequest({ view: null });
+      scrollTo(".mv-library-section");
+      return;
+    }
+    if (id === "now") {
+      scrollTo(".mv-hero");
+      return;
+    }
+    if (id === "calib") {
+      const el = rootRef.current?.querySelector(".mv-calib");
+      if (el) {
+        el.open = true;
+        scrollTo(".mv-calib");
+      }
+    }
+  };
+  const onLibraryView = (view) => {
+    if (view) setNav(view);
+    else setNav((current) => current === "workshop" || current === "ai" || current === "import" ? "library" : current);
+  };
+  const cover = coverOf(pack);
+  const recentItems = [
+    { id: BUILTIN_ID, title: "world.execute(me);", sub: "Mili \xB7 \u5185\u7F6E\u9884\u8BBE", cover: { hue: 18, text: ">_" } },
+    { id: DSH_PV_ID, title: "world.execute(me); dsh PV", sub: "MisakaZentai \xB7 \u753B\u5E03\u9884\u8BBE", cover: { hue: 222, text: "dsh" } },
+    ...recent.map((item) => ({ id: `pack:${item.manifestPath}`, title: item.title || item.manifestPath, sub: item.artist || (item.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305"), cover: { hue: coverHue(item.title), text: coverInitials(item.title) } }))
+  ].slice(0, 6);
   const notice = info.status === "ready" ? versionNotice({ hostVersion: info.value?.hostVersion }) : "";
   const label = canvasState.playing ? "\u6682\u505C" : "\u64AD\u653E";
   const hint = canvasState.hasAudio ? "\u753B\u9762\u4EE5\u97F3\u9891\u4E3A\u65F6\u949F\u9010\u5E27\u6E32\u67D3\uFF1B\u70B9\u4E00\u4E0B\u753B\u9762\u540E\u53EF\u7528\u952E\u76D8\u63A7\u5236\u3002" : "\u8FD8\u6CA1\u6709\u9009\u62E9\u97F3\u9891\uFF1A\u53EF\u4EE5\u5148\u9759\u97F3\u89C2\u770B\uFF0C\u6216\u5728\u4E0B\u65B9\u9009\u62E9\u4F60\u7684\u6B4C\u66F2\u3002";
   const renderer = { "world-execute-me": "world.execute(me) \u573A\u666F", "dsh-pv": "dsh-pv\uFF08\u5927\u80A5\u9C7C\u773C\u4E2D\u7684 world.execute(me)\uFF09", script: "\u573A\u666F\u811A\u672C\uFF08scenes.js\uFF09" }[pack.pack.canvas?.renderer] ?? "\u901A\u7528\u753B\u9762\uFF08\u9891\u8C31 + \u6B4C\u8BCD\uFF09";
-  return /* @__PURE__ */ import_react9.default.createElement("div", { className: `mv-root ${skin.className}`, "data-mv-skin": skin.settings.skin }, /* @__PURE__ */ import_react9.default.createElement("style", null, mv_default + mv_skins_default), /* @__PURE__ */ import_react9.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react9.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react9.default.createElement(SkinPicker, { skin }), /* @__PURE__ */ import_react9.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react9.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react9.default.createElement(About, { pack }))), /* @__PURE__ */ import_react9.default.createElement(Library, { api, harness, info: info.value, initialAi, initialWorkshop, workshopIndex, canvas: () => canvasRef.current, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react9.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react9.default.createElement("p", { className: "mv-wrap" }, packError)), info.status === "error" && /* @__PURE__ */ import_react9.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react9.default.createElement("p", { className: "mv-wrap" }, info.error, "\uFF08\u753B\u5E03\u64AD\u653E\u4E0D\u53D7\u5F71\u54CD\uFF1BMV \u5305\u3001AI \u5236\u4F5C\u548C\u6B4C\u8BCD\u5F15\u64CE\u9700\u8981\u540E\u53F0\u3002\uFF09")), /* @__PURE__ */ import_react9.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E", style: { "--mv-hue": pack.builtin ? pack.pack.canvas?.renderer === "dsh-pv" ? 222 : 18 : coverHue(pack.pack.title) } }, /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-hero-art", "aria-hidden": "true" }, pack.builtin ? pack.pack.canvas?.renderer === "dsh-pv" ? "dsh" : ">_" : coverInitials(pack.pack.title)), /* @__PURE__ */ import_react9.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react9.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react9.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react9.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react9.default.createElement("span", null, pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-chip" }, pack.builtin ? "\u5185\u7F6E\u9884\u8BBE" : "MV \u5305"), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-chip" }, renderer))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-play-big", onClick: () => canvasRef.current?.toggle(), "aria-label": label }, canvasState.playing ? /* @__PURE__ */ import_react9.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react9.default.createElement(Icon.play, null), label)), /* @__PURE__ */ import_react9.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react9.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState }));
+  return /* @__PURE__ */ import_react10.default.createElement("div", { ref: rootRef, className: `mv-root ${skin.className}`, "data-mv-skin": skinId }, /* @__PURE__ */ import_react10.default.createElement("style", null, mv_default + mv_skins_default), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-shell" }, skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(SideNav, { active: nav, go, calibOk, items: recentItems, activeId: pack.id, onSelect: (id) => void selectPack(id), playing: canvasState.playing }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(TmuxTabs, { active: nav, go, calibOk }) : null, /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-main" }, /* @__PURE__ */ import_react10.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react10.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react10.default.createElement(SkinPicker, { skin }), /* @__PURE__ */ import_react10.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react10.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react10.default.createElement(About, { pack }))), /* @__PURE__ */ import_react10.default.createElement(Library, { navRequest, onView: onLibraryView, api, harness, info: info.value, initialAi, initialWorkshop, workshopIndex, canvas: () => canvasRef.current, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, packError)), info.status === "error" && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, info.error, "\uFF08\u753B\u5E03\u64AD\u653E\u4E0D\u53D7\u5F71\u54CD\uFF1BMV \u5305\u3001AI \u5236\u4F5C\u548C\u6B4C\u8BCD\u5F15\u64CE\u9700\u8981\u540E\u53F0\u3002\uFF09")), /* @__PURE__ */ import_react10.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E", style: { "--mv-hue": cover.hue }, "data-cover": cover.text }, /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-hero-art", "aria-hidden": "true" }, cover.text), /* @__PURE__ */ import_react10.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react10.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react10.default.createElement("span", null, pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, pack.builtin ? "\u5185\u7F6E\u9884\u8BBE" : "MV \u5305"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, renderer))), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-play-big", onClick: () => canvasRef.current?.toggle(), "aria-label": label }, canvasState.playing ? /* @__PURE__ */ import_react10.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react10.default.createElement(Icon.play, null), label)), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react10.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState })), skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(PlayerBar, { title: pack.pack.title, artist: pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", cover, transport, canvas: () => canvasRef.current, onShow: () => go("now") }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(StatusLine, { title: pack.pack.title, artist: pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", transport, canvas: () => canvasRef.current, active: nav }) : null));
 }
 
 // .dsh-plugin/shared/mv-ai-upload.mjs
@@ -11998,7 +12290,7 @@ var PLUGIN_NAME = "dsh-mv";
 var PANEL = "dsh-mv.main";
 var inject = ["remote"];
 function MvIcon() {
-  return /* @__PURE__ */ import_react10.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" }, /* @__PURE__ */ import_react10.default.createElement("rect", { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2", stroke: "currentColor" }), /* @__PURE__ */ import_react10.default.createElement("path", { d: "M4 6l2 2-2 2M7.5 10.5H11", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" }));
+  return /* @__PURE__ */ import_react11.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" }, /* @__PURE__ */ import_react11.default.createElement("rect", { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2", stroke: "currentColor" }), /* @__PURE__ */ import_react11.default.createElement("path", { d: "M4 6l2 2-2 2M7.5 10.5H11", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" }));
 }
 function panelApi(remote) {
   const service = remote[MV_REMOTE_NAMESPACE];
@@ -12048,7 +12340,7 @@ function harnessServices(ctx) {
 var OPEN_BUTTON = Object.freeze({ border: "1px solid #ffaf5f", background: "transparent", color: "inherit", borderRadius: 6, padding: "3px 10px", cursor: "pointer", font: "inherit", fontSize: 12 });
 function OpenMvPanel({ subject, openPanel }) {
   if (subject?.kind !== "bundle" || subject.pkg?.name !== MV_REMOTE_PACKAGE) return null;
-  return /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", style: OPEN_BUTTON, onClick: openPanel }, "\u6253\u5F00 MV \u653E\u6620\u5BA4");
+  return /* @__PURE__ */ import_react11.default.createElement("button", { type: "button", style: OPEN_BUTTON, onClick: openPanel }, "\u6253\u5F00 MV \u653E\u6620\u5BA4");
 }
 var UI_INJECT = ["slots", "remote", `remote.${MV_REMOTE_NAMESPACE}`, "layout"];
 function registerUi(ctx) {

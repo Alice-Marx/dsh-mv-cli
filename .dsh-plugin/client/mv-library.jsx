@@ -25,7 +25,7 @@ function downloadZip() {
 const initials = coverInitials
 const hue = title => ({ '--mv-hue': coverHue(title) })
 
-export function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false, initialWorkshop = false, canvas = () => null, workshopIndex = null }) {
+export function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false, initialWorkshop = false, canvas = () => null, workshopIndex = null, navRequest = null, onView = null }) {
   const [importing, setImporting] = React.useState(false)
   const [aiOpen, setAiOpen] = React.useState(initialAi)
   const [workshopOpen, setWorkshopOpen] = React.useState(initialWorkshop)
@@ -34,6 +34,13 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
   const [note, setNote] = React.useState('')
   const [error, setError] = React.useState('')
   const pick = directoryPicker()
+  // Skin navigation (sidebar / tmux tabs) opens the same dialogs the cards do.
+  React.useEffect(() => {
+    if (!navRequest) return
+    setWorkshopOpen(navRequest.view === 'workshop'); setAiOpen(navRequest.view === 'ai'); setImporting(navRequest.view === 'import'); setError('')
+  }, [navRequest])
+  const view = workshopOpen ? 'workshop' : aiOpen ? 'ai' : importing ? 'import' : null
+  React.useEffect(() => { onView?.(view) }, [view])
 
   const importPath = async value => {
     setBusy('import'); setError(''); setNote('')
@@ -65,7 +72,7 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
 
   const warnings = active.warnings ?? []
   return (
-    <section aria-label="曲库">
+    <section className="mv-library-section" aria-label="曲库">
       <p className="mv-section-label">曲库</p>
       <div className="mv-library">
         <button type="button" className="mv-card" aria-pressed={active.id === BUILTIN_ID} onClick={() => onSelect(BUILTIN_ID)} title="内置预设：使用你自己的音频和歌词文件">

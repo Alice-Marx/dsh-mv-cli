@@ -440,6 +440,13 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
 
   React.useImperativeHandle(ref, () => ({
     toggle: () => act({ type: 'toggle' }), pause: () => engine.current?.clock.pause(), focus: () => wrap.current?.focus(),
+    /** Transport for the skins' player bar / status line (polled; no per-frame panel renders). */
+    time: () => engine.current?.clock.time() ?? 0,
+    duration: () => engine.current?.clock.duration ?? 0,
+    playing: () => Boolean(engine.current?.clock.playing),
+    seek: t => player.seek(Math.max(0, t)),
+    seekBy: delta => act({ type: 'seekBy', delta }),
+    fullscreen: () => toggleFullscreen(),
     /** PNG (base64, ≤ 960 px wide) of the current frame, for a workshop cover. */
     snapshotPng: () => {
       const source = isDshPv(packRef.current) ? pixel.current : canvas.current

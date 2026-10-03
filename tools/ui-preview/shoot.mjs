@@ -15,7 +15,7 @@ const server = http.createServer((req, res) => {
   const f = url === '/local/lyrics.lrc' ? process.env.LOCAL_LRC ?? ''
     : url.startsWith('/assets/') && !url.includes('..') ? path.join(ASSETS, url.slice(8))
       : path.join(DIR, url === '/' ? 'index.html' : url)
-  fs.readFile(f, (e, d) => { if (e) { res.statusCode = 404; return res.end() } res.setHeader('content-type', TYPES[path.extname(f)] ?? 'text/html; charset=utf-8'); res.end(d) })
+  fs.readFile(f, (e, d) => { if (e) { if (process.env.LOG404) console.error("404", url); res.statusCode = 404; return res.end() } res.setHeader('content-type', TYPES[path.extname(f)] ?? 'text/html; charset=utf-8'); res.end(d) })
 }).listen(8799)
 const browser = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: 'new', args: ['--no-sandbox', '--autoplay-policy=no-user-gesture-required', '--font-render-hinting=none', '--lang=zh-CN'] })
 const sleep = ms => new Promise(r => setTimeout(r, ms))

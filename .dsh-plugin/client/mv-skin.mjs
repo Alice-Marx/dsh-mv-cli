@@ -4,6 +4,8 @@
  * (body[data-ds-dark-theme]) or, outside Harness, the system colour scheme.
  */
 export const SKIN_KEY = 'dsh-mv.skin.v1'
+/** Window event fired after the skin or light/dark class changes. */
+export const SKIN_EVENT = 'dsh-mv-skin-change'
 export const SKINS = Object.freeze([
   { id: 'c', name: 'Harness', title: 'Harness 原生', description: '与 DeepSeek Harness 一致的卡片、柔和阴影和蓝色强调色。', defaultMode: 'auto' },
   { id: 'a', name: '音乐', title: '现代音乐应用', description: '大封面、渐变封面图、醒目的正在播放区，播放条吸附在底部。', defaultMode: 'dark' },

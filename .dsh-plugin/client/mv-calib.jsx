@@ -7,6 +7,7 @@
  * Interaction ideas adapted from TKCB/King-LRC-Waveform-Editor (MIT).
  */
 import React from 'react'
+import { SKIN_EVENT } from './mv-skin.mjs'
 import { Alert } from './mv-ui.jsx'
 import { calibReduce, createCalib, exportLines, isUncertain, lineAt, linesToCues, nextUncertain, uncertainCount, NUDGE } from './mv-calib-state.mjs'
 import { linesFromText } from '../shared/mv-align.mjs'
@@ -98,6 +99,14 @@ export function CalibEditor({ api, pack, lyricsText, audioFile, duration, player
   const toX = (t, w) => ((t - left) / view.span) * w
   const toT = (x, w) => left + (x / w) * view.span
 
+  // Redraw right away when the skin / light-dark changes (colours come from CSS variables).
+  const [, repaint] = React.useReducer(n => n + 1, 0)
+  React.useEffect(() => {
+    let raf = 0
+    const on = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(repaint) }
+    globalThis.addEventListener?.(SKIN_EVENT, on)
+    return () => { cancelAnimationFrame(raf); globalThis.removeEventListener?.(SKIN_EVENT, on) }
+  }, [])
   // Draw.
   React.useEffect(() => {
     const el = canvas.current

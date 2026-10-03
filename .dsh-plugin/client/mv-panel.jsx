@@ -9,11 +9,15 @@ import { loadInfo, errorText } from './mv-info.mjs'
 import { CLIENT_VERSION, versionNotice } from './remote-state.mjs'
 import { Library } from './mv-library.jsx'
 import { Alert, Icon, Popover } from './mv-ui.jsx'
-import { BUILTINS, BUILTIN_ID, BUILTIN_PACK, loadActive, loadPackFromHost, loadRecent, saveActive } from './mv-pack-state.mjs'
+import { BUILTINS, BUILTIN_ID, BUILTIN_PACK, DSH_PV_ID, loadActive, loadPackFromHost, loadRecent, saveActive } from './mv-pack-state.mjs'
 import css from './mv.css'
 import skinCss from './mv-skins.css'
 import { SkinPicker, useSkin } from './mv-skin-ui.jsx'
 import { coverHue, coverInitials } from './mv-skin.mjs'
+import { PlayerBar, SideNav, StatusLine, TmuxTabs, useTransport } from './mv-shell.jsx'
+
+const builtinCover = pack => (pack.pack.canvas?.renderer === 'dsh-pv' ? { hue: 222, text: 'dsh' } : { hue: 18, text: '>_' })
+const coverOf = pack => (pack.builtin ? builtinCover(pack) : { hue: coverHue(pack.pack.title), text: coverInitials(pack.pack.title) })
 
 /** Keys of the removed 面板终端 / 独立窗口 modes (0.5.x and older); cleared once. */
 export const LEGACY_KEYS = Object.freeze(['dsh-mv.panel.destination', 'dsh-mv.panel.tab', 'dsh-mv.terminal.form.v1'])
@@ -64,6 +68,31 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
   // Reopen the last pack (reading its mv.json only; nothing is run).
   React.useEffect(() => { const id = loadActive(); if (!BUILTINS[id]) void selectPack(id) }, [selectPack])
   const onLoaded = loaded => { setPack(loaded); saveActive(loaded.id); setPackError('') }
+  // Per-skin structure: A sidebar + bottom bar, B tmux tabs + status line (see mv-shell.jsx).
+  const skinId = skin.settings.skin
+  const rootRef = React.useRef(null)
+  const transport = useTransport(canvasRef, skinId === 'a' || skinId === 'b')
+  const [navRequest, setNavRequest] = React.useState(null)
+  const [nav, setNav] = React.useState('library')
+  const calibOk = Boolean(!pack.builtin && api?.packWriteText)
+  const scrollTo = selector => requestAnimationFrame(() => rootRef.current?.querySelector(selector)?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }))
+  const go = id => {
+    setNav(id)
+    if (id === 'workshop' || id === 'ai' || id === 'import') { setNavRequest({ view: id }); scrollTo('.mv-library-section'); return }
+    if (id === 'library') { setNavRequest({ view: null }); scrollTo('.mv-library-section'); return }
+    if (id === 'now') { scrollTo('.mv-hero'); return }
+    if (id === 'calib') {
+      const el = rootRef.current?.querySelector('.mv-calib')
+      if (el) { el.open = true; scrollTo('.mv-calib') }
+    }
+  }
+  const onLibraryView = view => { if (view) setNav(view); else setNav(current => (current === 'workshop' || current === 'ai' || current === 'import' ? 'library' : current)) }
+  const cover = coverOf(pack)
+  const recentItems = [
+    { id: BUILTIN_ID, title: 'world.execute(me);', sub: 'Mili · 内置预设', cover: { hue: 18, text: '>_' } },
+    { id: DSH_PV_ID, title: 'world.execute(me); dsh PV', sub: 'MisakaZentai · 画布预设', cover: { hue: 222, text: 'dsh' } },
+    ...recent.map(item => ({ id: `pack:${item.manifestPath}`, title: item.title || item.manifestPath, sub: item.artist || (item.workshop ? '创意工坊' : 'MV 包'), cover: { hue: coverHue(item.title), text: coverInitials(item.title) } })),
+  ].slice(0, 6)
   const notice = info.status === 'ready' ? versionNotice({ hostVersion: info.value?.hostVersion }) : ''
 
   const label = canvasState.playing ? '暂停' : '播放'
@@ -71,8 +100,13 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
   const renderer = { 'world-execute-me': 'world.execute(me) 场景', 'dsh-pv': 'dsh-pv（大肥鱼眼中的 world.execute(me)）', script: '场景脚本（scenes.js）' }[pack.pack.canvas?.renderer] ?? '通用画面（频谱 + 歌词）'
 
   return (
-    <div className={`mv-root ${skin.className}`} data-mv-skin={skin.settings.skin}>
+    <div ref={rootRef} className={`mv-root ${skin.className}`} data-mv-skin={skinId}>
       <style>{css + skinCss}</style>
+      {/* Fixed child slots: switching skins never remounts the content (the canvas keeps playing). */}
+      <div className="mv-shell">
+      {skinId === 'a' ? <SideNav active={nav} go={go} calibOk={calibOk} items={recentItems} activeId={pack.id} onSelect={id => void selectPack(id)} playing={canvasState.playing} /> : null}
+      {skinId === 'b' ? <TmuxTabs active={nav} go={go} calibOk={calibOk} /> : null}
+      <div className="mv-main">
       <header className="mv-head">
         <h1 className="mv-title">MV 放映室</h1>
         <span className="mv-spacer" />
@@ -81,12 +115,12 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
         <Popover label="关于与版权" icon={<Icon.info />}><About pack={pack} /></Popover>
       </header>
 
-      <Library api={api} harness={harness} info={info.value} initialAi={initialAi} initialWorkshop={initialWorkshop} workshopIndex={workshopIndex} canvas={() => canvasRef.current} active={pack} recent={recent} onSelect={id => void selectPack(id)} onLoaded={onLoaded} onRecent={setRecent} />
+      <Library navRequest={navRequest} onView={onLibraryView} api={api} harness={harness} info={info.value} initialAi={initialAi} initialWorkshop={initialWorkshop} workshopIndex={workshopIndex} canvas={() => canvasRef.current} active={pack} recent={recent} onSelect={id => void selectPack(id)} onLoaded={onLoaded} onRecent={setRecent} />
       {packError && <Alert kind="error"><p className="mv-wrap">{packError}</p></Alert>}
       {info.status === 'error' && <Alert kind="warn"><p className="mv-wrap">{info.error}（画布播放不受影响；MV 包、AI 制作和歌词引擎需要后台。）</p></Alert>}
 
-      <section className="mv-hero" aria-label="正在播放" style={{ '--mv-hue': pack.builtin ? (pack.pack.canvas?.renderer === 'dsh-pv' ? 222 : 18) : coverHue(pack.pack.title) }}>
-        <span className="mv-hero-art" aria-hidden="true">{pack.builtin ? (pack.pack.canvas?.renderer === 'dsh-pv' ? 'dsh' : '>_') : coverInitials(pack.pack.title)}</span>
+      <section className="mv-hero" aria-label="正在播放" style={{ '--mv-hue': cover.hue }} data-cover={cover.text}>
+        <span className="mv-hero-art" aria-hidden="true">{cover.text}</span>
         <div style={{ minWidth: 0 }}>
           <p className="mv-section-label" style={{ margin: 0 }}>正在播放</p>
           <h2 className="mv-hero-title">{pack.pack.title}</h2>
@@ -105,6 +139,10 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
       </section>
 
       <CanvasMv ref={canvasRef} api={api} pack={pack} defaultFontSize={info.value?.canvasFontSize ?? 14} onState={setCanvasState} />
+      </div>
+      {skinId === 'a' ? <PlayerBar title={pack.pack.title} artist={pack.pack.artist || '未知艺术家'} cover={cover} transport={transport} canvas={() => canvasRef.current} onShow={() => go('now')} /> : null}
+      {skinId === 'b' ? <StatusLine title={pack.pack.title} artist={pack.pack.artist || '未知艺术家'} transport={transport} canvas={() => canvasRef.current} active={nav} /> : null}
+      </div>
     </div>
   )
 }
