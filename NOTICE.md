@@ -6,11 +6,12 @@ This is an **unofficial fan work**, not affiliated with Mili, DeepSeek, or the a
 ## 1. 歌曲与歌词 / Song and lyrics
 
 《world.execute(me);》的作曲、作词、录音及其歌词文本的一切权利归 **Mili** 及其权利人所有。
-本插件**不包含**任何音频、视频、歌词文本、频谱数据或鲸鱼等美术素材；用户需自行提供合法取得的音频与歌词文件，
-文件只在用户本机的 Harness 里读取，不会上传。
+本插件**不包含**任何音频、视频、歌词文本、频谱数据或字体；用户需自行提供合法取得的音频与歌词文件，
+文件只在用户本机的 Harness 里读取，不会上传。（0.6.0 起包内附带第 3 节所述、按 CC BY-NC-SA 4.0 授权的鲸鱼娘立绘。）
 
 All rights in "world.execute(me);" (composition, lyrics, recordings) belong to Mili and the respective rights
-holders. The package ships **no** audio, video, lyric text, spectrum data or artwork; users supply their own files.
+holders. The package ships **no** audio, video, lyric text, spectrum data or fonts; users supply their own files.
+(Since 0.6.0 it includes the CC BY-NC-SA 4.0 whale-girl artwork described in section 3.)
 
 ## 2. 场景与时间轴：world.execute-me-ascii（经作者许可移植）/ Scenes and timing (ported with permission)
 
@@ -34,16 +35,38 @@ Alice-Marx permission to modify and use it on 2026-10-03. The repository has **n
 permission, not an open-source licence: get it in writing and ask the author to add a LICENSE. The MIT licence of
 this repository does not cover the ported files.
 
-## 3. MV 终端启动的外部播放器（不随包分发）/ External players (not bundled)
+## 3. dsh PV 预设：world-execute-me-dsh-pv（MIT）与鲸鱼娘立绘（CC BY-NC-SA 4.0）/ dsh PV preset
 
-- **world_execute_me**（「用五亿 token 在 cmd 上演出大肥鱼的 world.execute(me)」，作者 林原林海 / MisakaZentai
-  等，见其目录内说明）：MV 终端以用户本机的 `python.exe _tools\tui_live.py` 方式启动它。本插件不包含其任何文件。
+**整个 npm 包的许可是 `(MIT AND CC-BY-NC-SA-4.0)`，不是纯 MIT。The package as a whole is not purely MIT.**
+
+- **代码与数据（MIT）**：「world.execute(me); dsh PV」画布预设移植自 **MisakaZentai / world-execute-me-dsh-pv**
+  （<https://github.com/MisakaZentai/world-execute-me-dsh-pv>，commit `a4dd0f7`，MIT，Copyright (c) 2026 MisakaZentai）。
+  `.dsh-plugin/client/mv/dshpv/*.mjs` 是其合成渲染器的 JavaScript 重写；`.dsh-plugin/assets/dsh-pv/` 里的
+  `timeline.json`、`chat.json`、`band.json` 是在本机运行上游渲染器后记录的绘制指令、对话窗口内容与时间表，
+  MIT 全文见该目录的 `NOTICE.md`。数据中的歌词只以 sha256 和时间出现，不含歌词文字；`IF I CAN` 等歌词横幅已替换。
+  DeepSeek 前端的 CSS / 图标 / 字体和上游的字体都没有复制，窗口为原生重画。
+- **立绘（CC BY-NC-SA 4.0）**：`.dsh-plugin/assets/dsh-pv-art/` 里的 8 张表情和 1 张女仆立绘（缩小为 200×360 WebP）
+  按 **署名-非商业性使用-相同方式共享 4.0 国际** 授权，许可全文为该目录的 `LICENSE`，署名链与改动见其 `NOTICE.md`：
+  1. 角色原作 溟月（鲸鱼娘）© **上善无形 / 上善**；
+  2. 女仆版设计 **ZipZipPipe**（Pixiv 作品 148186519；据上游说明使用 AI 图像模型 GPT Image 2 生成）；
+  3. 立绘 **Small-tailqwq / dsh-deep-whale** `maid-atelier`；
+  4. 八种表情 **dsh-whale-galgame**；
+  5. 经 **MisakaZentai / world-execute-me-dsh-pv** 取得。
+  上游的原始 NOTICE 保留在同一目录。运行时画布对这些图做裁切、像素化、调色和故障效果，这些改编画面同样按
+  CC BY-NC-SA 4.0 共享。**不得商用**；改编须按同一许可分享。需要纯 MIT 的构建时删掉该目录，预设改画占位剪影。
+- The dsh PV preset is a JavaScript port of MisakaZentai/world-execute-me-dsh-pv (MIT); its recorded data lives in
+  `.dsh-plugin/assets/dsh-pv/` (MIT notice inside). The whale-girl images in `.dsh-plugin/assets/dsh-pv-art/` are
+  CC BY-NC-SA 4.0 with the attribution chain above (licence text and chain in that folder). Non-commercial;
+  share-alike. Delete the folder for an MIT-only build.
+- 0.6.0 以前 MV 终端可以启动用户本机的 **world_execute_me**（`tui_live.py`，作者 林原林海 / MisakaZentai 等）；
+  **0.6.0 已删除该功能**，本插件从未包含其文件。
+
 ## 4. 相关作品 / Related work
 
 - world-execute-me-ascii-rust（<https://github.com/bilixxb/world-execute-me-ascii-rust>，作者 bilixxb）：world.execute-me-ascii 的
   Rust 重写版。0.2.x–0.3.x 的 MV 终端可以启动用户自己下载的这个程序；**自 0.4.0 起已移除该支持**，本插件从未复制其任何代码或数据。
-- world-execute-me-dsh-pv（DeepSeek Harness 风格 PV）——本插件的音频版本识别表里包含其音频文件的 sha256（只存哈希）。
-- xterm.js（MIT）、@lydell/node-pty（MIT）、React（MIT）随客户端/宿主依赖使用，许可证见各自包内。
+- world-execute-me-dsh-pv：见第 3 节；音频版本识别表里还包含其音频文件的 sha256（只存哈希）。
+- React（MIT）打包进客户端。0.6.0 起不再使用 xterm.js 和 @lydell/node-pty。
 - **King-LRC-Waveform-Editor**（<https://github.com/TKCB/King-LRC-Waveform-Editor>，作者 TKCB，MIT）：0.5.0 的歌词校准编辑器
   （波形上拖动歌词块、打点、微调快捷键等交互）参考了它的设计；代码为重新编写，未复制其源文件。Calibration editor interaction
   ideas adapted from King-LRC-Waveform-Editor (MIT, © TKCB); no source files were copied.

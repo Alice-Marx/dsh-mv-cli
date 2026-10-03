@@ -2,32 +2,35 @@
 
 English · [简体中文](README.zh.md)
 
-A DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`) that plays **terminal-style music videos** in the workbench. Built in: Mili's "world.execute(me);" scenes. Any other song: an [MV pack](#mv-packs-play-any-song) (`mv.json`), drawn by the generic spectrum + lyrics renderer, by a sandboxed scene script, or by an external TUI program, and a Harness agent can [make the pack for you](#make-a-new-mv-with-ai). Two modes:
+A DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`) that plays **terminal-style music videos** on a `<canvas>` in the workbench, rendered frame by frame with your own audio as the clock:
 
-| Mode | What it does | You supply |
+| Title | What it does | You supply |
 | --- | --- | --- |
-| **Canvas MV** | Renders the ASCII MV frame by frame on a `<canvas>` (five chapters, fullscreen, terminal palette). `<audio>.currentTime` is the master clock; the spectrum comes from a Web Audio AnalyserNode. | An audio or video file in any format Chromium decodes; optional lyrics (LRC / SRT, or the `lyrics.json` of your local world.execute-me-ascii copy) and `spectrum.json` |
-| **MV terminal** | Runs a terminal player you already have in a pseudo terminal (ConPTY / node-pty), shown with xterm.js (WebGL with DOM fallback). | A world_execute_me folder and its `python.exe` (any audio format; converted to WAV automatically), or an MV pack with a `terminal` program |
+| **world.execute(me);** (built-in preset) | The ASCII MV of Mili's "world.execute(me);" (five chapters), ported from world.execute-me-ascii | An audio or video file; optional lyrics and `spectrum.json` |
+| **world.execute(me); dsh PV** (built-in canvas preset, new in 0.6.0) | A real-time JavaScript port of MisakaZentai's "world.execute(me) through the eyes of 大肥鱼" PV: the DeepSeek window, the terminal UI and the whale-girl art, synced live to your audio | Audio of the same song; optional timed lyrics (LRC) |
+| **MV packs** (`mv.json`) | Any song: the generic spectrum + lyrics renderer, or a sandboxed scene script; a Harness agent can [make the pack for you](#make-a-new-mv-with-ai) | Your audio and lyrics |
 
-> **Unofficial fan work.** The plugin ships **no** audio, video, lyric text, spectrum data or artwork. The song and lyrics belong to Mili. The scenes and timing are ported from [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (Bilibili: 野生大K) **with the author's permission**. See [NOTICE.md](NOTICE.md).
+> **0.6.0 removed the 面板终端 (panel terminal) and 独立窗口 (separate window) players**, together with node-pty / xterm.js, the tui_live.py integration and the automatic WAV conversion for MCI. The plugin only plays on the canvas and never runs an external player; a `terminal` section in an old `mv.json` is ignored with a warning.
+
+> **Unofficial fan work.** The plugin ships **no** audio, video, lyric text or fonts. The song and lyrics belong to Mili. The world.execute(me) preset's scenes and timing are ported from [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (Bilibili: 野生大K) **with the author's permission**. The dsh PV preset is ported from [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (MIT) and includes its **CC BY-NC-SA 4.0** whale-girl artwork (see [License](#license)). See [NOTICE.md](NOTICE.md).
 
 ## The panel at a glance
 
 The panel reads top to bottom like a music player:
 
-1. **曲库 (library)**: cards for the built-in world.execute(me) preset and recently imported MV packs, plus **用 AI 制作新 MV** (make a new MV with AI), **导入 MV 包** (import) and **新建（模板）** (new from template).
-2. **正在播放 (now playing)**: the title and artist. On the right you choose **where to play** (画布 canvas / 面板终端 panel terminal / 独立窗口 separate window), then press the big **▶ 播放** button.
-3. **Stage**: in canvas mode, the canvas plus a player bar (play/pause, seek, time, chapter, volume, audio sync, keyboard shortcuts, fullscreen). In terminal modes, the player status (paths are checked automatically, and problems appear inline with one-click fixes), the confirmation card and the terminal.
-4. **设置 / 高级 (settings)**, collapsed by default: paths, start second, latency, no-audio, font size.
+1. **曲库 (library)**: cards for the two built-in presets (world.execute(me) and world.execute(me); dsh PV) and recently imported MV packs, plus **用 AI 制作新 MV** (make a new MV with AI), **导入 MV 包** (import) and **新建（模板）** (new from template).
+2. **正在播放 (now playing)**: the title and artist, and a **▶ 播放** button.
+3. **Stage**: the canvas plus a player bar (play/pause, seek, time, chapter, volume, audio sync, keyboard shortcuts, fullscreen).
+4. **设置 (settings)**, collapsed by default: font size, subtitle offset.
 5. **ⓘ** at the top right: about, credits and legal notice. A compact "请完全重启 Harness" pill appears only when the Host runs older plugin code.
 
 The panel has an opaque background and follows the Harness light/dark theme.
 
 ## Install
 
-**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.5.0` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.
+**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.6.0` (or just `@ljwei-stak/dsh-mv-cli` for the latest), then install and enable it.
 
-**From a local archive:** download `ljwei-stak-dsh-mv-cli-0.5.0.tgz` and its `.sha256` from the GitHub Release. Check it with `Get-FileHash -Algorithm SHA256 -LiteralPath <path>`, then enter the archive's absolute path in **Plugins → Add plugin**.
+**From a local archive:** download `ljwei-stak-dsh-mv-cli-0.6.0.tgz` and its `.sha256` from the GitHub Release. Check it with `Get-FileHash -Algorithm SHA256 -LiteralPath <path>`, then enter the archive's absolute path in **Plugins → Add plugin**.
 
 After installing either way:
 
@@ -36,26 +39,25 @@ After installing either way:
 
 > Upgrading: after installing a new version, fully quit Harness once (including the tray icon). Otherwise the panel shows a "后台版本与界面不一致" banner. 0.1.1 never showed the sidebar entry; use 0.1.2 or later.
 
-The MV terminal uses the optional dependency `@lydell/node-pty` (prebuilt for Windows). Without it the panel reports pipe mode, and tui_live.py cannot display. The canvas MV is unaffected.
+Since 0.6.0 there are no native dependencies (node-pty is gone).
 
 ## MV packs: play any song
 
 An **MV pack** is a folder with an `mv.json` manifest. It names your audio, lyrics and optional spectrum files (paths relative to the folder), and says how to draw the song:
 - with the built-in **generic** canvas renderer (spectrum bars, title, current and next lyric, progress), which works for any song;
-- with the built-in **world-execute-me** scenes;
+- with the built-in **world-execute-me** scenes, or the **dsh-pv** preset (`canvas.renderer: "dsh-pv"`, only meaningful for the same song);
 - with a **scene script** (`canvas.renderer: "script"`, `canvas.script: "scenes.js"`): your own `render(t, cols, rows, ctx)` in plain JavaScript, run sandboxed in a Web Worker with a time limit per frame (falls back to generic on errors). The template README documents the API;
-- and/or with an **external TUI program** (an executable or interpreter, a script, and an argument template).
 
-The built-in world.execute(me) preset is still the default entry in the pack list.
+External TUI programs are no longer supported since 0.6.0: a `terminal` section in an older pack is ignored with a warning on import. The built-in world.execute(me) preset is still the default entry in the pack list.
 
 In the panel's **曲库** (library):
 
-1. **新建（模板）**: choose a folder. The plugin creates `dsh-mv-pack-template` there and never overwrites existing files. The folder contains `mv.json`, `mv.schema.json` (completion and validation in VS Code), README.md / README.zh.md, a placeholder `lyrics.example.lrc`, and `examples/` (a python player, world.execute(me) written as a pack, and `scenes.example.js`). **下载模板 zip** in the import dialog gives the same files as a zip.
+1. **新建（模板）**: choose a folder. The plugin creates `dsh-mv-pack-template` there and never overwrites existing files. The folder contains `mv.json`, `mv.schema.json` (completion and validation in VS Code), README.md / README.zh.md, a placeholder `lyrics.example.lrc`, and `examples/` (world.execute(me) and dsh PV written as packs, and `scenes.example.js`). **下载模板 zip** in the import dialog gives the same files as a zip.
 2. Put your own audio (any [supported format](#audio-formats)) and lyrics in the folder, and edit `mv.json`.
 3. **导入 MV 包** → **选择文件夹…**, or paste the path of the folder or of `mv.json`. Importing only reads the manifest.
    - Recently used packs (up to 8) are remembered on this computer and appear as cards in the library (× on a card removes it).
    - The last active pack is reopened next time.
-4. **画布** plays the pack: the audio is streamed from the Host in chunks, and lyrics/spectrum are loaded with it. When the pack has a `terminal` section, the terminal modes offer the player **MV 包渲染程序**.
+4. **▶ 播放** plays the pack: the audio is streamed from the Host in chunks, and lyrics/spectrum are loaded with it.
 
 Minimal `mv.json`:
 
@@ -68,35 +70,14 @@ Minimal `mv.json`:
   "artist": "Someone",
   "audio": { "file": "song.mp3", "offset": 0 },
   "lyrics": { "file": "lyrics.lrc" },
-  "canvas": { "renderer": "generic" },
-  "terminal": {
-    "program": "python/python.exe",
-    "script": "player.py",
-    "args": ["{script}", { "when": "audio", "args": ["--audio", "{audio}"] }, { "when": "start", "args": ["--start", "{start}"] }],
-    "cwd": "pack"
-  }
+  "canvas": { "renderer": "generic" }
 }
 ```
 
 Fields:
-- `format`, `version`, `title` are required. Optional fields: `artist`, `album`, `credits[]`, `notice`, `duration`, `audio {file, offset}`, `lyrics {file, offset}` (LRC/SRT/VTT/lyrics.json), `spectrum {file}`, `canvas {renderer: generic | world-execute-me | script, script, fontSize}` and `terminal`.
+- `format`, `version`, `title` are required. Optional fields: `artist`, `album`, `credits[]`, `notice`, `duration`, `audio {file, offset}`, `lyrics {file, offset}` (LRC/SRT/VTT/lyrics.json), `spectrum {file}`, `canvas {renderer: generic | world-execute-me | dsh-pv | script, script, fontSize}`. `terminal` (the pre-0.6.0 external player) is ignored with a warning.
 - Unknown fields are errors; use `x-…` for your own data.
 - Relative paths must not contain `..`.
-
-`terminal.args` placeholders:
-- `{audio}`, `{lyrics}`, `{spectrum}`, `{script}`, `{packDir}` are absolute paths.
-- `{start}` and `{offset}` are numbers (`{offset}` is the panel value plus `audio.offset`).
-- `{{`/`}}` are literal braces.
-- `{ "when": "audio|lyrics|spectrum|start|offset", "args": [...] }` adds arguments only when the condition holds.
-- Each array item is one argv element, and no shell parses it.
-
-**Safety of external renderers.** A pack's program is arbitrary code by nature, so:
-- Nothing runs on import.
-- **检查** re-reads `mv.json` on the Host and verifies the program, script and media files.
-- The confirmation card shows the exact resolved command, every argument and the working directory, and the start runs only after you confirm.
-- If `mv.json` changes after you confirmed, the Host refuses to start.
-- `.bat`/`.cmd`/`.ps1`/`.vbs`/`.js`/`.lnk` and similar files are refused as programs. On Windows the program must be an `.exe`.
-- In the separate-window (cmd.exe) mode, any path or argument containing `% ! " ^ & | < >` or a line break is refused. Parentheses are allowed, because every token is quoted.
 
 ## Make a new MV with AI
 
@@ -158,12 +139,11 @@ The format is always detected from the file's **content**, not its extension (a 
 | Where | Supported |
 | --- | --- |
 | Canvas MV, MV packs, 用 AI 制作新 MV | Everything the panel's Chromium decodes: MP3, M4A/AAC (incl. ADTS and DASH/fragmented MP4), the audio track of MP4 / MOV / WebM / MKV video files, Ogg Vorbis, Ogg/WebM Opus, FLAC, WAV (PCM, float, A-law, μ-law). |
-| MV terminal (tui_live.py, Windows MCI) | Plays MP3 and PCM WAV directly. **Every other format above is converted automatically** when you press ▶ 播放: the panel decodes it and the Host stores a 16-bit PCM WAV in `%LOCALAPPDATA%\dsh-mv\audio-cache\` named by the source's sha256, so the next play starts instantly (newest 8 kept). Progress is shown in the 播放器 card; your file is never modified. |
-| Formats Chromium cannot decode (WMA/ASF, AIFF, AMR, AC-3, APE, WavPack, CAF, MPEG-TS, FLV, RF64 …) | If **ffmpeg** is installed (on `PATH`, at `D:\Program Files\FFmpeg\bin\ffmpeg.exe`, or the `ffmpegPath` setting), the panel offers **用 ffmpeg 转换…**: it shows the exact command and runs it only after you confirm (fixed arguments, no shell, 10-minute limit) into the same WAV cache. Without ffmpeg, convert the file yourself or play without sound. |
+| Formats Chromium cannot decode (WMA/ASF, AIFF, AMR, AC-3, APE, WavPack, CAF, MPEG-TS, FLV, RF64 …) | If **ffmpeg** is installed (on `PATH`, at `D:\Program Files\FFmpeg\bin\ffmpeg.exe`, or the `ffmpegPath` setting), the panel offers **用 ffmpeg 转换…**: it shows the exact command and runs it only after you confirm (fixed arguments, no shell, 10-minute limit) into a WAV cache in `%LOCALAPPDATA%\dsh-mv\audio-cache\` named by the source's sha256. Without ffmpeg, convert the file yourself or play without sound. |
 
 ## Canvas MV
 
-- **Audio**: choose **画布**, then **选择…** in the audio tile to pick your own audio or video file (any [format Chromium decodes](#audio-formats); the detected format is shown). When a pack's audio cannot be decoded and ffmpeg is available, the panel offers **用 ffmpeg 转换…**.
+- **Audio**: **选择…** in the audio tile to pick your own audio or video file (any [format Chromium decodes](#audio-formats); the detected format is shown). When a pack's audio cannot be decoded and ffmpeg is available, the panel offers **用 ffmpeg 转换…**.
   - Its sha256 is computed locally, and the file is remembered in IndexedDB. It is never uploaded.
 - **Lyrics**:
   - LRC: two lines per timestamp (English and Chinese), or `English / 中文` on one line.
@@ -174,7 +154,7 @@ The format is always detected from the file's **content**, not its extension (a 
   - Space/Enter: play/pause
   - ←/→: ±5 s
   - R: restart
-  - 1–5: jump to a chapter
+  - 1–5: jump to a chapter (dsh PV: BOOT / SFT / DEPLOY / REWARD_HACK / EVAL: LOVE)
   - `[`/`]`: subtitles earlier/later by 0.1 s
   - Alt+`[`/Alt+`]`: audio sync offset ∓0.1 s
   - `,`/`.`: previous/next line
@@ -190,25 +170,30 @@ The format is always detected from the file's **content**, not its extension (a 
 - **Saved offsets**: tuned offsets are stored per sha256.
 - **No audio**: the film runs on an internal clock.
 
-## MV terminal
+## dsh PV canvas preset
 
-- **Where**: choose **面板终端** or **独立窗口** next to the Play button, then pick the player in the 播放器 card:
-  - **world_execute_me**: give the player folder and its `python\python.exe`. Audio is optional (any format), or tick "no audio".
-  - **MV 包渲染程序**: the `terminal` program of the active MV pack.
-- **Automatic checks**: after each change the Host verifies every path on disk and sniffs the audio file's **real format** from its first bytes (the extension does not count).
+**world.execute(me); dsh PV** is a real-time JavaScript port of [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (commit `a4dd0f7`, MIT): a PV that retells world.execute(me) from the point of view of "大肥鱼" (DeepSeek), 97 shots in 10 chapters (BOOT → PRETRAIN → SFT → RLHF → DEPLOY → USER_LEFT → REWARD_HACK → EXECUTION → EVAL: LOVE → WHALE_FALL). Upstream is a Python program that renders a video offline; here the canvas redraws it live against your audio.
 
-  > **Any audio format works.** tui_live.py plays audio through Windows MCI, which opens only real MP3 / PCM WAV (anything else, e.g. a DASH MP4 renamed `.mp3`, fails with MCI error 277 and plays silently). So when the file is anything else, **▶ 播放** first converts it transparently to a cached WAV (progress in the 播放器 card, cached by sha256, about 10 MB per minute) and starts tui_live.py with `--audio-file <cached wav>`. The confirmation card says so. Formats Chromium cannot decode use ffmpeg when available (see [Audio formats](#audio-formats)), or **不播放声音**.
-- **▶ 在面板终端播放**: shows the exact command and working directory, and runs only after you confirm. The panel cannot pass arbitrary commands or arguments.
-- **Latency**: output is relayed by long polling and adds about 30–150 ms.
+**Use it:**
 
-### Play in a separate window (Windows only)
+1. Update to 0.6.0 and fully restart Harness.
+2. **MV 放映室 → 曲库 → "world.execute(me); dsh PV"** card.
+3. **Audio**: your own "world.execute(me);" audio or video file (shared with the other preset).
+4. **Lyrics** (optional, recommended): your own LRC. Each line's sha256 is compared with the built-in timing table; matched lines get the PV's **per-word timing** (the typing, the stdout token band at the bottom and the attention tokens of the `satisfaction` shot all come from your lyrics). The lyrics tile shows "逐词时间匹配 x/y 句". The LRCLIB lyrics with id 36914646 match 97/98 lines. With fewer than half matched, the lines from your file are shown with their own times. Without lyrics the lyric slots stay empty.
+5. **▶ 播放**. Keys, audio sync (Alt+`[` / Alt+`]`) and fullscreen work as for the other preset.
 
-**独立窗口** + **▶ 在独立窗口播放** runs the same fixed player and arguments in a **real Windows console window** (Windows Terminal when that is the default terminal), with no relay latency. The confirmation card shows the exact command, `cmd.exe /d /v:off /s /c "start "world.execute(me)" /D "<dir>" "<player>" <fixed args>"`. Every path is quoted; paths containing `%` are refused because cmd expands `%VAR%` even inside quotes. The Host finds the player's pid; **结束** runs `taskkill /PID <pid> /T /F` after checking the pid still belongs to that executable. Windows opened by the plugin are also closed on plugin unload / Harness exit. The button is disabled with an explanation on macOS / Linux.
+**How it works:** upstream's composite renderer was run locally and its draw calls (text, rectangles, lines, colours, positions) were recorded at 2–6 keyframes per shot (about one per 0.5 s), together with the DeepSeek window layout and chat contents and the layer opacities. They ship as `timeline.json`, `chat.json` and `band.json` in `.dsh-plugin/assets/dsh-pv/` (about 4.4 MB unpacked). The canvas replays the keyframes over time, decode-types new text, and adds the live parts: a heartbeat line driven by the live loudness, the ops ticker, the stdout token band, the DeepSeek window (redrawn natively, without DeepSeek's frontend CSS / icons / fonts), the red EXECUTION split screen and tape, the whale-fall finale, and light trails, bloom, scanlines and vignette. The data contains **no lyric text**: lyrics appear only as sha256 hashes and times, the build script checks that no lyric run of 4 or more words remains, and all lyric text comes from your file at run time.
+
+**Faithfulness:** shot structure, timing, texts, layout, the chat window and the lyric band match the original PV. Upstream's raster layers (the glyph dancer, heat grids, photos / sprites) are not ported and are approximated; big banners such as "IF I CAN" are approximate redraws. System fonts are used (DejaVu Sans Mono / Consolas / Microsoft YaHei …); upstream's fonts are not included.
+
+**Art:** the package includes upstream's 8 whale-girl expressions and 1 maid sprite (downscaled to 200×360 WebP) under **CC BY-NC-SA 4.0**; the attribution chain and the changes are in `.dsh-plugin/assets/dsh-pv-art/NOTICE.md`. Per upstream, these character designs were generated with an AI image model (GPT Image 2). Delete that folder and the preset draws a placeholder silhouette instead.
 
 ## Development
 
 `pnpm install`, `pnpm test`, `npm run build:client`, `npm run check:client`, `npm run pack:local`.
 
+- `tools/dsh-pv/` regenerates the dsh PV data from the upstream repository (local only; needs the upstream checkout, its Python environment and your own lyrics; not in the npm package). See its README.
+- `tools/ui-preview/` takes the panel screenshots (`node tools/ui-preview/build-preview.mjs && node tools/ui-preview/shoot.mjs <outDir>`).
 - `tools/py2js.py` transpiles a local `scenes.py`.
 - `tools/make-goldens.py` renders reference frames with the **original** `player.Film` and stores only frame digests. It uses placeholder lyrics and a synthetic spectrum.
 - Set `REF_ASCII_DIR` to run an extra test against your local copy.
@@ -216,7 +201,8 @@ The format is always detected from the file's **content**, not its extension (a 
 ## Known limitations
 
 - About 2% of the 1232 reference frames differ from the Python renderer. All of them are in the 75–81 s legacy-mesh section, caused by float-ulp / z-buffer ties.
-- The MV terminal has long-poll latency. tui_live.py needs ConPTY on Windows. Non-MP3/WAV audio is converted to a WAV first (the first play of a long song takes a few seconds; the cache lives in `%LOCALAPPDATA%\dsh-mv\audio-cache`).
+- dsh PV: the timeline is fixed to the original song length (211.9 s); other edits need the audio sync offset, and edits of a different length drift in the second half. Upstream's raster layers are approximated; no fonts are bundled, so glyphs differ slightly between systems. The art is CC BY-NC-SA 4.0 (non-commercial). The package therefore grows to PKGSIZE.
+- 0.6.0 removed the panel terminal / separate window: run tui_live.py in a terminal of your own if you want it.
 - 用 AI 制作新 MV needs the agent session API of the Harness client (otherwise copy & paste the prompt). Scene scripts run in a Blob Web Worker; if a Harness build forbids blob workers, script packs play with the generic renderer. The agent tools need the Host `tools` service; without it the agent checks its work by reading AGENT.md.
 - Audio files over 1 GB are refused; the WAV cache is limited to 1.5 GB per file (about 2.5 hours).
 - The `79c4e5…` offset is inferred.
@@ -224,4 +210,11 @@ The format is always detected from the file's **content**, not its extension (a 
 
 ## License
 
-The plugin's own code is MIT. The scene files ported from world.execute-me-ascii are **not** covered by MIT. They are used with the original author's permission. That repository has no LICENSE file; keep the permission in writing and ask the author to add one. See [NOTICE.md](NOTICE.md).
+The npm package's licence expression is **`(MIT AND CC-BY-NC-SA-4.0)`**; the package as a whole is **not purely MIT**:
+
+- The plugin's own code is MIT ([LICENSE](LICENSE)).
+- `.dsh-plugin/assets/dsh-pv/`: data ported from MisakaZentai/world-execute-me-dsh-pv, MIT (Copyright (c) 2026 MisakaZentai; full text in that folder's NOTICE.md).
+- `.dsh-plugin/assets/dsh-pv-art/`: whale-girl artwork under **CC BY-NC-SA 4.0** (attribution · non-commercial · share-alike). Chain: 溟月 © 上善无形 → ZipZipPipe (Pixiv 148186519, AI-generated) → Small-tailqwq/dsh-deep-whale → dsh-whale-galgame → MisakaZentai. Delete the folder for an MIT-only build.
+- The scene files ported from world.execute-me-ascii are **not** covered by MIT. They are used with the original author's permission. That repository has no LICENSE file; keep the permission in writing and ask the author to add one.
+
+See [NOTICE.md](NOTICE.md).

@@ -22,8 +22,14 @@ SOFTWARE.
 
 -------------------------------------------------------------------------------
 SCOPE: this MIT licence covers the code written for this plugin (Host plugin,
-terminal manager, client UI, renderer, Python-semantics runtime, build and test
-tooling). The scene and timing logic in .dsh-plugin/client/mv/scenes.gen.mjs,
+client UI, renderers, Python-semantics runtime, build and test tooling). The scene and timing logic in .dsh-plugin/client/mv/scenes.gen.mjs,
 film.mjs and canvas.mjs is a port of world.execute-me-ascii by yym8224961 and
 is used with that author's permission, which is NOT an open-source licence —
 see NOTICE.md before redistributing or reusing those parts.
+
+The dsh PV preset (.dsh-plugin/client/mv/dshpv/ and .dsh-plugin/assets/dsh-pv/)
+is ported from MisakaZentai/world-execute-me-dsh-pv under the MIT licence,
+Copyright (c) 2026 MisakaZentai (full notice in .dsh-plugin/assets/dsh-pv/NOTICE.md).
+The images in .dsh-plugin/assets/dsh-pv-art/ are NOT covered by MIT: they are
+licensed CC BY-NC-SA 4.0 (licence text and attribution in that folder). The
+package as a whole is therefore licensed (MIT AND CC-BY-NC-SA-4.0).
