@@ -1,0 +1,62 @@
+/* Shared base for the redesign mockups. Spacing scale: 4 8 12 16 24 32 48 64 (--s1..--s8). */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+:root{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:64px}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+button:disabled{cursor:default;opacity:.55}
+a{color:inherit}
+h1,h2,h3,h4,p{margin:0}
+.ic{flex:none;display:block}
+.ic.fill{fill:currentColor;stroke:none}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.grow{flex:1}
+.app{min-height:100vh}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);height:36px;padding:0 var(--s4);border-radius:var(--r-btn,8px);font-weight:600;font-size:14px;white-space:nowrap;transition:background .15s,color .15s,border-color .15s,box-shadow .15s,transform .1s}
+.btn.sm{height:30px;padding:0 var(--s3);font-size:13px}
+.btn.lg{height:44px;padding:0 var(--s5);font-size:15px}
+.btn.icon{width:36px;padding:0}.btn.icon.sm{width:30px}
+.btn:active:not(:disabled){transform:translateY(1px)}
+:focus-visible{outline:2px solid var(--focus,#4176e6);outline-offset:2px}
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:linear-gradient(to right,var(--range-fill) var(--p,0%),var(--range-track) var(--p,0%));cursor:pointer;margin:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--range-thumb,#fff);box-shadow:0 1px 3px #0005;opacity:0;transition:opacity .15s}
+input[type=range]:hover::-webkit-slider-thumb,input[type=range]:focus-visible::-webkit-slider-thumb{opacity:1}
+.seek{display:flex;align-items:center;gap:var(--s3);flex:1;min-width:0}
+.seek input{flex:1}
+.seek-time{font-variant-numeric:tabular-nums;font-size:12px;min-width:34px;text-align:center}
+.stage{width:100%;overflow:hidden}.stage canvas{display:block;width:100%}
+.cover{display:block;width:100%;height:100%;object-fit:cover}
+.minibars{display:flex;align-items:flex-end;gap:2px;height:16px}.minibars i{flex:1;min-width:2px;border-radius:1px;background:currentColor}
+/* calibration editor skeleton */
+.cal-toolbar{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s3)}
+.cal-toolbar .sep{width:1px;height:20px;background:var(--line);margin:0 var(--s1)}
+.cal-toolbar .count{margin-left:2px;min-width:18px;height:18px;border-radius:9px;font-size:11px;display:inline-grid;place-items:center;padding:0 5px;background:var(--warn-bg);color:var(--warn-fg)}
+.cal-offset{display:flex;align-items:center;gap:var(--s2);font-size:13px}.cal-offset input{width:120px}.cal-offset b{font-variant-numeric:tabular-nums;font-weight:600;min-width:56px}
+.cal-track{position:relative;border-radius:var(--r-card,10px);overflow:hidden;user-select:none}
+.cal-ruler{position:relative;height:22px;font-size:11px;font-variant-numeric:tabular-nums}
+.cal-ruler span{position:absolute;top:4px;transform:translateX(-50%)}
+.cal-blocks{position:relative;height:30px}
+.cal-block{position:absolute;top:2px;height:26px;border-radius:6px;padding:0 var(--s2);display:flex;align-items:center;font-size:12px;cursor:grab;overflow:hidden;white-space:nowrap}
+.cal-block span{overflow:hidden;text-overflow:ellipsis}
+.cal-wave{display:block;width:100%;cursor:pointer}
+.cal-head{position:absolute;top:0;bottom:0;width:2px;transform:translateX(-1px);pointer-events:none}
+.cal-lines{list-style:none;margin:var(--s3) 0 0;padding:0}
+.cal-lines li{display:grid;grid-template-columns:72px 1fr auto;gap:var(--s3);align-items:center;padding:6px var(--s3);border-radius:6px;font-size:13px;cursor:pointer}
+.cal-lines time{font-variant-numeric:tabular-nums}
+.cal-lines .conf{font-size:11px;font-variant-numeric:tabular-nums}
+/* stepper skeleton */
+.stepper{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.step{display:grid;grid-template-columns:28px 1fr;gap:var(--s3);padding:var(--s2) 0;position:relative}
+.step-dot{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;position:relative;z-index:1}
+.step-dot b{font-weight:600}
+.step:not(:last-child)::before{content:"";position:absolute;left:11.5px;top:34px;bottom:-6px;width:1px;background:var(--line)}
+.step-title{font-weight:600;font-size:14px;display:flex;gap:var(--s2);align-items:baseline}.step-title small{font-weight:400;font-size:12px;opacity:.6;font-variant-numeric:tabular-nums}
+.step-detail{font-size:12.5px;margin-top:2px}
+.step-bar{height:4px;border-radius:2px;margin-top:var(--s2);overflow:hidden;background:var(--range-track)}.step-bar i{display:block;height:100%;width:var(--p);background:var(--range-fill);border-radius:2px}
+.step.pending{opacity:.6}
+/* review switcher (hidden in screenshots) */
+.mock-switch{position:fixed;right:16px;bottom:96px;z-index:99;display:flex;gap:4px;padding:4px;border-radius:999px;background:#111c;backdrop-filter:blur(8px);box-shadow:0 4px 16px #0006;font:12px system-ui;color:#fff}
+.mock-switch button,.mock-switch select{height:28px;min-width:28px;border-radius:14px;padding:0 10px;background:transparent;color:#fff;border:0}
+.mock-switch .on{background:#fff;color:#000}.mock-switch select option{color:#000}
