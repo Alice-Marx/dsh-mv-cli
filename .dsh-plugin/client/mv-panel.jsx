@@ -14,6 +14,7 @@ import css from './mv.css'
 import skinCss from './mv-skins.css'
 import { SkinPicker, useSkin } from './mv-skin-ui.jsx'
 import { coverHue, coverInitials } from './mv-skin.mjs'
+import { fitToHost } from './mv-host-fit.mjs'
 import { PlayerBar, SideNav, StatusLine, TmuxTabs, useTransport } from './mv-shell.jsx'
 
 const builtinCover = pack => (pack.pack.canvas?.renderer === 'dsh-pv' ? { hue: 222, text: 'dsh' } : { hue: 18, text: '>_' })
@@ -74,6 +75,11 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
   const transport = useTransport(canvasRef, skinId === 'a' || skinId === 'b')
   const [navRequest, setNavRequest] = React.useState(null)
   const [nav, setNav] = React.useState('library')
+  // Harness puts panels in a `display:flex; flex-direction:column; overflow:hidden` column. The root is the
+  // scroll container (mv.css); if a host ever lays it out unconstrained, pin it to the clipping ancestor, and
+  // undo programmatic scrolls of that ancestor (focus()/scrollIntoView() can scroll overflow:hidden boxes,
+  // which hid the header with no way to scroll back — the 0.8.0 bug).
+  React.useLayoutEffect(() => fitToHost(rootRef.current), [])
   const calibOk = Boolean(!pack.builtin && api?.packWriteText)
   const scrollTo = selector => requestAnimationFrame(() => rootRef.current?.querySelector(selector)?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }))
   const go = id => {

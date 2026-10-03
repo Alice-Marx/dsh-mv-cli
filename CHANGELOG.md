@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.1 — 2026-10-04
+
+- **Fix: the panel could not scroll in Harness** (content below the MV canvas unreachable, and the header with the 外观 button could disappear). Harness hosts plugin panels in a centre column that is `display:flex; flex-direction:column; overflow:hidden`; the panel root grew to the column height with its content overflowing, so the wheel did nothing, and `focus()` / `scrollIntoView()` (stage focus, calibration line follow) scrolled the hidden column instead, pushing the header out of view with no way back. The panel root is now its own scroll container (`flex: 1 1 auto; min-height: 0; height: 100%; overflow-y: auto`), is pinned to the clipping ancestor if a host wraps it in an unsized block, and resets programmatic scrolls of that ancestor. Sticky sidebar / player bar / tmux bar / status line now stick inside the panel in all skins. Wheel over the MV canvas scrolls the panel.
+  修复：在 Harness 里面板无法滚动、画面下方内容够不到、顶部「外观」按钮消失。面板现在自己滚动，三套外观都适用。
+- Preview: `?host=1|wrap|art` mirrors the Harness frame; `tools/ui-preview/scroll-check.mjs` checks wheel / bottom / back-to-top in every skin.
+
 ## 0.8.0 — 2026-10-04
 
 - **Skins / 外观**: three user-selectable panel skins, picked from **外观** in the panel header (top right, next to ⓘ) and stored locally (`dsh-mv.skin.v1`). Each skin changes structure as well as style; every feature works the same in all three, and switching skins never interrupts playback.

@@ -73,3 +73,21 @@ test('skin structure CSS: A sidebar + bar, B tmux + status, CRT kept off the can
   // fixed child slots so switching skins never remounts the canvas
   assert.match(panel, /skinId === 'a' \? <SideNav[^\n]*: null\}\n\s*\{skinId === 'b' \? <TmuxTabs[^\n]*: null\}\n\s*<div className="mv-main">/)
 })
+
+test('0.8.1 scroll: the root is its own scroll container and fits a clipping host', async () => {
+  const css = readFileSync(new URL('../.dsh-plugin/client/mv.css', import.meta.url), 'utf8')
+  const root = css.slice(css.indexOf('.mv-root {'), css.indexOf('}', css.indexOf('.mv-root {')))
+  for (const rule of ['flex: 1 1 auto', 'min-height: 0', 'height: 100%', 'overflow-y: auto']) assert.ok(root.includes(rule), rule)
+  const { clippingAncestor, hostHeight } = await import('../.dsh-plugin/client/mv-host-fit.mjs')
+  const doc = { documentElement: null, body: null }
+  const node = (overflowY, parentElement = null) => ({ overflowY, parentElement, ownerDocument: doc })
+  const center = node('hidden'); const wrap = node('visible', center); const el = node('visible', wrap)
+  const found = clippingAncestor(el, n => ({ overflowY: n.overflowY }))
+  assert.equal(found.node, center); assert.equal(found.overflow, 'hidden')
+  assert.equal(clippingAncestor(node('visible', node('visible')), n => ({ overflowY: n.overflowY })), null)
+  assert.equal(hostHeight({ overflow: 'auto', room: 700, rootHeight: 2000, pinned: '' }), '')      // the host scrolls
+  assert.equal(hostHeight({ overflow: 'hidden', room: 700, rootHeight: 700, pinned: '' }), '')    // flex already fits
+  assert.equal(hostHeight({ overflow: 'hidden', room: 700, rootHeight: 2000, pinned: '' }), '700px') // unsized wrapper: pin
+  assert.equal(hostHeight({ overflow: 'hidden', room: 650.6, rootHeight: 700, pinned: '700px' }), '650px') // follow resizes
+  assert.equal(hostHeight({ overflow: 'hidden', room: 40, rootHeight: 700, pinned: '700px' }), '700px')
+})

@@ -263,7 +263,7 @@
 .mv-skin-a .mv-shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); grid-template-areas: "side main" "bar bar"; }
 .mv-skin-a .mv-side { grid-area: side; border-right: 1px solid var(--mv-border); background: color-mix(in srgb, var(--mv-text) 3%, var(--mv-page)); }
 .mv-skin-a.mv-dark .mv-side { background: #000; }
-.mv-skin-a .mv-side-in { position: sticky; top: 0; display: flex; flex-direction: column; gap: 2px; max-height: 100vh; overflow: auto; padding: 20px 12px 24px; box-sizing: border-box; }
+.mv-skin-a .mv-side-in { position: sticky; top: 0; display: flex; flex-direction: column; gap: 2px; max-height: var(--mv-view-h, 100vh); overflow: auto; padding: 20px 12px 24px; box-sizing: border-box; }
 .mv-side-brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 18px; }
 .mv-side-brand b { display: block; font-size: 15px; line-height: 20px; }
 .mv-side-brand small { display: block; font-size: 11.5px; color: var(--mv-faint); }

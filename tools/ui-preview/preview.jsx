@@ -247,6 +247,16 @@ async function setup() {
     const local = await fetch('/local/lyrics.lrc').then(r => (r.ok ? r.text() : ''))
     await putMedia(db, 'lyrics', { name: 'lyrics.lrc', text: local || '[00:00.00](示例歌词，仅用于预览)\n[01:00.50]（示例）第一句\n[01:05.00]（示例）第二句\n' })
   }
-  createRoot(document.getElementById('root')).render(<MvPanel api={api} harness={harness} initialAi={scene === 'ai' || scene === 'auto'} initialWorkshop={scene === 'workshop' || scene === 'wspublish'} />)
+  const panel = <MvPanel api={api} harness={harness} initialAi={scene === 'ai' || scene === 'auto'} initialWorkshop={scene === 'workshop' || scene === 'wspublish'} />
+  // ?host=1 mirrors the Harness frame: the centre column is `display:flex; flex-direction:column; overflow:hidden`
+  // (AppFrame centerCol). ?host=wrap adds a plain block wrapper in between; ?host=art a wallpaper behind a see-through theme.
+  const host = query.get('host')
+  createRoot(document.getElementById('root')).render(host ? (
+    <div className={`pv-host${host === 'art' ? ' pv-host-art' : ''}`}>
+      <div className="pv-host-top">deepseek HARNESS</div>
+      <aside className="pv-host-side">插件 · 自动化任务 · 任务看板 · MV 放映室</aside>
+      <div className="pv-host-center" data-testid="host-center">{host === 'wrap' ? <div className="pv-host-wrap">{panel}</div> : panel}</div>
+    </div>
+  ) : panel)
 }
 void setup()
