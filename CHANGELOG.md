@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.3 — 2026-10-04
+
+- **曲库可收起 / collapsible library**: a chevron on the 曲库 header collapses the library to the header, the song count and the current song's row (playing indicator, play / pause, remove), in list and grid view and in every skin. The state is stored locally (`dsh-mv.library.collapsed.v1`); the sidebar / tab 曲库 entry expands it again.
+  曲库标题左侧新增折叠箭头：收起后只显示标题、数量和正在播放的那一首；状态保存在本机，三套外观、列表和网格都适用。
+
 ## 0.8.2 — 2026-10-04
 
 - **曲库列表视图 / library list view** (new default): compact rows with a small cover, title, artist, type badge (内置预设 / 画布预设 / MV 包 / 创意工坊), duration when known, a playing indicator, and row actions (play / pause the current song, switch to another, remove from the library). The 创意工坊 / 用 AI 制作新 MV / 导入 / 新建（模板） tiles become a compact toolbar. A 列表 / 网格 toggle next to the 曲库 header switches back to cover cards; the choice is stored locally (`dsh-mv.library.view.v1`). Styled per skin: Harness cards, a music-app track list (A), an `ls -l`-style monospace table (B); works in light / dark and with see-through wallpaper themes, and collapses columns in narrow panes. The library now keeps up to 50 packs (was 8); pack durations are remembered for the list.

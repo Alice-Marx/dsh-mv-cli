@@ -88,8 +88,13 @@ if (process.env.LISTVIEW) {
       shots.push([`${dir}-list-${mode}`, 'many', mode, 'hoverrow', `&skin=${skin}&mode=${mode}&libview=list`])
       shots.push([`${dir}-grid-${mode}`, 'many', mode, '', `&skin=${skin}&mode=${mode}&libview=grid`])
     }
-  shots.push(['C-list-wallpaper-follow', 'many', 'light', 'hoverrow', '&skin=c&mode=auto&libview=list&host=art'])
-  shots.push(['C-list-narrow', 'many', 'light', '', '&skin=c&mode=light&libview=list', 560])
+  // 0.8.3 collapsed library (header + current song) per skin, list and grid
+  if (process.env.COLLAPSED) shots.length = 0
+  if (process.env.COLLAPSED) for (const [dir, skin, mode] of [['C', 'c', 'light'], ['C', 'c', 'dark'], ['A', 'a', 'dark'], ['B', 'b', 'dark'], ['B', 'b', 'light']])
+    for (const view of ['list', 'grid']) shots.push([`collapsed-${dir}-${view}-${mode}`, 'many', mode, view === 'list' && mode !== 'light' ? 'scriptplay' : '', `&skin=${skin}&mode=${mode}&libview=${view}&collapsed=1`])
+  if (process.env.COLLAPSED) shots.push(['collapsed-C-wallpaper-follow', 'many', 'light', '', '&skin=c&mode=auto&libview=list&collapsed=1&host=art'])
+  if (!process.env.COLLAPSED) shots.push(['C-list-wallpaper-follow', 'many', 'light', 'hoverrow', '&skin=c&mode=auto&libview=list&host=art'])
+  if (!process.env.COLLAPSED) shots.push(['C-list-narrow', 'many', 'light', '', '&skin=c&mode=light&libview=list', 560])
 }
 // A synthetic, silent-ish WAV for the AI dialog's file chooser (no real media).
 const AUDIO = path.join(OUT, '..', 'starlight-run-preview.wav')

@@ -11,7 +11,7 @@ import { Alert, Icon } from './mv-ui.jsx'
 import { coverHue, coverInitials } from './mv-skin.mjs'
 import { AiPackDialog } from './mv-ai.jsx'
 import { WorkshopDialog } from './mv-workshop.jsx'
-import { BUILTIN_ID, DSH_PV_ID, TEMPLATE_ZIP_NAME, directoryPicker, forgetPack, loadLibraryView, loadPackFromHost, rememberPack, saveLibraryView, templateZip } from './mv-pack-state.mjs'
+import { BUILTIN_ID, DSH_PV_ID, TEMPLATE_ZIP_NAME, directoryPicker, forgetPack, loadLibraryCollapsed, loadLibraryView, loadPackFromHost, rememberPack, saveLibraryCollapsed, saveLibraryView, templateZip } from './mv-pack-state.mjs'
 import { DURATION as WEM_DURATION } from './mv/film.mjs'
 import { fmtTime } from './mv-skin.mjs'
 
@@ -29,6 +29,7 @@ const hue = title => ({ '--mv-hue': coverHue(title) })
 
 export function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false, initialWorkshop = false, canvas = () => null, workshopIndex = null, navRequest = null, onView = null, playing = false, onPlay = () => {}, onShowPlayer = () => {} }) {
   const [layout, setLayout] = React.useState(loadLibraryView)
+  const [collapsed, setCollapsed] = React.useState(loadLibraryCollapsed)
   const [importing, setImporting] = React.useState(false)
   const [aiOpen, setAiOpen] = React.useState(initialAi)
   const [workshopOpen, setWorkshopOpen] = React.useState(initialWorkshop)
@@ -40,6 +41,7 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
   // Skin navigation (sidebar / tmux tabs) opens the same dialogs the cards do.
   React.useEffect(() => {
     if (!navRequest) return
+    if (!navRequest.view) setCollapsed(saveLibraryCollapsed(false))
     setWorkshopOpen(navRequest.view === 'workshop'); setAiOpen(navRequest.view === 'ai'); setImporting(navRequest.view === 'import'); setError('')
   }, [navRequest])
   const view = workshopOpen ? 'workshop' : aiOpen ? 'ai' : importing ? 'import' : null
@@ -91,34 +93,11 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
       return { id, manifestPath: item.manifestPath, title: item.title || item.manifestPath, artist: item.artist, type: item.workshop ? '创意工坊' : 'MV 包', kind: item.workshop ? 'workshop' : 'pack', cover: initials(item.title), hue: coverHue(item.title), duration: item.duration || (active.id === id ? activeDuration : 0), tip: item.manifestPath }
     }),
   ]
-  const warnings = active.warnings ?? []
-  return (
-    <section className="mv-library-section" aria-label="曲库">
-      <div className="mv-lib-head">
-        <p className="mv-section-label">曲库 <span className="mv-lib-count">{2 + recent.length} 首</span></p>
-        <span className="mv-spacer" />
-        <div className="mv-segmented mv-segmented-small mv-lib-layout" role="radiogroup" aria-label="曲库显示方式">
-          {[['list', '列表', Icon.list], ['grid', '网格', Icon.grid]].map(([value, label, Ico]) => (
-            <button key={value} type="button" role="radio" aria-checked={layout === value} title={`${label}视图`} aria-label={`${label}视图`}
-              onClick={() => setLayout(saveLibraryView(value))}><Ico /><span>{label}</span></button>
-          ))}
-        </div>
-      </div>
-      {layout === 'list' ? <>
-        <div className="mv-lib-tools" role="toolbar" aria-label="曲库操作">
-          {tools.map(tool => (
-            <button key={tool.key} type="button" className={`mv-lib-tool mv-lib-tool-${tool.key}`} aria-expanded={tool.expanded} disabled={tool.disabled} title={tool.title} onClick={tool.onClick}>
-              <tool.Icon /><span>{tool.label}</span>
-            </button>
-          ))}
-        </div>
-        <div className="mv-tracks" role="list" aria-label="曲目">
-          <div className="mv-track mv-track-head" aria-hidden="true"><span className="mv-track-n">#</span><span /><span>标题</span><span>类型</span><span className="mv-track-len">时长</span><span /></div>
-          {rows.map((row, index) => {
+  const trackRow = (row, number) => {
             const current = active.id === row.id
             return (
               <div key={row.id} role="listitem" className="mv-track" aria-current={current ? 'true' : undefined} data-playing={current && playing ? 'true' : undefined}>
-                <span className="mv-track-n">{current && playing ? <span className="mv-eq" aria-label="正在播放"><i /><i /><i /></span> : index + 1}</span>
+                <span className="mv-track-n">{current && playing ? <span className="mv-eq" aria-label="正在播放"><i /><i /><i /></span> : number}</span>
                 <span className="mv-thumb mv-track-art" style={{ '--mv-hue': row.hue }} aria-hidden="true">{row.cover}</span>
                 <button type="button" className="mv-track-main" title={row.tip} aria-pressed={current} onClick={() => onSelect(row.id)}>
                   <span className="mv-track-title">{row.title}</span>
@@ -135,9 +114,36 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
                 </span>
               </div>
             )
-          })}
+  }
+  const activeRow = rows.find(row => row.id === active.id) ?? { id: active.id, manifestPath: '', title: active.pack?.title ?? '', artist: active.pack?.artist ?? '', type: active.builtin ? '内置预设' : 'MV 包', kind: active.builtin ? 'builtin' : 'pack', cover: initials(active.pack?.title), hue: coverHue(active.pack?.title), duration: activeDuration, tip: active.manifestPath ?? '' }
+  const warnings = active.warnings ?? []
+  return (
+    <section className="mv-library-section" aria-label="曲库">
+      <div className="mv-lib-head">
+        <button type="button" className="mv-lib-collapse" aria-expanded={!collapsed} aria-controls="mv-lib-body" title={collapsed ? '展开曲库' : '收起曲库'}
+          aria-label={collapsed ? '展开曲库' : '收起曲库'} onClick={() => setCollapsed(saveLibraryCollapsed(!collapsed))}><Icon.chevron /></button>
+        <p className="mv-section-label">曲库 <span className="mv-lib-count">{2 + recent.length} 首{collapsed ? ' · 已收起' : ''}</span></p>
+        <span className="mv-spacer" />
+        <div className="mv-segmented mv-segmented-small mv-lib-layout" role="radiogroup" aria-label="曲库显示方式">
+          {[['list', '列表', Icon.list], ['grid', '网格', Icon.grid]].map(([value, label, Ico]) => (
+            <button key={value} type="button" role="radio" aria-checked={layout === value} title={`${label}视图`} aria-label={`${label}视图`}
+              onClick={() => setLayout(saveLibraryView(value))}><Ico /><span>{label}</span></button>
+          ))}
         </div>
-      </> : <div className="mv-library">
+      </div>
+      {collapsed ? <div id="mv-lib-body" className="mv-tracks mv-tracks-mini" role="list" aria-label="正在播放">{trackRow(activeRow, '▸')}</div> : layout === 'list' ? <div id="mv-lib-body" className="mv-lib-body">
+        <div className="mv-lib-tools" role="toolbar" aria-label="曲库操作">
+          {tools.map(tool => (
+            <button key={tool.key} type="button" className={`mv-lib-tool mv-lib-tool-${tool.key}`} aria-expanded={tool.expanded} disabled={tool.disabled} title={tool.title} onClick={tool.onClick}>
+              <tool.Icon /><span>{tool.label}</span>
+            </button>
+          ))}
+        </div>
+        <div className="mv-tracks" role="list" aria-label="曲目">
+          <div className="mv-track mv-track-head" aria-hidden="true"><span className="mv-track-n">#</span><span /><span>标题</span><span>类型</span><span className="mv-track-len">时长</span><span /></div>
+          {rows.map((row, index) => trackRow(row, index + 1))}
+        </div>
+      </div> : <div id="mv-lib-body" className="mv-library">
         <button type="button" className="mv-card" aria-pressed={active.id === BUILTIN_ID} onClick={() => onSelect(BUILTIN_ID)} title="内置预设：使用你自己的音频和歌词文件">
           <span className="mv-card-art" style={{ '--mv-hue': 18 }}>&gt;_</span>
           <span className="mv-card-title">world.execute(me);</span>
@@ -182,7 +188,7 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
           <span>{busy === 'template' ? '正在写入…' : '新建（模板）'}</span>
         </button>
       </div>}
-      {recent.length === 0 && !importing && !aiOpen && !workshopOpen && <p className="mv-caption">想放别的歌？到「创意工坊」安装别人做好的 MV 包，点「用 AI 制作新 MV」让 Agent 帮你做，或「新建（模板）」得到带说明的 mv.json 和示例场景，放入你自己的音频和歌词后「导入」。</p>}
+      {recent.length === 0 && !collapsed && !importing && !aiOpen && !workshopOpen && <p className="mv-caption">想放别的歌？到「创意工坊」安装别人做好的 MV 包，点「用 AI 制作新 MV」让 Agent 帮你做，或「新建（模板）」得到带说明的 mv.json 和示例场景，放入你自己的音频和歌词后「导入」。</p>}
       {workshopOpen && <WorkshopDialog api={api} active={active} canvas={canvas} initialIndex={workshopIndex} onClose={() => setWorkshopOpen(false)} onLoaded={onLoaded} onRecent={onRecent} />}
       {aiOpen && <AiPackDialog api={api} harness={harness} info={info} onClose={() => setAiOpen(false)} onLoaded={onLoaded} onRecent={onRecent} />}
       {importing && <div className="mv-dialog" role="dialog" aria-label="导入 MV 包">

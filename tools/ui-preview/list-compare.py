@@ -20,3 +20,6 @@ sheet([[('A Music · list · dark', 'A-list-dark'), ('B Terminal · list · dark
        [('A Music · list · light', 'A-list-light'), ('B Terminal · list · light', 'B-list-light'), ('C Harness · list · dark', 'C-list-dark')]], 'compare-list-skins.png')
 sheet([[('C · grid (0.8.1 layout)', 'C-grid-light'), ('C · list (new default)', 'C-list-light'), ('C · list · wallpaper, follow', 'C-list-wallpaper-follow')],
        [('A · grid', 'A-grid-dark'), ('A · list', 'A-list-dark'), ('B · grid', 'B-grid-dark')]], 'compare-grid-vs-list.png')
+if os.path.exists(os.path.join(root, 'collapsed-C-list-light.png')):
+    sheet([[('C · expanded list', 'C-list-light'), ('C · collapsed (list)', 'collapsed-C-list-light'), ('C · collapsed (grid) · dark', 'collapsed-C-grid-dark')],
+           [('A · collapsed · playing', 'collapsed-A-list-dark'), ('B · collapsed · playing', 'collapsed-B-list-dark'), ('C · collapsed · wallpaper', 'collapsed-C-wallpaper-follow')]], 'compare-collapsed.png')

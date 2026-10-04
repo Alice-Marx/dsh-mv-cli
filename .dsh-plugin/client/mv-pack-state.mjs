@@ -15,6 +15,16 @@ export const LIBRARY_VIEW_KEY = 'dsh-mv.library.view.v1'
 export function loadLibraryView(storage = globalThis.localStorage) {
   try { return storage?.getItem(LIBRARY_VIEW_KEY) === 'grid' ? 'grid' : 'list' } catch { return 'list' }
 }
+/** Library collapsed to the header + the current song (0.8.3); default expanded. */
+export const LIBRARY_COLLAPSED_KEY = 'dsh-mv.library.collapsed.v1'
+export function loadLibraryCollapsed(storage = globalThis.localStorage) {
+  try { return storage?.getItem(LIBRARY_COLLAPSED_KEY) === '1' } catch { return false }
+}
+export function saveLibraryCollapsed(collapsed, storage = globalThis.localStorage) {
+  const value = Boolean(collapsed)
+  try { storage?.setItem(LIBRARY_COLLAPSED_KEY, value ? '1' : '0') } catch { /* private mode */ }
+  return value
+}
 export function saveLibraryView(view, storage = globalThis.localStorage) {
   const clean = view === 'grid' ? 'grid' : 'list'
   try { storage?.setItem(LIBRARY_VIEW_KEY, clean) } catch { /* private mode */ }

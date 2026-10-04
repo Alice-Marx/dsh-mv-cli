@@ -111,3 +111,17 @@ test('0.8.2 library list view: default list, persisted, durations on recent entr
   for (let i = 0; i < 60; i++) rememberPack({ manifestPath: `D:\\P${i}\\mv.json`, pack: { title: `P${i}` } }, { storage: s })
   assert.equal(loadRecent(s).length, MV_PACK_LIMITS.recentPacks)
 })
+
+test('0.8.3 library collapse: default expanded, persisted, header chevron wired', async () => {
+  const { LIBRARY_COLLAPSED_KEY, loadLibraryCollapsed, saveLibraryCollapsed } = await import('../.dsh-plugin/client/mv-pack-state.mjs')
+  const s = memory()
+  assert.equal(loadLibraryCollapsed(s), false)
+  assert.equal(saveLibraryCollapsed(true, s), true); assert.equal(s.map.get(LIBRARY_COLLAPSED_KEY), '1'); assert.equal(loadLibraryCollapsed(s), true)
+  assert.equal(saveLibraryCollapsed(0, s), false); assert.equal(loadLibraryCollapsed(s), false)
+  assert.equal(loadLibraryCollapsed({ getItem: () => { throw new Error('no') } }), false)
+  const lib = readFileSync(new URL('../.dsh-plugin/client/mv-library.jsx', import.meta.url), 'utf8')
+  assert.match(lib, /className="mv-lib-collapse" aria-expanded=\{!collapsed\}/)
+  assert.match(lib, /collapsed \? <div id="mv-lib-body" className="mv-tracks mv-tracks-mini"[^\n]*trackRow\(activeRow/) // header + current song, any layout
+  const css = readFileSync(new URL('../.dsh-plugin/client/mv-skins.css', import.meta.url), 'utf8')
+  assert.match(css, /\.mv-lib-collapse\[aria-expanded="false"\] svg \{ transform: rotate\(-90deg\)/)
+})

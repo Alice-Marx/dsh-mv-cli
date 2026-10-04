@@ -425,3 +425,14 @@
 .mv-skin-b .mv-lib-tool::before { content: "$"; color: var(--mv-faint); }
 .mv-skin-b .mv-lib-tool:hover:not(:disabled) { border-color: var(--mv-accent); color: var(--mv-accent); box-shadow: var(--b-glow); background: transparent; }
 @container mvroot (max-width: 620px) { .mv-skin-b .mv-track { grid-template-columns: 26px minmax(0, 1fr) 44px 60px; } .mv-skin-b .mv-track-head { display: none; } }
+
+/* Library collapse (0.8.3): chevron in the header; collapsed = header + the current song row */
+.mv-lib-collapse { display: inline-grid; place-items: center; flex: none; width: 26px; height: 26px; margin-right: -2px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--mv-muted); cursor: pointer; }
+.mv-lib-collapse:hover { background: var(--mv-hover); color: var(--mv-text); }
+.mv-lib-collapse:focus-visible { outline: 2px solid var(--mv-accent); outline-offset: 1px; }
+.mv-lib-collapse svg { width: 16px; height: 16px; transition: transform .15s; }
+.mv-lib-collapse[aria-expanded="false"] svg { transform: rotate(-90deg); }
+@media (prefers-reduced-motion: reduce) { .mv-lib-collapse svg { transition: none; } }
+.mv-tracks-mini .mv-track-n { color: var(--mv-accent); }
+.mv-skin-b .mv-lib-collapse { border-radius: 0; color: var(--mv-accent); }
+.mv-skin-a .mv-lib-collapse svg { width: 18px; height: 18px; }

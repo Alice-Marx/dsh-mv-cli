@@ -6627,6 +6627,7 @@ var Icon = Object.freeze({
   volume: () => svg(/* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("path", { d: "M4 9v6h4l5 4V5L8 9H4z" }), /* @__PURE__ */ import_react.default.createElement("path", { d: "M16.5 8.5a5 5 0 0 1 0 7" }))),
   mute: () => svg(/* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("path", { d: "M4 9v6h4l5 4V5L8 9H4z" }), /* @__PURE__ */ import_react.default.createElement("path", { d: "M17 9l4 6M21 9l-4 6" }))),
   plus: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M12 5v14M5 12h14" })),
+  chevron: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M6 9l6 6 6-6" })),
   list: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" })),
   grid: () => svg(/* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("rect", { x: "3.5", y: "3.5", width: "7", height: "7", rx: "1.5" }), /* @__PURE__ */ import_react.default.createElement("rect", { x: "13.5", y: "3.5", width: "7", height: "7", rx: "1.5" }), /* @__PURE__ */ import_react.default.createElement("rect", { x: "3.5", y: "13.5", width: "7", height: "7", rx: "1.5" }), /* @__PURE__ */ import_react.default.createElement("rect", { x: "13.5", y: "13.5", width: "7", height: "7", rx: "1.5" }))),
   folder: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" })),
@@ -9729,6 +9730,22 @@ function loadLibraryView(storage = globalThis.localStorage) {
     return "list";
   }
 }
+var LIBRARY_COLLAPSED_KEY = "dsh-mv.library.collapsed.v1";
+function loadLibraryCollapsed(storage = globalThis.localStorage) {
+  try {
+    return storage?.getItem(LIBRARY_COLLAPSED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function saveLibraryCollapsed(collapsed, storage = globalThis.localStorage) {
+  const value = Boolean(collapsed);
+  try {
+    storage?.setItem(LIBRARY_COLLAPSED_KEY, value ? "1" : "0");
+  } catch {
+  }
+  return value;
+}
 function saveLibraryView(view, storage = globalThis.localStorage) {
   const clean3 = view === "grid" ? "grid" : "list";
   try {
@@ -11317,6 +11334,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
 }, onShowPlayer = () => {
 } }) {
   const [layout, setLayout] = import_react7.default.useState(loadLibraryView);
+  const [collapsed, setCollapsed] = import_react7.default.useState(loadLibraryCollapsed);
   const [importing, setImporting] = import_react7.default.useState(false);
   const [aiOpen, setAiOpen] = import_react7.default.useState(initialAi);
   const [workshopOpen, setWorkshopOpen] = import_react7.default.useState(initialWorkshop);
@@ -11327,6 +11345,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
   const pick2 = directoryPicker();
   import_react7.default.useEffect(() => {
     if (!navRequest) return;
+    if (!navRequest.view) setCollapsed(saveLibraryCollapsed(false));
     setWorkshopOpen(navRequest.view === "workshop");
     setAiOpen(navRequest.view === "ai");
     setImporting(navRequest.view === "import");
@@ -11418,23 +11437,9 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       return { id, manifestPath: item.manifestPath, title: item.title || item.manifestPath, artist: item.artist, type: item.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305", kind: item.workshop ? "workshop" : "pack", cover: initials(item.title), hue: coverHue(item.title), duration: item.duration || (active.id === id ? activeDuration : 0), tip: item.manifestPath };
     })
   ];
-  const warnings = active.warnings ?? [];
-  return /* @__PURE__ */ import_react7.default.createElement("section", { className: "mv-library-section", "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-head" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93 ", /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-lib-count" }, 2 + recent.length, " \u9996")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-spacer" }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-segmented mv-segmented-small mv-lib-layout", role: "radiogroup", "aria-label": "\u66F2\u5E93\u663E\u793A\u65B9\u5F0F" }, [["list", "\u5217\u8868", Icon.list], ["grid", "\u7F51\u683C", Icon.grid]].map(([value, label, Ico]) => /* @__PURE__ */ import_react7.default.createElement(
-    "button",
-    {
-      key: value,
-      type: "button",
-      role: "radio",
-      "aria-checked": layout === value,
-      title: `${label}\u89C6\u56FE`,
-      "aria-label": `${label}\u89C6\u56FE`,
-      onClick: () => setLayout(saveLibraryView(value))
-    },
-    /* @__PURE__ */ import_react7.default.createElement(Ico, null),
-    /* @__PURE__ */ import_react7.default.createElement("span", null, label)
-  )))), layout === "list" ? /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-tools", role: "toolbar", "aria-label": "\u66F2\u5E93\u64CD\u4F5C" }, tools.map((tool) => /* @__PURE__ */ import_react7.default.createElement("button", { key: tool.key, type: "button", className: `mv-lib-tool mv-lib-tool-${tool.key}`, "aria-expanded": tool.expanded, disabled: tool.disabled, title: tool.title, onClick: tool.onClick }, /* @__PURE__ */ import_react7.default.createElement(tool.Icon, null), /* @__PURE__ */ import_react7.default.createElement("span", null, tool.label)))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-tracks", role: "list", "aria-label": "\u66F2\u76EE" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-track mv-track-head", "aria-hidden": "true" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-n" }, "#"), /* @__PURE__ */ import_react7.default.createElement("span", null), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6807\u9898"), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7C7B\u578B"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-len" }, "\u65F6\u957F"), /* @__PURE__ */ import_react7.default.createElement("span", null)), rows.map((row, index2) => {
+  const trackRow = (row, number) => {
     const current = active.id === row.id;
-    return /* @__PURE__ */ import_react7.default.createElement("div", { key: row.id, role: "listitem", className: "mv-track", "aria-current": current ? "true" : void 0, "data-playing": current && playing ? "true" : void 0 }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-n" }, current && playing ? /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-eq", "aria-label": "\u6B63\u5728\u64AD\u653E" }, /* @__PURE__ */ import_react7.default.createElement("i", null), /* @__PURE__ */ import_react7.default.createElement("i", null), /* @__PURE__ */ import_react7.default.createElement("i", null)) : index2 + 1), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-thumb mv-track-art", style: { "--mv-hue": row.hue }, "aria-hidden": "true" }, row.cover), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-track-main", title: row.tip, "aria-pressed": current, onClick: () => onSelect(row.id) }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-title" }, row.title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-artist" }, row.artist || "\u672A\u77E5\u827A\u672F\u5BB6")), /* @__PURE__ */ import_react7.default.createElement("span", { className: `mv-track-type mv-track-type-${row.kind}` }, row.type), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-len" }, row.duration > 0 ? fmtTime(row.duration) : "\u2014"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-actions" }, /* @__PURE__ */ import_react7.default.createElement(
+    return /* @__PURE__ */ import_react7.default.createElement("div", { key: row.id, role: "listitem", className: "mv-track", "aria-current": current ? "true" : void 0, "data-playing": current && playing ? "true" : void 0 }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-n" }, current && playing ? /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-eq", "aria-label": "\u6B63\u5728\u64AD\u653E" }, /* @__PURE__ */ import_react7.default.createElement("i", null), /* @__PURE__ */ import_react7.default.createElement("i", null), /* @__PURE__ */ import_react7.default.createElement("i", null)) : number), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-thumb mv-track-art", style: { "--mv-hue": row.hue }, "aria-hidden": "true" }, row.cover), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-track-main", title: row.tip, "aria-pressed": current, onClick: () => onSelect(row.id) }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-title" }, row.title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-artist" }, row.artist || "\u672A\u77E5\u827A\u672F\u5BB6")), /* @__PURE__ */ import_react7.default.createElement("span", { className: `mv-track-type mv-track-type-${row.kind}` }, row.type), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-len" }, row.duration > 0 ? fmtTime(row.duration) : "\u2014"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-actions" }, /* @__PURE__ */ import_react7.default.createElement(
       "button",
       {
         type: "button",
@@ -11464,7 +11469,35 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       },
       /* @__PURE__ */ import_react7.default.createElement(Icon.close, null)
     )));
-  }))) : /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-library" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-card", "aria-pressed": active.id === BUILTIN_ID, onClick: () => onSelect(BUILTIN_ID), title: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art", style: { "--mv-hue": 18 } }, ">_"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-title" }, "world.execute(me);"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, "Mili \xB7 \u5185\u7F6E\u9884\u8BBE")), /* @__PURE__ */ import_react7.default.createElement(
+  };
+  const activeRow = rows.find((row) => row.id === active.id) ?? { id: active.id, manifestPath: "", title: active.pack?.title ?? "", artist: active.pack?.artist ?? "", type: active.builtin ? "\u5185\u7F6E\u9884\u8BBE" : "MV \u5305", kind: active.builtin ? "builtin" : "pack", cover: initials(active.pack?.title), hue: coverHue(active.pack?.title), duration: activeDuration, tip: active.manifestPath ?? "" };
+  const warnings = active.warnings ?? [];
+  return /* @__PURE__ */ import_react7.default.createElement("section", { className: "mv-library-section", "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-head" }, /* @__PURE__ */ import_react7.default.createElement(
+    "button",
+    {
+      type: "button",
+      className: "mv-lib-collapse",
+      "aria-expanded": !collapsed,
+      "aria-controls": "mv-lib-body",
+      title: collapsed ? "\u5C55\u5F00\u66F2\u5E93" : "\u6536\u8D77\u66F2\u5E93",
+      "aria-label": collapsed ? "\u5C55\u5F00\u66F2\u5E93" : "\u6536\u8D77\u66F2\u5E93",
+      onClick: () => setCollapsed(saveLibraryCollapsed(!collapsed))
+    },
+    /* @__PURE__ */ import_react7.default.createElement(Icon.chevron, null)
+  ), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93 ", /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-lib-count" }, 2 + recent.length, " \u9996", collapsed ? " \xB7 \u5DF2\u6536\u8D77" : "")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-spacer" }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-segmented mv-segmented-small mv-lib-layout", role: "radiogroup", "aria-label": "\u66F2\u5E93\u663E\u793A\u65B9\u5F0F" }, [["list", "\u5217\u8868", Icon.list], ["grid", "\u7F51\u683C", Icon.grid]].map(([value, label, Ico]) => /* @__PURE__ */ import_react7.default.createElement(
+    "button",
+    {
+      key: value,
+      type: "button",
+      role: "radio",
+      "aria-checked": layout === value,
+      title: `${label}\u89C6\u56FE`,
+      "aria-label": `${label}\u89C6\u56FE`,
+      onClick: () => setLayout(saveLibraryView(value))
+    },
+    /* @__PURE__ */ import_react7.default.createElement(Ico, null),
+    /* @__PURE__ */ import_react7.default.createElement("span", null, label)
+  )))), collapsed ? /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-tracks mv-tracks-mini", role: "list", "aria-label": "\u6B63\u5728\u64AD\u653E" }, trackRow(activeRow, "\u25B8")) : layout === "list" ? /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-lib-body" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-tools", role: "toolbar", "aria-label": "\u66F2\u5E93\u64CD\u4F5C" }, tools.map((tool) => /* @__PURE__ */ import_react7.default.createElement("button", { key: tool.key, type: "button", className: `mv-lib-tool mv-lib-tool-${tool.key}`, "aria-expanded": tool.expanded, disabled: tool.disabled, title: tool.title, onClick: tool.onClick }, /* @__PURE__ */ import_react7.default.createElement(tool.Icon, null), /* @__PURE__ */ import_react7.default.createElement("span", null, tool.label)))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-tracks", role: "list", "aria-label": "\u66F2\u76EE" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-track mv-track-head", "aria-hidden": "true" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-n" }, "#"), /* @__PURE__ */ import_react7.default.createElement("span", null), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6807\u9898"), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7C7B\u578B"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-len" }, "\u65F6\u957F"), /* @__PURE__ */ import_react7.default.createElement("span", null)), rows.map((row, index2) => trackRow(row, index2 + 1)))) : /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-library" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-card", "aria-pressed": active.id === BUILTIN_ID, onClick: () => onSelect(BUILTIN_ID), title: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art", style: { "--mv-hue": 18 } }, ">_"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-title" }, "world.execute(me);"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, "Mili \xB7 \u5185\u7F6E\u9884\u8BBE")), /* @__PURE__ */ import_react7.default.createElement(
     "button",
     {
       type: "button",
@@ -11562,7 +11595,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
     },
     /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react7.default.createElement(Icon.folder, null)),
     /* @__PURE__ */ import_react7.default.createElement("span", null, busy === "template" ? "\u6B63\u5728\u5199\u5165\u2026" : "\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09")
-  )), recent.length === 0 && !importing && !aiOpen && !workshopOpen && /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u60F3\u653E\u522B\u7684\u6B4C\uFF1F\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u522B\u4EBA\u505A\u597D\u7684 MV \u5305\uFF0C\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u5F97\u5230\u5E26\u8BF4\u660E\u7684 mv.json \u548C\u793A\u4F8B\u573A\u666F\uFF0C\u653E\u5165\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u540E\u300C\u5BFC\u5165\u300D\u3002"), workshopOpen && /* @__PURE__ */ import_react7.default.createElement(WorkshopDialog, { api, active, canvas, initialIndex: workshopIndex, onClose: () => setWorkshopOpen(false), onLoaded, onRecent }), aiOpen && /* @__PURE__ */ import_react7.default.createElement(AiPackDialog, { api, harness, info, onClose: () => setAiOpen(false), onLoaded, onRecent }), importing && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-dialog", role: "dialog", "aria-label": "\u5BFC\u5165 MV \u5305" }, /* @__PURE__ */ import_react7.default.createElement("h2", null, "\u5BFC\u5165 MV \u5305"), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u9009\u62E9\u542B mv.json \u7684\u6587\u4EF6\u5939\uFF0C\u6216\u7C98\u8D34 mv.json / \u6587\u4EF6\u5939\u7684\u7EDD\u5BF9\u8DEF\u5F84\u3002\u53EA\u8BFB\u53D6\u6E05\u5355\uFF0C\u4E0D\u8FD0\u884C\u4EFB\u4F55\u7A0B\u5E8F\u3002"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-field-row" }, /* @__PURE__ */ import_react7.default.createElement(
+  )), recent.length === 0 && !collapsed && !importing && !aiOpen && !workshopOpen && /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u60F3\u653E\u522B\u7684\u6B4C\uFF1F\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u522B\u4EBA\u505A\u597D\u7684 MV \u5305\uFF0C\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u5F97\u5230\u5E26\u8BF4\u660E\u7684 mv.json \u548C\u793A\u4F8B\u573A\u666F\uFF0C\u653E\u5165\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u540E\u300C\u5BFC\u5165\u300D\u3002"), workshopOpen && /* @__PURE__ */ import_react7.default.createElement(WorkshopDialog, { api, active, canvas, initialIndex: workshopIndex, onClose: () => setWorkshopOpen(false), onLoaded, onRecent }), aiOpen && /* @__PURE__ */ import_react7.default.createElement(AiPackDialog, { api, harness, info, onClose: () => setAiOpen(false), onLoaded, onRecent }), importing && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-dialog", role: "dialog", "aria-label": "\u5BFC\u5165 MV \u5305" }, /* @__PURE__ */ import_react7.default.createElement("h2", null, "\u5BFC\u5165 MV \u5305"), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u9009\u62E9\u542B mv.json \u7684\u6587\u4EF6\u5939\uFF0C\u6216\u7C98\u8D34 mv.json / \u6587\u4EF6\u5939\u7684\u7EDD\u5BF9\u8DEF\u5F84\u3002\u53EA\u8BFB\u53D6\u6E05\u5355\uFF0C\u4E0D\u8FD0\u884C\u4EFB\u4F55\u7A0B\u5E8F\u3002"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-field-row" }, /* @__PURE__ */ import_react7.default.createElement(
     "input",
     {
       value: path,
@@ -12009,6 +12042,17 @@ var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-
 .mv-skin-b .mv-lib-tool::before { content: "$"; color: var(--mv-faint); }
 .mv-skin-b .mv-lib-tool:hover:not(:disabled) { border-color: var(--mv-accent); color: var(--mv-accent); box-shadow: var(--b-glow); background: transparent; }
 @container mvroot (max-width: 620px) { .mv-skin-b .mv-track { grid-template-columns: 26px minmax(0, 1fr) 44px 60px; } .mv-skin-b .mv-track-head { display: none; } }
+
+/* Library collapse (0.8.3): chevron in the header; collapsed = header + the current song row */
+.mv-lib-collapse { display: inline-grid; place-items: center; flex: none; width: 26px; height: 26px; margin-right: -2px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--mv-muted); cursor: pointer; }
+.mv-lib-collapse:hover { background: var(--mv-hover); color: var(--mv-text); }
+.mv-lib-collapse:focus-visible { outline: 2px solid var(--mv-accent); outline-offset: 1px; }
+.mv-lib-collapse svg { width: 16px; height: 16px; transition: transform .15s; }
+.mv-lib-collapse[aria-expanded="false"] svg { transform: rotate(-90deg); }
+@media (prefers-reduced-motion: reduce) { .mv-lib-collapse svg { transition: none; } }
+.mv-tracks-mini .mv-track-n { color: var(--mv-accent); }
+.mv-skin-b .mv-lib-collapse { border-radius: 0; color: var(--mv-accent); }
+.mv-skin-a .mv-lib-collapse svg { width: 18px; height: 18px; }
 `;
 
 // .dsh-plugin/client/mv-skin-ui.jsx
