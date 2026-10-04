@@ -4,7 +4,7 @@ English · [简体中文](README.zh.md)
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊 / workshop](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.0**) that plays ASCII / terminal-styled **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.1**) that plays ASCII / terminal-styled **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
 
 > **Unofficial fan work.** The plugin ships **no** audio, video, lyric text or fonts; you bring your own files and they never leave your computer. The song and lyrics belong to Mili. Since **0.9.0** the plugin itself contains no MV at all and is **MIT** licensed: the two world.execute(me) MVs are one-click installs from 创意工坊, each with its own licence and a link to its original — the ASCII scenes from [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (Bilibili: 野生大K, **used with the author's permission**) and the dsh PV from [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (MIT data + **CC BY-NC-SA 4.0** whale-girl art). See [License and credits](#license-and-credits).
 
@@ -44,7 +44,7 @@ Screenshots use placeholder demo packs and placeholder lyrics.
 
 Requires DeepSeek Harness Desktop with plugin support and Node ≥ 20 on the Host (bundled with Harness). No native dependencies.
 
-**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli` (latest) or a pinned version such as `@ljwei-stak/dsh-mv-cli@0.9.0`, then install and enable it.
+**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli` (latest) or a pinned version such as `@ljwei-stak/dsh-mv-cli@0.9.1`, then install and enable it.
 
 **From a GitHub Release archive:** download `ljwei-stak-dsh-mv-cli-<version>.tgz` and its `.sha256` from [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases). Check it in PowerShell with `Get-FileHash -Algorithm SHA256 -LiteralPath <path-to-tgz>` and compare with the `.sha256` file, then enter the archive's absolute path in **Plugins → Add plugin**.
 

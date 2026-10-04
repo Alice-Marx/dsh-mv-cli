@@ -4,7 +4,7 @@
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.0**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.1**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格的 **MV**，以**你自己的音频**为时钟逐帧渲染。
 
 > **非官方同人作品。** 插件**不附带**任何音频、视频、歌词文本或字体；文件由你自己提供，只在本机读取，不会上传。歌曲与歌词的权利归 Mili。自 **0.9.0** 起插件本身不再内置任何 MV，许可为纯 **MIT**：两个 world.execute(me) MV 改为在创意工坊一键安装，各自按自己的许可分发并标明原作——ASCII 场景来自 [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii)（Bilibili「野生大K」，**经原作者许可**），dsh PV 来自 [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv)（数据 MIT + **CC BY-NC-SA 4.0** 鲸鱼娘立绘）。见 [许可与致谢](#许可与致谢)。
 
@@ -44,7 +44,7 @@
 
 需要支持插件的 DeepSeek Harness Desktop（Host 端 Node ≥ 20，Harness 自带）。没有原生依赖。
 
-**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli`（最新版）或指定版本如 `@ljwei-stak/dsh-mv-cli@0.9.0`，安装并启用。
+**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli`（最新版）或指定版本如 `@ljwei-stak/dsh-mv-cli@0.9.1`，安装并启用。
 
 **用 GitHub Release 安装包：** 从 [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) 下载 `ljwei-stak-dsh-mv-cli-<版本>.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
 `Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-<版本>.tgz'`，与 `.sha256` 文件比对，
