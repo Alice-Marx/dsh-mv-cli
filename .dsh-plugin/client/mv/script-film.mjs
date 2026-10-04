@@ -6,10 +6,14 @@
  * throws, stalls (no answer within SCENE_LIMITS.hardTimeoutMs) or is too slow
  * for too many frames is terminated and the panel falls back to the generic
  * renderer.
+ *
+ * canvas.output "pixels" (0.9.1): the script paints an OffscreenCanvas of
+ * canvas.size in the worker; frames come back as ImageBitmaps and draw()
+ * letterboxes them onto the panel's pixel canvas.
  */
 import { Grid, cw, DIM, NORMAL } from './grid.mjs'
 import { GenericFilm } from './generic-film.mjs'
-import { SCENE_LIMITS, sceneContext, sceneSourceProblems, sceneWorkerSource } from '../../shared/mv-scene.mjs'
+import { PIXEL_SCENE_LIMITS, SCENE_LIMITS, sceneContext, sceneSourceProblems, sceneWorkerSource } from '../../shared/mv-scene.mjs'
 
 /** Default worker factory (Blob URL). Returns null when workers are unavailable. */
 export function blobWorkerFactory(source, { WorkerClass = globalThis.Worker, BlobClass = globalThis.Blob, url = globalThis.URL } = {}) {
@@ -31,18 +35,23 @@ export class ScriptFilm extends GenericFilm {
     this.slow = 0
     this.nextId = 1
     this.error = ''
+    this.output = 'text'
+    this.size = [1280, 720]
+    this.bitmap = null
   }
 
   /** Song structure for ctx.section / ctx.beat (from mv.json). */
   setStructure({ sections = [], bpm = 0, beatOffset = 0 } = {}) { this.sections = sections; this.bpm = bpm; this.beatOffset = beatOffset }
 
   /** Start the script; resolves when it is ready, rejects with the reason. */
-  load(source) {
+  load(source, { output = 'text', size = [1280, 720], assets = {}, transfer = [] } = {}) {
     this.stop()
+    this.output = output === 'pixels' ? 'pixels' : 'text'
+    this.size = size
     const problems = sceneSourceProblems(source)
     if (problems.length) return Promise.reject(this.fail(problems.join(' ')))
     let worker
-    try { worker = this.createWorker(sceneWorkerSource(source)) } catch (error) { return Promise.reject(this.fail(`无法创建场景沙箱（Web Worker）：${error?.message ?? error}`)) }
+    try { worker = this.createWorker(sceneWorkerSource(source, { output: this.output })) } catch (error) { return Promise.reject(this.fail(`无法创建场景沙箱（Web Worker）：${error?.message ?? error}`)) }
     if (!worker) return Promise.reject(this.fail('这个环境不支持 Web Worker，无法运行场景脚本。'))
     this.worker = worker
     this.state = 'loading'
@@ -60,7 +69,8 @@ export class ScriptFilm extends GenericFilm {
         }
         this.receive(msg)
       }
-      worker.postMessage({ type: 'init', info: { title: this.title, artist: this.artist, duration: this.duration, sections: this.sections ?? [], bpm: this.bpm ?? 0 } })
+      const info = { title: this.title, artist: this.artist, duration: this.duration, sections: this.sections ?? [], bpm: this.bpm ?? 0, assets, ...(this.output === 'pixels' ? { width: size[0], height: size[1] } : {}) }
+      worker.postMessage({ type: 'init', info }, transfer)
     })
   }
 
@@ -68,9 +78,17 @@ export class ScriptFilm extends GenericFilm {
     if (!this.pending || msg.id !== this.pending.id) return
     this.pending = null
     if (msg.type === 'error') { this.fail(`render() 出错：${String(msg.error).split('\n')[0]}`); return }
-    if (msg.type !== 'frame' || !msg.frame || !Array.isArray(msg.frame.lines)) return
-    this.frame = msg.frame
-    if (msg.ms > SCENE_LIMITS.frameBudgetMs) { if (++this.slow > SCENE_LIMITS.slowFramesAllowed) this.fail(`场景脚本太慢（一帧 ${Math.round(msg.ms)} ms，预算 ${SCENE_LIMITS.frameBudgetMs} ms）。`) }
+    if (msg.type !== 'frame') return
+    if (this.output === 'pixels') {
+      if (!msg.bitmap || typeof msg.bitmap.width !== 'number') return
+      try { this.bitmap?.close?.() } catch { /* closed */ }
+      this.bitmap = msg.bitmap
+    } else {
+      if (!msg.frame || !Array.isArray(msg.frame.lines)) return
+      this.frame = msg.frame
+    }
+    const budget = this.output === 'pixels' ? PIXEL_SCENE_LIMITS.frameBudgetMs : SCENE_LIMITS.frameBudgetMs
+    if (msg.ms > budget) { if (++this.slow > SCENE_LIMITS.slowFramesAllowed) this.fail(`场景脚本太慢（一帧 ${Math.round(msg.ms)} ms，预算 ${budget} ms）。`) }
     else this.slow = Math.max(0, this.slow - 1)
   }
 
@@ -88,6 +106,8 @@ export class ScriptFilm extends GenericFilm {
     this.worker = null
     this.pending = null
     this.frame = null
+    try { this.bitmap?.close?.() } catch { /* closed */ }
+    this.bitmap = null
     this.slow = 0
     if (!keepState) { this.state = 'idle'; this.error = '' }
   }
@@ -125,5 +145,27 @@ export class ScriptFilm extends GenericFilm {
     } else if (this.state === 'loading' || this.state === 'ready') c.center(Math.floor(h / 2), '…', DIM)
     if (opts.help) this.help(c, opts.offset ?? 0, opts.helpLines)
     return c
+  }
+
+  /** Pixel scenes: paint the newest frame letterboxed onto a 2D context (the panel's pixel canvas). */
+  draw(g, t, opts = {}) {
+    const [w, h] = this.size
+    this.request(t, w, h, opts)
+    const cw = g.canvas.width, ch = g.canvas.height
+    g.setTransform(1, 0, 0, 1, 0, 0)
+    g.fillStyle = '#000'
+    g.fillRect(0, 0, cw, ch)
+    const scale = Math.min(cw / w, ch / h)
+    const dw = Math.round(w * scale), dh = Math.round(h * scale)
+    if (this.bitmap) {
+      g.imageSmoothingEnabled = true
+      g.imageSmoothingQuality = 'high'
+      g.drawImage(this.bitmap, Math.round((cw - dw) / 2), Math.round((ch - dh) / 2), dw, dh)
+    } else if (this.state === 'loading' || this.state === 'ready') {
+      g.fillStyle = '#556'
+      g.font = `${Math.max(12, Math.round(ch / 30))}px monospace`
+      g.textAlign = 'center'; g.textBaseline = 'middle'
+      g.fillText('…', cw / 2, ch / 2)
+    }
   }
 }

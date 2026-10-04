@@ -50,6 +50,10 @@ export function panelApi(remote) {
     workshopUninstall: request => service.workshopUninstall(request),
     workshopInstalled: request => service.workshopInstalled(request),
     workshopPublish: request => service.workshopPublish(request),
+    workshopDirInfo: request => service.workshopDirInfo(request),
+    workshopDirSet: request => service.workshopDirSet(request),
+    workshopDirMove: request => service.workshopDirMove(request),
+    workshopDirOpen: request => service.workshopDirOpen(request),
   }
 }
 

@@ -21,7 +21,7 @@ import { createEngineManager, createJobManager } from './shared/mv-engine.mjs'
 import { parseEngineInfo, parseEngineInstall, parseEngineModel, parseEngineTranscribe, parseJobCancel, parseJobRead } from './shared/mv-engine-protocol.mjs'
 import { createLrclibClient, parseLyricsLookup } from './shared/mv-lrclib.mjs'
 import { parseAnalysisRead, parsePackWriteText, readAnalysis, writePackText } from './shared/mv-pack-edit.mjs'
-import { parseWorkshopId, parseWorkshopIndexRequest, parseWorkshopInstalled, parseWorkshopPublish } from './shared/mv-workshop.mjs'
+import { parseWorkshopDirInfo, parseWorkshopDirMove, parseWorkshopDirOpen, parseWorkshopDirSet, parseWorkshopId, parseWorkshopIndexRequest, parseWorkshopInstalled, parseWorkshopPublish } from './shared/mv-workshop.mjs'
 import { createWorkshopManager } from './shared/mv-workshop-host.mjs'
 
 /** Cordis plugin name; equals the profile entry id in cordis.patch.yml. */
@@ -36,6 +36,7 @@ export const Config = z.object({
   enginePython: z.string().default('').description('可选：已有 Python 环境里 python.exe 的完整路径（需已装 faster-whisper / torch / demucs）。留空时使用 %LOCALAPPDATA%\\dsh-mv\\engine 下由面板一键安装的引擎。'),
   uvPath: z.string().default('').description('可选：uv.exe 的完整路径，用于一键安装歌词引擎。留空时在 PATH 和常见位置查找。'),
   hfEndpoint: z.string().default('').description('可选：Hugging Face 镜像地址（例如 https://hf-mirror.com），只在下载模型时使用。'),
+  workshopDir: z.string().default('').description('可选：创意工坊 MV 包的默认安装文件夹（例如 F:\\MV\\workshop）。留空时为 %LOCALAPPDATA%\\dsh-mv\\workshop。也可以在面板「创意工坊」页底部直接更改，面板里的设置保存在 %LOCALAPPDATA%\\dsh-mv\\settings.json，优先于这里。'),
   agentTools: z.boolean().default(true).description('向 Harness 的 Agent 提供只读工具 mv_pack_validate / mv_pack_preview_frame（用于 AI 制作 MV 包）。'),
 }).description('MV 放映室')
 
@@ -89,6 +90,10 @@ export function mvRemoteServices(config = {}, packs = defaultPackOps, extras = {
     workshopUninstall: async request => (workshop ?? noWorkshop()).uninstall(parseWorkshopId(request)),
     workshopInstalled: async request => { parseWorkshopInstalled(request); return (workshop ?? noWorkshop()).installed() },
     workshopPublish: async request => (workshop ?? noWorkshop()).publishPrepare(parseWorkshopPublish(request)),
+    workshopDirInfo: async request => { parseWorkshopDirInfo(request); return (workshop ?? noWorkshop()).dirInfo() },
+    workshopDirSet: async request => (workshop ?? noWorkshop()).setDir(parseWorkshopDirSet(request)),
+    workshopDirMove: async request => (workshop ?? noWorkshop()).moveToCurrent(parseWorkshopDirMove(request)),
+    workshopDirOpen: async request => { parseWorkshopDirOpen(request); return (workshop ?? noWorkshop()).openDir() },
   }
 }
 
@@ -119,7 +124,7 @@ export function apply(ctx, config = {}) {
   const engine = createEngineManager({ jobs: createJobManager(), config: () => config, loadPack })
   ctx.effect(() => () => engine.disposeAll(), 'dsh-mv: lyrics engine jobs')
   const lrclib = createLrclibClient({ userAgent: `dsh-mv-cli/${HOST_PLUGIN_VERSION ?? ''} (https://github.com/Alice-Marx/dsh-mv-cli)` })
-  const workshop = createWorkshopManager({ userAgent: `dsh-mv-cli/${HOST_PLUGIN_VERSION ?? ''} (https://github.com/Alice-Marx/dsh-mv-cli)` })
+  const workshop = createWorkshopManager({ configDir: () => String(config.workshopDir ?? ''), userAgent: `dsh-mv-cli/${HOST_PLUGIN_VERSION ?? ''} (https://github.com/Alice-Marx/dsh-mv-cli)` })
   registerMvRemote(ctx, mvRemoteServices(config, defaultPackOps, { aiPacks, ffmpeg, toolsState: () => ({ ...tools }), engine, lrclib, workshop }))
   const logger = optionalService(ctx, 'logger')
   logger?.info?.(`dsh-mv ${HOST_PLUGIN_VERSION ?? ''} loaded`)

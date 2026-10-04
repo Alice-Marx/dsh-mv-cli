@@ -27,7 +27,7 @@ export function packAssetReader(api, manifestPath, pack) {
       const parts = []
       let offset = 0
       for (;;) {
-        const chunk = unwrapRemote(await api.packRead({ manifestPath, role: 'asset', asset: name, part, offset, length: CHUNK }), `无法读取 dsh-pv 资源 ${name}。`)
+        const chunk = unwrapRemote(await api.packRead({ manifestPath, role: 'asset', asset: name, part, offset, length: CHUNK }), `无法读取 MV 包资源 ${name}。`)
         if (chunk.bytes > 0) parts.push(fromBase64(chunk.base64))
         offset += chunk.bytes
         if (chunk.done || !chunk.bytes) break
@@ -73,3 +73,28 @@ export async function loadDshPv(read) {
   }))
   return { timeline, chat, band, art, missingArt }
 }
+
+/**
+ * canvas.assets for a scene script (0.9.1): JSON files parsed (shards merged),
+ * images decoded to ImageBitmap when the script paints pixels (otherwise left out).
+ * -> { assets: { name: value }, transfer: [ImageBitmap…] }
+ */
+export async function loadSceneAssets(read, pack, { images = false } = {}) {
+  const dec = new TextDecoder()
+  const assets = {}, transfer = []
+  for (const [name, value] of Object.entries(pack?.canvas?.assets ?? {})) {
+    const paths = asList(value) ?? []
+    const isJson = paths.every(p => /\.json$/i.test(p))
+    if (!isJson && !images) continue
+    const files = asList(await read(name)) ?? []
+    if (!files.length) continue
+    if (isJson) assets[name] = files.length === 1 ? JSON.parse(dec.decode(files[0])) : mergeShards(files.map(bytes => JSON.parse(dec.decode(bytes))))
+    else if (typeof createImageBitmap === 'function') {
+      const type = /\.png$/i.test(paths[0]) ? 'image/png' : 'image/webp'
+      const bitmap = await createImageBitmap(new Blob([files[0]], { type }))
+      assets[name] = bitmap; transfer.push(bitmap)
+    }
+  }
+  return { assets, transfer }
+}
+

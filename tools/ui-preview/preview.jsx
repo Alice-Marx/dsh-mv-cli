@@ -11,6 +11,7 @@
  *              The two packs are served from a local dsh-mv-workshop checkout under /assets/ (shoot.mjs
  *              DSH_MV_ASSETS=<workshop repo>/); lyrics come from /local/lyrics.lrc when the screenshot
  *              machine has a local copy (never committed, never shipped)
+ *   real     – ?id=<workshop pack> installed and playing (0.9.1 ports: world-execute-me-wallpaper, polytech-tree)
  *   ai       – 曲库 with the 用 AI 制作新 MV dialog open (mock Host creates the pack)
  *   script   – an AI-made pack with canvas.renderer "script" (example scene)
  *   workshop – 曲库 with the 创意工坊 open (mock catalogue; covers from /covers/<id>.png made by shoot.mjs)
@@ -27,7 +28,7 @@ import { encodeWav } from '../../.dsh-plugin/client/mv-wav.mjs'
 import { EXAMPLE_SCENE } from '../../.dsh-plugin/shared/mv-scene.mjs'
 import { TEMPLATE_ASSETS } from '../../.dsh-plugin/shared/mv-template-assets.gen.mjs'
 import { parseMvPack } from '../../.dsh-plugin/shared/mv-pack.mjs'
-import { normalizeLyricLine, publishLinks } from '../../.dsh-plugin/shared/mv-workshop.mjs'
+import { normalizeLyricLine, normalizeWorkshopDir, publishLinks } from '../../.dsh-plugin/shared/mv-workshop.mjs'
 import { parseLrc } from '../../.dsh-plugin/shared/mv-lyrics.mjs'
 
 const query = new URLSearchParams(location.search)
@@ -72,6 +73,8 @@ const jobEvents = () => {
 
 // 0.9.0: the two former presets, served from a local dsh-mv-workshop checkout (real index entries, manifests and files).
 const PRESET_IDS = ['world-execute-me', 'world-execute-me-dsh-pv']
+// 0.9.1: the adapted community packs (real files from the workshop checkout, like the presets)
+const REAL_IDS = [...PRESET_IDS, 'world-execute-me-wallpaper', 'polytech-tree']
 const real = { index: null, manifests: {}, scenes: {} }
 const fileCache = new Map()
 const packFile = (id, file) => {
@@ -81,7 +84,7 @@ const packFile = (id, file) => {
 }
 async function loadReal() {
   real.index = await fetch('/assets/index.json').then(r => (r.ok ? r.json() : null)).catch(() => null)
-  for (const id of PRESET_IDS) {
+  for (const id of REAL_IDS) {
     real.manifests[id] = await fetch(`/assets/packs/${id}/mv.json`).then(r => (r.ok ? r.json() : null)).catch(() => null)
     if (real.manifests[id]?.canvas?.script) real.scenes[id] = await fetch(`/assets/packs/${id}/${real.manifests[id].canvas.script}`).then(r => r.text())
   }
@@ -100,13 +103,19 @@ const WS_PACKS = [
   { id: 'ops-ticker-blues', title: 'Ops Ticker Blues', artist: 'Server Room Band', author: 'oncall', license: 'MIT', version: '0.9.1', duration: 163.7, scene: 'examples/ops-ticker.scene.js', tags: ['log', 'retro'], description: '运维日志随段落换词，底部跑马灯。', fingerprint: false, timing: false, sections: 5 },
 ]
 const wsInstalled = new Map(scene === 'workshop' || scene === 'wsplay' ? [['neon-terminal-example', { version: '1.0.0' }], ['token-rain', { version: '1.3.0' }]]
-  : scene === 'wem' ? [['world-execute-me', { version: '1.0.0' }]] : scene === 'dshpv' ? [['world-execute-me-dsh-pv', { version: '1.0.0' }]] : [])
-const allPacks = () => [...PRESET_IDS.map(realEntry).filter(Boolean), ...WS_PACKS]
+  : scene === 'wem' ? [['world-execute-me', { version: '1.0.0' }]] : scene === 'dshpv' ? [['world-execute-me-dsh-pv', { version: '1.0.0' }]] : scene === 'real' ? [[query.get('id'), { version: '1.0.0' }]] : [])
+const wsDir = { dir: WS_DIR, source: 'default' }
+const wsDirInfo = () => {
+  const inDir = d => [...wsInstalled].filter(([, v]) => (v.dir ?? WS_DIR).toLowerCase() === d.toLowerCase()).map(([id]) => id)
+  const others = [...new Set([...wsInstalled.values()].map(v => v.dir ?? WS_DIR))].filter(d => d.toLowerCase() !== wsDir.dir.toLowerCase())
+  return { dir: wsDir.dir, defaultDir: WS_DIR, source: wsDir.source, platform: 'win32', packs: inDir(wsDir.dir).length, extraDirs: others.map(d => ({ dir: d, packs: inDir(d) })) }
+}
+const allPacks = () => [...REAL_IDS.map(realEntry).filter(Boolean), ...WS_PACKS]
 const wsIndex = () => ({
   commit: (real.index?.commit ?? '6655401').padEnd(40, '0'), generated: '2026-10-04T10:00:00Z', repo: 'Alice-Marx/dsh-mv-workshop', source: 'https://raw.githubusercontent.com/Alice-Marx/dsh-mv-workshop/main/index.json',
-  packs: [...PRESET_IDS.map(realEntry).filter(Boolean), ...WS_PACKS.map(p => ({ ...p, renderer: 'script', homepage: '', cover: 'cover.png', updated: '2026-10-0' + (1 + (p.id.length % 3)) + 'T10:00:00Z', size: 30_000 + p.id.length * 900,
+  packs: [...REAL_IDS.map(realEntry).filter(Boolean), ...WS_PACKS.map(p => ({ ...p, renderer: 'script', homepage: '', cover: 'cover.png', updated: '2026-10-0' + (1 + (p.id.length % 3)) + 'T10:00:00Z', size: 30_000 + p.id.length * 900,
     files: ['mv.json', 'scenes.js', 'README.md', 'cover.png', ...(p.timing ? ['lyrics.timing.json'] : [])].map((path, i) => ({ path, size: [1900, 12500, 1020, 17074, 3008][i], sha256: (p.id + path).split('').map(c => c.charCodeAt(0).toString(16)).join('').padEnd(64, '0').slice(0, 64) })) }))],
-  installed: [...wsInstalled].map(([id, v]) => ({ id, version: v.version, title: allPacks().find(p => p.id === id)?.title ?? id, manifestPath: `${WS_DIR}\\${id}\\mv.json`, installedAt: '2026-10-03T12:00:00Z' })),
+  installed: [...wsInstalled].map(([id, v]) => ({ id, version: v.version, title: allPacks().find(p => p.id === id)?.title ?? id, manifestPath: `${v.dir ?? WS_DIR}\\${id}\\mv.json`, dir: v.dir ?? WS_DIR, installedAt: '2026-10-03T12:00:00Z' })),
 })
 const wsManifest = id => {
   if (real.manifests[id]) return real.manifests[id]
@@ -149,12 +158,32 @@ const wsMocks = {
   workshopIndex: async () => { await new Promise(r => setTimeout(r, 250)); return ok(wsIndex()) },
   workshopInstalled: () => ok({ installed: wsIndex().installed }),
   workshopCover: async ({ id }) => {
-    const r = PRESET_IDS.includes(id) ? await fetch(`/assets/packs/${id}/cover.png`) : await fetch(`/covers/${id}.png`)
+    const r = REAL_IDS.includes(id) ? await fetch(`/assets/packs/${id}/cover.png`) : await fetch(`/covers/${id}.png`)
     if (!r.ok) return ok({ id, found: false })
     return ok({ id, found: true, mime: 'image/png', base64: b64(new Uint8Array(await r.arrayBuffer())) })
   },
   workshopInstall: async ({ id }) => { await new Promise(r => setTimeout(r, 900)); const p = allPacks().find(x => x.id === id); wsInstalled.set(id, { version: p.version }); return ok({ id, version: p.version, manifestPath: `${WS_DIR}\\${id}\\mv.json`, files: p.timing ? 5 : 4, warnings: [] }) },
   workshopUninstall: ({ id }) => { wsInstalled.delete(id); return ok({ id, removed: true }) },
+  // 0.9.1 install location (mock: the default folder, a user folder on F:, Q: does not exist; &dirfail=<id> makes one move fail).
+  workshopDirInfo: () => ok(wsDirInfo()),
+  workshopDirSet: async ({ dir, reset }) => {
+    await new Promise(r => setTimeout(r, 400))
+    let target
+    try { target = reset ? WS_DIR : normalizeWorkshopDir(dir, 'win32') } catch (error) { return fail(error.message) }
+    if (/^Q:/i.test(target)) return fail(`无法使用这个文件夹：${target}（找不到这个驱动器或路径）`)
+    const previous = wsDir.dir
+    wsDir.dir = target; wsDir.source = reset ? 'default' : 'custom'
+    const movable = [...wsInstalled].filter(([, v]) => (v.dir ?? WS_DIR).toLowerCase() !== target.toLowerCase()).map(([id, v]) => ({ id, title: allPacks().find(p => p.id === id)?.title ?? id, from: v.dir ?? WS_DIR }))
+    return ok({ ...wsDirInfo(), previous, changed: previous !== target, keep: true, movable })
+  },
+  workshopDirMove: async ({ id }) => {
+    await new Promise(r => setTimeout(r, 700))
+    if (query.get('dirfail') === id) return fail(`无法移动「${id}」：EBUSY: resource busy or locked, copyfile 'scenes.js'（原来的文件没有删除）`)
+    const v = wsInstalled.get(id), old = `${v.dir ?? WS_DIR}\\${id}\\mv.json`
+    v.dir = wsDir.dir
+    return ok({ id, moved: true, oldManifestPath: old, manifestPath: `${wsDir.dir}\\${id}\\mv.json` })
+  },
+  workshopDirOpen: () => ok({ dir: wsDir.dir, opened: true }),
   workshopPublish: async request => {
     await new Promise(r => setTimeout(r, 700))
     const dir = `C:\\Users\\Alice\\AppData\\Local\\dsh-mv\\workshop-publish\\${request.id}\\packs\\${request.id}`
@@ -257,7 +286,7 @@ async function setup() {
   } else if (scene === 'script' || scene === 'calib') {
     localStorage.setItem('dsh-mv.packs.recent.v1', JSON.stringify([{ manifestPath: `${PACK_DIR}\\mv.json`, title: 'Starlight Run', artist: 'Alice' }, { manifestPath: 'D:\\MV\\Ghost Rule\\mv.json', title: 'Ghost Rule', artist: 'DECO*27' }]))
     localStorage.setItem('dsh-mv.packs.active.v1', `pack:${PACK_DIR}\\mv.json`)
-  } else if (!['first', 'empty', 'moved', 'wem', 'dshpv'].includes(scene)) {
+  } else if (!['first', 'empty', 'moved', 'wem', 'dshpv', 'real'].includes(scene)) {
     if (scene === 'auto') files.delete('timing')
     localStorage.setItem('dsh-mv.packs.recent.v1', JSON.stringify([
       { manifestPath: 'D:\\MV\\Ghost Rule\\mv.json', title: 'Ghost Rule', artist: 'DECO*27' },
@@ -275,18 +304,19 @@ async function setup() {
   if (scene === 'moved') {
     localStorage.setItem('dsh-mv.packs.active.v1', query.get('legacy') || 'builtin:dsh-pv')
   }
-  if (scene === 'wem' || scene === 'dshpv') {
+  if (scene === 'wem' || scene === 'dshpv' || scene === 'real') {
     files.delete('timing') // no calibration mock data on the preset packs
-    const id = scene === 'wem' ? 'world-execute-me' : 'world-execute-me-dsh-pv'
+    const id = scene === 'real' ? query.get('id') : scene === 'wem' ? 'world-execute-me' : 'world-execute-me-dsh-pv'
     const m = real.manifests[id]
     localStorage.setItem('dsh-mv.packs.recent.v1', JSON.stringify([{ manifestPath: `${WS_DIR}\\${id}\\mv.json`, title: m?.title ?? id, artist: m?.artist ?? '', duration: m?.duration, workshop: id }]))
     localStorage.setItem('dsh-mv.packs.active.v1', `pack:${WS_DIR}\\${id}\\mv.json`)
     const rate = 8000, seconds = 212, samples = new Float32Array(rate * seconds)
     for (let i = 0; i < samples.length; i++) { const t = i / rate, beat = (t * 2.1) % 1; samples[i] = 0.25 * Math.sin(i * 2 * Math.PI * 110 / rate) * Math.exp(-beat * 6) + 0.05 * Math.sin(i * 2 * Math.PI * 440 / rate) }
     const file = new File([encodeWav([samples], rate)], 'world.execute(me).m4a', { type: 'audio/wav' })
-    await putMedia(db, 'audio', { file, name: file.name, sha: '5a1e'.padEnd(64, '0') })
+    const slot = kind => (scene === 'real' ? `workshop:${id}:${kind}` : kind)
+    await putMedia(db, slot('audio'), { file, name: file.name, sha: '5a1e'.padEnd(64, '0') })
     const local = await fetch('/local/lyrics.lrc').then(r => (r.ok ? r.text() : ''))
-    await putMedia(db, 'lyrics', { name: 'lyrics.lrc', text: local || '[00:00.00](示例歌词，仅用于预览)\n[01:00.50]（示例）第一句\n[01:05.00]（示例）第二句\n' })
+    if (scene !== 'real' || query.get('lyrics') !== '0') await putMedia(db, slot('lyrics'), { name: 'lyrics.lrc', text: local || '[00:00.00](示例歌词，仅用于预览)\n[01:00.50]（示例）第一句\n[01:05.00]（示例）第二句\n' })
   }
   const panel = <MvPanel api={api} harness={harness} initialAi={scene === 'ai' || scene === 'auto'} initialWorkshop={scene === 'workshop' || scene === 'wspublish'} />
   // ?host=1 mirrors the Harness frame: the centre column is `display:flex; flex-direction:column; overflow:hidden`

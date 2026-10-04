@@ -203,3 +203,18 @@ export function zipFiles(files, { date = new Date(2026, 9, 3) } = {}) {
 
 export const templateZip = () => zipFiles(templateFiles().map(file => ({ path: `${TEMPLATE_FOLDER}/${file.path}`, text: file.text })))
 export const TEMPLATE_ZIP_NAME = `${TEMPLATE_FOLDER}.zip`
+
+/**
+ * After workshop packs were moved to another install folder (0.9.1), point the recent list and the
+ * active pack at the new mv.json paths. moves: [{ oldManifestPath, manifestPath }]. Returns the new list.
+ */
+export function relocatePacks(moves, storage = globalThis.localStorage) {
+  const map = new Map((moves ?? []).filter(m => m?.oldManifestPath && m?.manifestPath).map(m => [m.oldManifestPath.toLowerCase(), m.manifestPath]))
+  const list = loadRecent(storage)
+  if (!map.size) return list
+  const next = list.map(item => map.has(item.manifestPath.toLowerCase()) ? { ...item, manifestPath: map.get(item.manifestPath.toLowerCase()) } : item)
+  saveRecent(next, storage)
+  const active = loadActive(storage)
+  if (active.startsWith('pack:') && map.has(active.slice(5).toLowerCase())) saveActive(`pack:${map.get(active.slice(5).toLowerCase())}`, storage)
+  return next.slice(0, MV_PACK_LIMITS.recentPacks)
+}

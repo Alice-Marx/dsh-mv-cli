@@ -119,6 +119,30 @@ if (process.env.PRESETS) {
   shots.push(['12-dshpv-playing-execution-A-dark', 'dshpv', 'dark', 'dsh:151', '&skin=a&mode=dark'])
   shots.push(['13-dshpv-whale-fall-B-dark', 'dshpv', 'dark', 'dsh:197', '&skin=b&mode=dark'])
 }
+// PORTS=1: 0.9.1 community packs (pixel scene ports) playing per skin + workshop details. PORT_IDS / PORT_TIMES override.
+if (process.env.PORTS) {
+  shots.length = 0
+  const times = { 'world-execute-me-wallpaper': [8, 45, 75, 100, 153, 200], 'polytech-tree': [5, 40, 90, 150, 175] }
+  for (const id of (process.env.PORT_IDS ?? Object.keys(times).join(',')).split(',')) {
+    const list = process.env.PORT_TIMES ? process.env.PORT_TIMES.split(',').map(Number) : times[id]
+    list.forEach((t, i) => {
+      const [dir, skin, mode] = [['C', 'c', 'dark'], ['A', 'a', 'dark'], ['B', 'b', 'light'], ['C', 'c', 'light'], ['B', 'b', 'dark'], ['A', 'a', 'light']][i % 6]
+      shots.push([`${id}-${String(i + 1).padStart(2, '0')}-t${t}-${dir}-${mode}`, 'real', mode, `wsplay:${t}`, `&skin=${skin}&mode=${mode}&id=${id}`])
+    })
+    shots.push([`${id}-workshop-detail-C-light`, 'workshop', 'light', `wsdetail:${id === 'polytech-tree' ? 'Polytech' : 'Wallpaper'}`, '&skin=c&mode=light'])
+  }
+}
+// WSDIR=1 (or with PORTS): the 0.9.1 install-location setting on the workshop page.
+if (process.env.WSDIR || process.env.PORTS) {
+  if (process.env.WSDIR) shots.length = 0
+  shots.push(['install-dir-01-default-C-light', 'workshop', 'light', 'wsdir', '&skin=c&mode=light'])
+  shots.push(['install-dir-02-edit-C-light', 'workshop', 'light', 'wsdir:edit', '&skin=c&mode=light'])
+  shots.push(['install-dir-03-invalid-C-light', 'workshop', 'light', 'wsdir:invalid', '&skin=c&mode=light'])
+  shots.push(['install-dir-04-ask-move-C-dark', 'workshop', 'dark', 'wsdir:ask', '&skin=c&mode=dark'])
+  shots.push(['install-dir-05-moving-A-dark', 'workshop', 'dark', 'wsdir:moving', '&skin=a&mode=dark'])
+  shots.push(['install-dir-06-moved-with-error-B-light', 'workshop', 'light', 'wsdir:moved', '&skin=b&mode=light&dirfail=token-rain'])
+  shots.push(['install-dir-07-kept-old-folder-C-dark', 'workshop', 'dark', 'wsdir:kept', '&skin=c&mode=dark'])
+}
 // A synthetic, silent-ish WAV for the AI dialog's file chooser (no real media).
 const AUDIO = path.join(OUT, '..', 'starlight-run-preview.wav')
 {
@@ -223,6 +247,21 @@ for (const [name, scene, theme, action, extra = '', width = 1280] of shots) {
   if (action === 'hoverrow') { await sleep(1200); const row = (await page.$$('.mv-track:not(.mv-track-head)'))[3]; if (row) await row.hover(); await sleep(300) }
   if (process.env.LISTVIEW && action !== 'hoverrow') await sleep(1200)
   if (action === 'skinpicker') { await page.click('.mv-skin-trigger'); await sleep(500) }
+  if (action.startsWith('wsdir')) {
+    const step = action.split(':')[1] ?? ''
+    const toDir = async () => page.evaluate(() => document.querySelector('.mv-ws-dir')?.scrollIntoView({ block: 'center' }))
+    await sleep(800); await toDir()
+    if (step) {
+      await clickText(page, '.mv-ws-dir button', '更改'); await sleep(300)
+      await page.evaluate(() => { const t = document.querySelector('.mv-ws-dir-edit input'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(t, ''); t.dispatchEvent(new Event('input', { bubbles: true })) })
+      await page.type('.mv-ws-dir-edit input', step === 'invalid' ? 'MV\\workshop' : 'F:/MV/workshop')
+      if (step !== 'edit') { await clickText(page, '.mv-ws-dir-edit button', '使用这个文件夹'); await sleep(900) }
+      if (step === 'moving') { await clickText(page, '.mv-ws-dir button', '移动到新位置'); await sleep(450) }
+      if (step === 'moved') { await clickText(page, '.mv-ws-dir button', '移动到新位置'); await sleep(2600) }
+      if (step === 'kept') { await clickText(page, '.mv-ws-dir button', '留在原处'); await sleep(400); await clickText(page, '.mv-ws-dir .mv-link', '知道了'); await sleep(300) }
+      await toDir()
+    }
+  }
   if (action === 'about') { await page.click('.mv-head .mv-icon-button'); await sleep(400) }
   fs.mkdirSync(path.dirname(`${OUT}/${name}.png`), { recursive: true })
   if (process.env.SKINS) { // A / B: use the skin's own navigation (sidebar / tmux tabs) for the page, like a user would

@@ -9,7 +9,7 @@ import { parseAudioConvert, parseAudioRead, parseFfmpegInfo } from './mv-audio-p
 import { parseAiPackCreate } from './mv-ai-prompt.mjs'
 import { parsePackUploadBegin, parsePackUploadFinish, parsePackUploadWrite } from './mv-ai-upload.mjs'
 import { parseAnalysisRead, parseLyricsLookup, parsePackWriteText } from './mv-calib-protocol.mjs'
-import { parseWorkshopId, parseWorkshopIndexRequest, parseWorkshopInstalled, parseWorkshopPublish } from './mv-workshop.mjs'
+import { parseWorkshopId, parseWorkshopIndexRequest, parseWorkshopInstalled, parseWorkshopPublish, parseWorkshopDirInfo, parseWorkshopDirMove, parseWorkshopDirOpen, parseWorkshopDirSet } from './mv-workshop.mjs'
 import { parseEngineInfo, parseEngineInstall, parseEngineModel, parseEngineTranscribe, parseJobCancel, parseJobRead } from './mv-engine-protocol.mjs'
 
 export const MV_REMOTE_PACKAGE = '@ljwei-stak/dsh-mv-cli'
@@ -78,6 +78,10 @@ export const MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor('workshopUninstall', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopUninstall`, parseWorkshopId))], anyObjectCodec('MvWorkshopUninstallResult')),
   descriptor('workshopInstalled', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopInstalled`, parseWorkshopInstalled))], anyObjectCodec('MvWorkshopInstalledResult')),
   descriptor('workshopPublish', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopPublish`, parseWorkshopPublish))], anyObjectCodec('MvWorkshopPublishResult')),
+  descriptor('workshopDirInfo', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopDirInfo`, parseWorkshopDirInfo))], anyObjectCodec('MvWorkshopDirInfoResult')),
+  descriptor('workshopDirSet', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopDirSet`, parseWorkshopDirSet))], anyObjectCodec('MvWorkshopDirSetResult')),
+  descriptor('workshopDirMove', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopDirMove`, parseWorkshopDirMove))], anyObjectCodec('MvWorkshopDirMoveResult')),
+  descriptor('workshopDirOpen', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopDirOpen`, parseWorkshopDirOpen))], anyObjectCodec('MvWorkshopDirOpenResult')),
 ])
 
 export const MV_CLIENT_REMOTE = Object.freeze({ package: MV_REMOTE_PACKAGE, descriptors: MV_REMOTE_DESCRIPTORS })

@@ -35,6 +35,8 @@
 | world.execute(me); dsh PV 工坊包（对话镜头） | 播放器下方的歌词校准编辑器 |
 | ![创意工坊](docs/screenshots/workshop.png) | |
 | 三套外观下的创意工坊 | |
+| ![像素场景包](docs/screenshots/ports.png) | ![安装位置](docs/screenshots/install-dir.png) |
+| 0.9.1 像素场景包：Wallpaper MV 与 Polytech Tree | 0.9.1 安装位置：更改、移动或保留 |
 
 截图使用占位演示包和占位歌词。
 
@@ -78,6 +80,7 @@
 - 用内置的 **通用（generic）** 画布渲染（频谱条、标题、当前与下一句歌词、进度条），任何歌都能放；
 - 用 **dsh-pv** 渲染器（`canvas.renderer: "dsh-pv"`），按 `canvas.assets` 里列出的数据文件回放 dsh PV（dsh PV 工坊包使用，只适合这首歌）；
 - 用 **场景脚本**（`canvas.renderer: "script"`、`canvas.script: "scenes.js"`）：用普通 JavaScript 写自己的 `render(t, cols, rows, ctx)`，在 Web Worker 沙箱里运行并限制每帧耗时（出错时自动换回通用画面）。接口见模板里的 README；
+  - **像素场景（0.9.1）**：在 `canvas` 里加 `"output": "pixels"`（可选 `"size": [1920, 1080]`，160×90 – 1920×1080，默认 1280×720），并定义 `paint(g, t, w, h, ctx)` 代替 `render`：`g` 是同一沙箱里 `OffscreenCanvas` 的 2D 上下文（没有 WebGL、字体、网络和 DOM），每帧 100 ms。`canvas.assets` 里列出的文件会在 `setup(info)` 的 `info.assets` 里给出（JSON 已解析、分片已合并；PNG / WebP 为 ImageBitmap）。这类包需要插件 0.9.1（工坊索引里的 `requires`）；
 
 在面板顶部的 **曲库** 里：
 
@@ -149,8 +152,12 @@
 **安装与播放**
 
 1. **曲库 → 创意工坊**：浏览封面，按歌名 / 歌手 / 作者 / 标签搜索，按许可或渲染方式筛选，或只看已安装。包设置了 `x-dsh-mv-workshop.source` 时，卡片和详情里显示「原作」链接。点卡片查看详情（许可、时长、文件及 sha256、GitHub 源码）。
-2. **安装到曲库**：面板从 `raw.githubusercontent.com` 按索引记录的提交下载文件，核对大小和 sha256，再校验一遍后保存到 `%LOCALAPPDATA%\dsh-mv\workshop\<id>`。索引里有新版本时卡片显示 **有更新**（**更新到 …**）；**卸载** 会删除该文件夹。
+2. **安装到曲库**：面板从 `raw.githubusercontent.com` 按索引记录的提交下载文件，核对大小和 sha256，再校验一遍后保存到 `<安装位置>\<id>`（默认 `%LOCALAPPDATA%\dsh-mv\workshop`，0.9.1 起可更改，见下文）。索引里有新版本时卡片显示 **有更新**（**更新到 …**）；**卸载** 会删除该文件夹。
 3. 用**你自己的**音频（以及可选的歌词）播放，面板按包记住你的选择。会比较时长（±2 秒）以及包里存的粗略音频指纹（若有），不一致时提示（可能是其他剪辑版本或别的歌）。包里有 `lyrics.timing.json` 时，按每句的哈希把你的歌词对齐到包的时间轴；工坊包本身从不包含歌词文字。
+
+**安装位置（0.9.1）**：创意工坊页底部显示包的安装文件夹（默认 `%LOCALAPPDATA%\dsh-mv\workshop`），有 **打开文件夹**、**更改…** 和 **恢复默认**。可以填任意磁盘上的完整路径，例如 `F:\MV\workshop`（也支持 `\\服务器\共享` 路径）；后台会检查路径、自动创建文件夹并先测试能否写入，不行时说明原因。之后选择 **移动到新位置**（逐个复制、按安装时记录的 sha256 校验，成功后才删除旧文件夹；显示进度和失败原因，失败的包保留在原处）或 **留在原处**（旧位置里的包仍在曲库里、照常可用，以后可以在这里再移动）。曲库里的条目会跟着移动后的包更新。这个设置由插件后台保存在 `%LOCALAPPDATA%\dsh-mv\settings.json`；插件配置里的 `workshopDir` 可设定默认位置（面板里的设置优先）。
+
+![安装位置](docs/screenshots/install-dir.png)
 
 **发布**
 
@@ -258,6 +265,15 @@
 **还原度：** 镜头结构、时间、文字、布局、对话窗口和歌词条与原 PV 一致；上游的几类位图层（字符舞者、热力格、照片 / 贴图）没有移植，用近似画面代替，「IF I CAN」等大字横幅是近似重画。字体使用系统字体（DejaVu Sans Mono / Consolas / 微软雅黑等），不附带上游字体。
 
 **立绘：** 工坊包里带了上游的 8 张鲸鱼娘表情和 1 张女仆立绘（缩到 200×360 的 WebP），按 **CC BY-NC-SA 4.0** 授权（整包许可 `CC-BY-NC-SA-4.0`），署名链与改动说明见包内 `art/NOTICE.md`（本仓库 `presets/dsh-pv/art/`）。这些角色设计据上游说明是用 AI 图像模型（GPT Image 2）生成的。没有立绘时渲染器改画占位剪影。
+
+## 更多社区包（0.9.1）
+
+两个从 MIT 许可项目移植的包，都是**像素场景**（需要插件 0.9.1+），不含音频和歌词文本，并链接原作：
+
+- **world.execute(me); · Wallpaper MV**（[工坊包](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper)，原作 [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper)，MIT © 2026 seasnakes）：壁纸 MV 的画布场景（双球、苹果、爱心、EXECUTE 倒计时……），1920×1080，按原作的 BPM 网格和 14 个段落同步；歌词卡显示你自己的歌词。请使用你自己的 Mili 歌曲文件（音乐和歌词版权归 Mili）。不包含 Wallpaper Engine 适配、歌词文件和原作的界面。
+- **Polytech Tree · 人类科技树漫游**（[工坊包](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree)，原作 [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree)，代码 MIT © 2026 secwind，数据 CC BY 4.0）：漫游动画——3862 项科技分 11 个时代、按领域着色，镜头沿塔轴上升，科技按年代逐个出现，前置连线爬向它。原作是 Three.js 3D，这里预先算好布局和镜头路径后用 2D 绘制。只使用 CC BY 4.0 的结构化数据（不含 CC BY-SA 的中文简介）。不是歌曲：可以静音播放或配任意音乐（约 3 分钟）。
+
+![像素场景包](docs/screenshots/ports.png)
 
 ## 开发
 

@@ -47,7 +47,7 @@ export async function validatePackForAgent({ path }) {
   let frames = []
   if (source !== null) {
     const d = pack.duration ?? 180
-    const result = checkScene(source, { times: [0, d * 0.25, d * 0.5, d * 0.75, Math.max(0, d - 1)].map(t => Math.round(t * 10) / 10), cols: 100, rows: 32, cues, info: { title: pack.title, artist: pack.artist ?? '', duration: d, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0 } })
+    const result = checkScene(source, { times: [0, d * 0.25, d * 0.5, d * 0.75, Math.max(0, d - 1)].map(t => Math.round(t * 10) / 10), cols: 100, rows: 32, cues, info: { title: pack.title, artist: pack.artist ?? '', duration: d, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0 }, output: pack.canvas?.output ?? 'text', size: pack.canvas?.size ?? [1280, 720] })
     problems.push(...result.problems.filter(p => /出错|超时|无法|没有定义|不能|超过 \d+ KB|空的/.test(p)))
     warnings.push(...result.problems.filter(p => !/出错|超时|无法|没有定义|不能|超过 \d+ KB|空的/.test(p)))
     frames = result.frames.map(frame => ({ t: frame.t, ms: frame.ms }))
@@ -68,7 +68,7 @@ export async function previewFrameForAgent({ path, t = 0, cols = 100, rows = 32 
   try { state = await packAndScene(path) } catch (error) { return { ok: false, problems: errorText(error) } }
   if (state.source === null) return { ok: false, problems: [...state.problems, 'canvas.renderer 不是 script，没有可预览的场景脚本。'] }
   const pack = state.loaded.pack
-  const result = checkScene(state.source, { times: [Number(t) || 0], cols, rows, cues: state.cues, info: { title: pack.title, artist: pack.artist ?? '', duration: pack.duration ?? 180, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0 } })
+  const result = checkScene(state.source, { times: [Number(t) || 0], cols, rows, cues: state.cues, info: { title: pack.title, artist: pack.artist ?? '', duration: pack.duration ?? 180, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0 }, output: pack.canvas?.output ?? 'text', size: pack.canvas?.size ?? [1280, 720] })
   const frame = result.frames[0]
   return { ok: Boolean(frame) && result.ok, t: Number(t) || 0, cols: result.cols, rows: result.rows, ms: frame?.ms, problems: result.problems, frame: frame?.text ?? '' }
 }

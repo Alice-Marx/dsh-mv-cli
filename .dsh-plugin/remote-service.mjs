@@ -79,6 +79,10 @@ export class MvRemoteService extends TypertRemoteService {
   workshopUninstall(request) { return settled(() => (this.services.workshopUninstall ?? unavailable)(request ?? {})) }
   workshopInstalled(request) { return settled(() => (this.services.workshopInstalled ?? unavailable)(request ?? {})) }
   workshopPublish(request) { return settled(() => (this.services.workshopPublish ?? unavailable)(request ?? {})) }
+  workshopDirInfo(request) { return settled(() => (this.services.workshopDirInfo ?? unavailable)(request ?? {})) }
+  workshopDirSet(request) { return settled(() => (this.services.workshopDirSet ?? unavailable)(request ?? {})) }
+  workshopDirMove(request) { return settled(() => (this.services.workshopDirMove ?? unavailable)(request ?? {})) }
+  workshopDirOpen(request) { return settled(() => (this.services.workshopDirOpen ?? unavailable)(request ?? {})) }
 }
 
 /** Registration follows the Host plugin fiber; unload withdraws all endpoints. */

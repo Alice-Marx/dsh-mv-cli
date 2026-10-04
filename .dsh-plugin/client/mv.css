@@ -281,3 +281,16 @@ a.mv-button { text-decoration: none; }
 .mv-ws-source a, .mv-preset a { color: var(--mv-accent, inherit); text-decoration: underline; text-underline-offset: 2px; }
 .mv-ws-source-compact { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mv-canvas-host[hidden] { display: none !important; }
+
+/* 0.9.1: workshop packs that need a newer plugin */
+.mv-chip.mv-chip-warn { background: var(--mv-warn-soft); color: var(--mv-text); box-shadow: inset 0 0 0 1px color-mix(in srgb, #f59e0b 45%, transparent); }
+
+/* 0.9.1: workshop install location */
+.mv-ws-dir { margin-top: 12px; border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.mv-ws-dir-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 260px; }
+.mv-ws-dir-text code { font-size: 13px; color: var(--mv-text); word-break: break-all; }
+.mv-ws-dir-edit { flex-wrap: wrap; }
+.mv-ws-dir-edit input { flex: 1 1 280px; min-width: 0; }
+.mv-ws-dir-progress { display: flex; align-items: center; gap: 8px; }
+.mv-ws-dir-progress progress { flex: 1 1 auto; accent-color: var(--mv-accent); }
+.mv-ws-dir .mv-alert, .mv-ws-dir [role="alert"] { margin: 0; }

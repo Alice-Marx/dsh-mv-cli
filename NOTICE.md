@@ -9,12 +9,15 @@ npm 包 `@ljwei-stak/dsh-mv-cli` 自 **0.9.0** 起只含 MIT 代码（许可字�
 改为**创意工坊包**发布在 <https://github.com/Alice-Marx/dsh-mv-workshop>，各自按下面第 2、3 节的许可分发；
 在面板里可一键安装。源文件留在本仓库的 `presets/`（不进 npm 包，见 LICENSE 末尾）。
 Since 0.9.0 the npm package is MIT only. The two former built-in presets are workshop packs (sections 2 and 3);
+0.9.1 adds two more workshop packs ported from MIT projects (table below; their port scripts live in `presets/ports/`, not in the npm package);
 their sources stay in this repository under `presets/`, which is not part of the npm package.
 
 | 工坊包 / pack | 原作 / original | 许可 / licence |
 | --- | --- | --- |
 | [`world-execute-me`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me) | [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) | 经原作者许可再分发，非开源 / redistributed with the author's permission, not open source |
 | [`world-execute-me-dsh-pv`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-dsh-pv) | [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) | 数据 MIT + 立绘 CC BY-NC-SA 4.0 → 整包 `CC-BY-NC-SA-4.0` |
+| [`world-execute-me-wallpaper`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper)（0.9.1） | [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper) | MIT © 2026 seasnakes（音乐与歌词 © Mili，不包含 / music and lyrics © Mili, not included） |
+| [`polytech-tree`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree)（0.9.1） | [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree) | 代码 MIT © 2026 secwind + 结构化数据 CC BY 4.0 → `MIT AND CC-BY-4.0`（未使用 CC BY-SA 的 `desc` 字段 / the CC BY-SA `desc` field is not used） |
 
 ## 1. 歌曲与歌词 / Song and lyrics
 

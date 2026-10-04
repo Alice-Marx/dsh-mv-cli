@@ -60,7 +60,9 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
       type: 'object', additionalProperties: false, patternProperties: { '^x-': {} },
       properties: {
         renderer: { enum: MV_RENDERERS_BUILTIN, default: 'generic', description: 'generic | script (needs canvas.script) | dsh-pv (needs canvas.assets; used by the dsh PV workshop pack).' },
-        assets: { type: 'object', description: 'Data files a renderer reads (name → relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv.', additionalProperties: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] } },
+        assets: { type: 'object', description: 'Data files a renderer reads (name → relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv; since 0.9.1 scene scripts get them in setup(info).assets.', additionalProperties: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] } },
+        output: { enum: ['text', 'pixels'], default: 'text', description: 'Scene scripts (0.9.1): text = render(t, cols, rows, ctx) returns characters; pixels = paint(g, t, width, height, ctx) draws on a sandboxed 2D canvas.' },
+        size: { type: 'array', items: { type: 'integer' }, minItems: 2, maxItems: 2, default: [1280, 720], description: 'Pixel scenes: canvas size [width, height] (160–1920 × 90–1080), letterboxed in the panel.' },
         script: { type: 'string', pattern: '\\.m?js$', description: 'Scene script (.js) for renderer "script": defines render(t, cols, rows, ctx). Runs sandboxed in the panel.' },
         fontSize: { type: 'number', minimum: 8, maximum: 32 },
         bpm: { type: 'number', minimum: 20, maximum: 400, description: 'Song tempo for scene scripts: ctx.beat = { bpm, index, bar, phase, pulse }.' },
@@ -102,6 +104,7 @@ VS Code completion and checks.
 | \`canvas.script\` | no | \`scenes.js\`: the scene script for \`script\` (setting it implies \`renderer: "script"\`). |
 | \`canvas.fontSize\` | no | 8–32 px. |
 | \`canvas.bpm\`, \`canvas.beatOffset\` | no | Tempo (20–400) and first-beat time for scene scripts (\`ctx.beat\`). |
+| \`canvas.output\`, \`canvas.size\` | no | 0.9.1: \`"pixels"\` makes the scene script paint pixels — \`paint(g, t, width, height, ctx)\` on a sandboxed 2D canvas of \`size\` (default \`[1280, 720]\`; only \`"2d"\` contexts, no fonts from URLs). \`setup(info)\` gets \`info.assets\` (JSON from \`canvas.assets\`, images as ImageBitmap). |
 | \`x-dsh-mv-ai.sections\` | no | Song sections \`[{ kind, label, start, end }]\` for scene scripts (\`ctx.section\`). |
 | \`x-dsh-mv-workshop\` | no | Workshop data (id, version, license, author, audio duration / fingerprint); written by 发布到工坊. |
 
@@ -175,6 +178,7 @@ VS Code 等编辑器提供补全和校验。
 | \`canvas.script\` | 否 | \`scenes.js\`：\`script\` 渲染器用的场景脚本（填了它就默认 \`renderer: "script"\`）。 |
 | \`canvas.fontSize\` | 否 | 8–32 像素。 |
 | \`canvas.bpm\`、\`canvas.beatOffset\` | 否 | 歌曲速度（20–400）和第一拍时间，供场景脚本使用（\`ctx.beat\`）。 |
+| \`canvas.output\`、\`canvas.size\` | 否 | 0.9.1：设为 \`"pixels"\` 时场景脚本画像素——\`paint(g, t, width, height, ctx)\`，在沙箱里大小为 \`size\` 的 2D 画布上作画（默认 \`[1280, 720]\`；只能用 \`"2d"\`，不能从网址加载字体）。\`setup(info)\` 会收到 \`info.assets\`（\`canvas.assets\` 里的 JSON；图片为 ImageBitmap）。 |
 | \`x-dsh-mv-ai.sections\` | 否 | 歌曲段落 \`[{ kind, label, start, end }]\`，供场景脚本使用（\`ctx.section\`）。 |
 | \`x-dsh-mv-workshop\` | 否 | 创意工坊信息（id、版本、许可、作者、音频时长 / 指纹），由「发布到工坊」写入。 |
 

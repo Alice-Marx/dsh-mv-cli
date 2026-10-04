@@ -2,7 +2,7 @@
  * Client side of the MV 创意工坊: Host calls, the per-pack media slots for the
  * user's own audio / lyrics, audio fingerprinting and lyric re-timing.
  */
-import { unwrapRemote } from './remote-state.mjs'
+import { CLIENT_VERSION, unwrapRemote } from './remote-state.mjs'
 import { decodeToChannels, sha256Hex } from './mv-wav.mjs'
 import { PRESET_PACKS, audioMatch, compareVersions, encodeFingerprint, energyFingerprint, retimeCues } from '../shared/mv-workshop.mjs'
 
@@ -52,3 +52,24 @@ export const retimeWithPack = (cues, timing, hash = lineHash) => retimeCues(cues
 /** "3:31" for seconds. */
 export const durationText = s => { if (!(Number.isFinite(s) && s > 0)) return '—'; const r = Math.round(s); return `${Math.floor(r / 60)}:${String(r % 60).padStart(2, '0')}` }
 export const sizeText = n => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`)
+
+// 0.9.1: the install folder (shown and changed from the workshop page).
+export const workshopDirInfo = async api => unwrapRemote(await api.workshopDirInfo({}), '无法读取安装位置。')
+export const setWorkshopDir = async (api, request) => unwrapRemote(await api.workshopDirSet(request), '无法更改安装位置。')
+export const moveWorkshopPack = async (api, id) => unwrapRemote(await api.workshopDirMove({ id }), '移动失败。')
+export const openWorkshopDir = async api => unwrapRemote(await api.workshopDirOpen({}), '无法打开文件夹。')
+
+/** Move packs one by one; onProgress({ done, total, id, error? }). Returns { moved, failed }. */
+export async function moveWorkshopPacks(api, ids, onProgress = () => {}) {
+  const moved = [], failed = []
+  for (const [i, id] of ids.entries()) {
+    onProgress({ done: i, total: ids.length, id })
+    try { const result = await moveWorkshopPack(api, id); moved.push(result); if (result.warning) failed.push({ id, error: result.warning, copied: true }) }
+    catch (error) { failed.push({ id, error: error?.message ?? String(error) }) }
+  }
+  onProgress({ done: ids.length, total: ids.length, id: '' })
+  return { moved, failed }
+}
+
+/** The pack needs a newer plugin than this one (index "requires"). */
+export const tooOld = (pack, version = CLIENT_VERSION) => Boolean(pack?.requires && version && compareVersions(version, pack.requires) < 0)

@@ -35,6 +35,8 @@ English · [简体中文](README.zh.md)
 | world.execute(me); dsh PV workshop pack (chat scene) | Lyric calibration editor under the player |
 | ![Workshop](docs/screenshots/workshop.png) | |
 | 创意工坊 browsing in three skins | |
+| ![Pixel scene packs](docs/screenshots/ports.png) | ![Install location](docs/screenshots/install-dir.png) |
+| 0.9.1 pixel scene packs: Wallpaper MV and Polytech Tree | 0.9.1 install location: change, move or keep |
 
 Screenshots use placeholder demo packs and placeholder lyrics.
 
@@ -76,6 +78,7 @@ An **MV pack** is a folder with an `mv.json` manifest. It names your audio, lyri
 - with the built-in **generic** canvas renderer (spectrum bars, title, current and next lyric, progress), which works for any song;
 - with the **dsh-pv** renderer (`canvas.renderer: "dsh-pv"`), which replays the dsh PV from data files named in `canvas.assets` (used by the dsh PV workshop pack; only meaningful for that song);
 - with a **scene script** (`canvas.renderer: "script"`, `canvas.script: "scenes.js"`): your own `render(t, cols, rows, ctx)` in plain JavaScript, run sandboxed in a Web Worker with a time limit per frame (falls back to generic on errors). The template README documents the API;
+  - **Pixel scenes (0.9.1)**: add `"output": "pixels"` (and optionally `"size": [1920, 1080]`, 160×90 – 1920×1080, default 1280×720) to `canvas` and define `paint(g, t, w, h, ctx)` instead of `render`: `g` is a 2D context of an `OffscreenCanvas` in the same sandbox (no WebGL, fonts, network or DOM), 100 ms per frame. Files named in `canvas.assets` arrive in `setup(info)` as `info.assets` (JSON parsed, shards merged; PNG / WebP as ImageBitmap). Such packs need plugin 0.9.1 (`requires` in the workshop index);
 
 In the panel's **曲库** (library):
 
@@ -139,8 +142,12 @@ A community gallery of MV packs that lives in the public GitHub repository [Alic
 **Install and play**
 
 1. **曲库 → 创意工坊**: browse covers, search by title / artist / author / tag, filter by licence or renderer, or show only installed packs. Cards and details show the **原作** (original work) link when a pack sets `x-dsh-mv-workshop.source`. Click a card for details (licence, duration, files with sha256, GitHub source).
-2. **安装到曲库**: the panel downloads the files from `raw.githubusercontent.com` at the commit named in the index, checks size and sha256, validates the pack again and stores it in `%LOCALAPPDATA%\dsh-mv\workshop\<id>`. Cards show **有更新** when the index has a newer version (**更新到 …**); **卸载** removes the folder.
+2. **安装到曲库**: the panel downloads the files from `raw.githubusercontent.com` at the commit named in the index, checks size and sha256, validates the pack again and stores it in `<install folder>\<id>` (default `%LOCALAPPDATA%\dsh-mv\workshop`, changeable since 0.9.1, see below). Cards show **有更新** when the index has a newer version (**更新到 …**); **卸载** removes the folder.
 3. Play it with **your own** audio (and optionally lyrics): the panel remembers them per pack. It compares the duration (±2 s) and, when the pack stores one, a coarse audio fingerprint, and warns when they do not match (a different edit or a different song). If the pack has `lyrics.timing.json`, your lyric lines are retimed to the pack's timing by matching line hashes; packs never contain lyric text.
+
+**Install location (0.9.1)**: the bottom of the 创意工坊 page shows where packs are installed (default `%LOCALAPPDATA%\dsh-mv\workshop`), with **打开文件夹**, **更改…** and **恢复默认**. Type a full path on any drive, e.g. `F:\MV\workshop` (or a `\\server\share` path); the Host checks it, creates it and tests that it can write there before switching, and explains why when it cannot. Then choose **移动到新位置** — each pack is copied, verified against the sha256 recorded at install and only then deleted from the old folder (progress and failures are shown; a failed pack stays where it was) — or **留在原处**: packs left in the old folder stay in the library and keep working, and can be moved later from the same place. Library entries follow moved packs. The setting is stored by the Host in `%LOCALAPPDATA%\dsh-mv\settings.json`; the plugin config field `workshopDir` sets the default folder (the panel's choice wins).
+
+![Install location](docs/screenshots/install-dir.png)
 
 **Publish**
 
@@ -242,6 +249,15 @@ The format is always detected from the file's **content**, not its extension (a 
 **Faithfulness:** shot structure, timing, texts, layout, the chat window and the lyric band match the original PV. Upstream's raster layers (the glyph dancer, heat grids, photos / sprites) are not ported and are approximated; big banners such as "IF I CAN" are approximate redraws. System fonts are used (DejaVu Sans Mono / Consolas / Microsoft YaHei …); upstream's fonts are not included.
 
 **Art:** the workshop pack includes upstream's 8 whale-girl expressions and 1 maid sprite (downscaled to 200×360 WebP) under **CC BY-NC-SA 4.0** (pack licence `CC-BY-NC-SA-4.0`); the attribution chain and the changes are in `art/NOTICE.md` (`presets/dsh-pv/art/` here). Per upstream, these character designs were generated with an AI image model (GPT Image 2). Without the art the renderer draws a placeholder silhouette.
+
+## More community packs (0.9.1)
+
+Two packs ported from MIT-licensed projects; both are **pixel scenes** (plugin 0.9.1+), contain no audio and no lyric text, and link their originals:
+
+- **world.execute(me); · Wallpaper MV** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper), original [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper), MIT © 2026 seasnakes): the wallpaper MV's canvas scenes (orbs, apple, heart, EXECUTE countdown …) at 1920×1080, driven by the original BPM grid and 14 sections; the lyric card shows your own lyrics. Bring your own copy of Mili's song (music and lyrics © Mili). The Wallpaper Engine glue, the lyrics file and the original's UI are not included.
+- **Polytech Tree · 人类科技树漫游** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree), original [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree), code MIT © 2026 secwind, data CC BY 4.0): the tour animation — 3862 technologies in 11 eras, coloured by field, appearing year by year while the camera rises along the tower, with prerequisite links crawling in. The original is Three.js 3D; here the layout and camera path are precomputed and drawn in 2D. Only the CC BY 4.0 structured data is used (not the CC BY-SA descriptions). Not a song: play silently or with any music (about 3 minutes).
+
+![Pixel scene packs](docs/screenshots/ports.png)
 
 ## Development
 

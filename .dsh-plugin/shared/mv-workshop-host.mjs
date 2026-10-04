@@ -11,13 +11,14 @@ import { createHash, randomBytes } from 'node:crypto'
 import https from 'node:https'
 import { homedir, tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
-import { mkdir, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { spawn } from 'node:child_process'
+import { cp, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { proxyFromEnv, tunnel } from './mv-lrclib.mjs'
 import { loadPack, packFilePath } from './mv-pack-host.mjs'
 import { parseLyrics } from './mv-lyrics.mjs'
 import {
   COVER_NAMES, FINGERPRINT_KIND, WORKSHOP_INDEX_URL, WORKSHOP_LIMITS, WORKSHOP_REPO, WORKSHOP_TIMING_FILE, WORKSHOP_TIMING_FORMAT,
-  checkScriptSafety, normalizeLyricLine, parseWorkshopIndex, publishLinks, validateWorkshopPack, workshopFileUrl,
+  checkScriptSafety, insideDir, normalizeLyricLine, normalizeWorkshopDir, parseWorkshopIndex, publishLinks, sameDir, validateWorkshopPack, workshopFileUrl,
 } from './mv-workshop.mjs'
 
 export function workshopDir(env = process.env, platform = process.platform) {
@@ -26,6 +27,53 @@ export function workshopDir(env = process.env, platform = process.platform) {
 }
 
 const STATE_FILE = '.workshop.json'
+
+/** %LOCALAPPDATA%\dsh-mv\settings.json: settings the panel changes (0.9.1: workshop install location). */
+export function settingsFile(env = process.env, platform = process.platform) { return join(dirname(workshopDir(env, platform)), 'settings.json') }
+
+/** Host-side settings store (JSON file, atomic writes). */
+export function createSettingsStore({ file = settingsFile() } = {}) {
+  let cache = null
+  return {
+    file,
+    async read() {
+      if (cache) return cache
+      try { const value = JSON.parse(await readFile(file, 'utf8')); cache = value && typeof value === 'object' && !Array.isArray(value) ? value : {} } catch { cache = {} }
+      return cache
+    },
+    async update(patch) {
+      const next = { ...(await this.read()), ...patch }
+      await mkdir(dirname(file), { recursive: true })
+      const temp = `${file}.${randomBytes(4).toString('hex')}.tmp`
+      await writeFile(temp, json(next))
+      await rename(temp, file)
+      cache = next
+      return next
+    },
+  }
+}
+
+/** Make sure a folder exists and is writable (creates it; writes and deletes a probe file). */
+export async function ensureWritableDir(dir) {
+  try {
+    await mkdir(dir, { recursive: true })
+    const probe = join(dir, `.dsh-mv-write-test-${randomBytes(4).toString('hex')}`)
+    await writeFile(probe, 'ok', { flag: 'wx' })
+    await unlink(probe)
+  } catch (error) {
+    const code = error?.code
+    const reason = code === 'EACCES' || code === 'EPERM' ? '没有写入权限' : code === 'ENOENT' ? '找不到这个驱动器或路径' : code === 'EROFS' ? '这是只读磁盘' : code === 'ENOTDIR' || code === 'EEXIST' ? '路径里有同名的文件（不是文件夹）' : code === 'ENOSPC' ? '磁盘已满' : (error?.message ?? String(error))
+    throw new Error(`无法使用这个文件夹：${dir}（${reason}）`)
+  }
+}
+
+/** Open a folder in the system file manager (no shell; the folder path is one argument). */
+export function openFolder(dir, { platform = process.platform, run = spawn } = {}) {
+  const [command, args] = platform === 'win32' ? ['explorer.exe', [dir]] : platform === 'darwin' ? ['open', [dir]] : ['xdg-open', [dir]]
+  const child = run(command, args, { detached: true, stdio: 'ignore', windowsHide: false })
+  child.on?.('error', () => {})
+  child.unref?.()
+}
 const sha256 = data => createHash('sha256').update(data).digest('hex')
 const json = value => `${JSON.stringify(value, null, 2)}\n`
 
@@ -48,8 +96,19 @@ export async function getBytes(url, { proxy = null, timeoutMs = 20_000, userAgen
   })
 }
 
-export function createWorkshopManager({ root = workshopDir(), publishRoot = join(dirname(root), 'workshop-publish'), get = getBytes, env = process.env, proxy = () => '', userAgent = 'dsh-mv-cli', now = () => new Date(), cacheMs = 5 * 60_000 } = {}) {
+/**
+ * Workshop manager. The install folder is `root` (tests) or, since 0.9.1, the user's choice: the panel's
+ * setting (settings.json → workshop.dir) wins over the plugin config (workshopDir), then the default
+ * %LOCALAPPDATA%\dsh-mv\workshop. Folders used before keep being scanned (workshop.extraDirs) until their
+ * packs are moved, so the library keeps finding packs left where they were.
+ */
+export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = workshopDir(), configDir = () => '', settings = null, platform = process.platform, publishRoot = join(dirname(fixedRoot ?? defaultRoot), 'workshop-publish'), get = getBytes, env = process.env, proxy = () => '', userAgent = 'dsh-mv-cli', now = () => new Date(), cacheMs = 5 * 60_000, open = dir => openFolder(dir, { platform }) } = {}) {
   let cached = null
+  const store = settings ?? (fixedRoot ? null : createSettingsStore())
+  const configured = () => { const v = String(configDir() ?? '').trim(); if (!v) return null; try { return normalizeWorkshopDir(v, platform) } catch { return null } }
+  async function prefs() { const all = store ? await store.read() : {}; const w = all.workshop && typeof all.workshop === 'object' ? all.workshop : {}; return { dir: typeof w.dir === 'string' && w.dir ? w.dir : null, extraDirs: Array.isArray(w.extraDirs) ? w.extraDirs.filter(d => typeof d === 'string' && d) : [] } }
+  async function currentRoot() { if (fixedRoot) return fixedRoot; const p = await prefs(); return p.dir ?? configured() ?? defaultRoot }
+  async function roots() { const root = await currentRoot(); const extra = (await prefs()).extraDirs.filter(d => !sameDir(d, root, platform)); return [root, ...extra.filter((d, i) => extra.findIndex(x => sameDir(x, d, platform)) === i)] }
   const covers = new Map()
   const options = maxBytes => ({ proxy: proxyFromEnv(env, proxy()), userAgent, maxBytes })
 
@@ -62,7 +121,7 @@ export function createWorkshopManager({ root = workshopDir(), publishRoot = join
     return value
   }
 
-  async function installed() {
+  async function installedIn(root) {
     let names = []
     try { names = await readdir(root) } catch { return [] }
     const list = []
@@ -71,14 +130,37 @@ export function createWorkshopManager({ root = workshopDir(), publishRoot = join
       try {
         const state = JSON.parse(await readFile(join(root, name, STATE_FILE), 'utf8'))
         if (state?.id !== name) continue
-        list.push({ id: state.id, version: state.version, title: state.title, artist: state.artist, license: state.license, author: state.author, duration: state.duration ?? null, commit: state.commit, installedAt: state.installedAt, manifestPath: join(root, name, 'mv.json') })
+        list.push({ id: state.id, version: state.version, title: state.title, artist: state.artist, license: state.license, author: state.author, duration: state.duration ?? null, commit: state.commit, installedAt: state.installedAt, manifestPath: join(root, name, 'mv.json'), dir: root })
       } catch { /* not a workshop install */ }
     }
+    return list
+  }
+  /** Installed packs in the current folder and in folders kept from before (the current folder wins on duplicates). */
+  async function installed() {
+    const seen = new Set(), list = []
+    for (const root of await roots()) for (const item of await installedIn(root)) { if (seen.has(item.id)) continue; seen.add(item.id); list.push(item) }
     return list.sort((a, b) => String(b.installedAt).localeCompare(String(a.installedAt)))
+  }
+  async function forgetEmptyDirs() {
+    if (!store) return
+    const p = await prefs(), keep = []
+    for (const dir of p.extraDirs) if ((await installedIn(dir)).length && !keep.some(d => sameDir(d, dir, platform))) keep.push(dir)
+    if (keep.length !== p.extraDirs.length) await store.update({ workshop: { ...p, extraDirs: keep } })
+  }
+  async function dirInfo() {
+    const root = await currentRoot(), p = await prefs(), cfg = configured()
+    const list = await installed()
+    const extra = []
+    for (const dir of (await roots()).slice(1)) extra.push({ dir, packs: (await installedIn(dir)).map(i => i.id) })
+    return {
+      dir: root, defaultDir: cfg ?? defaultRoot, source: fixedRoot ? 'fixed' : p.dir ? 'custom' : cfg ? 'config' : 'default',
+      platform, packs: list.filter(i => sameDir(i.dir, root, platform)).length, extraDirs: extra,
+    }
   }
 
   return {
-    root,
+    get root() { return fixedRoot ?? defaultRoot },
+    currentRoot,
     async index({ refresh }) {
       const value = await index(refresh)
       return { ...value, installed: await installed(), source: WORKSHOP_INDEX_URL }
@@ -103,6 +185,7 @@ export function createWorkshopManager({ root = workshopDir(), publishRoot = join
       const value = await index(true)
       const entry = value.packs.find(p => p.id === id)
       if (!entry) throw new Error(`工坊里没有这个包：${id}`)
+      const root = await currentRoot()
       await mkdir(root, { recursive: true })
       const temp = join(root, `.tmp-${id}-${randomBytes(4).toString('hex')}`)
       try {
@@ -121,6 +204,9 @@ export function createWorkshopManager({ root = workshopDir(), publishRoot = join
         const dir = join(root, id)
         await rm(dir, { recursive: true, force: true })
         await rename(temp, dir)
+        // An older copy kept in a previous install folder is replaced by this one.
+        for (const old of (await roots()).slice(1)) { try { await stat(join(old, id, STATE_FILE)); await rm(join(old, id), { recursive: true, force: true }) } catch { /* not there */ } }
+        await forgetEmptyDirs()
         return { id, version: entry.version, manifestPath: join(dir, 'mv.json'), files: entry.files.length, warnings: result.warnings }
       } catch (error) {
         await rm(temp, { recursive: true, force: true }).catch(() => {})
@@ -128,10 +214,66 @@ export function createWorkshopManager({ root = workshopDir(), publishRoot = join
       }
     },
     async uninstall({ id }) {
-      const dir = join(root, id)
-      try { await stat(join(dir, STATE_FILE)) } catch { throw new Error(`没有安装这个工坊包：${id}`) }
-      await rm(dir, { recursive: true, force: true })
+      const item = (await installed()).find(i => i.id === id)
+      if (!item) throw new Error(`没有安装这个工坊包：${id}`)
+      await rm(join(item.dir, id), { recursive: true, force: true })
+      await forgetEmptyDirs()
       return { id, removed: true }
+    },
+    dirInfo,
+    /** Change (or reset) the install folder. keep=false: the panel then moves the packs one by one (moveToCurrent). */
+    async setDir({ dir, reset = false, keep = true }) {
+      if (!store) throw new Error('这个安装位置是固定的，不能修改。')
+      const previous = await currentRoot()
+      const target = reset ? (configured() ?? defaultRoot) : normalizeWorkshopDir(dir, platform)
+      if (insideDir(target, join(previous), platform) && !sameDir(target, previous, platform)) {
+        const first = target.slice(previous.length + 1).split(/[\\/]/)[0]
+        if ((await installedIn(previous)).some(i => i.id.toLowerCase() === first.toLowerCase()) || first.startsWith('.')) throw new Error('新位置不能放在某个已安装的包里面。')
+      }
+      if (insideDir(target, publishRoot, platform)) throw new Error('新位置不能是「发布到工坊」的临时文件夹。')
+      await ensureWritableDir(target)
+      const p = await prefs()
+      const pending = sameDir(target, previous, platform) ? [] : (await installedIn(previous)).map(i => i.id)
+      const extraDirs = [...p.extraDirs.filter(d => !sameDir(d, target, platform)), ...(pending.length ? [previous] : [])]
+      await store.update({ workshop: { dir: reset ? null : target, extraDirs: extraDirs.filter((d, i) => extraDirs.findIndex(x => sameDir(x, d, platform)) === i) } })
+      // Packs from every older folder can be moved, not only the one just left.
+      const movable = []
+      for (const d of extraDirs) for (const i of await installedIn(d)) if (!movable.some(m => m.id === i.id)) movable.push({ id: i.id, title: i.title, from: d })
+      return { ...(await dirInfo()), previous, changed: !sameDir(target, previous, platform), keep, movable }
+    },
+    /** Move one installed pack from an older folder into the current one: copy, verify, then delete the old copy. */
+    async moveToCurrent({ id }) {
+      const root = await currentRoot()
+      const item = (await installed()).find(i => i.id === id)
+      if (!item) throw new Error(`没有安装这个工坊包：${id}`)
+      if (sameDir(item.dir, root, platform)) return { id, moved: false, manifestPath: item.manifestPath, oldManifestPath: item.manifestPath }
+      const source = join(item.dir, id), target = join(root, id)
+      try { await stat(target); throw Object.assign(new Error(`新位置里已经有「${id}」文件夹，没有覆盖；请先处理它。`), { code: 'EXISTS' }) } catch (error) { if (error.code === 'EXISTS') throw error }
+      await mkdir(root, { recursive: true })
+      const temp = join(root, `.tmp-move-${id}-${randomBytes(4).toString('hex')}`)
+      try {
+        await cp(source, temp, { recursive: true, errorOnExist: true, force: false })
+        // Verify the copy against the install record (sizes and sha256 of every pack file).
+        const state = JSON.parse(await readFile(join(temp, STATE_FILE), 'utf8'))
+        for (const file of Array.isArray(state.files) ? state.files : []) {
+          const bytes = await readFile(join(temp, ...String(file.path).split('/')))
+          if (bytes.length !== file.size || sha256(bytes) !== file.sha256) throw new Error(`复制后校验失败：${file.path}`)
+        }
+        await rename(temp, target)
+      } catch (error) {
+        await rm(temp, { recursive: true, force: true }).catch(() => {})
+        throw new Error(`无法移动「${id}」：${error?.message ?? error}（原来的文件没有删除）`)
+      }
+      let warning = ''
+      try { await rm(source, { recursive: true, force: true }) } catch (error) { warning = `已复制到新位置，但旧文件夹删除失败：${source}（${error?.message ?? error}）` }
+      await forgetEmptyDirs()
+      return { id, moved: true, manifestPath: join(target, 'mv.json'), oldManifestPath: item.manifestPath, ...(warning ? { warning } : {}) }
+    },
+    async openDir() {
+      const root = await currentRoot()
+      await mkdir(root, { recursive: true })
+      open(root)
+      return { dir: root, opened: true }
     },
     publishPrepare: request => preparePublish(request, { publishRoot, now }),
   }

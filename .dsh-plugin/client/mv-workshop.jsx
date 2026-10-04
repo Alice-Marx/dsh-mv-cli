@@ -7,9 +7,12 @@
 import React from 'react'
 import { errorText } from './mv-info.mjs'
 import { Alert, Icon } from './mv-ui.jsx'
-import { loadPackFromHost, rememberPack } from './mv-pack-state.mjs'
-import { durationText, installWorkshopPack, installedState, loadWorkshop, publishWorkshopPack, sizeText, uninstallWorkshopPack, workshopCover } from './mv-workshop-state.mjs'
-import { WORKSHOP_DEFAULT_LICENSE, WORKSHOP_REPO, filterWorkshop, workshopSlug } from '../shared/mv-workshop.mjs'
+import { loadPackFromHost, relocatePacks, rememberPack } from './mv-pack-state.mjs'
+import { durationText, tooOld, installWorkshopPack, installedState, loadWorkshop, moveWorkshopPacks, openWorkshopDir, publishWorkshopPack, setWorkshopDir, sizeText, uninstallWorkshopPack, workshopCover, workshopDirInfo } from './mv-workshop-state.mjs'
+import { WORKSHOP_DEFAULT_LICENSE, WORKSHOP_REPO, compareVersions, filterWorkshop, workshopSlug } from '../shared/mv-workshop.mjs'
+import { CLIENT_VERSION } from './remote-state.mjs'
+
+export { tooOld }
 
 const REPO_URL = `https://github.com/${WORKSHOP_REPO}`
 const LICENSES = ['CC-BY-NC-SA-4.0', 'CC-BY-NC-4.0', 'CC-BY-SA-4.0', 'CC-BY-4.0', 'CC0-1.0', 'MIT']
@@ -144,6 +147,7 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
               <span className="mv-chip">许可 {current.license}</span>
               <span className="mv-chip">时长 {durationText(current.duration)}</span>
               <span className="mv-chip">{RENDERERS[current.renderer] ?? current.renderer}</span>
+              {current.requires && <span className={`mv-chip${tooOld(current) ? ' mv-chip-warn' : ''}`} title="能播放这个包的最低插件版本">需要插件 v{current.requires}+</span>}
               {current.sections > 0 && <span className="mv-chip">{current.sections} 个段落</span>}
               <span className="mv-chip" title="安装后用你自己的歌词文件；按哈希匹配包里的逐句时间">{current.timing ? '带歌词时间轴' : '无歌词时间轴'}</span>
               <span className="mv-chip" title="用来检查你的音频是否是同一个版本">{current.fingerprint ? '带音频指纹' : '仅按时长匹配'}</span>
@@ -152,9 +156,10 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
             <p className="mv-caption">{current.files.length} 个文件 · {sizeText(current.size)}{current.updated ? ` · 更新于 ${current.updated.slice(0, 10)}` : ''}{current.homepage ? <> · <a href={current.homepage} target="_blank" rel="noreferrer">主页</a></> : null}
               {' · '}<a href={`${REPO_URL}/tree/${index?.commit ?? 'main'}/packs/${current.id}`} target="_blank" rel="noreferrer">在 GitHub 上查看源码</a></p>
             <ul className="mv-caption mv-ws-files">{current.files.map(f => <li key={f.path}><code title={f.path}>{f.path}</code><span className="mv-ws-size">{sizeText(f.size)}</span><span className="mv-faint mv-ws-sha" title={`sha256 ${f.sha256}`}>sha256 {f.sha256.slice(0, 12)}…</span></li>)}</ul>
+            {tooOld(current) && <Alert kind="warn">这个包需要 dsh-mv-cli v{current.requires} 或更新（当前 v{CLIENT_VERSION}）。请先在 DSH 里更新插件再安装。</Alert>}
             <div className="mv-row">
-              {!installed[current.id] && <button type="button" className="mv-button" disabled={Boolean(busy)} onClick={() => void install(current)}>{busy === `install:${current.id}` ? '正在下载并校验…' : '安装到曲库'}</button>}
-              {installed[current.id] && updates.has(current.id) && <button type="button" className="mv-button" disabled={Boolean(busy)} onClick={() => void install(current)}>{busy === `install:${current.id}` ? '正在更新…' : `更新到 v${current.version}（已装 v${installed[current.id].version}）`}</button>}
+              {!installed[current.id] && <button type="button" className="mv-button" disabled={Boolean(busy) || tooOld(current)} onClick={() => void install(current)}>{busy === `install:${current.id}` ? '正在下载并校验…' : '安装到曲库'}</button>}
+              {installed[current.id] && updates.has(current.id) && <button type="button" className="mv-button" disabled={Boolean(busy) || tooOld(current)} onClick={() => void install(current)}>{busy === `install:${current.id}` ? '正在更新…' : `更新到 v${current.version}（已装 v${installed[current.id].version}）`}</button>}
               {installed[current.id] && <button type="button" className="mv-button mv-button-secondary" disabled={Boolean(busy)} onClick={() => void open(installed[current.id].manifestPath).then(() => setNote(`已打开「${current.title}」。`)).catch(failure => setError(errorText(failure, '无法打开。')))}>打开</button>}
               {installed[current.id] && confirmUninstall !== current.id && <button type="button" className="mv-button mv-button-danger" disabled={Boolean(busy)} onClick={() => setConfirmUninstall(current.id)}>卸载</button>}
               {confirmUninstall === current.id && <span className="mv-row"><span className="mv-caption">确定卸载？会删除插件工坊文件夹里的这个包。</span>
@@ -179,8 +184,99 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
           {index && !shown.length && <p className="mv-caption">{packs.length ? '没有符合条件的包。' : '工坊里还没有包。'}</p>}
         </div>
       )}
-      <p className="mv-caption">安装位置：%LOCALAPPDATA%\dsh-mv\workshop\&lt;id&gt;。工坊没有服务器：目录来自仓库里由 GitHub Actions 生成的 index.json。想投稿？打开你的 MV 包后点「发布到工坊…」，或看 <a href={`${REPO_URL}/blob/main/CONTRIBUTING.zh.md`} target="_blank" rel="noreferrer">投稿说明</a>。</p>
+      <WorkshopDirSettings api={api} active={active} onRecent={onRecent} onLoaded={onLoaded} onChanged={() => void refresh(false)} />
+      <p className="mv-caption">工坊没有服务器：目录来自仓库里由 GitHub Actions 生成的 index.json。想投稿？打开你的 MV 包后点「发布到工坊…」，或看 <a href={`${REPO_URL}/blob/main/CONTRIBUTING.zh.md`} target="_blank" rel="noreferrer">投稿说明</a>。</p>
     </div>
+  )
+}
+
+const SOURCE_TEXT = { default: '默认位置', custom: '你设置的位置', config: '插件配置 workshopDir', fixed: '固定位置' }
+
+/**
+ * 0.9.1: where workshop packs are installed. Shows the folder, lets the user change it (any drive,
+ * e.g. F:\MV), open it, or go back to the default; packs in the old folder can be moved (copy, verify,
+ * delete) or kept — kept packs stay in the library. The choice is stored by the Host (settings.json).
+ */
+export function WorkshopDirSettings({ api, active = null, onRecent = () => {}, onLoaded = () => {}, onChanged = () => {}, initialInfo = null, initialStep = null }) {
+  const [info, setInfo] = React.useState(initialInfo)
+  const [editing, setEditing] = React.useState(initialStep?.editing ?? false)
+  const [value, setValue] = React.useState(initialStep?.value ?? '')
+  const [busy, setBusy] = React.useState('')
+  const [error, setError] = React.useState(initialStep?.error ?? '')
+  const [ask, setAsk] = React.useState(initialStep?.ask ?? null)
+  const [progress, setProgress] = React.useState(initialStep?.progress ?? null)
+  const [result, setResult] = React.useState(initialStep?.result ?? null)
+  const reload = React.useCallback(async () => { try { setInfo(await workshopDirInfo(api)) } catch (failure) { setError(errorText(failure, '无法读取安装位置。')) } }, [api])
+  React.useEffect(() => { if (!initialInfo) void reload() }, [reload])
+
+  const apply = async request => {
+    setBusy('set'); setError(''); setResult(null)
+    try {
+      const next = await setWorkshopDir(api, request)
+      setInfo(next); setEditing(false)
+      if (next.movable?.length) setAsk({ previous: next.previous, packs: next.movable })
+      else setResult({ text: next.changed ? `安装位置已改为 ${next.dir}。以后安装的包会放在这里。` : '安装位置没有变化。' })
+      onChanged()
+    } catch (failure) { setError(errorText(failure, '无法更改安装位置。')) }
+    finally { setBusy('') }
+  }
+  const move = async packs => {
+    setAsk(null); setBusy('move'); setError(''); setResult(null)
+    const { moved, failed } = await moveWorkshopPacks(api, packs.map(p => p.id), setProgress)
+    const moves = moved.filter(m => m.moved)
+    if (moves.length) {
+      onRecent(relocatePacks(moves))
+      const current = active && moves.find(m => m.oldManifestPath.toLowerCase() === String(active.manifestPath ?? '').toLowerCase())
+      if (current) { try { onLoaded(await loadPackFromHost(api, current.manifestPath)) } catch { /* reopened from the library */ } }
+    }
+    setProgress(null); setBusy('')
+    setResult({ text: `已移动 ${moves.length} / ${packs.length} 个包到 ${info?.dir ?? '新位置'}。`, failed })
+    await reload(); onChanged()
+  }
+  const keep = () => { setResult({ text: `原位置的 ${ask.packs.length} 个包留在 ${ask.previous}，曲库里仍然可以打开；以后可以在这里再移动。` }); setAsk(null) }
+  const open = async () => { setError(''); try { await openWorkshopDir(api) } catch (failure) { setError(errorText(failure, '无法打开文件夹。')) } }
+  const fixed = info?.source === 'fixed'
+  const example = info?.platform === 'win32' || !info ? 'F:\\MV\\workshop' : '/home/me/mv-workshop'
+  return (
+    <section className="mv-ws-dir" aria-label="工坊安装位置">
+      <div className="mv-row" style={{ justifyContent: 'space-between' }}>
+        <div className="mv-ws-dir-text">
+          <span className="mv-caption">安装位置</span>
+          <code className="mv-wrap" title={info?.dir}>{info?.dir ?? '…'}</code>
+          {info && <span className="mv-caption">{SOURCE_TEXT[info.source] ?? info.source} · {info.packs} 个包{info.extraDirs?.length ? ` · 另有 ${info.extraDirs.reduce((n, d) => n + d.packs.length, 0)} 个在旧位置` : ''}</span>}
+        </div>
+        <div className="mv-row">
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" disabled={!info || Boolean(busy)} onClick={() => void open()}>打开文件夹</button>
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" disabled={!info || fixed || Boolean(busy)} onClick={() => { setEditing(true); setValue(info?.dir ?? ''); setError('') }}>更改…</button>
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" disabled={!info || fixed || Boolean(busy) || info?.source === 'default' || info?.source === 'config'} title={info ? `恢复为 ${info.defaultDir}` : ''} onClick={() => void apply({ reset: true, keep: true })}>恢复默认</button>
+        </div>
+      </div>
+      {editing && (
+        <form className="mv-row mv-ws-dir-edit" onSubmit={event => { event.preventDefault(); void apply({ dir: value, keep: true }) }}>
+          <input value={value} autoFocus spellCheck={false} aria-label="新的安装文件夹" placeholder={`例如 ${example}`} onChange={event => setValue(event.target.value)} />
+          <button type="submit" className="mv-button mv-button-small" disabled={busy === 'set' || !value.trim()}>{busy === 'set' ? '正在检查…' : '使用这个文件夹'}</button>
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" onClick={() => { setEditing(false); setError('') }}>取消</button>
+          <span className="mv-caption" style={{ flexBasis: '100%' }}>填写完整路径，可以是其他磁盘（例如 {example}）。文件夹不存在会自动创建，并先测试能否写入。</span>
+        </form>
+      )}
+      {ask && (
+        <Alert kind="warn" actions={<>
+          <button type="button" className="mv-button mv-button-small" onClick={() => void move(ask.packs)}>移动到新位置</button>
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" onClick={keep}>留在原处</button></>}>
+          <p className="mv-wrap">原来的位置 <code>{ask.previous}</code> 里有 {ask.packs.length} 个已安装的包（{ask.packs.slice(0, 4).map(p => p.title || p.id).join('、')}{ask.packs.length > 4 ? ' 等' : ''}）。要移动到新位置吗？移动会先复制并校验 sha256，成功后才删除旧文件。留在原处的包仍会出现在曲库里。</p>
+        </Alert>
+      )}
+      {progress && <div className="mv-ws-dir-progress" role="status"><progress max={progress.total} value={progress.done} /> <span className="mv-caption">正在移动 {progress.done + (progress.id ? 1 : 0)} / {progress.total}{progress.id ? `：${progress.id}` : ''}</span></div>}
+      {!ask && !progress && info?.extraDirs?.length > 0 && !result && (
+        <p className="mv-caption mv-wrap">旧位置里还有包：{info.extraDirs.map(d => `${d.dir}（${d.packs.length} 个）`).join('；')}。
+          <button type="button" className="mv-link" disabled={Boolean(busy)} onClick={() => void move(info.extraDirs.flatMap(d => d.packs.map(id => ({ id }))))}>全部移动到当前位置</button></p>
+      )}
+      {error && <Alert kind="error"><p className="mv-wrap">{error}</p></Alert>}
+      {result && <Alert kind={result.failed?.length ? 'warn' : 'ok'} actions={<button type="button" className="mv-link" onClick={() => setResult(null)}>知道了</button>}>
+        <p className="mv-wrap">{result.text}</p>
+        {result.failed?.length > 0 && <ul className="mv-caption">{result.failed.map(f => <li key={f.id} className="mv-wrap">{f.id}：{f.error}</li>)}</ul>}
+      </Alert>}
+    </section>
   )
 }
 
