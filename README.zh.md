@@ -2,50 +2,68 @@
 
 [English](README.md) · 简体中文
 
-DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`）。在工作台的 `<canvas>` 上放映**终端风格 MV**，以你自己的音频为时钟逐帧渲染：
+[![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-| 曲目 | 做什么 | 需要你提供 |
-| --- | --- | --- |
-| **world.execute(me);**（内置预设） | Mili《world.execute(me);》的 ASCII MV（五个章节），移植自 world.execute-me-ascii | 一个音频或视频文件；可选歌词与 `spectrum.json` |
-| **world.execute(me); dsh PV**（0.6.0 新增的内置画布预设） | MisakaZentai「大肥鱼眼中的 world.execute(me)」PV 的实时 JavaScript 移植：DeepSeek 窗口、终端界面、鲸鱼娘立绘，随你的音频实时同步 | 同一首歌的音频；可选带时间的歌词（LRC） |
-| **MV 包**（`mv.json`） | 任何歌：通用频谱 + 歌词渲染器，或沙箱里的场景脚本；还可以让 Harness 的 Agent [帮你做 MV 包](#用-ai-制作新-mv) | 你的音频、歌词 |
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.8.3**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格的 **MV**，以**你自己的音频**为时钟逐帧渲染。
 
-> **0.6.0 起删除了「面板终端」和「独立窗口」两种播放方式**（以及 node-pty / xterm.js、tui_live.py 集成和 MCI 用的自动 WAV 转换）。插件只在画布上播放，不再运行任何外部播放器；旧 `mv.json` 里的 `terminal` 字段会被忽略并提示。
+> **非官方同人作品。** 插件**不附带**任何音频、视频、歌词文本或字体；文件由你自己提供，只在本机读取，不会上传。歌曲与歌词的权利归 Mili。world.execute(me) 预设的场景与时间轴移植自 [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii)（Bilibili「野生大K」），**经原作者许可**。dsh PV 预设移植自 [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv)（MIT），并附带其 **CC BY-NC-SA 4.0** 的鲸鱼娘立绘（见 [许可与致谢](#许可与致谢)）。
 
-> **非官方同人作品。** 插件**不附带**任何音频、视频、歌词文本或字体；歌曲与歌词的权利归 Mili。world.execute(me) 预设的场景与时间轴移植自 [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii)（Bilibili「野生大K」），**经原作者许可**。dsh PV 预设移植自 [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv)（MIT），并附带其 **CC BY-NC-SA 4.0** 的鲸鱼娘立绘（见 [许可](#许可)）。详见 [NOTICE.md](NOTICE.md)。
+![曲库列表视图（Harness 原生，浅色）](docs/screenshots/library-list.png)
 
-## 界面一览
+## 功能
 
-像音乐播放器一样从上到下：
+- **画布 MV 播放器**：每一帧都在画布上绘制，与你的音频或视频文件同步（MP3、M4A/AAC、FLAC、Ogg/Opus、WAV、MP4/WebM/MKV 的音轨……；其余格式可用 ffmpeg 转换）。歌词支持 LRC / SRT / VTT，可选 `spectrum.json`，键盘控制、全屏、按文件记住音频同步偏移。
+- **内置预设**：
+  - **world.execute(me);**：五个章节的 ASCII MV，移植自 world.execute-me-ascii。
+  - **world.execute(me); dsh PV**：MisakaZentai「大肥鱼眼中的 world.execute(me)」PV 的实时移植（97 个镜头、10 个章节、DeepSeek 窗口、鲸鱼娘立绘，逐词时间与你自己的 LRC 匹配）。
+- **MV 包**（`mv.json`）：任何歌都能放，使用通用频谱 + 歌词渲染器或你自己写的沙箱场景脚本；可从带提示词和示例的模板开始。
+- **用 AI 制作新 MV**：选一首歌，插件建好 MV 包并交给 Harness 的 Agent 会话，由 Agent 写时间轴和场景脚本，并用插件的 Agent 工具自查。
+- **自动制作歌词时间轴**：可选的 LRCLIB 查询 + 本机 faster-whisper / Demucs 引擎，逐词对齐、每句置信度和段落识别，然后在波形上用**歌词校准编辑器**微调。
+- **创意工坊**：从公开 GitHub 仓库 [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop) 浏览、安装、更新和发布社区 MV 包（sha256 校验，包内不含音频和歌词文字）。
+- **三套外观**（Harness 原生 / 现代音乐应用 / 终端 · 黑客），各自支持「跟随 / 浅色 / 深色」。
+- **曲库**：紧凑**列表**（默认）或封面**网格**，最多 50 个最近的包，曲库标题可**收起**到只剩正在播放的一首。
 
-1. **曲库**：卡片列出两个内置预设（world.execute(me) 和 world.execute(me); dsh PV）、最近导入的 MV 包，以及「用 AI 制作新 MV」「导入 MV 包」「新建（模板）」。
-2. **正在播放**：当前曲目的标题和艺术家，右侧一个 **▶ 播放** 按钮。
-3. **画面**：画布和播放条（播放/暂停、进度、时间、章节、音量、音频同步、键盘快捷键、全屏）。
-4. **设置**（默认折叠）：字号、字幕偏移等。
-5. 右上角 **ⓘ**：关于、版权与署名。后台版本与界面不一致时，标题栏会出现一个提示「请完全重启 Harness」。
+## 截图
 
-面板使用不透明背景，跟随 Harness 的浅色 / 深色主题。
+| | |
+| --- | --- |
+| ![三套外观的列表视图](docs/screenshots/skins.png) | ![收起的曲库，深色](docs/screenshots/library-collapsed.png) |
+| 外观 A / B / C，浅色与深色 | 曲库收起到正在播放的一首（0.8.3） |
+| ![dsh PV 预设](docs/screenshots/dsh-pv.png) | ![三套外观下的歌词校准](docs/screenshots/calibration.png) |
+| world.execute(me); dsh PV 预设（对话镜头） | 播放器下方的歌词校准编辑器 |
+| ![创意工坊](docs/screenshots/workshop.png) | |
+| 三套外观下的创意工坊 | |
 
-## 外观（皮肤）
-
-点面板右上角（ⓘ 旁边）的 **外观** 选择皮肤（0.8.0）：**Harness 原生**（默认，跟随 Harness 明暗，Fluent 卡片）、**现代音乐应用**（左侧导航栏、封面网格、模糊封面、整页底部播放条，默认深色）或 **终端 / 黑客**（tmux 风格标签栏和状态栏、等宽字体 + CRT 扫描线，默认深色，浅色为纸质终端）。切换外观不会打断播放。曲库默认是紧凑列表（0.8.2），可用标题旁的「列表 / 网格」切换为封面卡片，点「曲库」前的箭头可收起到只剩正在播放的一首（0.8.3）。每个皮肤分别记住「跟随 / 浅色 / 深色」，只保存在本机；功能在三套外观下完全一样。
+截图使用占位演示包和占位歌词。
 
 ## 安装
 
-**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli@0.6.0`（或直接填 `@ljwei-stak/dsh-mv-cli` 安装最新版），安装并启用。
+需要支持插件的 DeepSeek Harness Desktop（Host 端 Node ≥ 20，Harness 自带）。没有原生依赖。
 
-**用本地安装包：** 从 GitHub Release 下载 `ljwei-stak-dsh-mv-cli-0.6.0.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
-`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-0.6.0.tgz'`，
+**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli`（最新版）或指定版本如 `@ljwei-stak/dsh-mv-cli@0.8.3`，安装并启用。
+
+**用 GitHub Release 安装包：** 从 [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) 下载 `ljwei-stak-dsh-mv-cli-<版本>.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
+`Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-<版本>.tgz'`，与 `.sha256` 文件比对，
 然后在 **插件 → 添加插件** 里填该 `.tgz` 的绝对路径。
 
 两种方式装好后：
 
 1. **完全退出 Harness（包括托盘图标）后重新打开**：Host 进程只有完全重启才会加载新的插件代码。界面顶部若出现「后台版本与界面不一致」，就是没有完全重启。
-2. 左侧边栏在内置入口（插件 / 自动化任务 / …）下面出现 **MV 放映室**，点它就在主区域打开面板；插件详情页（插件 → dsh-mv-cli）也有「打开 MV 放映室」按钮。
+2. 左侧边栏在内置入口下面出现 **MV 放映室**，点它就在主区域打开面板；插件详情页（插件 → dsh-mv-cli）也有「打开 MV 放映室」按钮。
 
-> 升级后请完全退出 Harness 一次（包括托盘图标），否则面板会提示「后台版本与界面不一致」。0.1.1 不会显示侧边栏入口，请使用 0.1.2 及以后的版本。
+## 界面一览
 
-0.6.0 不再有任何原生依赖（node-pty 已删除），安装更快。
+像音乐播放器一样从上到下：
+
+1. **曲库**：两个内置预设和你的 MV 包（导入的、AI 制作的或来自创意工坊），以及「创意工坊」「用 AI 制作新 MV」「导入 MV 包」「新建（模板）」。「列表 / 网格」在紧凑列表（默认）和封面卡片之间切换；「曲库」前的箭头把曲库收起到只剩标题、数量和正在播放那一行（状态记在本机；点侧栏 / 标签栏的「曲库」会重新展开）。
+2. **正在播放**：标题、艺术家、包类型和 **▶ 播放** 按钮；下方是音频、歌词、频谱三个小卡片。
+3. **画面**：画布和播放条（播放/暂停、进度、时间、章节、音量、音频同步、键盘快捷键、全屏），下方是 **歌词校准** 编辑器。
+4. **设置**（默认折叠）：字号、字幕偏移等。
+5. 右上角 **外观** 和 **ⓘ**：选择皮肤；关于、版权与署名。
+
+## 外观（皮肤）
+
+**外观** 可选三套皮肤：**Harness 原生**（默认，跟随 Harness 明暗，Fluent 卡片）、**现代音乐应用**（左侧导航栏、封面网格、模糊封面、整页底部播放条，默认深色）或 **终端 / 黑客**（tmux 风格标签栏和状态栏、等宽字体 + CRT 扫描线，默认深色，浅色为纸质终端）。切换外观不会打断播放。每个皮肤分别记住「跟随 / 浅色 / 深色」，只保存在本机；功能在三套外观下完全一样。
 
 ## MV 包：播放任意歌曲
 
@@ -53,8 +71,6 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 - 用内置的 **通用（generic）** 画布渲染（频谱条、标题、当前与下一句歌词、进度条），任何歌都能放；
 - 用内置的 **world-execute-me** 场景，或 **dsh-pv** 预设（`canvas.renderer: "dsh-pv"`，只适合同一首歌）；
 - 用 **场景脚本**（`canvas.renderer: "script"`、`canvas.script: "scenes.js"`）：用普通 JavaScript 写自己的 `render(t, cols, rows, ctx)`，在 Web Worker 沙箱里运行并限制每帧耗时（出错时自动换回通用画面）。接口见模板里的 README；
-
-0.6.0 起不再支持外部 TUI 程序：旧包里的 `terminal` 字段会被忽略，并在导入时提示。内置的 world.execute(me) 预设仍是列表里的默认项。
 
 在面板顶部的 **曲库** 里：
 
@@ -68,7 +84,7 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
    导入对话框里的 **下载模板 zip** 得到同样的文件。
 2. 把你自己的音频（任意[支持的格式](#音频格式)）和歌词放进去，编辑 `mv.json`。
 3. **导入 MV 包** → **选择文件夹…**，或粘贴文件夹 / `mv.json` 的路径。导入只读取清单。
-   - 最近用过的包（最多 8 个）记在本机，作为卡片出现在曲库里（卡片右上角 × 可移除）。
+   - 最近用过的包（最多 50 个）记在本机，出现在曲库里（行或卡片上的 × 可移除）。
    - 下次打开会恢复上次的包。
 4. 点 **▶ 播放**：音频由 Host 分块读取，歌词和频谱一起载入。
 
@@ -89,7 +105,7 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 
 字段说明：
 - 必填：`format`、`version`、`title`。
-- 可选：`artist`、`album`、`credits[]`、`notice`、`duration`、`audio {file, offset}`、`lyrics {file, offset}`（LRC/SRT/VTT/lyrics.json）、`spectrum {file}`、`canvas {renderer: generic | world-execute-me | dsh-pv | script, script, fontSize}`。`terminal`（0.6.0 以前的外部播放器）会被忽略并提示。
+- 可选：`artist`、`album`、`credits[]`、`notice`、`duration`、`audio {file, offset}`、`lyrics {file, offset}`（LRC/SRT/VTT/lyrics.json）、`spectrum {file}`、`canvas {renderer: generic | world-execute-me | dsh-pv | script, script, fontSize}`。旧版的 `terminal` 字段会被忽略并提示。
 - 未知字段报错，自定义数据用 `x-…`。
 - 相对路径不允许 `..`。
 
@@ -223,11 +239,10 @@ DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `
 
 **使用：**
 
-1. 更新到 0.6.0，并完全重启 Harness。
-2. **MV 放映室 → 曲库 → 「world.execute(me); dsh PV」** 卡片。
-3. **音频**：选你自己的《world.execute(me);》音频或视频文件（与另一个预设共用，选过一次两边都能用）。
-4. **歌词**（可选，推荐）：选你自己的 LRC。插件把每句歌词的 sha256 和内置的时间表比对，匹配上的句子使用原 PV 的**逐词时间**（打字效果、底部 stdout 词元条、`satisfaction` 镜头里的注意力词元都来自你的歌词）；歌词栏显示「逐词时间匹配 x/y 句」。LRCLIB 上 id 36914646 的歌词能匹配 97/98 句。匹配不足一半时改用你文件里的时间按行显示。不选歌词时，歌词位置留空。
-5. **▶ 播放**。键盘、音频同步（Alt+`[` / Alt+`]`）、全屏与另一个预设相同。
+1. **MV 放映室 → 曲库 → 「world.execute(me); dsh PV」** 卡片。
+2. **音频**：选你自己的《world.execute(me);》音频或视频文件（与另一个预设共用，选过一次两边都能用）。
+3. **歌词**（可选，推荐）：选你自己的 LRC。插件把每句歌词的 sha256 和内置的时间表比对，匹配上的句子使用原 PV 的**逐词时间**（打字效果、底部 stdout 词元条、`satisfaction` 镜头里的注意力词元都来自你的歌词）；歌词栏显示「逐词时间匹配 x/y 句」。LRCLIB 上 id 36914646 的歌词能匹配 97/98 句。匹配不足一半时改用你文件里的时间按行显示。不选歌词时，歌词位置留空。
+4. **▶ 播放**。键盘、音频同步（Alt+`[` / Alt+`]`）、全屏与另一个预设相同。
 
 **怎么做的：** 在本机用上游的合成渲染器跑了一遍，把每个镜头 2–6 个关键帧（约每 0.5 s 一个）的绘制指令（文字、矩形、线条、颜色、位置）、DeepSeek 窗口的布局与对话内容、各层透明度记录下来，打包为 `.dsh-plugin/assets/dsh-pv/` 下的 `timeline.json`、`chat.json`、`band.json`（约 4.4 MB，npm 包内压缩后更小）。画布按时间回放关键帧，新出现的文字做解码式打字，并补上动态部分：随实时音量跳动的心跳线、右侧 ops 滚动条、stdout 词元条、DeepSeek 窗口（原生重画，不用 DeepSeek 前端的 CSS / 图标 / 字体）、EXECUTION 红色分屏与胶带、结尾鲸落，以及光迹、泛光、扫描线、暗角等后期效果。数据里**不含任何歌词文字**：歌词只以 sha256 和时间出现，构建脚本还检查了不存在任何 4 词以上的歌词片段，歌词全部在运行时取自你的文件。
 
@@ -255,14 +270,13 @@ npm run pack:local        # dist/ljwei-stak-dsh-mv-cli-<版本>.tgz（prepack �
 
 - 与原版 Python 渲染逐帧对照：1232 个参考帧中约 2% 不一致，全部位于 75–81 s 的 legacy mesh 段，是浮点末位 / z-buffer 平局造成的个别字符差异。
 - dsh PV：时间线固定为原曲长度 211.9 s；其他剪辑版本需要用音频同步偏移对齐，长度不同的版本后半段会错位。上游位图层是近似画面；没有附带字体，不同系统上字形略有差异。立绘为 CC BY-NC-SA 4.0（非商业）。npm 包因此增大到约 1.2 MB（解压后约 5.8 MB）。
-- 0.6.0 删除了面板终端 / 独立窗口：想用 tui_live.py 请直接在终端里运行它。
 - 「用 AI 制作新 MV」需要 Harness 客户端提供 Agent 会话接口（否则请复制粘贴提示词）。场景脚本运行在 Blob Web Worker 里；如果某个 Harness 版本禁止 blob worker，脚本包会用通用画面播放。Agent 工具依赖 Host 的 `tools` 服务；没有时 Agent 按 AGENT.md 自查。
 - 超过 1 GB 的音频文件会被拒绝；单个 WAV 缓存最大 1.5 GB（约 2.5 小时）。
 - `79c4e5…` 的偏移为推测值。
 - 自动时间轴：识别效果取决于混音；快速说唱、重度效果和念白会出现需要检查的黄色句子。LRCLIB 只收录别人上传过的歌，且需要能连上 lrclib.net（连不上时会跳过并提示）。仅 CPU 的 PyTorch 方案没有在测试机上实装；GPU 需要支持 CUDA 12.6 的 NVIDIA 驱动。中文 / 日文按字对齐，只做了单元测试。
 - 创意工坊：音频指纹很粗略（只看能量包络），可能漏判或误判不同剪辑；只有文字与包内哈希一致的歌词句子才能对齐时间；GitHub 上传页需要手动拖入文件；raw.githubusercontent.com 有约 5 分钟缓存，新包会延迟出现；CI 里的 `node:vm` 只是检查，不是安全边界（真正的边界是面板的 Worker 沙箱）。
 
-## 许可
+## 许可与致谢
 
 npm 包的许可表达式是 **`(MIT AND CC-BY-NC-SA-4.0)`**，整个包**不是纯 MIT**：
 
@@ -271,4 +285,12 @@ npm 包的许可表达式是 **`(MIT AND CC-BY-NC-SA-4.0)`**，整个包**不是
 - `.dsh-plugin/assets/dsh-pv-art/`：鲸鱼娘立绘，**CC BY-NC-SA 4.0**（署名 · 非商业 · 相同方式共享），署名链：溟月 © 上善无形 → ZipZipPipe（Pixiv 148186519，AI 生成）→ Small-tailqwq/dsh-deep-whale → dsh-whale-galgame → MisakaZentai。需要纯 MIT 时删掉这个目录即可。
 - 移植自 world.execute-me-ascii 的场景文件**不在 MIT 范围内**，是经原作者许可使用；原仓库目前没有 LICENSE 文件——建议保留作者书面同意，并请作者添加 LICENSE。
 
-相关作品与第三方说明见 [NOTICE.md](NOTICE.md)。
+致谢：
+
+- **Mili**：《world.execute(me);》（词曲与录音，不随包附带）。
+- **yym8224961（野生大K）**：world.execute-me-ascii，内置预设的场景与时间轴（经许可移植）。
+- **MisakaZentai**：world-execute-me-dsh-pv（MIT），dsh PV 预设、数据与模板示例。
+- 鲸鱼娘立绘：**上善无形 / 上善**（溟月）、**ZipZipPipe**、**Small-tailqwq / dsh-deep-whale**、**dsh-whale-galgame**（CC BY-NC-SA 4.0）。
+- **TKCB / King-LRC-Waveform-Editor**（MIT）：校准编辑器的交互参考（未复制代码）。**LRCLIB** 提供同步歌词查询。faster-whisper、CTranslate2、Demucs、PyTorch 与 Whisper 权重按需下载，按各自许可证使用。
+
+相关作品与第三方说明全文见 [NOTICE.md](NOTICE.md)。
