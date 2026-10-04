@@ -91,3 +91,23 @@ test('0.8.1 scroll: the root is its own scroll container and fits a clipping hos
   assert.equal(hostHeight({ overflow: 'hidden', room: 650.6, rootHeight: 700, pinned: '700px' }), '650px') // follow resizes
   assert.equal(hostHeight({ overflow: 'hidden', room: 40, rootHeight: 700, pinned: '700px' }), '700px')
 })
+
+test('0.8.2 library list view: default list, persisted, durations on recent entries, larger library', async () => {
+  const { LIBRARY_VIEW_KEY, loadLibraryView, saveLibraryView, rememberPack, noteDuration, loadRecent } = await import('../.dsh-plugin/client/mv-pack-state.mjs')
+  const { MV_PACK_LIMITS } = await import('../.dsh-plugin/shared/mv-pack.mjs')
+  const s = memory()
+  assert.equal(loadLibraryView(s), 'list')
+  assert.equal(saveLibraryView('grid', s), 'grid'); assert.equal(s.map.get(LIBRARY_VIEW_KEY), 'grid'); assert.equal(loadLibraryView(s), 'grid')
+  assert.equal(saveLibraryView('weird', s), 'list'); assert.equal(loadLibraryView(memory({ [LIBRARY_VIEW_KEY]: 'x' })), 'list')
+  assert.equal(loadLibraryView({ getItem: () => { throw new Error('no') } }), 'list')
+  const list = rememberPack({ manifestPath: 'D:\\A\\mv.json', pack: { title: 'A', artist: 'x', duration: 125.5 } }, { storage: s, now: () => 1 })
+  assert.equal(list[0].duration, 125.5)
+  rememberPack({ manifestPath: 'D:\\B\\mv.json', pack: { title: 'B' } }, { storage: s, now: () => 2 })
+  assert.equal(loadRecent(s)[0].duration, undefined)
+  const after = noteDuration('D:\\B\\mv.json', 61, s)
+  assert.deepEqual(after.map(item => [item.title, item.duration]), [['B', 61], ['A', 125.5]])
+  assert.equal(noteDuration('D:\\missing\\mv.json', 10, s).length, 2)
+  assert.ok(MV_PACK_LIMITS.recentPacks >= 50)
+  for (let i = 0; i < 60; i++) rememberPack({ manifestPath: `D:\\P${i}\\mv.json`, pack: { title: `P${i}` } }, { storage: s })
+  assert.equal(loadRecent(s).length, MV_PACK_LIMITS.recentPacks)
+})

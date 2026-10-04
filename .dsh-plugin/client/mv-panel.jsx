@@ -9,7 +9,7 @@ import { loadInfo, errorText } from './mv-info.mjs'
 import { CLIENT_VERSION, versionNotice } from './remote-state.mjs'
 import { Library } from './mv-library.jsx'
 import { Alert, Icon, Popover } from './mv-ui.jsx'
-import { BUILTINS, BUILTIN_ID, BUILTIN_PACK, DSH_PV_ID, loadActive, loadPackFromHost, loadRecent, saveActive } from './mv-pack-state.mjs'
+import { BUILTINS, BUILTIN_ID, BUILTIN_PACK, DSH_PV_ID, noteDuration, loadActive, loadPackFromHost, loadRecent, saveActive } from './mv-pack-state.mjs'
 import css from './mv.css'
 import skinCss from './mv-skins.css'
 import { SkinPicker, useSkin } from './mv-skin-ui.jsx'
@@ -63,7 +63,7 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
     setPackError('')
     if (BUILTINS[id]) { setPack(BUILTINS[id]); saveActive(id); return }
     if (!id.startsWith('pack:')) { setPack(BUILTIN_PACK); saveActive(BUILTIN_ID); return }
-    try { const loaded = await loadPackFromHost(api, id.slice(5)); setPack(loaded); saveActive(loaded.id) }
+    try { const loaded = await loadPackFromHost(api, id.slice(5)); setPack(loaded); saveActive(loaded.id); setRecent(noteDuration(id.slice(5), loaded.pack.duration)) }
     catch (error) { setPackError(`无法读取 MV 包 ${id.slice(5)}：${errorText(error, '')}`); setPack(BUILTIN_PACK); saveActive(BUILTIN_ID) }
   }, [api])
   // Reopen the last pack (reading its mv.json only; nothing is run).
@@ -121,7 +121,7 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
         <Popover label="关于与版权" icon={<Icon.info />}><About pack={pack} /></Popover>
       </header>
 
-      <Library navRequest={navRequest} onView={onLibraryView} api={api} harness={harness} info={info.value} initialAi={initialAi} initialWorkshop={initialWorkshop} workshopIndex={workshopIndex} canvas={() => canvasRef.current} active={pack} recent={recent} onSelect={id => void selectPack(id)} onLoaded={onLoaded} onRecent={setRecent} />
+      <Library playing={canvasState.playing} onPlay={() => canvasRef.current?.toggle()} onShowPlayer={() => go('now')} navRequest={navRequest} onView={onLibraryView} api={api} harness={harness} info={info.value} initialAi={initialAi} initialWorkshop={initialWorkshop} workshopIndex={workshopIndex} canvas={() => canvasRef.current} active={pack} recent={recent} onSelect={id => void selectPack(id)} onLoaded={onLoaded} onRecent={setRecent} />
       {packError && <Alert kind="error"><p className="mv-wrap">{packError}</p></Alert>}
       {info.status === 'error' && <Alert kind="warn"><p className="mv-wrap">{info.error}（画布播放不受影响；MV 包、AI 制作和歌词引擎需要后台。）</p></Alert>}
 

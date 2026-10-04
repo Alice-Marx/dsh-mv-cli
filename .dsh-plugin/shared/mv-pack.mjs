@@ -46,7 +46,7 @@ export const MV_PACK_LIMITS = Object.freeze({
   maxPathChars: 1_024,
   maxDuration: 36_000,
   maxOffset: 30,
-  recentPacks: 8,
+  recentPacks: 50, // library entries kept (0.8.2: was 8; the list view stays compact)
 })
 
 const TOP_KEYS = new Set(['$schema', 'format', 'version', 'title', 'artist', 'album', 'credits', 'notice', 'duration', 'audio', 'lyrics', 'spectrum', 'canvas', 'terminal'])

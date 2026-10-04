@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased (0.8.2)
+
+- **曲库列表视图 / library list view** (new default): compact rows with a small cover, title, artist, type badge (内置预设 / 画布预设 / MV 包 / 创意工坊), duration when known, a playing indicator, and row actions (play / pause the current song, switch to another, remove from the library). The 创意工坊 / 用 AI 制作新 MV / 导入 / 新建（模板） tiles become a compact toolbar. A 列表 / 网格 toggle next to the 曲库 header switches back to cover cards; the choice is stored locally (`dsh-mv.library.view.v1`). Styled per skin: Harness cards, a music-app track list (A), an `ls -l`-style monospace table (B); works in light / dark and with see-through wallpaper themes, and collapses columns in narrow panes. The library now keeps up to 50 packs (was 8); pack durations are remembered for the list.
+  曲库默认改为紧凑列表（小封面、标题、歌手、类型、时长、正在播放标记、行内播放和移除），工坊 / AI / 导入 / 模板变成一排小按钮；「列表 / 网格」可切换并保存在本机。曲库最多保留 50 首。
+
 ## 0.8.1 — 2026-10-04
 
 - **Fix: the panel could not scroll in Harness** (content below the MV canvas unreachable, and the header with the 外观 button could disappear). Harness hosts plugin panels in a centre column that is `display:flex; flex-direction:column; overflow:hidden`; the panel root grew to the column height with its content overflowing, so the wheel did nothing, and `focus()` / `scrollIntoView()` (stage focus, calibration line follow) scrolled the hidden column instead, pushing the header out of view with no way back. The panel root is now its own scroll container (`flex: 1 1 auto; min-height: 0; height: 100%; overflow-y: auto`), is pinned to the clipping ancestor if a host wraps it in an unsized block, and resets programmatic scrolls of that ancestor. Sticky sidebar / player bar / tmux bar / status line now stick inside the panel in all skins. Wheel over the MV canvas scrolls the panel.

@@ -158,10 +158,10 @@ test('pack recent list: most recent first, de-duplicated, bounded', () => {
   for (let i = 0; i < 10; i++) rememberPack({ manifestPath: `D:\\p${i}\\mv.json`, pack: { title: `T${i}` } }, { storage, now: () => i })
   rememberPack({ manifestPath: 'd:\\P3\\MV.JSON', pack: { title: 'again' } }, { storage, now: () => 99 })
   const list = loadRecent(storage)
-  assert.equal(list.length, 8)
+  assert.equal(list.length, 10) // bounded at MV_PACK_LIMITS.recentPacks (50 since 0.8.2; see skin.test.mjs)
   assert.equal(list[0].title, 'again')
   assert.equal(list.filter(item => item.manifestPath.toLowerCase() === 'd:\\p3\\mv.json').length, 1)
-  assert.equal(forgetPack(list[0].manifestPath, storage).length, 7)
+  assert.equal(forgetPack(list[0].manifestPath, storage).length, 9)
 })
 
 test('generic renderer: title, lyrics, next line, progress; chapters split the song', () => {

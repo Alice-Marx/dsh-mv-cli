@@ -198,6 +198,7 @@ const harness = { get: name => (query.get('session') === '0' ? undefined : {
 async function setup() {
   localStorage.clear()
   // ?skin=a|b|c&mode=auto|light|dark picks the 0.8.0 panel skin (stored like the picker does).
+  if (query.get('libview')) localStorage.setItem('dsh-mv.library.view.v1', query.get('libview'))
   if (query.get('skin')) localStorage.setItem('dsh-mv.skin.v1', JSON.stringify({ skin: query.get('skin'), modes: { [query.get('skin')]: query.get('mode') || 'auto' } }))
   const db = await openMediaStore()
   await buildTiming()
@@ -221,6 +222,14 @@ async function setup() {
   } else if (scene === 'example') {
     localStorage.setItem('dsh-mv.packs.recent.v1', JSON.stringify([{ manifestPath: 'D:\\MV\\Examples\\x\\mv.json', title: EXAMPLE, artist: 'dsh-mv template' }]))
     localStorage.setItem('dsh-mv.packs.active.v1', 'pack:D:\\MV\\Examples\\x\\mv.json')
+  } else if (scene === 'many') {
+    // 0.8.2 list-view density demo: 12 songs (2 presets + 10 packs; fictional titles, no media).
+    const many = [['Starlight Run', 'Alice', 124], ['Ghost Rule', 'DECO*27', 232], ['Lagtrain', 'inabakumori', 253], ['Neon Terminal (example)', 'dsh-mv', 120, 'neon-terminal-example'],
+      ['Token Rain', 'Null Pointer', 176, 'token-rain'], ['Whale Fall Protocol', 'Deep Sea Choir', 245], ['heartbeat.exe', 'Lumen Fold', 198], ['EXECUTE//SPLIT', 'Glitch Atelier', 192],
+      ['Ops Ticker Blues', 'Server Room Band', 164], ['勾指起誓', '洛天依', 0]]
+    localStorage.setItem('dsh-mv.packs.recent.v1', JSON.stringify(many.map(([title, artist, duration, workshop], i) => ({
+      manifestPath: i === 0 ? `${PACK_DIR}\\mv.json` : `D:\\MV\\${title.replace(/[^\w\u4e00-\u9fff]+/g, '-')}\\mv.json`, title, artist, ...(duration ? { duration } : {}), ...(workshop ? { workshop } : {}) }))))
+    localStorage.setItem('dsh-mv.packs.active.v1', `pack:${PACK_DIR}\\mv.json`)
   } else if (scene === 'script' || scene === 'calib') {
     localStorage.setItem('dsh-mv.packs.recent.v1', JSON.stringify([{ manifestPath: `${PACK_DIR}\\mv.json`, title: 'Starlight Run', artist: 'Alice' }, { manifestPath: 'D:\\MV\\Ghost Rule\\mv.json', title: 'Ghost Rule', artist: 'DECO*27' }]))
     localStorage.setItem('dsh-mv.packs.active.v1', `pack:${PACK_DIR}\\mv.json`)

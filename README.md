@@ -28,7 +28,7 @@ The panel has an opaque background and follows the Harness light/dark theme.
 
 ## Skins (外观)
 
-Click **外观** in the panel header (top right, next to ⓘ) to pick a skin (0.8.0): **Harness 原生** (default, follows the Harness theme; Fluent cards), **现代音乐应用** (left sidebar navigation, cover grid, blurred-cover hero, page-wide bottom player bar; dark by default) or **终端 / 黑客** (tmux-style tab bar and status line, monospace + CRT scanlines; dark by default, light = paper terminal). Switching never interrupts playback. Each skin remembers its own 跟随 / 浅色 / 深色 setting in local storage. Only the look changes; every feature works the same in all three.
+Click **外观** in the panel header (top right, next to ⓘ) to pick a skin (0.8.0): **Harness 原生** (default, follows the Harness theme; Fluent cards), **现代音乐应用** (left sidebar navigation, cover grid, blurred-cover hero, page-wide bottom player bar; dark by default) or **终端 / 黑客** (tmux-style tab bar and status line, monospace + CRT scanlines; dark by default, light = paper terminal). Switching never interrupts playback. The 曲库 shows a compact list by default (0.8.2); use 列表 / 网格 next to the header to switch to cover cards. Each skin remembers its own 跟随 / 浅色 / 深色 setting in local storage. Only the look changes; every feature works the same in all three.
 
 ## Install
 

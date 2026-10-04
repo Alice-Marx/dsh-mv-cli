@@ -6627,6 +6627,8 @@ var Icon = Object.freeze({
   volume: () => svg(/* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("path", { d: "M4 9v6h4l5 4V5L8 9H4z" }), /* @__PURE__ */ import_react.default.createElement("path", { d: "M16.5 8.5a5 5 0 0 1 0 7" }))),
   mute: () => svg(/* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("path", { d: "M4 9v6h4l5 4V5L8 9H4z" }), /* @__PURE__ */ import_react.default.createElement("path", { d: "M17 9l4 6M21 9l-4 6" }))),
   plus: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M12 5v14M5 12h14" })),
+  list: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" })),
+  grid: () => svg(/* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("rect", { x: "3.5", y: "3.5", width: "7", height: "7", rx: "1.5" }), /* @__PURE__ */ import_react.default.createElement("rect", { x: "13.5", y: "3.5", width: "7", height: "7", rx: "1.5" }), /* @__PURE__ */ import_react.default.createElement("rect", { x: "3.5", y: "13.5", width: "7", height: "7", rx: "1.5" }), /* @__PURE__ */ import_react.default.createElement("rect", { x: "13.5", y: "13.5", width: "7", height: "7", rx: "1.5" }))),
   folder: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" })),
   close: () => svg(/* @__PURE__ */ import_react.default.createElement("path", { d: "M6 6l12 12M18 6L6 18" }), 14),
   shop: () => svg(/* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("path", { d: "M4 9l1.5-4h13L20 9" }), /* @__PURE__ */ import_react.default.createElement("path", { d: "M4 9h16v2a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1-5 0z", transform: "translate(0 0)" }), /* @__PURE__ */ import_react.default.createElement("path", { d: "M5 12.5V19h14v-6.5" }))),
@@ -7369,7 +7371,8 @@ var MV_PACK_LIMITS = Object.freeze({
   maxPathChars: 1024,
   maxDuration: 36e3,
   maxOffset: 30,
-  recentPacks: 8
+  recentPacks: 50
+  // library entries kept (0.8.2: was 8; the list view stays compact)
 });
 var isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 function isAbsolutePackPath(value) {
@@ -9718,6 +9721,22 @@ function templateFiles() {
 // .dsh-plugin/client/mv-pack-state.mjs
 var RECENT_KEY = "dsh-mv.packs.recent.v1";
 var ACTIVE_KEY = "dsh-mv.packs.active.v1";
+var LIBRARY_VIEW_KEY = "dsh-mv.library.view.v1";
+function loadLibraryView(storage = globalThis.localStorage) {
+  try {
+    return storage?.getItem(LIBRARY_VIEW_KEY) === "grid" ? "grid" : "list";
+  } catch {
+    return "list";
+  }
+}
+function saveLibraryView(view, storage = globalThis.localStorage) {
+  const clean3 = view === "grid" ? "grid" : "list";
+  try {
+    storage?.setItem(LIBRARY_VIEW_KEY, clean3);
+  } catch {
+  }
+  return clean3;
+}
 var BUILTIN_ID = "builtin:world-execute-me";
 var BUILTIN_PACK = Object.freeze({
   id: BUILTIN_ID,
@@ -9761,10 +9780,20 @@ function saveRecent(list, storage) {
   }
 }
 function rememberPack(loaded, { storage = globalThis.localStorage, now = Date.now } = {}) {
-  const entry2 = { manifestPath: loaded.manifestPath, title: loaded.pack.title, artist: loaded.pack.artist ?? "", usedAt: now(), ...loaded.pack.workshop?.id ? { workshop: loaded.pack.workshop.id } : {} };
+  const duration = Number(loaded.pack.duration);
+  const entry2 = { manifestPath: loaded.manifestPath, title: loaded.pack.title, artist: loaded.pack.artist ?? "", usedAt: now(), ...duration > 0 ? { duration } : {}, ...loaded.pack.workshop?.id ? { workshop: loaded.pack.workshop.id } : {} };
   const list = [entry2, ...loadRecent(storage).filter((item) => item.manifestPath.toLowerCase() !== entry2.manifestPath.toLowerCase())];
   saveRecent(list, storage);
   return list.slice(0, MV_PACK_LIMITS.recentPacks);
+}
+function noteDuration(manifestPath, duration, storage = globalThis.localStorage) {
+  const list = loadRecent(storage);
+  const value = Number(duration);
+  const item = list.find((entry2) => entry2.manifestPath === manifestPath);
+  if (!item || !(value > 0) || Math.abs((item.duration ?? 0) - value) < 0.5) return list;
+  item.duration = value;
+  saveRecent(list, storage);
+  return list;
 }
 function forgetPack(manifestPath, storage = globalThis.localStorage) {
   const list = loadRecent(storage).filter((item) => item.manifestPath !== manifestPath);
@@ -11284,7 +11313,10 @@ function downloadZip() {
 }
 var initials = coverInitials;
 var hue = (title) => ({ "--mv-hue": coverHue(title) });
-function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false, initialWorkshop = false, canvas = () => null, workshopIndex = null, navRequest = null, onView = null }) {
+function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false, initialWorkshop = false, canvas = () => null, workshopIndex = null, navRequest = null, onView = null, playing = false, onPlay = () => {
+}, onShowPlayer = () => {
+} }) {
+  const [layout, setLayout] = import_react7.default.useState(loadLibraryView);
   const [importing, setImporting] = import_react7.default.useState(false);
   const [aiOpen, setAiOpen] = import_react7.default.useState(initialAi);
   const [workshopOpen, setWorkshopOpen] = import_react7.default.useState(initialWorkshop);
@@ -11353,8 +11385,86 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       setBusy("");
     }
   };
+  const toggleWorkshop = () => {
+    setWorkshopOpen((value) => !value);
+    setAiOpen(false);
+    setImporting(false);
+    setError("");
+  };
+  const toggleAi = () => {
+    setAiOpen((value) => !value);
+    setImporting(false);
+    setWorkshopOpen(false);
+    setError("");
+  };
+  const toggleImport = () => {
+    setImporting((value) => !value);
+    setAiOpen(false);
+    setWorkshopOpen(false);
+    setError("");
+  };
+  const tools = [
+    { key: "ws", label: "\u521B\u610F\u5DE5\u574A", Icon: Icon.shop, expanded: workshopOpen, onClick: toggleWorkshop, title: "\u6D4F\u89C8\u793E\u533A\u6295\u7A3F\u7684 MV \u5305\uFF0C\u4E00\u952E\u5B89\u88C5\u5230\u66F2\u5E93\uFF1B\u4E5F\u53EF\u4EE5\u628A\u4F60\u7684 MV \u5305\u53D1\u5E03\u5230\u5DE5\u574A" },
+    { key: "ai", label: "\u7528 AI \u5236\u4F5C\u65B0 MV", Icon: Icon.spark, expanded: aiOpen, onClick: toggleAi, title: "\u9009\u4E00\u9996\u4F60\u7684\u6B4C\uFF0C\u8BA9 Harness \u7684 Agent \u5199\u6B4C\u8BCD\u65F6\u95F4\u8F74\u3001mv.json \u548C ASCII \u573A\u666F\u811A\u672C" },
+    { key: "import", label: "\u5BFC\u5165 MV \u5305", Icon: Icon.plus, expanded: importing, onClick: toggleImport, title: "\u9009\u62E9\u542B mv.json \u7684\u6587\u4EF6\u5939" },
+    { key: "template", label: busy === "template" ? "\u6B63\u5728\u5199\u5165\u2026" : "\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09", Icon: Icon.folder, disabled: busy === "template", onClick: () => void writeTemplate(), title: pick2 ? "\u9009\u62E9\u4E00\u4E2A\u6587\u4EF6\u5939\uFF0C\u5728\u5176\u4E2D\u65B0\u5EFA dsh-mv-pack-template\uFF08\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\uFF09" : `\u4E0B\u8F7D ${TEMPLATE_ZIP_NAME}` }
+  ];
+  const activeDuration = Number(active.pack?.duration) || 0;
+  const rows = [
+    { id: BUILTIN_ID, title: "world.execute(me);", artist: "Mili", type: "\u5185\u7F6E\u9884\u8BBE", kind: "builtin", cover: ">_", hue: 18, duration: DURATION, tip: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" },
+    { id: DSH_PV_ID, title: "world.execute(me); dsh PV", artist: "MisakaZentai", type: "\u753B\u5E03\u9884\u8BBE", kind: "canvas", cover: "dsh", hue: 222, duration: 211.913, tip: "\u5185\u7F6E\u753B\u5E03\u9884\u8BBE\uFF1AMisakaZentai \u7684 world-execute-me-dsh-pv\uFF08\u4EE3\u7801 MIT\uFF09\u5B9E\u65F6\u79FB\u690D\uFF0C\u9CB8\u9C7C\u5A18\u7ACB\u7ED8 CC BY-NC-SA 4.0\u3002\n\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6\u3002" },
+    ...recent.map((item) => {
+      const id = `pack:${item.manifestPath}`;
+      return { id, manifestPath: item.manifestPath, title: item.title || item.manifestPath, artist: item.artist, type: item.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305", kind: item.workshop ? "workshop" : "pack", cover: initials(item.title), hue: coverHue(item.title), duration: item.duration || (active.id === id ? activeDuration : 0), tip: item.manifestPath };
+    })
+  ];
   const warnings = active.warnings ?? [];
-  return /* @__PURE__ */ import_react7.default.createElement("section", { className: "mv-library-section", "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-library" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-card", "aria-pressed": active.id === BUILTIN_ID, onClick: () => onSelect(BUILTIN_ID), title: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art", style: { "--mv-hue": 18 } }, ">_"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-title" }, "world.execute(me);"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, "Mili \xB7 \u5185\u7F6E\u9884\u8BBE")), /* @__PURE__ */ import_react7.default.createElement(
+  return /* @__PURE__ */ import_react7.default.createElement("section", { className: "mv-library-section", "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-head" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93 ", /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-lib-count" }, 2 + recent.length, " \u9996")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-spacer" }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-segmented mv-segmented-small mv-lib-layout", role: "radiogroup", "aria-label": "\u66F2\u5E93\u663E\u793A\u65B9\u5F0F" }, [["list", "\u5217\u8868", Icon.list], ["grid", "\u7F51\u683C", Icon.grid]].map(([value, label, Ico]) => /* @__PURE__ */ import_react7.default.createElement(
+    "button",
+    {
+      key: value,
+      type: "button",
+      role: "radio",
+      "aria-checked": layout === value,
+      title: `${label}\u89C6\u56FE`,
+      "aria-label": `${label}\u89C6\u56FE`,
+      onClick: () => setLayout(saveLibraryView(value))
+    },
+    /* @__PURE__ */ import_react7.default.createElement(Ico, null),
+    /* @__PURE__ */ import_react7.default.createElement("span", null, label)
+  )))), layout === "list" ? /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-tools", role: "toolbar", "aria-label": "\u66F2\u5E93\u64CD\u4F5C" }, tools.map((tool) => /* @__PURE__ */ import_react7.default.createElement("button", { key: tool.key, type: "button", className: `mv-lib-tool mv-lib-tool-${tool.key}`, "aria-expanded": tool.expanded, disabled: tool.disabled, title: tool.title, onClick: tool.onClick }, /* @__PURE__ */ import_react7.default.createElement(tool.Icon, null), /* @__PURE__ */ import_react7.default.createElement("span", null, tool.label)))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-tracks", role: "list", "aria-label": "\u66F2\u76EE" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-track mv-track-head", "aria-hidden": "true" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-n" }, "#"), /* @__PURE__ */ import_react7.default.createElement("span", null), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6807\u9898"), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7C7B\u578B"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-len" }, "\u65F6\u957F"), /* @__PURE__ */ import_react7.default.createElement("span", null)), rows.map((row, index2) => {
+    const current = active.id === row.id;
+    return /* @__PURE__ */ import_react7.default.createElement("div", { key: row.id, role: "listitem", className: "mv-track", "aria-current": current ? "true" : void 0, "data-playing": current && playing ? "true" : void 0 }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-n" }, current && playing ? /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-eq", "aria-label": "\u6B63\u5728\u64AD\u653E" }, /* @__PURE__ */ import_react7.default.createElement("i", null), /* @__PURE__ */ import_react7.default.createElement("i", null), /* @__PURE__ */ import_react7.default.createElement("i", null)) : index2 + 1), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-thumb mv-track-art", style: { "--mv-hue": row.hue }, "aria-hidden": "true" }, row.cover), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-track-main", title: row.tip, "aria-pressed": current, onClick: () => onSelect(row.id) }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-title" }, row.title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-artist" }, row.artist || "\u672A\u77E5\u827A\u672F\u5BB6")), /* @__PURE__ */ import_react7.default.createElement("span", { className: `mv-track-type mv-track-type-${row.kind}` }, row.type), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-len" }, row.duration > 0 ? fmtTime(row.duration) : "\u2014"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-actions" }, /* @__PURE__ */ import_react7.default.createElement(
+      "button",
+      {
+        type: "button",
+        className: "mv-icon-button",
+        "aria-label": current ? playing ? `\u6682\u505C\u300C${row.title}\u300D` : `\u64AD\u653E\u300C${row.title}\u300D` : `\u5207\u6362\u5230\u300C${row.title}\u300D`,
+        title: current ? playing ? "\u6682\u505C" : "\u64AD\u653E" : "\u5207\u6362\u5230\u8FD9\u9996\uFF08\u518D\u70B9 \u25B6 \u64AD\u653E\uFF09",
+        onClick: () => {
+          if (current) onPlay();
+          else {
+            onSelect(row.id);
+            onShowPlayer();
+          }
+        }
+      },
+      current && playing ? /* @__PURE__ */ import_react7.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react7.default.createElement(Icon.play, null)
+    ), row.manifestPath && /* @__PURE__ */ import_react7.default.createElement(
+      "button",
+      {
+        type: "button",
+        className: "mv-icon-button",
+        "aria-label": `\u4ECE\u66F2\u5E93\u79FB\u9664\u300C${row.title}\u300D`,
+        title: "\u4ECE\u66F2\u5E93\u79FB\u9664\uFF08\u4E0D\u5220\u9664\u6587\u4EF6\uFF09",
+        onClick: () => {
+          onRecent(forgetPack(row.manifestPath));
+          if (current) onSelect(BUILTIN_ID);
+        }
+      },
+      /* @__PURE__ */ import_react7.default.createElement(Icon.close, null)
+    )));
+  }))) : /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-library" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-card", "aria-pressed": active.id === BUILTIN_ID, onClick: () => onSelect(BUILTIN_ID), title: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art", style: { "--mv-hue": 18 } }, ">_"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-title" }, "world.execute(me);"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, "Mili \xB7 \u5185\u7F6E\u9884\u8BBE")), /* @__PURE__ */ import_react7.default.createElement(
     "button",
     {
       type: "button",
@@ -11821,6 +11931,84 @@ var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-
 .mv-skin-b .mv-stage-wrap { z-index: 21; }
 @container mvroot (max-width: 700px) { .mv-status-bar, .mv-status-win { display: none; } }
 @container mvroot (max-width: 480px) { .mv-status-clock { display: none; } .mv-tmux-session { display: none; } }
+
+/* =====================================================================================
+   Library list view (0.8.2, default): compact rows + a toolbar for the action tiles.
+   ===================================================================================== */
+.mv-lib-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.mv-root .mv-lib-head .mv-section-label { margin: 0; }
+.mv-lib-count { margin-left: 6px; font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--mv-faint); text-shadow: none; }
+.mv-lib-layout button { display: inline-flex; align-items: center; gap: 4px; }
+.mv-lib-layout svg { width: 14px; height: 14px; }
+.mv-lib-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.mv-lib-tool { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px 0 10px; border-radius: 999px; border: 1px solid var(--mv-border); background: var(--mv-surface); color: var(--mv-text); font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+.mv-lib-tool:hover:not(:disabled) { background: var(--mv-hover); }
+.mv-lib-tool[aria-expanded="true"] { border-color: var(--mv-accent); color: var(--mv-accent); }
+.mv-lib-tool:disabled { opacity: .6; cursor: default; }
+.mv-lib-tool svg { width: 14px; height: 14px; }
+.mv-tracks { display: grid; margin-bottom: 12px; border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); overflow: hidden; }
+.mv-track { display: grid; grid-template-columns: 28px 40px minmax(0, 1fr) auto 48px 64px; align-items: center; gap: 0 12px; min-height: 48px; padding: 4px 12px; box-sizing: border-box;
+  border-top: 1px solid color-mix(in srgb, var(--mv-border) 60%, transparent); }
+.mv-track:first-child, .mv-track-head + .mv-track { border-top: 0; }
+.mv-track-head { display: none; min-height: 30px; font-size: 11.5px; font-weight: 600; color: var(--mv-faint); }
+.mv-track:not(.mv-track-head):hover { background: var(--mv-hover); }
+.mv-track[aria-current="true"] { background: var(--mv-accent-soft); }
+.mv-track-n { text-align: center; font-size: 12px; color: var(--mv-faint); font-variant-numeric: tabular-nums; }
+.mv-track-n .mv-eq { justify-content: center; }
+.mv-thumb.mv-track-art { width: 40px; height: 40px; border-radius: 6px; font-size: 13px; }
+.mv-track-main { display: grid; min-width: 0; padding: 4px 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.mv-track-main:focus-visible { outline: 2px solid var(--mv-accent); outline-offset: 2px; border-radius: 4px; }
+.mv-track-title, .mv-track-artist { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv-track-title { font-weight: 600; line-height: 20px; }
+.mv-track[aria-current="true"] .mv-track-title { color: var(--mv-accent); }
+.mv-track-artist { font-size: 12px; line-height: 16px; color: var(--mv-muted); }
+.mv-track-type { padding: 1px 8px; border-radius: 999px; font-size: 11.5px; line-height: 18px; white-space: nowrap; background: var(--mv-surface-2); color: var(--mv-muted); }
+.mv-track-type-builtin, .mv-track-type-canvas { color: var(--mv-accent); background: color-mix(in srgb, var(--mv-accent) 12%, transparent); }
+.mv-track-head .mv-track-type, .mv-track-head > span { background: none; padding: 0; color: inherit; }
+.mv-track-len { text-align: right; font-size: 12px; color: var(--mv-muted); font-variant-numeric: tabular-nums; }
+.mv-track-actions { display: flex; justify-content: flex-end; gap: 2px; opacity: 0; transition: opacity .15s; }
+.mv-track:hover .mv-track-actions, .mv-track:focus-within .mv-track-actions, .mv-track[aria-current="true"] .mv-track-actions { opacity: 1; }
+@media (hover: none) { .mv-track-actions { opacity: 1; } }
+.mv-track-actions .mv-icon-button { width: 28px; height: 28px; }
+.mv-track-actions svg { width: 14px; height: 14px; }
+@container mvroot (max-width: 620px) {
+  .mv-track { grid-template-columns: 40px minmax(0, 1fr) 44px 60px; gap: 0 10px; }
+  .mv-track-n, .mv-track-type { display: none; }
+  .mv-lib-tool span { display: none; } .mv-lib-tool { padding: 0 8px; }
+}
+/* C: pastel thumbs like the C cards */
+.mv-skin-c .mv-thumb { background: linear-gradient(135deg, hsl(var(--mv-hue, 220) 75% 90%), hsl(calc(var(--mv-hue, 220) + 40) 65% 80%)); color: hsl(var(--mv-hue, 220) 45% 32%); }
+.mv-skin-c.mv-dark .mv-thumb { background: linear-gradient(135deg, hsl(var(--mv-hue, 220) 35% 30%), hsl(calc(var(--mv-hue, 220) + 40) 40% 20%)); color: hsl(var(--mv-hue, 220) 80% 86%); }
+.mv-skin-c .mv-tracks { box-shadow: var(--mv-shadow); border-color: color-mix(in srgb, var(--mv-border) 55%, transparent); }
+/* A: music-app track list (no box, header row, rounded hover rows) */
+.mv-skin-a .mv-tracks { border: 0; background: transparent; gap: 2px; overflow: visible; }
+.mv-skin-a .mv-track { border: 0; border-radius: 10px; min-height: 56px; padding: 6px 12px; grid-template-columns: 28px 44px minmax(0, 1fr) auto 52px 64px; }
+.mv-skin-a .mv-track-head { display: grid; min-height: 32px; border-bottom: 1px solid var(--mv-border); border-radius: 0; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.mv-skin-a .mv-thumb.mv-track-art { width: 44px; height: 44px; border-radius: 8px; }
+.mv-skin-a .mv-track[aria-current="true"] { background: var(--mv-surface-2); }
+.mv-skin-a .mv-track-type { background: transparent; border: 1px solid var(--mv-border); }
+.mv-skin-a .mv-lib-tool { border-color: transparent; background: var(--mv-surface-2); font-weight: 600; }
+.mv-skin-a .mv-lib-tool-ws svg, .mv-skin-a .mv-lib-tool-ai svg { color: #ff375f; }
+@container mvroot (max-width: 620px) { .mv-skin-a .mv-track { grid-template-columns: 44px minmax(0, 1fr) 44px 60px; } .mv-skin-a .mv-track-head { display: none; } }
+/* B: \`ls -l\`-style monospace table */
+.mv-skin-b .mv-tracks { border-radius: 0; background: var(--mv-surface); }
+.mv-skin-b .mv-track { min-height: 34px; padding: 2px 10px; grid-template-columns: 28px 26px minmax(0, 1fr) auto 52px 64px; border-top-style: dashed; }
+.mv-skin-b .mv-track-head { display: grid; min-height: 26px; background: var(--mv-surface-2); color: var(--mv-accent); text-transform: uppercase; letter-spacing: .08em; border-bottom: 1px solid var(--mv-border); }
+.mv-skin-b .mv-thumb.mv-track-art { width: 24px; height: 24px; border-radius: 0; font-size: 10px; background: var(--mv-page); color: var(--mv-accent); border: 1px solid var(--mv-border); text-shadow: var(--b-glow); }
+.mv-skin-b .mv-track-main { display: flex; gap: 12px; align-items: baseline; }
+.mv-skin-b .mv-track-artist::before { content: "\u2014 "; }
+.mv-skin-b .mv-track-type { border-radius: 0; background: transparent; padding: 0; color: var(--b-amber); }
+.mv-skin-b .mv-track-type::before { content: "["; } .mv-skin-b .mv-track-type::after { content: "]"; }
+.mv-skin-b .mv-track-head .mv-track-type::before, .mv-skin-b .mv-track-head .mv-track-type::after { content: none; }
+.mv-skin-b .mv-track[aria-current="true"] { background: var(--mv-accent); color: var(--mv-accent-ink); }
+.mv-skin-b .mv-track[aria-current="true"] :is(.mv-track-title, .mv-track-artist, .mv-track-len, .mv-track-n, .mv-track-type, .mv-icon-button) { color: var(--mv-accent-ink); text-shadow: none; }
+.mv-skin-b .mv-track[aria-current="true"] .mv-eq i { background: var(--mv-accent-ink); }
+.mv-skin-b .mv-track[aria-current="true"] .mv-icon-button { background: transparent; border: 1px solid var(--mv-accent-ink); box-shadow: none; }
+.mv-skin-b .mv-track:not(.mv-track-head):not([aria-current="true"]):hover { background: var(--mv-hover); box-shadow: inset 2px 0 0 var(--mv-accent); }
+.mv-skin-b .mv-lib-tool { border-radius: 0; border-style: dashed; background: transparent; text-transform: uppercase; letter-spacing: .04em; font-size: 12px; }
+.mv-skin-b .mv-lib-tool::before { content: "$"; color: var(--mv-faint); }
+.mv-skin-b .mv-lib-tool:hover:not(:disabled) { border-color: var(--mv-accent); color: var(--mv-accent); box-shadow: var(--b-glow); background: transparent; }
+@container mvroot (max-width: 620px) { .mv-skin-b .mv-track { grid-template-columns: 26px minmax(0, 1fr) 44px 60px; } .mv-skin-b .mv-track-head { display: none; } }
 `;
 
 // .dsh-plugin/client/mv-skin-ui.jsx
@@ -12079,6 +12267,7 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
       const loaded = await loadPackFromHost(api, id.slice(5));
       setPack(loaded);
       saveActive(loaded.id);
+      setRecent(noteDuration(id.slice(5), loaded.pack.duration));
     } catch (error) {
       setPackError(`\u65E0\u6CD5\u8BFB\u53D6 MV \u5305 ${id.slice(5)}\uFF1A${errorText(error, "")}`);
       setPack(BUILTIN_PACK);
@@ -12140,7 +12329,7 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
   const label = canvasState.playing ? "\u6682\u505C" : "\u64AD\u653E";
   const hint = canvasState.hasAudio ? "\u753B\u9762\u4EE5\u97F3\u9891\u4E3A\u65F6\u949F\u9010\u5E27\u6E32\u67D3\uFF1B\u70B9\u4E00\u4E0B\u753B\u9762\u540E\u53EF\u7528\u952E\u76D8\u63A7\u5236\u3002" : "\u8FD8\u6CA1\u6709\u9009\u62E9\u97F3\u9891\uFF1A\u53EF\u4EE5\u5148\u9759\u97F3\u89C2\u770B\uFF0C\u6216\u5728\u4E0B\u65B9\u9009\u62E9\u4F60\u7684\u6B4C\u66F2\u3002";
   const renderer = { "world-execute-me": "world.execute(me) \u573A\u666F", "dsh-pv": "dsh-pv\uFF08\u5927\u80A5\u9C7C\u773C\u4E2D\u7684 world.execute(me)\uFF09", script: "\u573A\u666F\u811A\u672C\uFF08scenes.js\uFF09" }[pack.pack.canvas?.renderer] ?? "\u901A\u7528\u753B\u9762\uFF08\u9891\u8C31 + \u6B4C\u8BCD\uFF09";
-  return /* @__PURE__ */ import_react10.default.createElement("div", { ref: rootRef, className: `mv-root ${skin.className}`, "data-mv-skin": skinId }, /* @__PURE__ */ import_react10.default.createElement("style", null, mv_default + mv_skins_default), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-shell" }, skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(SideNav, { active: nav, go, calibOk, items: recentItems, activeId: pack.id, onSelect: (id) => void selectPack(id), playing: canvasState.playing }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(TmuxTabs, { active: nav, go, calibOk }) : null, /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-main" }, /* @__PURE__ */ import_react10.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react10.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react10.default.createElement(SkinPicker, { skin }), /* @__PURE__ */ import_react10.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react10.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react10.default.createElement(About, { pack }))), /* @__PURE__ */ import_react10.default.createElement(Library, { navRequest, onView: onLibraryView, api, harness, info: info.value, initialAi, initialWorkshop, workshopIndex, canvas: () => canvasRef.current, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, packError)), info.status === "error" && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, info.error, "\uFF08\u753B\u5E03\u64AD\u653E\u4E0D\u53D7\u5F71\u54CD\uFF1BMV \u5305\u3001AI \u5236\u4F5C\u548C\u6B4C\u8BCD\u5F15\u64CE\u9700\u8981\u540E\u53F0\u3002\uFF09")), /* @__PURE__ */ import_react10.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E", style: { "--mv-hue": cover.hue }, "data-cover": cover.text }, /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-hero-art", "aria-hidden": "true" }, cover.text), /* @__PURE__ */ import_react10.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react10.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react10.default.createElement("span", null, pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, pack.builtin ? "\u5185\u7F6E\u9884\u8BBE" : "MV \u5305"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, renderer))), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-play-big", onClick: () => canvasRef.current?.toggle(), "aria-label": label }, canvasState.playing ? /* @__PURE__ */ import_react10.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react10.default.createElement(Icon.play, null), label)), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react10.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState })), skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(PlayerBar, { title: pack.pack.title, artist: pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", cover, transport, canvas: () => canvasRef.current, onShow: () => go("now") }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(StatusLine, { title: pack.pack.title, artist: pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", transport, canvas: () => canvasRef.current, active: nav }) : null));
+  return /* @__PURE__ */ import_react10.default.createElement("div", { ref: rootRef, className: `mv-root ${skin.className}`, "data-mv-skin": skinId }, /* @__PURE__ */ import_react10.default.createElement("style", null, mv_default + mv_skins_default), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-shell" }, skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(SideNav, { active: nav, go, calibOk, items: recentItems, activeId: pack.id, onSelect: (id) => void selectPack(id), playing: canvasState.playing }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(TmuxTabs, { active: nav, go, calibOk }) : null, /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-main" }, /* @__PURE__ */ import_react10.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react10.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react10.default.createElement(SkinPicker, { skin }), /* @__PURE__ */ import_react10.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react10.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react10.default.createElement(About, { pack }))), /* @__PURE__ */ import_react10.default.createElement(Library, { playing: canvasState.playing, onPlay: () => canvasRef.current?.toggle(), onShowPlayer: () => go("now"), navRequest, onView: onLibraryView, api, harness, info: info.value, initialAi, initialWorkshop, workshopIndex, canvas: () => canvasRef.current, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, packError)), info.status === "error" && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, info.error, "\uFF08\u753B\u5E03\u64AD\u653E\u4E0D\u53D7\u5F71\u54CD\uFF1BMV \u5305\u3001AI \u5236\u4F5C\u548C\u6B4C\u8BCD\u5F15\u64CE\u9700\u8981\u540E\u53F0\u3002\uFF09")), /* @__PURE__ */ import_react10.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E", style: { "--mv-hue": cover.hue }, "data-cover": cover.text }, /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-hero-art", "aria-hidden": "true" }, cover.text), /* @__PURE__ */ import_react10.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react10.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react10.default.createElement("span", null, pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, pack.builtin ? "\u5185\u7F6E\u9884\u8BBE" : "MV \u5305"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, renderer))), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-play-big", onClick: () => canvasRef.current?.toggle(), "aria-label": label }, canvasState.playing ? /* @__PURE__ */ import_react10.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react10.default.createElement(Icon.play, null), label)), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react10.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState })), skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(PlayerBar, { title: pack.pack.title, artist: pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", cover, transport, canvas: () => canvasRef.current, onShow: () => go("now") }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(StatusLine, { title: pack.pack.title, artist: pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", transport, canvas: () => canvasRef.current, active: nav }) : null));
 }
 
 // .dsh-plugin/shared/mv-ai-upload.mjs

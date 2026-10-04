@@ -10,6 +10,16 @@ import { audioMimeOf, sniffAudio } from '../shared/mv-audio-protocol.mjs'
 
 export const RECENT_KEY = 'dsh-mv.packs.recent.v1'
 export const ACTIVE_KEY = 'dsh-mv.packs.active.v1'
+/** Library layout (0.8.2): 'list' (default, compact rows) or 'grid' (cover cards). */
+export const LIBRARY_VIEW_KEY = 'dsh-mv.library.view.v1'
+export function loadLibraryView(storage = globalThis.localStorage) {
+  try { return storage?.getItem(LIBRARY_VIEW_KEY) === 'grid' ? 'grid' : 'list' } catch { return 'list' }
+}
+export function saveLibraryView(view, storage = globalThis.localStorage) {
+  const clean = view === 'grid' ? 'grid' : 'list'
+  try { storage?.setItem(LIBRARY_VIEW_KEY, clean) } catch { /* private mode */ }
+  return clean
+}
 export const BUILTIN_ID = 'builtin:world-execute-me'
 
 /** The built-in world.execute(me) preset: your own files picked in the panel. */
@@ -61,10 +71,22 @@ function saveRecent(list, storage) {
 
 /** Move a loaded pack to the front of the recent list. */
 export function rememberPack(loaded, { storage = globalThis.localStorage, now = Date.now } = {}) {
-  const entry = { manifestPath: loaded.manifestPath, title: loaded.pack.title, artist: loaded.pack.artist ?? '', usedAt: now(), ...(loaded.pack.workshop?.id ? { workshop: loaded.pack.workshop.id } : {}) }
+  const duration = Number(loaded.pack.duration)
+  const entry = { manifestPath: loaded.manifestPath, title: loaded.pack.title, artist: loaded.pack.artist ?? '', usedAt: now(), ...(duration > 0 ? { duration } : {}), ...(loaded.pack.workshop?.id ? { workshop: loaded.pack.workshop.id } : {}) }
   const list = [entry, ...loadRecent(storage).filter(item => item.manifestPath.toLowerCase() !== entry.manifestPath.toLowerCase())]
   saveRecent(list, storage)
   return list.slice(0, MV_PACK_LIMITS.recentPacks)
+}
+
+/** Record a pack's duration on its recent entry (for the list view) without reordering; returns the list. */
+export function noteDuration(manifestPath, duration, storage = globalThis.localStorage) {
+  const list = loadRecent(storage)
+  const value = Number(duration)
+  const item = list.find(entry => entry.manifestPath === manifestPath)
+  if (!item || !(value > 0) || Math.abs((item.duration ?? 0) - value) < 0.5) return list
+  item.duration = value
+  saveRecent(list, storage)
+  return list
 }
 
 export function forgetPack(manifestPath, storage = globalThis.localStorage) {

@@ -80,6 +80,17 @@ if (process.env.SKINS) {
       shots.push([`${dir}/${page}-${mode}`, scene, mode, action, `&skin=${skin}&mode=${mode}`])
     }
 }
+// LISTVIEW=1: 0.8.2 library list view (12-song demo) per skin / mode, grid for comparison, wallpaper host.
+if (process.env.LISTVIEW) {
+  shots.length = 0
+  for (const [dir, skin, modes] of [['C', 'c', ['light', 'dark']], ['A', 'a', ['dark', 'light']], ['B', 'b', ['dark', 'light']]])
+    for (const mode of modes) {
+      shots.push([`${dir}-list-${mode}`, 'many', mode, 'hoverrow', `&skin=${skin}&mode=${mode}&libview=list`])
+      shots.push([`${dir}-grid-${mode}`, 'many', mode, '', `&skin=${skin}&mode=${mode}&libview=grid`])
+    }
+  shots.push(['C-list-wallpaper-follow', 'many', 'light', 'hoverrow', '&skin=c&mode=auto&libview=list&host=art'])
+  shots.push(['C-list-narrow', 'many', 'light', '', '&skin=c&mode=light&libview=list', 560])
+}
 // A synthetic, silent-ish WAV for the AI dialog's file chooser (no real media).
 const AUDIO = path.join(OUT, '..', 'starlight-run-preview.wav')
 {
@@ -93,12 +104,12 @@ const typeInto = async (page, selector, text) => { await page.focus(selector); a
 const clickText = async (page, selector, text) => page.evaluate((selector, text) => {
   const el = [...document.querySelectorAll(selector)].find(e => e.textContent.includes(text)); if (el) el.click(); return Boolean(el)
 }, selector, text)
-for (const [name, scene, theme, action, extra = ''] of shots) {
+for (const [name, scene, theme, action, extra = '', width = 1280] of shots) {
   if (only && !name.includes(only)) continue
   const context = await browser.createBrowserContext()
   const page = await context.newPage()
   await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: theme }])
-  await page.setViewport({ width: 1280, height: 900, deviceScaleFactor: 1 })
+  await page.setViewport({ width, height: process.env.LISTVIEW ? 1000 : 900, deviceScaleFactor: 1 })
   const errors = []
   page.on('pageerror', e => errors.push(String(e))); page.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
   await page.goto(`http://localhost:8799/?scene=${scene}&theme=${theme}${extra}`)
@@ -178,6 +189,8 @@ for (const [name, scene, theme, action, extra = ''] of shots) {
     } else await page.evaluate(() => document.querySelector('.mv-confirm')?.scrollIntoView({ block: 'start' }))
     await sleep(300)
   }
+  if (action === 'hoverrow') { await sleep(1200); const row = (await page.$$('.mv-track:not(.mv-track-head)'))[3]; if (row) await row.hover(); await sleep(300) }
+  if (process.env.LISTVIEW && action !== 'hoverrow') await sleep(1200)
   if (action === 'skinpicker') { await page.click('.mv-skin-trigger'); await sleep(500) }
   if (action === 'about') { await page.click('.mv-head .mv-icon-button'); await sleep(400) }
   fs.mkdirSync(path.dirname(`${OUT}/${name}.png`), { recursive: true })
@@ -190,7 +203,7 @@ for (const [name, scene, theme, action, extra = ''] of shots) {
     await page.setViewport({ width: 1280, height: Math.min(4000, Math.max(900, h)), deviceScaleFactor: 1 }); await sleep(600)
     await sleep(700); await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await sleep(200)
   }
-  await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: !process.env.SKINS })
+  await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: !process.env.SKINS && !process.env.LISTVIEW })
   console.log(name, errors.length ? 'ERRORS ' + errors.join(' | ').slice(0, 400) : 'ok')
   await context.close()
 }
