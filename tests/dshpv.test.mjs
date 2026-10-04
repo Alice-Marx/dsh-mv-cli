@@ -1,44 +1,54 @@
-// 0.6.0: the dsh-pv canvas preset (MisakaZentai/world-execute-me-dsh-pv, MIT) and its CC BY-NC-SA art.
+// The dsh-pv renderer (MisakaZentai/world-execute-me-dsh-pv, MIT). Since 0.9.0 its data and CC BY-NC-SA art live in
+// presets/dsh-pv/ (repo only) and ship as the "world-execute-me-dsh-pv" workshop pack, not in the npm package.
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash, webcrypto } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
-import { DSHPV_ASSETS, parseDshPvAsset } from '../.dsh-plugin/shared/mv-dshpv-protocol.mjs'
-import { readDshPvAsset } from '../.dsh-plugin/shared/mv-dshpv-assets.mjs'
+import { DSHPV_ART, DSHPV_DATA, hasDshPvAssets, loadDshPv, mergeShards } from '../.dsh-plugin/client/mv/dshpv/assets.mjs'
+import { shardJson } from '../presets/build-workshop-packs.mjs'
 import { applyPatch, attentionTokens, fromCues, lineAt, lineVariants, matchBand, tokenId, tokenize, typed } from '../.dsh-plugin/client/mv/dshpv/band.mjs'
 import { DshPvFilm, DSHPV_CHAPTERS, DSHPV_DURATION, avatarSpec, chapterAt, decode, keyframeAt, prepareTimeline, shotAt } from '../.dsh-plugin/client/mv/dshpv/film.mjs'
 import { blockParts, chatAt } from '../.dsh-plugin/client/mv/dshpv/chat.mjs'
 
-const ASSETS = new URL('../.dsh-plugin/assets/', import.meta.url)
+const ASSETS = new URL('../presets/', import.meta.url)
 const json = name => JSON.parse(readFileSync(new URL(name, ASSETS), 'utf8'))
-const timeline = json('dsh-pv/timeline.json'), chat = json('dsh-pv/chat.json'), band = json('dsh-pv/band.json')
+const timeline = json('dsh-pv/data/timeline.json'), chat = json('dsh-pv/data/chat.json'), band = json('dsh-pv/data/band.json')
 const sha = text => createHash('sha256').update(text, 'utf8').digest('hex')
 
-test('dshpvAsset: names only, chunked reads', async () => {
-  assert.throws(() => parseDshPvAsset({ name: '../../package.json' }), /name must be one of/)
-  assert.throws(() => parseDshPvAsset({ name: 'timeline', length: 5 }), /unexpected fields/)
-  assert.throws(() => parseDshPvAsset({ name: 'band', offset: 1.5 }))
-  assert.deepEqual(parseDshPvAsset({ name: 'band' }), { name: 'band', offset: 0 })
-  const first = await readDshPvAsset({ name: 'timeline', offset: 0 })
-  assert.equal(first.exists, true); assert.equal(first.done, false); assert.equal(first.bytes, 1024 * 1024)
-  const missing = await readDshPvAsset({ name: 'band', offset: 0 }, '/nonexistent/')
-  assert.equal(missing.exists, false)
-  assert.equal(Object.keys(DSHPV_ASSETS).length, 12)
+test('workshop pack data: big JSON is sharded ≤ 512 KB and merges back exactly', async () => {
+  for (const value of [timeline, chat, band]) {
+    const shards = shardJson(value)
+    for (const shard of shards) assert.ok(Buffer.byteLength(JSON.stringify(shard)) <= 512 * 1024)
+    assert.deepEqual(mergeShards(shards), value)
+  }
+  assert.ok(shardJson(timeline).length > 1)
+  assert.deepEqual(mergeShards([{ a: 1, x: [1] }, { x: [2, 3], a: 9 }, { y: [4] }]), { a: 1, x: [1, 2, 3], y: [4] })
+  // loadDshPv reads through any reader: name → list of byte arrays
+  const enc = obj => new TextEncoder().encode(JSON.stringify(obj))
+  const data = { timeline: shardJson(timeline).map(enc), chat: shardJson(chat).map(enc), band: [enc(band)] }
+  const loaded = await loadDshPv(async name => data[name] ?? null)
+  assert.equal(loaded.timeline.shots.length, timeline.shots.length)
+  assert.equal(loaded.chat.blocks.length, chat.blocks.length)
+  assert.deepEqual(loaded.missingArt.sort(), [...DSHPV_ART].sort())
+  await assert.rejects(loadDshPv(async () => null), /缺少 dsh-pv 资源/)
+  assert.deepEqual(DSHPV_DATA, ['timeline', 'chat', 'band'])
+  assert.equal(hasDshPvAssets({ pack: { canvas: { assets: { timeline: 'a.json', chat: 'b.json', band: 'c.json' } } } }), true)
+  assert.equal(hasDshPvAssets({ pack: { canvas: {} } }), false)
 })
 
-test('art folder: CC BY-NC-SA 4.0, kept apart with its own LICENSE and NOTICE', () => {
-  const files = readdirSync(new URL('dsh-pv-art/', ASSETS)).sort()
+test('art folder: CC BY-NC-SA 4.0, kept apart with its own LICENSE and NOTICE; none of it is in the npm package', () => {
+  const files = readdirSync(new URL('dsh-pv/art/', ASSETS)).sort()
   assert.deepEqual(files.filter(f => !f.endsWith('.webp')), ['LICENSE', 'NOTICE.md', 'upstream-NOTICE-dsh-deep-whale.txt', 'upstream-NOTICE-dsh-whale-galgame.md'])
-  assert.match(readFileSync(new URL('dsh-pv-art/LICENSE', ASSETS), 'utf8'), /^Attribution-NonCommercial-ShareAlike 4\.0 International/)
-  const notice = readFileSync(new URL('dsh-pv-art/NOTICE.md', ASSETS), 'utf8')
-  for (const needle of ['上善', 'ZipZipPipe', 'Small-tailqwq', 'dsh-whale-galgame', 'MisakaZentai', 'https://creativecommons.org/licenses/by-nc-sa/4.0/', 'Non-commercial', 'Changes made here', 'MIT AND CC-BY-NC-SA-4.0']) assert.ok(notice.includes(needle), needle)
+  assert.match(readFileSync(new URL('dsh-pv/art/LICENSE', ASSETS), 'utf8'), /^Attribution-NonCommercial-ShareAlike 4\.0 International/)
+  const notice = readFileSync(new URL('dsh-pv/art/NOTICE.md', ASSETS), 'utf8')
+  for (const needle of ['上善', 'ZipZipPipe', 'Small-tailqwq', 'dsh-whale-galgame', 'MisakaZentai', 'https://creativecommons.org/licenses/by-nc-sa/4.0/', 'Non-commercial', 'Changes made here', 'workshop']) assert.ok(notice.includes(needle), needle)
   assert.equal(files.filter(f => f.endsWith('.webp')).length, 9)
-  // the MIT data folder holds no artwork, and the package says it is not purely MIT
-  assert.deepEqual(readdirSync(new URL('dsh-pv/', ASSETS)).sort(), ['NOTICE.md', 'band.json', 'chat.json', 'timeline.json'])
-  assert.match(readFileSync(new URL('dsh-pv/NOTICE.md', ASSETS), 'utf8'), /Copyright \(c\) 2026 MisakaZentai/)
+  // the MIT data folder holds no artwork; the npm package carries neither (it is MIT only since 0.9.0)
+  assert.deepEqual(readdirSync(new URL('dsh-pv/data/', ASSETS)).sort(), ['NOTICE.md', 'band.json', 'chat.json', 'timeline.json'])
+  assert.match(readFileSync(new URL('dsh-pv/data/NOTICE.md', ASSETS), 'utf8'), /Copyright \(c\) 2026 MisakaZentai/)
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
-  assert.equal(pkg.license, '(MIT AND CC-BY-NC-SA-4.0)')
-  assert.ok(pkg.files.includes('.dsh-plugin/assets/dsh-pv-art/'))
+  assert.equal(pkg.license, 'MIT')
+  for (const entry of pkg.files) assert.doesNotMatch(entry, /\.dsh-plugin\/assets|presets|dsh-pv|\.webp/, entry)
 })
 
 test('no lyric text ships: band.json holds hashes and times only', () => {

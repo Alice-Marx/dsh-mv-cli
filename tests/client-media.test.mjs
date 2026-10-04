@@ -5,7 +5,7 @@ import { KNOWN_AUDIO, knownAudio, loadOffsets, saveOffsets, resetOffsets, sha256
 import { spectrumFromJson, bandEdges, foldBands, BANDS } from '../.dsh-plugin/client/mv/spectrum.mjs'
 import { FilmClock, SilentClock, frameTime, keyAction, stepCue } from '../.dsh-plugin/client/mv/player-state.mjs'
 import { rowRuns, gridSize, PALETTE, MAX_COLS, MAX_ROWS } from '../.dsh-plugin/client/mv/renderer.mjs'
-import { DURATION } from '../.dsh-plugin/client/mv/film.mjs'
+import { DEFAULT_DURATION as DURATION } from '../.dsh-plugin/client/mv/player-state.mjs'
 
 // Placeholder text only: the package never ships the song's lyrics.
 test('lyrics: bilingual LRC (same stamp twice, one line with a slash, blank stamp ends a cue)', () => {
@@ -91,7 +91,7 @@ test('player: keys follow player.py ([ = subtitles earlier, ] = later)', () => {
   assert.deepEqual(keyAction({ key: '[' }), { type: 'subtitleOffset', delta: 0.1 })
   assert.deepEqual(keyAction({ key: ']' }), { type: 'subtitleOffset', delta: -0.1 })
   assert.deepEqual(keyAction({ key: '[', altKey: true }), { type: 'audioOffset', delta: -0.1 })
-  assert.equal(keyAction({ key: '3' }).at, 110.9)
+  assert.equal(keyAction({ key: '3' }).index, 2)
   assert.equal(keyAction({ key: 'c', ctrlKey: true }), null)
   assert.equal(keyAction({ key: 'F' }).type, 'fullscreen')
 })

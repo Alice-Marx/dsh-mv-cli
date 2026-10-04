@@ -4,7 +4,7 @@
  */
 import { unwrapRemote } from './remote-state.mjs'
 import { decodeToChannels, sha256Hex } from './mv-wav.mjs'
-import { audioMatch, compareVersions, encodeFingerprint, energyFingerprint, retimeCues } from '../shared/mv-workshop.mjs'
+import { PRESET_PACKS, audioMatch, compareVersions, encodeFingerprint, energyFingerprint, retimeCues } from '../shared/mv-workshop.mjs'
 
 export const loadWorkshop = async (api, refresh = false) => unwrapRemote(await api.workshopIndex({ refresh }), '无法读取创意工坊。')
 export const installWorkshopPack = async (api, id) => unwrapRemote(await api.workshopInstall({ id }), '安装失败。')
@@ -19,12 +19,14 @@ export function installedState(index) {
   return { map, updates }
 }
 
-/** IndexedDB slot for the user's media of a pack: builtin presets share 'audio'/'lyrics', workshop packs get their own. */
+/** IndexedDB slot for the user's media of a workshop pack (local packs bring their own files). */
 export function mediaSlot(pack, kind) {
-  if (pack?.builtin) return kind
   const id = pack?.pack?.workshop?.id
   return id && !pack?.pack?.audio ? `workshop:${id}:${kind}` : null
 }
+
+/** Workshop packs that replaced the 0.8.x built-in presets reuse the files picked for those presets ('audio' / 'lyrics' / 'spectrum'). */
+export const legacyPresetSlot = pack => PRESET_PACKS.some(p => p.id === pack?.pack?.workshop?.id)
 
 /** Duration and energy fingerprint of an audio file's bytes (decoded locally; nothing leaves the panel). */
 export async function fingerprintAudio(bytes, decode = decodeToChannels) {

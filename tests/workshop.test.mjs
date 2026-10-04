@@ -181,8 +181,59 @@ test('publish request parsing and helpers', () => {
   assert.throws(() => parseWorkshopPublish({ manifestPath: 'C:\\x\\mv.json', id: 'ok-id', version: '1.0.0', license: 'MIT', author: 'a', token: 'x' }), /unexpected/)
   assert.equal(workshopSlug('Neon Terminal', 'dsh-mv'), 'dsh-mv-neon-terminal')
   assert.match(workshopSlug('世界', '', () => 'abc123'), /^mv-abc123$/)
-  assert.equal(mediaSlot({ builtin: true }, 'audio'), 'audio')
+  assert.equal(mediaSlot({ builtin: true }, 'audio'), null)
   assert.equal(mediaSlot({ pack: { workshop: { id: 'x-y-z' } } }, 'lyrics'), 'workshop:x-y-z:lyrics')
   assert.equal(mediaSlot({ pack: { audio: { file: 'a.mp3' }, workshop: { id: 'x-y-z' } } }, 'audio'), null)
   assert.equal(durationText(59.6), '1:00')
+})
+
+test('0.9.0: the former presets are workshop packs with their original-work links; old ids become "moved" placeholders', async () => {
+  const { PRESET_PACKS } = await import('../.dsh-plugin/shared/mv-workshop.mjs')
+  const { EMPTY_ID, movedPreset, placeholderPack, loadActive } = await import('../.dsh-plugin/client/mv-pack-state.mjs')
+  const { legacyPresetSlot } = await import('../.dsh-plugin/client/mv-workshop-state.mjs')
+  assert.deepEqual(PRESET_PACKS.map(p => [p.id, p.legacyId, p.source]), [
+    ['world-execute-me', 'builtin:world-execute-me', 'https://github.com/yym8224961/world.execute-me-ascii'],
+    ['world-execute-me-dsh-pv', 'builtin:dsh-pv', 'https://github.com/MisakaZentai/world-execute-me-dsh-pv'],
+  ])
+  assert.equal(movedPreset('builtin:dsh-pv').moved.id, 'world-execute-me-dsh-pv')
+  assert.equal(movedPreset('builtin:dsh-pv').empty, true)
+  assert.equal(movedPreset('pack:C:\\x\\mv.json'), null)
+  assert.equal(placeholderPack('whatever').id, EMPTY_ID)
+  assert.equal(placeholderPack('builtin:world-execute-me').moved.title, 'world.execute(me);')
+  assert.equal(loadActive({ getItem: () => null }), EMPTY_ID)
+  assert.equal(legacyPresetSlot({ pack: { workshop: { id: 'world-execute-me' } } }), true)
+  assert.equal(legacyPresetSlot({ pack: { workshop: { id: 'other-pack' } } }), false)
+  // index entries carry the source link (https only)
+  const entry = { id: 'abc-def', title: 'T', version: '1.0.0', license: 'MIT', files: [{ path: 'mv.json', size: 2, sha256: 'a'.repeat(64) }] }
+  const index = parseWorkshopIndex({ format: WORKSHOP_INDEX_FORMAT, version: 1, packs: [{ ...entry, source: 'https://github.com/o/r' }, { ...entry, id: 'abc-xyz', source: 'javascript:alert(1)' }] })
+  assert.equal(index.packs[0].source, 'https://github.com/o/r')
+  assert.equal(index.packs[1].source, '')
+})
+
+test('0.9.0: presets/build-workshop-packs.mjs output passes workshop validation (no audio, no lyrics, source set)', async () => {
+  const { execFileSync } = await import('node:child_process')
+  const out = tmp()
+  execFileSync(process.execPath, [new URL('../presets/build-workshop-packs.mjs', import.meta.url).pathname, out, '--cover-dir', join(out, 'none')], { stdio: 'pipe' })
+  const { statSync } = await import('node:fs')
+  const list = (dir, base = '') => readdirSync(join(dir, base), { withFileTypes: true }).flatMap(e => e.isDirectory() ? list(dir, join(base, e.name)) : [{ path: join(base, e.name).replaceAll('\\', '/'), size: statSync(join(dir, base, e.name)).size }])
+  const expect = { 'world-execute-me': ['script', 'https://github.com/yym8224961/world.execute-me-ascii'], 'world-execute-me-dsh-pv': ['dsh-pv', 'https://github.com/MisakaZentai/world-execute-me-dsh-pv'] }
+  for (const [id, [renderer, source]] of Object.entries(expect)) {
+    const dir = join(out, id)
+    const files = list(dir)
+    const result = await validateWorkshopPack({ id, files, readText: async p => readFileSync(join(dir, p), 'utf8') })
+    assert.deepEqual(result.errors, [], id)
+    assert.equal(result.meta.renderer, renderer)
+    assert.equal(result.meta.source, source)
+    assert.ok(files.every(f => !/\.(mp3|flac|lrc|ogg|wav)$/i.test(f.path)), id)
+    assert.ok(files.every(f => f.size <= 512 * 1024 || f.path.endsWith('.js')), id)
+    const readme = readFileSync(join(dir, 'README.md'), 'utf8')
+    assert.ok(readme.includes(source), `${id} README links the original`)
+    assert.match(readme, /no audio and no lyric text/)
+    const manifest = JSON.parse(readFileSync(join(dir, 'mv.json'), 'utf8'))
+    assert.equal(manifest.audio, undefined); assert.equal(manifest.lyrics, undefined)
+    assert.match(manifest.notice, /Bring your own audio/)
+    assert.equal(manifest['x-dsh-mv-workshop'].source, source)
+  }
+  assert.match(readFileSync(join(out, 'world-execute-me-dsh-pv', 'mv.json'), 'utf8'), /CC-BY-NC-SA-4.0/)
+  assert.match(readFileSync(join(out, 'world-execute-me', 'NOTICE.md'), 'utf8'), /permission/)
 })

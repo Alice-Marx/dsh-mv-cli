@@ -1,30 +1,53 @@
 /**
- * Loads the dsh-pv preset's files: through the Host (api.dshpvAsset, 1 MiB base64 chunks) in the panel,
- * or with a custom reader (the preview harness reads them over HTTP).
+ * Loads the dsh-pv renderer's data and art. Since 0.9.0 they are not bundled with the plugin: they come
+ * from an MV pack's canvas.assets (the "world.execute(me); dsh PV" workshop pack), read through the Host's
+ * packRead (role "asset"; only files the manifest names), or with a custom reader (preview harness).
+ * A reader maps an asset name to a list of byte arrays (JSON shards, merged in order) or null.
  */
 import { unwrapRemote } from '../../remote-state.mjs'
 
 export const DSHPV_DATA = ['timeline', 'chat', 'band']
 export const DSHPV_ART = ['maid-left', ...['cheerful', 'starry', 'shy', 'serious', 'confused', 'frightened', 'angry', 'exasperated'].map(n => `whale-${n}`)]
+const CHUNK = 512 * 1024
 
 const fromBase64 = b64 => { const bin = atob(b64); const out = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out }
+const join = parts => { const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let at = 0; for (const p of parts) { out.set(p, at); at += p.length } return out }
 
-export function hostReader(api) {
+/** True when a pack names everything the dsh-pv renderer needs. */
+export const hasDshPvAssets = pack => DSHPV_DATA.every(name => pack?.pack?.canvas?.assets?.[name] !== undefined)
+
+/** Reader over the Host for one loaded pack (its manifest decides which files exist). */
+export function packAssetReader(api, manifestPath, pack) {
   return async name => {
-    const parts = []
-    let offset = 0
-    for (;;) {
-      const chunk = unwrapRemote(await api.dshpvAsset({ name, offset }), `无法读取 dsh-pv 资源 ${name}。`)
-      if (!chunk.exists) return null
-      parts.push(fromBase64(chunk.base64))
-      offset += chunk.bytes
-      if (chunk.done || !chunk.bytes) break
+    const value = pack?.canvas?.assets?.[name]
+    if (value === undefined) return null
+    const count = Array.isArray(value) ? value.length : 1
+    const files = []
+    for (let part = 0; part < count; part++) {
+      const parts = []
+      let offset = 0
+      for (;;) {
+        const chunk = unwrapRemote(await api.packRead({ manifestPath, role: 'asset', asset: name, part, offset, length: CHUNK }), `无法读取 dsh-pv 资源 ${name}。`)
+        if (chunk.bytes > 0) parts.push(fromBase64(chunk.base64))
+        offset += chunk.bytes
+        if (chunk.done || !chunk.bytes) break
+      }
+      files.push(join(parts))
     }
-    const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0))
-    let at = 0
-    for (const p of parts) { out.set(p, at); at += p.length }
-    return out
+    return files
   }
+}
+
+/** Merge JSON shards: arrays are concatenated, other keys are taken from the first shard that has them. */
+export function mergeShards(shards) {
+  const out = {}
+  for (const shard of shards) {
+    for (const [key, value] of Object.entries(shard ?? {})) {
+      if (Array.isArray(value) && Array.isArray(out[key])) out[key] = out[key].concat(value)
+      else if (!(key in out)) out[key] = value
+    }
+  }
+  return out
 }
 
 async function toImage(bytes) {
@@ -34,17 +57,19 @@ async function toImage(bytes) {
   try { const img = new Image(); img.src = url; await img.decode(); return img } finally { URL.revokeObjectURL(url) }
 }
 
+const asList = value => (value == null ? null : Array.isArray(value) ? value : [value])
+
 /** -> { timeline, chat, band, art: { name: ImageBitmap }, missingArt: [] } */
 export async function loadDshPv(read) {
   const dec = new TextDecoder()
   const [timeline, chat, band] = await Promise.all(DSHPV_DATA.map(async name => {
-    const bytes = await read(name)
-    if (!bytes) throw new Error(`缺少 dsh-pv 资源 ${name}.json`)
-    return JSON.parse(dec.decode(bytes))
+    const files = asList(await read(name))
+    if (!files?.length) throw new Error(`缺少 dsh-pv 资源 ${name}`)
+    return mergeShards(files.map(bytes => JSON.parse(dec.decode(bytes))))
   }))
   const art = {}, missingArt = []
   await Promise.all(DSHPV_ART.map(async name => {
-    try { const bytes = await read(name); if (bytes) art[name] = await toImage(bytes); else missingArt.push(name) } catch { missingArt.push(name) }
+    try { const files = asList(await read(name)); if (files?.[0]) art[name] = await toImage(files[0]); else missingArt.push(name) } catch { missingArt.push(name) }
   }))
   return { timeline, chat, band, art, missingArt }
 }

@@ -1,6 +1,6 @@
 # tools/dsh-pv — rebuilding the dsh PV preset data (not shipped)
 
-These scripts regenerate `.dsh-plugin/assets/dsh-pv/{timeline,chat,band}.json` from a local checkout of
+These scripts regenerate `presets/dsh-pv/data/{timeline,chat,band}.json` from a local checkout of
 [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (MIT; built from
 commit `a4dd0f7`). They run only on a developer machine and are not in the npm package (`files` in package.json
 does not list `tools/`). They were written for one build and still contain absolute paths from that machine
@@ -23,7 +23,7 @@ copy of the song's lyrics. Nothing here downloads audio or lyrics.
 
    ```sh
    python3 tools/dsh-pv/build.py --rec rec3.json --chat chat.json --shots shots.json \
-     --upstream <upstream checkout> --out .dsh-plugin/assets/dsh-pv [--lyrics <your lyrics.lrc>]
+     --upstream <upstream checkout> --out presets/dsh-pv/data [--lyrics <your lyrics.lrc>]
    ```
 
    It drops what the canvas draws live (header, lyric band, footer, ticker column, scanlines) and grey mask
@@ -36,5 +36,5 @@ copy of the song's lyrics. Nothing here downloads audio or lyrics.
 full lyric line or any run of 4 lyric words; `tests/dshpv.test.mjs` also checks that no string in the data hashes
 to a lyric line. The LRC is read only for that check and never copied.
 
-The art in `.dsh-plugin/assets/dsh-pv-art/` is not produced here: it is upstream's CC BY-NC-SA 4.0 artwork,
+The art in `presets/dsh-pv/art/` is not produced here: it is upstream's CC BY-NC-SA 4.0 artwork,
 downscaled to 200×360 and re-encoded as WebP q80; keep its `LICENSE` and `NOTICE.md` with it.

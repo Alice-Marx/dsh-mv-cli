@@ -6,7 +6,7 @@ import http from 'node:http'; import fs from 'node:fs'; import path from 'node:p
 const DIR = process.env.PREVIEW_DIR || '/tmp/mv-ui-preview', OUT = process.argv[2], LABEL = process.argv[3] || 'fix'
 const SKINS = (process.argv[4] || 'c,a,b').split(','), HOSTS = (process.argv[5] || '1,wrap,art').split(',')
 fs.mkdirSync(OUT, { recursive: true })
-const server = http.createServer((req, res) => { const u = decodeURIComponent(req.url.split('?')[0]); const f = u.startsWith('/assets/') ? path.join('/workspace/dsh-mv-cli/.dsh-plugin/assets/', u.slice(8)) : path.join(DIR, u === '/' ? 'index.html' : u); fs.readFile(f, (e, d) => { if (e) { res.statusCode = 404; return res.end() } res.setHeader('content-type', f.endsWith('.js') ? 'text/javascript' : f.endsWith('.html') ? 'text/html; charset=utf-8' : f.endsWith('.png') ? 'image/png' : 'application/octet-stream'); res.end(d) }) }).listen(8797)
+const server = http.createServer((req, res) => { const u = decodeURIComponent(req.url.split('?')[0]); const f = u.startsWith('/assets/') ? path.join(process.env.DSH_MV_ASSETS || '/workspace/dsh-mv-workshop/', u.slice(8)) : path.join(DIR, u === '/' ? 'index.html' : u); fs.readFile(f, (e, d) => { if (e) { res.statusCode = 404; return res.end() } res.setHeader('content-type', f.endsWith('.js') ? 'text/javascript' : f.endsWith('.html') ? 'text/html; charset=utf-8' : f.endsWith('.png') ? 'image/png' : 'application/octet-stream'); res.end(d) }) }).listen(8797)
 const b = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: 'new', args: ['--no-sandbox', '--autoplay-policy=no-user-gesture-required', '--lang=zh-CN'] })
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 let fail = 0

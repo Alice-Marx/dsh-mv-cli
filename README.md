@@ -4,18 +4,18 @@ English · [简体中文](README.zh.md)
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊 / workshop](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.8.3**) that plays ASCII / terminal-styled **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.0**) that plays ASCII / terminal-styled **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
 
-> **Unofficial fan work.** The plugin ships **no** audio, video, lyric text or fonts; you bring your own files and they never leave your computer. The song and lyrics belong to Mili. The world.execute(me) preset's scenes and timing are ported from [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (Bilibili: 野生大K) **with the author's permission**. The dsh PV preset is ported from [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (MIT) and includes its **CC BY-NC-SA 4.0** whale-girl artwork (see [License and credits](#license-and-credits)).
+> **Unofficial fan work.** The plugin ships **no** audio, video, lyric text or fonts; you bring your own files and they never leave your computer. The song and lyrics belong to Mili. Since **0.9.0** the plugin itself contains no MV at all and is **MIT** licensed: the two world.execute(me) MVs are one-click installs from 创意工坊, each with its own licence and a link to its original — the ASCII scenes from [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (Bilibili: 野生大K, **used with the author's permission**) and the dsh PV from [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (MIT data + **CC BY-NC-SA 4.0** whale-girl art). See [License and credits](#license-and-credits).
 
 ![Library list view (Harness skin, light)](docs/screenshots/library-list.png)
 
 ## Features
 
 - **Canvas MV player**: every frame is drawn on a canvas and synced to your audio or video file (MP3, M4A/AAC, FLAC, Ogg/Opus, WAV, the audio track of MP4/WebM/MKV …; ffmpeg can convert the rest). Lyrics from LRC / SRT / VTT, optional `spectrum.json`, keyboard control, fullscreen, per-file audio sync offsets.
-- **Built-in presets**:
-  - **world.execute(me);**: the five-chapter ASCII MV, ported from world.execute-me-ascii.
-  - **world.execute(me); dsh PV**: a real-time port of MisakaZentai's "world.execute(me) through the eyes of 大肥鱼" PV (97 shots, 10 chapters, DeepSeek window, whale-girl art, per-word lyric timing matched to your own LRC).
+- **world.execute(me) in 创意工坊** (were built-in presets until 0.8.x; one click from the empty library):
+  - [**world.execute(me);**](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me): the five-chapter ASCII MV — original [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii).
+  - [**world.execute(me); dsh PV**](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-dsh-pv): a real-time port of the "world.execute(me) through the eyes of 大肥鱼" PV (97 shots, 10 chapters, DeepSeek window, whale-girl art, per-word lyric timing matched to your own LRC) — original [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv).
 - **MV packs** (`mv.json`): play any song with the generic spectrum + lyrics renderer or your own sandboxed scene script; start from a template with prompts and examples.
 - **用 AI 制作新 MV**: pick a song; the plugin builds a pack and hands it to a Harness agent session that writes the timing and the scene script, checked with the plugin's agent tools.
 - **Automatic lyric timing**: LRCLIB lookup (optional) + a local faster-whisper / Demucs engine, word alignment with per-line confidence and section detection, then a **calibration editor** on the waveform.
@@ -29,8 +29,10 @@ English · [简体中文](README.zh.md)
 | --- | --- |
 | ![Three skins, list view](docs/screenshots/skins.png) | ![Collapsed library, dark](docs/screenshots/library-collapsed.png) |
 | Skins A / B / C, light and dark | Library collapsed to the current song (0.8.3) |
-| ![dsh PV preset](docs/screenshots/dsh-pv.png) | ![Calibration editor in three skins](docs/screenshots/calibration.png) |
-| world.execute(me); dsh PV preset (chat scene) | Lyric calibration editor under the player |
+| ![Empty library in three skins](docs/screenshots/empty-library.png) | ![Workshop with the two world.execute(me) packs](docs/screenshots/workshop-presets.png) |
+| 0.9.0 empty library: 创意工坊 + one-click installs | The two packs in 创意工坊 with their **原作** links |
+| ![dsh PV pack](docs/screenshots/dsh-pv.png) | ![Calibration editor in three skins](docs/screenshots/calibration.png) |
+| world.execute(me); dsh PV workshop pack (chat scene) | Lyric calibration editor under the player |
 | ![Workshop](docs/screenshots/workshop.png) | |
 | 创意工坊 browsing in three skins | |
 
@@ -40,7 +42,7 @@ Screenshots use placeholder demo packs and placeholder lyrics.
 
 Requires DeepSeek Harness Desktop with plugin support and Node ≥ 20 on the Host (bundled with Harness). No native dependencies.
 
-**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli` (latest) or a pinned version such as `@ljwei-stak/dsh-mv-cli@0.8.3`, then install and enable it.
+**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli` (latest) or a pinned version such as `@ljwei-stak/dsh-mv-cli@0.9.0`, then install and enable it.
 
 **From a GitHub Release archive:** download `ljwei-stak-dsh-mv-cli-<version>.tgz` and its `.sha256` from [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases). Check it in PowerShell with `Get-FileHash -Algorithm SHA256 -LiteralPath <path-to-tgz>` and compare with the `.sha256` file, then enter the archive's absolute path in **Plugins → Add plugin**.
 
@@ -48,12 +50,17 @@ After installing either way:
 
 1. **Fully quit Harness (including the tray icon) and start it again.** The Host only loads new plugin code after a full restart. If the panel shows a "后台版本与界面不一致" banner, the restart was incomplete.
 2. The left sidebar shows **MV 放映室** below the built-in entries. Click it to open the panel in the main area. The plugin details page (Plugins → dsh-mv-cli) also has an **打开 MV 放映室** button.
+3. The library starts empty: click **一键安装** next to world.execute(me); or the dsh PV (or **打开创意工坊** to browse), then pick your own copy of the song.
+
+### Upgrading from 0.8.x
+
+0.9.0 removes the built-in presets. If one was selected, the panel says it has moved to 创意工坊 and offers **从创意工坊安装**; after installing, the audio, lyrics and spectrum you had chosen for it are reused automatically. Your other packs and settings are unchanged. (0.8.x clients cannot install the dsh PV workshop pack — it exceeds their 4 MB pack limit — but they still have the built-in preset.)
 
 ## The panel at a glance
 
 The panel reads top to bottom like a music player:
 
-1. **曲库 (library)**: the two built-in presets and your MV packs (imported, AI-made or from the workshop), plus **创意工坊**, **用 AI 制作新 MV**, **导入 MV 包** and **新建（模板）**. **列表 / 网格** switches between the compact list (default) and cover cards; the chevron before 曲库 collapses the library to its header, the count and the row of the song now playing (remembered on this computer; the sidebar / tab 曲库 entry expands it again).
+1. **曲库 (library)**: your MV packs (imported, AI-made or from the workshop; when empty, a 创意工坊 call-to-action with one-click installs of the two world.execute(me) packs), plus **创意工坊**, **用 AI 制作新 MV**, **导入 MV 包** and **新建（模板）**. **列表 / 网格** switches between the compact list (default) and cover cards; the chevron before 曲库 collapses the library to its header, the count and the row of the song now playing (remembered on this computer; the sidebar / tab 曲库 entry expands it again).
 2. **正在播放 (now playing)**: title, artist, pack type and a **▶ 播放** button; tiles for audio, lyrics and spectrum.
 3. **Stage**: the canvas plus a player bar (play/pause, seek, time, chapter, volume, audio sync, keyboard shortcuts, fullscreen), and the **歌词校准** editor below it.
 4. **设置 (settings)**, collapsed by default: font size, subtitle offset.
@@ -67,12 +74,12 @@ The panel reads top to bottom like a music player:
 
 An **MV pack** is a folder with an `mv.json` manifest. It names your audio, lyrics and optional spectrum files (paths relative to the folder), and says how to draw the song:
 - with the built-in **generic** canvas renderer (spectrum bars, title, current and next lyric, progress), which works for any song;
-- with the built-in **world-execute-me** scenes, or the **dsh-pv** preset (`canvas.renderer: "dsh-pv"`, only meaningful for the same song);
+- with the **dsh-pv** renderer (`canvas.renderer: "dsh-pv"`), which replays the dsh PV from data files named in `canvas.assets` (used by the dsh PV workshop pack; only meaningful for that song);
 - with a **scene script** (`canvas.renderer: "script"`, `canvas.script: "scenes.js"`): your own `render(t, cols, rows, ctx)` in plain JavaScript, run sandboxed in a Web Worker with a time limit per frame (falls back to generic on errors). The template README documents the API;
 
 In the panel's **曲库** (library):
 
-1. **新建（模板）**: choose a folder. The plugin creates `dsh-mv-pack-template` there and never overwrites existing files. The folder contains `mv.json`, `mv.schema.json` (completion and validation in VS Code), README.md / README.zh.md, a placeholder `lyrics.example.lrc`, and `examples/` (world.execute(me) and dsh PV written as packs, and `scenes.example.js`). **下载模板 zip** in the import dialog gives the same files as a zip.
+1. **新建（模板）**: choose a folder. The plugin creates `dsh-mv-pack-template` there and never overwrites existing files. The folder contains `mv.json`, `mv.schema.json` (completion and validation in VS Code), README.md / README.zh.md, a placeholder `lyrics.example.lrc`, and `examples/` (`scenes.example.js`, seven scene modules and a full example pack). **下载模板 zip** in the import dialog gives the same files as a zip.
 2. Put your own audio (any [supported format](#audio-formats)) and lyrics in the folder, and edit `mv.json`.
 3. **导入 MV 包** → **选择文件夹…**, or paste the path of the folder or of `mv.json`. Importing only reads the manifest.
    - Recently used packs (up to 50) are remembered on this computer and appear in the library (× on a row or card removes it).
@@ -95,7 +102,7 @@ Minimal `mv.json`:
 ```
 
 Fields:
-- `format`, `version`, `title` are required. Optional fields: `artist`, `album`, `credits[]`, `notice`, `duration`, `audio {file, offset}`, `lyrics {file, offset}` (LRC/SRT/VTT/lyrics.json), `spectrum {file}`, `canvas {renderer: generic | world-execute-me | dsh-pv | script, script, fontSize}`. A legacy `terminal` section is ignored with a warning.
+- `format`, `version`, `title` are required. Optional fields: `artist`, `album`, `credits[]`, `notice`, `duration`, `audio {file, offset}`, `lyrics {file, offset}` (LRC/SRT/VTT/lyrics.json), `spectrum {file}`, `canvas {renderer: generic | script | dsh-pv, script, fontSize, bpm, beatOffset, assets}`. `canvas.assets` maps names to relative `.json` / `.webp` / `.png` files (or lists of JSON shards merged in order) that a renderer reads through the Host. A legacy `terminal` section is ignored with a warning; `renderer: "world-execute-me"` (0.8.x) falls back to generic with a hint to install the workshop pack.
 - Unknown fields are errors; use `x-…` for your own data.
 - Relative paths must not contain `..`.
 
@@ -131,7 +138,7 @@ A community gallery of MV packs that lives in the public GitHub repository [Alic
 
 **Install and play**
 
-1. **曲库 → 创意工坊**: browse covers, search by title / artist / author / tag, filter by licence or renderer, or show only installed packs. Click a card for details (licence, duration, files with sha256, source link).
+1. **曲库 → 创意工坊**: browse covers, search by title / artist / author / tag, filter by licence or renderer, or show only installed packs. Cards and details show the **原作** (original work) link when a pack sets `x-dsh-mv-workshop.source`. Click a card for details (licence, duration, files with sha256, GitHub source).
 2. **安装到曲库**: the panel downloads the files from `raw.githubusercontent.com` at the commit named in the index, checks size and sha256, validates the pack again and stores it in `%LOCALAPPDATA%\dsh-mv\workshop\<id>`. Cards show **有更新** when the index has a newer version (**更新到 …**); **卸载** removes the folder.
 3. Play it with **your own** audio (and optionally lyrics): the panel remembers them per pack. It compares the duration (±2 s) and, when the pack stores one, a coarse audio fingerprint, and warns when they do not match (a different edit or a different song). If the pack has `lyrics.timing.json`, your lyric lines are retimed to the pack's timing by matching line hashes; packs never contain lyric text.
 
@@ -201,7 +208,7 @@ The format is always detected from the file's **content**, not its extension (a 
   - Space/Enter: play/pause
   - ←/→: ±5 s
   - R: restart
-  - 1–5: jump to a chapter (dsh PV: BOOT / SFT / DEPLOY / REWARD_HACK / EVAL: LOVE)
+  - 1–5: jump to a chapter / section (world.execute(me): CREATION … LOVE; dsh PV: BOOT / SFT / DEPLOY / REWARD_HACK / EVAL: LOVE)
   - `[`/`]`: subtitles earlier/later by 0.1 s
   - Alt+`[`/Alt+`]`: audio sync offset ∓0.1 s
   - `,`/`.`: previous/next line
@@ -217,37 +224,40 @@ The format is always detected from the file's **content**, not its extension (a 
 - **Saved offsets**: tuned offsets are stored per sha256.
 - **No audio**: the film runs on an internal clock.
 
-## dsh PV canvas preset
+## The world.execute(me) workshop packs
 
-**world.execute(me); dsh PV** is a real-time JavaScript port of [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (commit `a4dd0f7`, MIT): a PV that retells world.execute(me) from the point of view of "大肥鱼" (DeepSeek), 97 shots in 10 chapters (BOOT → PRETRAIN → SFT → RLHF → DEPLOY → USER_LEFT → REWARD_HACK → EXECUTION → EVAL: LOVE → WHALE_FALL). Upstream is a Python program that renders a video offline; here the canvas redraws it live against your audio.
+**world.execute(me);** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me), original [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii)) is the five-chapter terminal film (CREATION → DEVOTION → ISOLATION → EXECUTION → LOVE) ported from the Python original. Since 0.9.0 it is a **scene script** pack: `presets/world-execute-me/` in this repository is bundled by `presets/build-workshop-packs.mjs` into one sandboxed `scenes.js` that draws exactly the frames of the former built-in (tests compare them). Licence: used and redistributed with the original author's permission, **not open source** (pack `NOTICE.md`).
+
+**world.execute(me); dsh PV** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-dsh-pv), original [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv)) is a real-time JavaScript port of [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (commit `a4dd0f7`, MIT): a PV that retells world.execute(me) from the point of view of "大肥鱼" (DeepSeek), 97 shots in 10 chapters (BOOT → PRETRAIN → SFT → RLHF → DEPLOY → USER_LEFT → REWARD_HACK → EXECUTION → EVAL: LOVE → WHALE_FALL). Upstream is a Python program that renders a video offline; here the canvas redraws it live against your audio.
 
 **Use it:**
 
-1. **MV 放映室 → 曲库 → "world.execute(me); dsh PV"** card.
-2. **Audio**: your own "world.execute(me);" audio or video file (shared with the other preset).
+1. Install it: **曲库 → 一键安装** (empty library) or **创意工坊 → world.execute(me); · 大肥鱼眼中的 world.execute(me) → 安装到曲库**.
+2. **Audio**: your own "world.execute(me);" audio or video file.
 3. **Lyrics** (optional, recommended): your own LRC. Each line's sha256 is compared with the built-in timing table; matched lines get the PV's **per-word timing** (the typing, the stdout token band at the bottom and the attention tokens of the `satisfaction` shot all come from your lyrics). The lyrics tile shows "逐词时间匹配 x/y 句". The LRCLIB lyrics with id 36914646 match 97/98 lines. With fewer than half matched, the lines from your file are shown with their own times. Without lyrics the lyric slots stay empty.
-4. **▶ 播放**. Keys, audio sync (Alt+`[` / Alt+`]`) and fullscreen work as for the other preset.
+4. **▶ 播放**. Keys, audio sync (Alt+`[` / Alt+`]`) and fullscreen work as for any pack.
 
-**How it works:** upstream's composite renderer was run locally and its draw calls (text, rectangles, lines, colours, positions) were recorded at 2–6 keyframes per shot (about one per 0.5 s), together with the DeepSeek window layout and chat contents and the layer opacities. They ship as `timeline.json`, `chat.json` and `band.json` in `.dsh-plugin/assets/dsh-pv/` (about 4.4 MB unpacked). The canvas replays the keyframes over time, decode-types new text, and adds the live parts: a heartbeat line driven by the live loudness, the ops ticker, the stdout token band, the DeepSeek window (redrawn natively, without DeepSeek's frontend CSS / icons / fonts), the red EXECUTION split screen and tape, the whale-fall finale, and light trails, bloom, scanlines and vignette. The data contains **no lyric text**: lyrics appear only as sha256 hashes and times, the build script checks that no lyric run of 4 or more words remains, and all lyric text comes from your file at run time.
+**How it works:** upstream's composite renderer was run locally and its draw calls (text, rectangles, lines, colours, positions) were recorded at 2–6 keyframes per shot (about one per 0.5 s), together with the DeepSeek window layout and chat contents and the layer opacities. They ship in the workshop pack as `data/timeline-*.json`, `data/chat-*.json` and `data/band.json` (≤ 512 KB shards, about 4.4 MB; sources in `presets/dsh-pv/data/`), named in its `canvas.assets`; the renderer (MIT) is part of the plugin. The canvas replays the keyframes over time, decode-types new text, and adds the live parts: a heartbeat line driven by the live loudness, the ops ticker, the stdout token band, the DeepSeek window (redrawn natively, without DeepSeek's frontend CSS / icons / fonts), the red EXECUTION split screen and tape, the whale-fall finale, and light trails, bloom, scanlines and vignette. The data contains **no lyric text**: lyrics appear only as sha256 hashes and times, the build script checks that no lyric run of 4 or more words remains, and all lyric text comes from your file at run time.
 
 **Faithfulness:** shot structure, timing, texts, layout, the chat window and the lyric band match the original PV. Upstream's raster layers (the glyph dancer, heat grids, photos / sprites) are not ported and are approximated; big banners such as "IF I CAN" are approximate redraws. System fonts are used (DejaVu Sans Mono / Consolas / Microsoft YaHei …); upstream's fonts are not included.
 
-**Art:** the package includes upstream's 8 whale-girl expressions and 1 maid sprite (downscaled to 200×360 WebP) under **CC BY-NC-SA 4.0**; the attribution chain and the changes are in `.dsh-plugin/assets/dsh-pv-art/NOTICE.md`. Per upstream, these character designs were generated with an AI image model (GPT Image 2). Delete that folder and the preset draws a placeholder silhouette instead.
+**Art:** the workshop pack includes upstream's 8 whale-girl expressions and 1 maid sprite (downscaled to 200×360 WebP) under **CC BY-NC-SA 4.0** (pack licence `CC-BY-NC-SA-4.0`); the attribution chain and the changes are in `art/NOTICE.md` (`presets/dsh-pv/art/` here). Per upstream, these character designs were generated with an AI image model (GPT Image 2). Without the art the renderer draws a placeholder silhouette.
 
 ## Development
 
 `pnpm install`, `pnpm test`, `npm run build:client`, `npm run check:client`, `npm run pack:local`.
 
-- `tools/dsh-pv/` regenerates the dsh PV data from the upstream repository (local only; needs the upstream checkout, its Python environment and your own lyrics; not in the npm package). See its README.
+- `node presets/build-workshop-packs.mjs [<workshop>/packs]` builds the two workshop packs from `presets/` (bundles `scenes.js`, shards the dsh PV data, writes `mv.json` / README / NOTICE with the source links; covers from `presets/covers/`). Validate with the workshop repository's `scripts/validate.mjs`.
+- `tools/dsh-pv/` regenerates the dsh PV data (`presets/dsh-pv/data/`) from the upstream repository (local only; needs the upstream checkout, its Python environment and your own lyrics; not in the npm package). See its README.
 - `tools/ui-preview/` takes the panel screenshots (`node tools/ui-preview/build-preview.mjs && node tools/ui-preview/shoot.mjs <outDir>`).
-- `tools/py2js.py` transpiles a local `scenes.py`.
+- `tools/py2js.py` transpiles a local `scenes.py` into `presets/world-execute-me/src/scenes.gen.mjs`.
 - `tools/make-goldens.py` renders reference frames with the **original** `player.Film` and stores only frame digests. It uses placeholder lyrics and a synthetic spectrum.
 - Set `REF_ASCII_DIR` to run an extra test against your local copy.
 
 ## Known limitations
 
 - About 2% of the 1232 reference frames differ from the Python renderer. All of them are in the 75–81 s legacy-mesh section, caused by float-ulp / z-buffer ties.
-- dsh PV: the timeline is fixed to the original song length (211.9 s); other edits need the audio sync offset, and edits of a different length drift in the second half. Upstream's raster layers are approximated; no fonts are bundled, so glyphs differ slightly between systems. The art is CC BY-NC-SA 4.0 (non-commercial). The npm package therefore grows to about 1.2 MB (5.8 MB unpacked).
+- dsh PV: the timeline is fixed to the original song length (211.9 s); other edits need the audio sync offset, and edits of a different length drift in the second half. Upstream's raster layers are approximated; no fonts are bundled, so glyphs differ slightly between systems. The art is CC BY-NC-SA 4.0 (non-commercial). The pack is about 4.8 MB, so it needs 0.9.0+ (older clients allow 4 MB).
 - 用 AI 制作新 MV needs the agent session API of the Harness client (otherwise copy & paste the prompt). Scene scripts run in a Blob Web Worker; if a Harness build forbids blob workers, script packs play with the generic renderer. The agent tools need the Host `tools` service; without it the agent checks its work by reading AGENT.md.
 - Audio files over 1 GB are refused; the WAV cache is limited to 1.5 GB per file (about 2.5 hours).
 - The `79c4e5…` offset is inferred.
@@ -256,18 +266,20 @@ The format is always detected from the file's **content**, not its extension (a 
 
 ## License and credits
 
-The npm package's licence expression is **`(MIT AND CC-BY-NC-SA-4.0)`**; the package as a whole is **not purely MIT**:
+Since 0.9.0 the npm package is **MIT** ([LICENSE](LICENSE)); it contains only the plugin's own code and the MIT dsh-pv renderer (ported from MisakaZentai/world-execute-me-dsh-pv, © 2026 MisakaZentai). Until 0.8.x it was `(MIT AND CC-BY-NC-SA-4.0)` because it carried the art.
 
-- The plugin's own code is MIT ([LICENSE](LICENSE)).
-- `.dsh-plugin/assets/dsh-pv/`: data ported from MisakaZentai/world-execute-me-dsh-pv, MIT (Copyright (c) 2026 MisakaZentai; full text in that folder's NOTICE.md).
-- `.dsh-plugin/assets/dsh-pv-art/`: whale-girl artwork under **CC BY-NC-SA 4.0** (attribution · non-commercial · share-alike). Chain: 溟月 © 上善无形 → ZipZipPipe (Pixiv 148186519, AI-generated) → Small-tailqwq/dsh-deep-whale → dsh-whale-galgame → MisakaZentai. Delete the folder for an MIT-only build.
-- The scene files ported from world.execute-me-ascii are **not** covered by MIT. They are used with the original author's permission. That repository has no LICENSE file; keep the permission in writing and ask the author to add one.
+The repository's `presets/` folder is **not** covered by the MIT licence and is not in the npm package; it is published only as the two workshop packs:
+
+| Workshop pack | Original | Licence |
+| --- | --- | --- |
+| [`world-execute-me`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me) (`presets/world-execute-me/`) | [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) | used and redistributed with the original author's permission (2026-10-03); not open source. That repository has no LICENSE file; keep the permission in writing and ask the author to add one. |
+| [`world-execute-me-dsh-pv`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-dsh-pv) (`presets/dsh-pv/`) | [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) | data MIT (© 2026 MisakaZentai); whale-girl art **CC BY-NC-SA 4.0** (溟月 © 上善无形 → ZipZipPipe (Pixiv 148186519, AI-generated) → Small-tailqwq/dsh-deep-whale → dsh-whale-galgame → MisakaZentai) → pack `CC-BY-NC-SA-4.0`, non-commercial |
 
 Credits:
 
 - **Mili**: "world.execute(me);" (music and lyrics; not included).
-- **yym8224961 (野生大K)**: world.execute-me-ascii, the scenes and timing of the built-in preset (ported with permission).
-- **MisakaZentai**: world-execute-me-dsh-pv (MIT), the dsh PV preset, its data and the template examples.
+- **yym8224961 (野生大K)**: [world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii), the scenes and timing of the world.execute(me) pack (ported with permission).
+- **MisakaZentai**: [world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (MIT), the dsh PV renderer, its data and the template examples.
 - Whale-girl artwork: **上善无形 / 上善** (溟月), **ZipZipPipe**, **Small-tailqwq / dsh-deep-whale**, **dsh-whale-galgame** (CC BY-NC-SA 4.0).
 - **TKCB / King-LRC-Waveform-Editor** (MIT): ideas for the calibration editor (no code copied). **LRCLIB** for synced lyrics lookup. faster-whisper, CTranslate2, Demucs, PyTorch and the Whisper weights are downloaded on demand under their own licences.
 

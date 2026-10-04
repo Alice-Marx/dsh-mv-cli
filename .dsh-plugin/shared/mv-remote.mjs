@@ -9,7 +9,6 @@ import { parseAudioConvert, parseAudioRead, parseFfmpegInfo } from './mv-audio-p
 import { parseAiPackCreate } from './mv-ai-prompt.mjs'
 import { parsePackUploadBegin, parsePackUploadFinish, parsePackUploadWrite } from './mv-ai-upload.mjs'
 import { parseAnalysisRead, parseLyricsLookup, parsePackWriteText } from './mv-calib-protocol.mjs'
-import { parseDshPvAsset } from './mv-dshpv-protocol.mjs'
 import { parseWorkshopId, parseWorkshopIndexRequest, parseWorkshopInstalled, parseWorkshopPublish } from './mv-workshop.mjs'
 import { parseEngineInfo, parseEngineInstall, parseEngineModel, parseEngineTranscribe, parseJobCancel, parseJobRead } from './mv-engine-protocol.mjs'
 
@@ -72,7 +71,6 @@ export const MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor('jobCancel', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvJobCancel`, parseJobCancel))], anyObjectCodec('MvJobCancelResult')),
   descriptor('packWriteText', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvPackWriteText`, parsePackWriteText))], anyObjectCodec('MvPackWriteTextResult')),
   descriptor('analysisRead', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvAnalysisRead`, parseAnalysisRead))], anyObjectCodec('MvAnalysisReadResult')),
-  descriptor('dshpvAsset', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvDshPvAsset`, parseDshPvAsset))], anyObjectCodec('MvDshPvAssetChunk')),
   // 0.7.0 MV 创意工坊 (GitHub repository catalogue; downloads checked by sha256; publishing happens on github.com).
   descriptor('workshopIndex', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopIndex`, parseWorkshopIndexRequest))], anyObjectCodec('MvWorkshopIndexResult')),
   descriptor('workshopCover', [jsonParameter('request', requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopCover`, parseWorkshopId))], anyObjectCodec('MvWorkshopCoverResult')),

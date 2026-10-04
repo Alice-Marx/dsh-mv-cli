@@ -44,7 +44,6 @@ export function panelApi(remote) {
     jobCancel: request => service.jobCancel(request),
     packWriteText: request => service.packWriteText(request),
     analysisRead: request => service.analysisRead(request),
-    dshpvAsset: request => service.dshpvAsset(request),
     workshopIndex: request => service.workshopIndex(request),
     workshopCover: request => service.workshopCover(request),
     workshopInstall: request => service.workshopInstall(request),

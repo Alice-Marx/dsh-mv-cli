@@ -44,6 +44,14 @@ function Cover({ api, pack, large = false, cache }) {
     : <span className="mv-ws-cover mv-ws-cover-empty" style={style} aria-hidden="true">{'>_'}</span>
 }
 
+/** "owner/repo" for a GitHub link, else the host + path. */
+export const sourceLabel = url => String(url ?? '').replace(/^https:\/\/(www\.)?(github\.com\/)?/, '').replace(/\/$/, '')
+/** The original work's link (x-dsh-mv-workshop.source), shown under the description. */
+export function SourceLink({ url, compact = false }) {
+  if (!url) return null
+  return <span className={`mv-ws-source${compact ? ' mv-ws-source-compact' : ''}`}>原作 <a href={url} target="_blank" rel="noreferrer" title={url} onClick={event => event.stopPropagation()}>{sourceLabel(url)}</a></span>
+}
+
 const copy = async text => { try { await globalThis.navigator?.clipboard?.writeText(text); return true } catch { return false } }
 
 export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null, canvas = () => null, initialIndex = null }) {
@@ -97,7 +105,7 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
     finally { setBusy('') }
   }
 
-  const canPublish = active && !active.builtin && active.manifestPath
+  const canPublish = active && !active.empty && active.manifestPath
   return (
     <div className="mv-dialog mv-ws" role="dialog" aria-label="创意工坊">
       <div className="mv-row" style={{ justifyContent: 'space-between' }}>
@@ -131,6 +139,7 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
             <h3 style={{ margin: '6px 0 2px' }}>{current.title}</h3>
             <p className="mv-caption" style={{ marginTop: 0 }}>{current.artist || '未知艺术家'} · 作者 {current.author || '—'} · v{current.version}</p>
             <p className="mv-wrap">{current.description || '（没有简介）'}</p>
+            {current.source && <p className="mv-wrap"><SourceLink url={current.source} /></p>}
             <div className="mv-row">
               <span className="mv-chip">许可 {current.license}</span>
               <span className="mv-chip">时长 {durationText(current.duration)}</span>
@@ -157,13 +166,15 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
       ) : (
         <div className="mv-ws-grid" aria-busy={loading}>
           {shown.map(pack => (
-            <button key={pack.id} type="button" className="mv-ws-card" onClick={() => setSelected(pack.id)} title={pack.description}>
+            <div key={pack.id} role="button" tabIndex={0} className="mv-ws-card" onClick={() => setSelected(pack.id)} title={pack.description}
+              onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelected(pack.id) } }}>
               <Cover api={api} pack={pack} cache={covers} />
               <span className="mv-card-title">{pack.title}</span>
               <span className="mv-card-sub">{pack.artist || '未知艺术家'} · {durationText(pack.duration)}</span>
               <span className="mv-card-sub">by {pack.author || '—'} · {pack.license}</span>
+              {pack.source && <span className="mv-card-sub"><SourceLink url={pack.source} compact /></span>}
               {installed[pack.id] && <span className={`mv-ws-badge${updates.has(pack.id) ? ' mv-ws-badge-update' : ''}`}>{updates.has(pack.id) ? '有更新' : '已安装'}</span>}
-            </button>
+            </div>
           ))}
           {index && !shown.length && <p className="mv-caption">{packs.length ? '没有符合条件的包。' : '工坊里还没有包。'}</p>}
         </div>

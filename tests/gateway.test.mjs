@@ -2,13 +2,16 @@
 // and the real MvRemoteService envelope, exactly as the Desktop client sees them.
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { statSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { gatewayClient } from './helpers/typert-gateway.mjs'
 import { MvRemoteService, HOST_PLUGIN_VERSION } from '../.dsh-plugin/remote-service.mjs'
 import { MV_REMOTE_DESCRIPTORS, MV_REMOTE_NAMESPACE, MV_REMOTE_PACKAGE } from '../.dsh-plugin/shared/mv-remote.mjs'
 import { defaultPackOps, mvRemoteServices } from '../.dsh-plugin/index.mjs'
 import { loadInfo } from '../.dsh-plugin/client/mv-info.mjs'
-import { hostReader } from '../.dsh-plugin/client/mv/dshpv/assets.mjs'
+import { mergeShards, packAssetReader } from '../.dsh-plugin/client/mv/dshpv/assets.mjs'
+import { parseMvPack } from '../.dsh-plugin/shared/mv-pack.mjs'
 import { unwrapRemote, versionNotice } from '../.dsh-plugin/client/remote-state.mjs'
 
 function harness() {
@@ -18,7 +21,7 @@ function harness() {
 }
 
 test('descriptors: ids, namespace and strict codecs; no terminal or console endpoints', () => {
-  assert.deepEqual(MV_REMOTE_DESCRIPTORS.map(d => d.method), ['info', 'packLoad', 'packRead', 'packTemplate', 'audioRead', 'ffmpegInfo', 'audioConvert', 'aiPackCreate', 'packUploadBegin', 'packUploadWrite', 'packUploadFinish', 'lyricsLookup', 'engineInfo', 'engineProbe', 'engineInstall', 'engineModel', 'engineTranscribe', 'jobRead', 'jobCancel', 'packWriteText', 'analysisRead', 'dshpvAsset', 'workshopIndex', 'workshopCover', 'workshopInstall', 'workshopUninstall', 'workshopInstalled', 'workshopPublish'])
+  assert.deepEqual(MV_REMOTE_DESCRIPTORS.map(d => d.method), ['info', 'packLoad', 'packRead', 'packTemplate', 'audioRead', 'ffmpegInfo', 'audioConvert', 'aiPackCreate', 'packUploadBegin', 'packUploadWrite', 'packUploadFinish', 'lyricsLookup', 'engineInfo', 'engineProbe', 'engineInstall', 'engineModel', 'engineTranscribe', 'jobRead', 'jobCancel', 'packWriteText', 'analysisRead', 'workshopIndex', 'workshopCover', 'workshopInstall', 'workshopUninstall', 'workshopInstalled', 'workshopPublish'])
   for (const d of MV_REMOTE_DESCRIPTORS) {
     assert.equal(d.id, `${MV_REMOTE_PACKAGE}#${MV_REMOTE_NAMESPACE}/${d.method}`)
     assert.equal(d.result.mode, 'strict')
@@ -41,19 +44,35 @@ test('gateway: results arrive double-wrapped and unwrap to the Host value', asyn
   assert.equal((await loadInfo(api)).hostVersion, HOST_PLUGIN_VERSION)
 })
 
-test('gateway: dshpvAsset only serves its named files, nothing else under the plugin', async () => {
+test('gateway: canvas.assets are read through packRead (role asset), only files the manifest names', async () => {
   const { api } = harness()
-  for (const request of [{ name: '../index.mjs' }, { name: 'timeline', path: 'C:\\x' }, { name: 'timeline', offset: -1 }]) {
-    const raw = await api.dshpvAsset(request)
-    assert.equal(raw.ok, false, JSON.stringify(request))
-    assert.match(raw.error.message, /boundary validation|unexpected fields|must be/)
-  }
-  const bytes = await hostReader(api)('timeline')
-  assert.equal(bytes.length, statSync(new URL('../.dsh-plugin/assets/dsh-pv/timeline.json', import.meta.url)).size)
-  assert.ok(bytes.length > 1024 * 1024, 'read in more than one chunk')
-  assert.equal(JSON.parse(new TextDecoder().decode(bytes)).shots.length, 97)
-  const art = await hostReader(api)('whale-cheerful')
-  assert.equal(new TextDecoder().decode(art.subarray(8, 12)), 'WEBP')
+  const dir = mkdtempSync(join(tmpdir(), 'mv-assets-'))
+  try {
+    mkdirSync(join(dir, 'data')); mkdirSync(join(dir, 'art'))
+    const big = Array.from({ length: 30000 }, (_, i) => ({ i, pad: 'x'.repeat(20) }))
+    writeFileSync(join(dir, 'data', 'timeline-1.json'), JSON.stringify({ fps: 30, shots: big.slice(0, 15000) }))
+    writeFileSync(join(dir, 'data', 'timeline-2.json'), JSON.stringify({ shots: big.slice(15000) }))
+    writeFileSync(join(dir, 'art', 'whale.webp'), Buffer.from('RIFF\0\0\0\0WEBPVP8 '))
+    writeFileSync(join(dir, 'secret.txt'), 'not an asset')
+    const manifest = { format: 'dsh-mv-pack', version: 1, title: 't', canvas: { renderer: 'dsh-pv', assets: { timeline: ['data/timeline-1.json', 'data/timeline-2.json'], 'whale-cheerful': 'art/whale.webp' } } }
+    writeFileSync(join(dir, 'mv.json'), JSON.stringify(manifest))
+    const manifestPath = join(dir, 'mv.json')
+    const read = packAssetReader(api, manifestPath, parseMvPack(JSON.stringify(manifest)))
+    const parts = await read('timeline')
+    assert.equal(parts.length, 2)
+    assert.ok(parts[0].length > 512 * 1024, 'first shard read in more than one chunk')
+    const merged = mergeShards(parts.map(bytes => JSON.parse(new TextDecoder().decode(bytes))))
+    assert.equal(merged.fps, 30)
+    assert.equal(merged.shots.length, 30000)
+    assert.equal(merged.shots[29999].i, 29999)
+    const [art] = await read('whale-cheerful')
+    assert.equal(new TextDecoder().decode(art.subarray(8, 12)), 'WEBP')
+    assert.equal(await read('nope'), null)
+    for (const request of [{ manifestPath, role: 'asset', asset: 'nope', offset: 0, length: 10 }, { manifestPath, role: 'asset', asset: 'timeline', part: 5, offset: 0, length: 10 }, { manifestPath, role: 'asset', asset: '../secret.txt', offset: 0, length: 10 }]) {
+      const raw = await api.packRead(request)
+      assert.equal(raw.ok && raw.value?.ok, false, JSON.stringify(request))
+    }
+  } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
 test('gateway: workshop endpoints validate requests at the boundary; publish never takes a token', async () => {

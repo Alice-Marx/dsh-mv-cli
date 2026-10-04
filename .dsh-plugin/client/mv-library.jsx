@@ -1,8 +1,9 @@
 /**
- * The library row: the built-in world.execute(me) presets (grid MV and the
- * dsh-pv canvas port) and recent MV packs
- * as cards, plus "用 AI 制作新 MV", "导入" and "新建（模板）". Importing only
- * reads mv.json; nothing is ever run from here.
+ * The library: your MV packs (imported, AI-made, installed from 创意工坊) as a
+ * list or cover grid, plus 创意工坊, "用 AI 制作新 MV", "导入" and "新建（模板）".
+ * Since 0.9.0 nothing is built in: an empty library points to 创意工坊 and
+ * offers one-click installs of the two world.execute(me) packs that used to be
+ * presets. Importing only reads mv.json; nothing is ever run from here.
  */
 import React from 'react'
 import { errorText } from './mv-info.mjs'
@@ -11,8 +12,9 @@ import { Alert, Icon } from './mv-ui.jsx'
 import { coverHue, coverInitials } from './mv-skin.mjs'
 import { AiPackDialog } from './mv-ai.jsx'
 import { WorkshopDialog } from './mv-workshop.jsx'
-import { BUILTIN_ID, DSH_PV_ID, TEMPLATE_ZIP_NAME, directoryPicker, forgetPack, loadLibraryCollapsed, loadLibraryView, loadPackFromHost, rememberPack, saveLibraryCollapsed, saveLibraryView, templateZip } from './mv-pack-state.mjs'
-import { DURATION as WEM_DURATION } from './mv/film.mjs'
+import { EMPTY_ID, TEMPLATE_ZIP_NAME, directoryPicker, forgetPack, loadLibraryCollapsed, loadLibraryView, loadPackFromHost, rememberPack, saveLibraryCollapsed, saveLibraryView, templateZip } from './mv-pack-state.mjs'
+import { installWorkshopPack } from './mv-workshop-state.mjs'
+import { PRESET_PACKS } from '../shared/mv-workshop.mjs'
 import { fmtTime } from './mv-skin.mjs'
 
 function downloadZip() {
@@ -75,6 +77,37 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
     finally { setBusy('') }
   }
 
+  /** One-click install (or open, when it is already in the library) of a former built-in preset. */
+  const installPreset = async preset => {
+    const have = recent.find(item => item.workshop === preset.id)
+    if (have) { onSelect(`pack:${have.manifestPath}`); return }
+    setBusy(`preset:${preset.id}`); setError(''); setNote('')
+    try {
+      const done = await installWorkshopPack(api, preset.id)
+      const loaded = await loadPackFromHost(api, done.manifestPath)
+      onRecent(rememberPack(loaded))
+      onLoaded(loaded)
+      setNote(`已从创意工坊安装「${preset.title}」v${done.version}（${done.files} 个文件，sha256 校验通过）。包里没有音频：选择你自己的歌曲文件（可选歌词）后点 ▶ 播放。`)
+    } catch (failure) { setError(errorText(failure, `无法安装「${preset.title}」。可以打开「创意工坊」重试。`)) }
+    finally { setBusy('') }
+  }
+  const presetRow = preset => {
+    const have = recent.some(item => item.workshop === preset.id)
+    return (
+      <div key={preset.id} className="mv-preset" role="listitem">
+        <span className="mv-thumb mv-track-art" style={{ '--mv-hue': preset.hue }} aria-hidden="true">{preset.cover}</span>
+        <span className="mv-preset-main">
+          <span className="mv-track-title">{preset.title}</span>
+          <span className="mv-track-artist">{preset.artist} · {preset.kind} · 原作 <a href={preset.source} target="_blank" rel="noreferrer">{preset.sourceLabel}</a></span>
+        </span>
+        <button type="button" className="mv-button mv-button-small" disabled={Boolean(busy) || !api?.workshopInstall} onClick={() => void installPreset(preset)}>
+          {busy === `preset:${preset.id}` ? '正在安装…' : have ? '打开' : '一键安装'}</button>
+      </div>
+    )
+  }
+  const moved = active.moved ?? null
+  const empty = recent.length === 0
+
   const toggleWorkshop = () => { setWorkshopOpen(value => !value); setAiOpen(false); setImporting(false); setError('') }
   const toggleAi = () => { setAiOpen(value => !value); setImporting(false); setWorkshopOpen(false); setError('') }
   const toggleImport = () => { setImporting(value => !value); setAiOpen(false); setWorkshopOpen(false); setError('') }
@@ -86,8 +119,6 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
   ]
   const activeDuration = Number(active.pack?.duration) || 0
   const rows = [
-    { id: BUILTIN_ID, title: 'world.execute(me);', artist: 'Mili', type: '内置预设', kind: 'builtin', cover: '>_', hue: 18, duration: WEM_DURATION, tip: '内置预设：使用你自己的音频和歌词文件' },
-    { id: DSH_PV_ID, title: 'world.execute(me); dsh PV', artist: 'MisakaZentai', type: '画布预设', kind: 'canvas', cover: 'dsh', hue: 222, duration: 211.913, tip: '内置画布预设：MisakaZentai 的 world-execute-me-dsh-pv（代码 MIT）实时移植，鲸鱼娘立绘 CC BY-NC-SA 4.0。\n使用你自己的音频和歌词文件。' },
     ...recent.map(item => {
       const id = `pack:${item.manifestPath}`
       return { id, manifestPath: item.manifestPath, title: item.title || item.manifestPath, artist: item.artist, type: item.workshop ? '创意工坊' : 'MV 包', kind: item.workshop ? 'workshop' : 'pack', cover: initials(item.title), hue: coverHue(item.title), duration: item.duration || (active.id === id ? activeDuration : 0), tip: item.manifestPath }
@@ -110,19 +141,19 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
                     title={current ? (playing ? '暂停' : '播放') : '切换到这首（再点 ▶ 播放）'}
                     onClick={() => { if (current) onPlay(); else { onSelect(row.id); onShowPlayer() } }}>{current && playing ? <Icon.pause /> : <Icon.play />}</button>
                   {row.manifestPath && <button type="button" className="mv-icon-button" aria-label={`从曲库移除「${row.title}」`} title="从曲库移除（不删除文件）"
-                    onClick={() => { onRecent(forgetPack(row.manifestPath)); if (current) onSelect(BUILTIN_ID) }}><Icon.close /></button>}
+                    onClick={() => { onRecent(forgetPack(row.manifestPath)); if (current) onSelect(EMPTY_ID) }}><Icon.close /></button>}
                 </span>
               </div>
             )
   }
-  const activeRow = rows.find(row => row.id === active.id) ?? { id: active.id, manifestPath: '', title: active.pack?.title ?? '', artist: active.pack?.artist ?? '', type: active.builtin ? '内置预设' : 'MV 包', kind: active.builtin ? 'builtin' : 'pack', cover: initials(active.pack?.title), hue: coverHue(active.pack?.title), duration: activeDuration, tip: active.manifestPath ?? '' }
+  const activeRow = rows.find(row => row.id === active.id) ?? { id: active.id, manifestPath: '', title: active.pack?.title ?? '', artist: active.pack?.artist ?? '', type: active.empty ? '—' : 'MV 包', kind: 'pack', cover: initials(active.pack?.title), hue: coverHue(active.pack?.title), duration: activeDuration, tip: active.manifestPath ?? '' }
   const warnings = active.warnings ?? []
   return (
     <section className="mv-library-section" aria-label="曲库">
       <div className="mv-lib-head">
         <button type="button" className="mv-lib-collapse" aria-expanded={!collapsed} aria-controls="mv-lib-body" title={collapsed ? '展开曲库' : '收起曲库'}
           aria-label={collapsed ? '展开曲库' : '收起曲库'} onClick={() => setCollapsed(saveLibraryCollapsed(!collapsed))}><Icon.chevron /></button>
-        <p className="mv-section-label">曲库 <span className="mv-lib-count">{2 + recent.length} 首{collapsed ? ' · 已收起' : ''}</span></p>
+        <p className="mv-section-label">曲库 <span className="mv-lib-count">{recent.length} 首{collapsed ? ' · 已收起' : ''}</span></p>
         <span className="mv-spacer" />
         <div className="mv-segmented mv-segmented-small mv-lib-layout" role="radiogroup" aria-label="曲库显示方式">
           {[['list', '列表', Icon.list], ['grid', '网格', Icon.grid]].map(([value, label, Ico]) => (
@@ -131,7 +162,10 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
           ))}
         </div>
       </div>
-      {collapsed ? <div id="mv-lib-body" className="mv-tracks mv-tracks-mini" role="list" aria-label="正在播放">{trackRow(activeRow, '▸')}</div> : layout === 'list' ? <div id="mv-lib-body" className="mv-lib-body">
+      {moved && <Alert kind="info" actions={<button type="button" className="mv-button mv-button-small" disabled={Boolean(busy) || !api?.workshopInstall} onClick={() => void installPreset(moved)}>{busy === `preset:${moved.id}` ? '正在安装…' : '从创意工坊安装'}</button>}>
+        <p className="mv-wrap">「{moved.title}」在 0.9.0 起不再内置，已移到创意工坊（原作 <a href={moved.source} target="_blank" rel="noreferrer">{moved.sourceLabel}</a>）。安装后会沿用你之前为它选择的音频和歌词。</p>
+      </Alert>}
+      {collapsed ? <div id="mv-lib-body" className="mv-tracks mv-tracks-mini" role="list" aria-label="正在播放">{active.empty ? <p className="mv-caption">曲库是空的：展开后到「创意工坊」安装 MV。</p> : trackRow(activeRow, '▸')}</div> : layout === 'list' ? <div id="mv-lib-body" className="mv-lib-body">
         <div className="mv-lib-tools" role="toolbar" aria-label="曲库操作">
           {tools.map(tool => (
             <button key={tool.key} type="button" className={`mv-lib-tool mv-lib-tool-${tool.key}`} aria-expanded={tool.expanded} disabled={tool.disabled} title={tool.title} onClick={tool.onClick}>
@@ -139,29 +173,18 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
             </button>
           ))}
         </div>
-        <div className="mv-tracks" role="list" aria-label="曲目">
+        {!empty && <div className="mv-tracks" role="list" aria-label="曲目">
           <div className="mv-track mv-track-head" aria-hidden="true"><span className="mv-track-n">#</span><span /><span>标题</span><span>类型</span><span className="mv-track-len">时长</span><span /></div>
           {rows.map((row, index) => trackRow(row, index + 1))}
-        </div>
+        </div>}
       </div> : <div id="mv-lib-body" className="mv-library">
-        <button type="button" className="mv-card" aria-pressed={active.id === BUILTIN_ID} onClick={() => onSelect(BUILTIN_ID)} title="内置预设：使用你自己的音频和歌词文件">
-          <span className="mv-card-art" style={{ '--mv-hue': 18 }}>&gt;_</span>
-          <span className="mv-card-title">world.execute(me);</span>
-          <span className="mv-card-sub">Mili · 内置预设</span>
-        </button>
-        <button type="button" className="mv-card" aria-pressed={active.id === DSH_PV_ID} onClick={() => onSelect(DSH_PV_ID)}
-          title={'内置画布预设：MisakaZentai 的 world-execute-me-dsh-pv（代码 MIT）实时移植，鲸鱼娘立绘 CC BY-NC-SA 4.0。\n使用你自己的音频和歌词文件。'}>
-          <span className="mv-card-art mv-card-art-dshpv" style={{ '--mv-hue': 222 }}>dsh</span>
-          <span className="mv-card-title">world.execute(me); dsh PV</span>
-          <span className="mv-card-sub">MisakaZentai · 画布预设</span>
-        </button>
         {recent.map(item => {
           const id = `pack:${item.manifestPath}`
           return (
             <div key={item.manifestPath} role="button" tabIndex={0} className="mv-card" aria-pressed={active.id === id} title={item.manifestPath}
               onClick={() => onSelect(id)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(id) } }}>
               <button type="button" className="mv-card-remove" aria-label={`从曲库移除「${item.title}」`} title="从曲库移除（不删除文件）"
-                onClick={event => { event.stopPropagation(); onRecent(forgetPack(item.manifestPath)); if (active.id === id) onSelect(BUILTIN_ID) }}><Icon.close /></button>
+                onClick={event => { event.stopPropagation(); onRecent(forgetPack(item.manifestPath)); if (active.id === id) onSelect(EMPTY_ID) }}><Icon.close /></button>
               <span className="mv-card-art" style={hue(item.title)}>{initials(item.title)}</span>
               <span className="mv-card-title">{item.title || item.manifestPath}</span>
               <span className="mv-card-sub">{item.artist ? `${item.artist} · ` : ''}{item.workshop ? '创意工坊' : 'MV 包'}</span>
@@ -188,7 +211,18 @@ export function Library({ api, active, recent, onSelect, onLoaded, onRecent, har
           <span>{busy === 'template' ? '正在写入…' : '新建（模板）'}</span>
         </button>
       </div>}
-      {recent.length === 0 && !collapsed && !importing && !aiOpen && !workshopOpen && <p className="mv-caption">想放别的歌？到「创意工坊」安装别人做好的 MV 包，点「用 AI 制作新 MV」让 Agent 帮你做，或「新建（模板）」得到带说明的 mv.json 和示例场景，放入你自己的音频和歌词后「导入」。</p>}
+      {empty && !collapsed && !workshopOpen && <div className="mv-empty-lib" role="region" aria-label="曲库是空的">
+        <div className="mv-empty-head">
+          <span className="mv-empty-icon" aria-hidden="true"><Icon.shop /></span>
+          <div>
+            <h3>曲库还是空的</h3>
+            <p className="mv-caption">插件本身不带任何 MV：到「创意工坊」安装社区做好的 MV 包（不含音频和歌词，用你自己的歌曲文件播放）。下面两个是以前内置的 world.execute(me) MV，点一下就能装好。</p>
+          </div>
+          <button type="button" className="mv-button" onClick={toggleWorkshop}>打开创意工坊</button>
+        </div>
+        <div className="mv-presets" role="list" aria-label="推荐">{PRESET_PACKS.map(presetRow)}</div>
+        <p className="mv-caption">也可以点「用 AI 制作新 MV」让 Agent 帮你做，或「新建（模板）」写一个自己的 MV 包再「导入」。</p>
+      </div>}
       {workshopOpen && <WorkshopDialog api={api} active={active} canvas={canvas} initialIndex={workshopIndex} onClose={() => setWorkshopOpen(false)} onLoaded={onLoaded} onRecent={onRecent} />}
       {aiOpen && <AiPackDialog api={api} harness={harness} info={info} onClose={() => setAiOpen(false)} onLoaded={onLoaded} onRecent={onRecent} />}
       {importing && <div className="mv-dialog" role="dialog" aria-label="导入 MV 包">

@@ -1,4 +1,4 @@
-"""Builds .dsh-plugin/assets/dsh-pv/*.json from a local checkout of MisakaZentai/world-execute-me-dsh-pv.
+"""Builds presets/dsh-pv/data/*.json from a local checkout of MisakaZentai/world-execute-me-dsh-pv.
 
 Not shipped. Inputs (all produced locally from the upstream project, see tools/dsh-pv/README.md):
   rec3.json   draw calls recorded from the upstream renderer (rec3.py), keyframes per shot

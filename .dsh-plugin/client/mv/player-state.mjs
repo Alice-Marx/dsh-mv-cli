@@ -4,7 +4,8 @@
  *   film time = audio.currentTime + audioOffset
  * Without audio a monotonic "silent clock" stands in.
  */
-import { CHAPTERS, DURATION } from './film.mjs'
+/** Clock length before a pack or the audio says otherwise (seconds). */
+export const DEFAULT_DURATION = 240
 import { roundOffset } from './sync.mjs'
 
 export class SilentClock {
@@ -18,7 +19,7 @@ export class SilentClock {
 
 /** Clock facade over an <audio> element (or the silent clock). */
 export class FilmClock {
-  constructor({ audio = null, silent = new SilentClock(), audioOffset = 0, duration = DURATION } = {}) {
+  constructor({ audio = null, silent = new SilentClock(), audioOffset = 0, duration = DEFAULT_DURATION } = {}) {
     this.audio = audio; this.silent = silent; this.audioOffset = audioOffset; this.duration = duration
   }
   get hasAudio() { return Boolean(this.audio?.src || this.audio?.currentSrc) }
@@ -38,7 +39,7 @@ export class FilmClock {
 }
 
 /** Film time to render plus whether the slate shows (before start / pre-roll). */
-export function frameTime(t, started, duration = DURATION) {
+export function frameTime(t, started, duration = DEFAULT_DURATION) {
   if (!started || t < 0) return { t: Math.max(0, t), ready: !started || t < 0 }
   return { t: Math.min(t, duration - 1e-3), ready: false }
 }
@@ -64,7 +65,7 @@ export function keyAction({ key, altKey = false, ctrlKey = false, metaKey = fals
     case 'ArrowLeft': return { type: 'seekBy', delta: -5 }
     case 'ArrowRight': return { type: 'seekBy', delta: 5 }
     case 'r': case 'R': return { type: 'restart' }
-    case '1': case '2': case '3': case '4': case '5': return { type: 'chapter', index: Number(key) - 1, at: CHAPTERS[Number(key) - 1][0] }
+    case '1': case '2': case '3': case '4': case '5': return { type: 'chapter', index: Number(key) - 1 }
     case '[': return altKey ? { type: 'audioOffset', delta: -0.1 } : { type: 'subtitleOffset', delta: 0.1 }
     case ']': return altKey ? { type: 'audioOffset', delta: 0.1 } : { type: 'subtitleOffset', delta: -0.1 }
     case '“': return { type: 'audioOffset', delta: -0.1 } // macOS Alt+[
