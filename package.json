@@ -1,6 +1,6 @@
 {
   "name": "@ljwei-stak/dsh-mv-cli",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "type": "module",
   "description": "Terminal-style music video player for DeepSeek Harness Desktop: canvas MVs synced to your own audio file (built-in world.execute(me) ASCII scenes, a real-time port of MisakaZentai's world-execute-me-dsh-pv, or a generic spectrum + lyrics renderer) and MV packs (mv.json) for any song. Unofficial fan work; no audio, video or lyrics are bundled. Includes CC BY-NC-SA 4.0 artwork in .dsh-plugin/assets/dsh-pv-art (see NOTICE.md).",
   "keywords": [

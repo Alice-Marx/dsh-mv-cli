@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (0.8.2)
+## 0.8.2 — 2026-10-04
 
 - **曲库列表视图 / library list view** (new default): compact rows with a small cover, title, artist, type badge (内置预设 / 画布预设 / MV 包 / 创意工坊), duration when known, a playing indicator, and row actions (play / pause the current song, switch to another, remove from the library). The 创意工坊 / 用 AI 制作新 MV / 导入 / 新建（模板） tiles become a compact toolbar. A 列表 / 网格 toggle next to the 曲库 header switches back to cover cards; the choice is stored locally (`dsh-mv.library.view.v1`). Styled per skin: Harness cards, a music-app track list (A), an `ls -l`-style monospace table (B); works in light / dark and with see-through wallpaper themes, and collapses columns in narrow panes. The library now keeps up to 50 packs (was 8); pack durations are remembered for the list.
   曲库默认改为紧凑列表（小封面、标题、歌手、类型、时长、正在播放标记、行内播放和移除），工坊 / AI / 导入 / 模板变成一排小按钮；「列表 / 网格」可切换并保存在本机。曲库最多保留 50 首。
