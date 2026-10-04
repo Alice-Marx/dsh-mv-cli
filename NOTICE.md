@@ -3,61 +3,65 @@
 `@ljwei-stak/dsh-mv-cli`（dsh-mv）是**非官方的同人工具**，与 Mili、DeepSeek 及下列项目的作者均无隶属关系。
 This is an **unofficial fan work**, not affiliated with Mili, DeepSeek, or the authors listed below.
 
+## 0. 0.9.0 起：插件不再内置任何 MV / Since 0.9.0 the plugin bundles no MV
+
+npm 包 `@ljwei-stak/dsh-mv-cli` 自 **0.9.0** 起只含 MIT 代码（许可字段 `MIT`）。以前内置的两个 world.execute(me) 预设
+改为**创意工坊包**发布在 <https://github.com/Alice-Marx/dsh-mv-workshop>，各自按下面第 2、3 节的许可分发；
+在面板里可一键安装。源文件留在本仓库的 `presets/`（不进 npm 包，见 LICENSE 末尾）。
+Since 0.9.0 the npm package is MIT only. The two former built-in presets are workshop packs (sections 2 and 3);
+their sources stay in this repository under `presets/`, which is not part of the npm package.
+
+| 工坊包 / pack | 原作 / original | 许可 / licence |
+| --- | --- | --- |
+| [`world-execute-me`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me) | [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) | 经原作者许可再分发，非开源 / redistributed with the author's permission, not open source |
+| [`world-execute-me-dsh-pv`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-dsh-pv) | [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) | 数据 MIT + 立绘 CC BY-NC-SA 4.0 → 整包 `CC-BY-NC-SA-4.0` |
+
 ## 1. 歌曲与歌词 / Song and lyrics
 
 《world.execute(me);》的作曲、作词、录音及其歌词文本的一切权利归 **Mili** 及其权利人所有。
-本插件**不包含**任何音频、视频、歌词文本、频谱数据或字体；用户需自行提供合法取得的音频与歌词文件，
-文件只在用户本机的 Harness 里读取，不会上传。（0.6.0 起包内附带第 3 节所述、按 CC BY-NC-SA 4.0 授权的鲸鱼娘立绘。）
+本插件和上述工坊包都**不包含**任何音频、视频、歌词文本、频谱数据或字体；用户需自行提供合法取得的音频与歌词文件，
+文件只在用户本机的 Harness 里读取，不会上传。
 
 All rights in "world.execute(me);" (composition, lyrics, recordings) belong to Mili and the respective rights
-holders. The package ships **no** audio, video, lyric text, spectrum data or fonts; users supply their own files.
-(Since 0.6.0 it includes the CC BY-NC-SA 4.0 whale-girl artwork described in section 3.)
+holders. Neither the package nor the workshop packs contain audio, video, lyric text, spectrum data or fonts;
+users supply their own files.
 
 ## 2. 场景与时间轴：world.execute-me-ascii（经作者许可移植）/ Scenes and timing (ported with permission)
 
 - 原项目：<https://github.com/yym8224961/world.execute-me-ascii>，作者 **yym8224961**（Bilibili UP 主「野生大K」）。
-- `.dsh-plugin/client/mv/scenes.gen.mjs`、`film.mjs`、`canvas.mjs` 是该项目 `scenes.py` / `player.py`
-  （`Film.render(t, w, h)`、Canvas、字体、章节与时间轴）的 JavaScript 移植（`scenes.gen.mjs` 由 `tools/py2js.py`
-  从用户本机的 `scenes.py` 机械转译后再手工修正）。
+- `presets/world-execute-me/src/` 里的 `scenes.gen.mjs`、`film.mjs`、`canvas.mjs`、`pyrt.mjs` 是该项目 `scenes.py` /
+  `player.py`（`Film.render(t, w, h)`、Canvas、字体、章节与时间轴）的 JavaScript 移植（`scenes.gen.mjs` 由
+  `tools/py2js.py` 从本机的 `scenes.py` 机械转译后再手工修正）。0.1–0.8 随 npm 包分发；**0.9.0 起**只以工坊包
+  `world-execute-me` 的 `scenes.js`（由 `presets/build-workshop-packs.mjs` 打包成沙箱场景脚本）分发。
 - **许可情况**：
   1. 作者在其 Bilibili 视频的置顶评论中表示该项目已开源、可以在各种终端中播放，并给出了上面的 GitHub 链接；
   2. 作者于 **2026-10-03** 直接向本插件作者 **Alice-Marx** 表示同意修改和使用该项目。
-- **注意**：截至 2026-10-03，该仓库**没有 LICENSE 文件**。「开源」的口头表述和私下同意都不等同于明确的开源许可证，
-  其效力和范围（例如是否允许他人再分发本移植）并不确定。建议：
-  - 把作者的同意**保存为书面记录**（截图/私信/邮件，注明日期和许可范围）；
-  - 请作者在原仓库**添加 LICENSE**（例如 MIT），届时本项目将按该许可证更新本声明。
-- 如果作者撤回同意或提出其他要求，本项目会按其要求修改或移除移植部分。
-- 第三方如需复用上述移植文件，请先自行取得原作者许可；本仓库的 MIT 许可证**不覆盖**这些文件（见 LICENSE 末尾）。
+- **注意**：截至 2026-10-03，该仓库**没有 LICENSE 文件**。「开源」的口头表述和私下同意都不等同于明确的开源许可证。
+  工坊包由同一作者（Alice-Marx）在她自己的公开仓库里再分发，与此前通过 npm 和本公开仓库分发相同；包内 `NOTICE.md`
+  写明这是经许可的使用、**不授予**第三方任何许可。建议把作者的同意保存为书面记录，并请作者在原仓库添加 LICENSE。
+- 如果作者撤回同意或提出其他要求，会按其要求修改或下架工坊包并移除 `presets/world-execute-me/`。
+- 第三方如需复用这些文件，请先自行取得原作者许可；本仓库的 MIT 许可证**不覆盖**它们（见 LICENSE 末尾）。
 
-The scene/timing code is a port of world.execute-me-ascii by yym8224961 (Bilibili: 野生大K). The author's pinned
-comment describes the project as open source and playable in various terminals, and the author directly granted
-Alice-Marx permission to modify and use it on 2026-10-03. The repository has **no LICENSE file**, so this is a
-permission, not an open-source licence: get it in writing and ask the author to add a LICENSE. The MIT licence of
-this repository does not cover the ported files.
+The scene/timing code is a port of world.execute-me-ascii by yym8224961 (Bilibili: 野生大K), used with the author's
+permission (2026-10-03), which is not an open-source licence. Since 0.9.0 it ships only as the `world-execute-me`
+workshop pack (source in `presets/world-execute-me/`, excluded from the MIT licence).
 
-## 3. dsh PV 预设：world-execute-me-dsh-pv（MIT）与鲸鱼娘立绘（CC BY-NC-SA 4.0）/ dsh PV preset
+## 3. dsh PV：world-execute-me-dsh-pv（MIT）与鲸鱼娘立绘（CC BY-NC-SA 4.0）/ dsh PV
 
-**整个 npm 包的许可是 `(MIT AND CC-BY-NC-SA-4.0)`，不是纯 MIT。The package as a whole is not purely MIT.**
-
-- **代码与数据（MIT）**：「world.execute(me); dsh PV」画布预设移植自 **MisakaZentai / world-execute-me-dsh-pv**
-  （<https://github.com/MisakaZentai/world-execute-me-dsh-pv>，commit `a4dd0f7`，MIT，Copyright (c) 2026 MisakaZentai）。
-  `.dsh-plugin/client/mv/dshpv/*.mjs` 是其合成渲染器的 JavaScript 重写；`.dsh-plugin/assets/dsh-pv/` 里的
-  `timeline.json`、`chat.json`、`band.json` 是在本机运行上游渲染器后记录的绘制指令、对话窗口内容与时间表，
-  MIT 全文见该目录的 `NOTICE.md`。数据中的歌词只以 sha256 和时间出现，不含歌词文字；`IF I CAN` 等歌词横幅已替换。
-  DeepSeek 前端的 CSS / 图标 / 字体和上游的字体都没有复制，窗口为原生重画。
-- **立绘（CC BY-NC-SA 4.0）**：`.dsh-plugin/assets/dsh-pv-art/` 里的 8 张表情和 1 张女仆立绘（缩小为 200×360 WebP）
-  按 **署名-非商业性使用-相同方式共享 4.0 国际** 授权，许可全文为该目录的 `LICENSE`，署名链与改动见其 `NOTICE.md`：
-  1. 角色原作 溟月（鲸鱼娘）© **上善无形 / 上善**；
-  2. 女仆版设计 **ZipZipPipe**（Pixiv 作品 148186519；据上游说明使用 AI 图像模型 GPT Image 2 生成）；
-  3. 立绘 **Small-tailqwq / dsh-deep-whale** `maid-atelier`；
-  4. 八种表情 **dsh-whale-galgame**；
-  5. 经 **MisakaZentai / world-execute-me-dsh-pv** 取得。
-  上游的原始 NOTICE 保留在同一目录。运行时画布对这些图做裁切、像素化、调色和故障效果，这些改编画面同样按
-  CC BY-NC-SA 4.0 共享。**不得商用**；改编须按同一许可分享。需要纯 MIT 的构建时删掉该目录，预设改画占位剪影。
-- The dsh PV preset is a JavaScript port of MisakaZentai/world-execute-me-dsh-pv (MIT); its recorded data lives in
-  `.dsh-plugin/assets/dsh-pv/` (MIT notice inside). The whale-girl images in `.dsh-plugin/assets/dsh-pv-art/` are
-  CC BY-NC-SA 4.0 with the attribution chain above (licence text and chain in that folder). Non-commercial;
-  share-alike. Delete the folder for an MIT-only build.
+- **渲染器（MIT，在 npm 包里）**：`.dsh-plugin/client/mv/dshpv/*.mjs` 是 **MisakaZentai / world-execute-me-dsh-pv**
+  （<https://github.com/MisakaZentai/world-execute-me-dsh-pv>，commit `a4dd0f7`，MIT，Copyright (c) 2026 MisakaZentai）
+  合成渲染器的 JavaScript 重写。0.9.0 起它从 MV 包的 `canvas.assets` 读取数据和立绘，自身不带任何数据。
+- **数据（MIT，工坊包）**：`presets/dsh-pv/data/` 的 `timeline.json`、`chat.json`、`band.json` 是在本机运行上游渲染器后
+  记录的绘制指令、对话窗口内容与时间表（MIT 全文见该目录 `NOTICE.md`）。歌词只以 sha256 和时间出现，不含歌词文字。
+  工坊包里拆分成 ≤ 512 KB 的分片。
+- **立绘（CC BY-NC-SA 4.0，工坊包）**：`presets/dsh-pv/art/` 的 8 张表情和 1 张女仆立绘（200×360 WebP）按
+  **署名-非商业性使用-相同方式共享 4.0 国际** 授权，许可全文为该目录的 `LICENSE`，署名链与改动见其 `NOTICE.md`：
+  溟月 © **上善无形** → 女仆版 **ZipZipPipe** → 立绘 **Small-tailqwq / dsh-deep-whale** → 表情 **dsh-whale-galgame**
+  → 经 **MisakaZentai / world-execute-me-dsh-pv** 取得。**不得商用**；改编须按同一许可分享。
+- 0.6.0–0.8.x 的 npm 包含有这些数据和立绘（许可 `(MIT AND CC-BY-NC-SA-4.0)`）；**0.9.0 起不再包含**，它们只在工坊包
+  `world-execute-me-dsh-pv`（整包 `CC-BY-NC-SA-4.0`）里分发。
+- The dsh PV renderer (MIT) stays in the package; its data (MIT) and the whale-girl art (CC BY-NC-SA 4.0) ship only
+  in the `world-execute-me-dsh-pv` workshop pack since 0.9.0.
 - 0.6.0 以前 MV 终端可以启动用户本机的 **world_execute_me**（`tui_live.py`，作者 林原林海 / MisakaZentai 等）；
   **0.6.0 已删除该功能**，本插件从未包含其文件。
 

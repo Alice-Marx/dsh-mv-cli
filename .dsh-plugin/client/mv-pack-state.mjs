@@ -1,10 +1,11 @@
 /**
- * Framework-free MV pack logic of the panel: the built-in preset, recently
+ * Framework-free MV pack logic of the panel: the empty / moved-preset placeholders, recently
  * used packs (localStorage), Host calls, chunked audio download, the folder
  * picker and a store-only zip writer for the template fallback download.
  */
 import { unwrapRemote } from './remote-state.mjs'
 import { MV_PACK_LIMITS, packSummary, parseManifestPath } from '../shared/mv-pack.mjs'
+import { PRESET_PACKS } from '../shared/mv-workshop.mjs'
 import { TEMPLATE_FOLDER, templateFiles } from '../shared/mv-pack-template.mjs'
 import { audioMimeOf, sniffAudio } from '../shared/mv-audio-protocol.mjs'
 
@@ -30,43 +31,23 @@ export function saveLibraryView(view, storage = globalThis.localStorage) {
   try { storage?.setItem(LIBRARY_VIEW_KEY, clean) } catch { /* private mode */ }
   return clean
 }
-export const BUILTIN_ID = 'builtin:world-execute-me'
-
-/** The built-in world.execute(me) preset: your own files picked in the panel. */
-export const BUILTIN_PACK = Object.freeze({
-  id: BUILTIN_ID,
-  builtin: true,
-  pack: Object.freeze({
-    title: 'world.execute(me);', artist: 'Mili',
-    credits: ['Song and lyrics © Mili', 'Scenes: yym8224961/world.execute-me-ascii (野生大K), ported with permission'],
-    canvas: Object.freeze({ renderer: 'world-execute-me' }),
-  }),
-})
-
-export const DSH_PV_ID = 'builtin:dsh-pv'
-
 /**
- * The built-in dsh-pv preset: MisakaZentai's world.execute(me) PV
- * (world-execute-me-dsh-pv) ported to a real-time canvas renderer. Same song,
- * so it shares the audio and lyric files you picked for the other preset.
+ * No pack selected (fresh install, or the last pack is gone): the panel shows the empty library state that
+ * points to 创意工坊. Until 0.8.x the plugin had two built-in presets; since 0.9.0 they are workshop packs
+ * (PRESET_PACKS). A stored 0.8.x preset id becomes a "moved" placeholder with an install hint.
  */
-export const DSH_PV_PACK = Object.freeze({
-  id: DSH_PV_ID,
-  builtin: true,
-  pack: Object.freeze({
-    title: 'world.execute(me); dsh PV', artist: 'Mili',
-    credits: [
-      'Song and lyrics © Mili',
-      'PV: MisakaZentai / world-execute-me-dsh-pv (code MIT), ported to a real-time canvas renderer',
-      'Whale-girl artwork CC BY-NC-SA 4.0: 溟月 © 上善无形 → maid design ZipZipPipe → sprite Small-tailqwq / dsh-deep-whale → expressions dsh-whale-galgame (adapted)',
-    ],
-    duration: 211.913,
-    canvas: Object.freeze({ renderer: 'dsh-pv' }),
-  }),
-})
+export const EMPTY_ID = 'empty'
+export const EMPTY_PACK = Object.freeze({ id: EMPTY_ID, empty: true, pack: Object.freeze({ title: '还没有选择 MV', artist: '', canvas: Object.freeze({ renderer: 'generic' }) }) })
 
-/** Built-in presets by id. */
-export const BUILTINS = Object.freeze({ [BUILTIN_ID]: BUILTIN_PACK, [DSH_PV_ID]: DSH_PV_PACK })
+/** The placeholder for a 0.8.x built-in preset id (null for anything else). */
+export function movedPreset(id) {
+  const preset = PRESET_PACKS.find(p => p.legacyId === id)
+  if (!preset) return null
+  return Object.freeze({ id, empty: true, moved: preset, pack: Object.freeze({ title: preset.title, artist: preset.artist, canvas: Object.freeze({ renderer: 'generic' }) }) })
+}
+
+/** The placeholder pack for an id that is not a loadable pack. */
+export const placeholderPack = id => movedPreset(id) ?? EMPTY_PACK
 
 export function loadRecent(storage = globalThis.localStorage) {
   try {
@@ -106,7 +87,7 @@ export function forgetPack(manifestPath, storage = globalThis.localStorage) {
 }
 
 export function loadActive(storage = globalThis.localStorage) {
-  try { return storage?.getItem(ACTIVE_KEY) || BUILTIN_ID } catch { return BUILTIN_ID }
+  try { return storage?.getItem(ACTIVE_KEY) || EMPTY_ID } catch { return EMPTY_ID }
 }
 export function saveActive(id, storage = globalThis.localStorage) {
   try { storage?.setItem(ACTIVE_KEY, id) } catch { /* ignore */ }

@@ -2,10 +2,9 @@
  * Generic canvas renderer for MV packs without custom scenes: title card,
  * a full-width spectrum (48 bands → vertical bars), the current lyric (both
  * languages), the next line, and a progress bar. Same render() interface and
- * cell styles as Film, so GridRenderer paints it unchanged.
+ * cell styles as the scene-script renderer, so GridRenderer paints it unchanged.
  */
-import { Canvas, width, crop, wrap, DIM, NORMAL, BRIGHT, WHITE } from './canvas.mjs'
-import { Film, HELP_LINES } from './film.mjs'
+import { Grid, width, crop, wrap, drawHelp, HELP_LINES, DIM, NORMAL, BRIGHT, WHITE } from './grid.mjs'
 
 const BAR_LEVELS = ' .:-=+*#%@'
 const SILENT = Object.freeze(new Array(48).fill(0))
@@ -22,7 +21,36 @@ export function genericChapters(duration) {
   return [0, 1, 2, 3, 4].map(i => [Math.round(d * i / 5 * 10) / 10, `${i + 1} / 5`, ''])
 }
 
-export class GenericFilm extends Film {
+/** Lyric cues (sorted by time) and lookups shared by the grid renderers. */
+export class CueFilm {
+  constructor({ lyrics = [], energy = () => SILENT, duration = 0 } = {}) {
+    this.setLyrics(lyrics)
+    this.energy = energy
+    this.duration = duration
+  }
+
+  setLyrics(lyrics) {
+    this.lyrics = [...(lyrics ?? [])].sort((a, b) => a.time - b.time)
+    this.times = this.lyrics.map(cue => cue.time)
+  }
+
+  /** Index of the last cue starting at or before t (-1 if none). */
+  cueIndex(t) {
+    let lo = 0, hi = this.times.length
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (t < this.times[mid]) hi = mid; else lo = mid + 1 }
+    return lo - 1
+  }
+
+  /** The cue showing at t, or null. */
+  cue(t) {
+    const cue = this.lyrics[this.cueIndex(t)]
+    return cue && t < cue.end ? cue : null
+  }
+
+  help(grid, offset, lines = HELP_LINES) { drawHelp(grid, lines, offset) }
+}
+
+export class GenericFilm extends CueFilm {
   constructor({ title = '', artist = '', lyrics = [], energy = () => SILENT, duration = 0 } = {}) {
     super({ lyrics, energy, duration })
     this.title = title
@@ -32,11 +60,7 @@ export class GenericFilm extends Film {
   setMeta({ title, artist }) { this.title = title ?? this.title; this.artist = artist ?? this.artist }
 
   /** Next cue starting after t (for the dim preview line). */
-  nextCue(t) {
-    let lo = 0, hi = this.times.length
-    while (lo < hi) { const mid = (lo + hi) >> 1; if (t < this.times[mid]) hi = mid; else lo = mid + 1 }
-    return this.lyrics[lo] ?? null
-  }
+  nextCue(t) { return this.lyrics[this.cueIndex(t) + 1] ?? null }
 
   chapter(t) {
     const chapters = genericChapters(this.duration)
@@ -46,7 +70,7 @@ export class GenericFilm extends Film {
   }
 
   render(t, w, h, { paused = false, offset = 0, ready = false, hint = true, hintText = '', help = false, helpLines = HELP_LINES } = {}) {
-    const c = new Canvas(w, h)
+    const c = new Grid(w, h)
     const title = (this.title || 'MV').toUpperCase()
     if (w < 40 || h < 14) {
       c.center(Math.floor(h / 2) - 1, crop(title, w - 2), BRIGHT)
@@ -79,9 +103,9 @@ export class GenericFilm extends Film {
     }
     if (ready) {
       const cy = Math.trunc((top + bottom) / 2)
-      for (let y = top; y <= bottom; y++) c.put(0, y, ' '.repeat(w), DIM)
-      if (/^[A-Z0-9 ;.()\-]+$/.test(title) && title.length * 6 < w - 6) c.big(Math.max(top, cy - 3), title, BRIGHT)
-      else c.center(cy - 1, crop(this.title, w - 4), BRIGHT)
+      c.fill(top, bottom, DIM)
+      const spaced = [...title].join(' ')
+      c.center(cy - 1, crop(width(spaced) < w - 6 ? spaced : this.title, w - 4), BRIGHT)
       if (this.artist) c.center(cy + 3, crop(this.artist, w - 4), WHITE)
       c.center(Math.min(bottom, cy + 5), '[ SPACE / ENTER TO START ]', BRIGHT)
     }

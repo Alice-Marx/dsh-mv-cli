@@ -3,7 +3,7 @@
  * world.execute-me-ascii player.py (by yym8224961, used with permission).
  * Cells are [char, style]; a double-width char is followed by ['', style].
  */
-import { WIDE, COMBINING } from './width-table.gen.mjs'
+import { WIDE, COMBINING } from '../../../.dsh-plugin/client/mv/width-table.gen.mjs'
 import { $int, $round, $str } from './pyrt.mjs'
 
 export const DIM = 0, NORMAL = 1, BRIGHT = 2, WHITE = 3, RED = 4

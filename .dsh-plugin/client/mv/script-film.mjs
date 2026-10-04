@@ -7,7 +7,7 @@
  * for too many frames is terminated and the panel falls back to the generic
  * renderer.
  */
-import { Canvas, cw, DIM, NORMAL } from './canvas.mjs'
+import { Grid, cw, DIM, NORMAL } from './grid.mjs'
 import { GenericFilm } from './generic-film.mjs'
 import { SCENE_LIMITS, sceneContext, sceneSourceProblems, sceneWorkerSource } from '../../shared/mv-scene.mjs'
 
@@ -109,7 +109,7 @@ export class ScriptFilm extends GenericFilm {
   /** Same interface as Film / GenericFilm: a Canvas for time t. */
   render(t, w, h, opts = {}) {
     this.request(t, w, h, opts)
-    const c = new Canvas(w, h)
+    const c = new Grid(w, h)
     const frame = this.frame
     if (frame) {
       for (let y = 0; y < Math.min(h, frame.lines.length); y++) {

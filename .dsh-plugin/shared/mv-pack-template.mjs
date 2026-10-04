@@ -1,11 +1,11 @@
 /**
  * The downloadable MV pack template: mv.json, its JSON Schema, a bilingual
- * README, examples (world.execute(me) and dsh-pv presets as packs, scene scripts, a full example pack), AI prompt
+ * README, examples (scene scripts, a full example pack), AI prompt
  * templates (prompts/zh, prompts/en) and a placeholder LRC. Generated text only — no song, lyric or artwork data.
  * The example scenes and prompts live in template/** and are generated into mv-template-assets.gen.mjs.
  */
 import { EXAMPLE_SCENE, SCENE_LIMITS } from './mv-scene.mjs'
-import { MV_CANVAS_RENDERERS, MV_PACK_FORMAT, MV_PACK_SCHEMA_FILE, MV_PACK_VERSION } from './mv-pack.mjs'
+import { MV_RENDERERS_BUILTIN, MV_PACK_FORMAT, MV_PACK_SCHEMA_FILE, MV_PACK_VERSION } from './mv-pack.mjs'
 import { TEMPLATE_ASSETS } from './mv-template-assets.gen.mjs'
 
 export const TEMPLATE_FOLDER = 'dsh-mv-pack-template'
@@ -23,34 +23,6 @@ export const TEMPLATE_MANIFEST = Object.freeze({
   audio: { file: 'song.mp3', offset: 0 },
   lyrics: { file: 'lyrics.lrc', offset: 0 },
   canvas: { renderer: 'generic' },
-})
-
-/** The built-in world.execute(me) preset written as a pack (put it in your world_execute_me folder). */
-export const WORLD_EXECUTE_ME_EXAMPLE = Object.freeze({
-  $schema: `../${MV_PACK_SCHEMA_FILE}`,
-  format: MV_PACK_FORMAT,
-  version: MV_PACK_VERSION,
-  title: 'world.execute(me);',
-  artist: 'Mili',
-  credits: ['Song and lyrics © Mili', 'Scenes: yym8224961/world.execute-me-ascii (野生大K), ported with permission'],
-  duration: 211.906667,
-  audio: { file: 'input/song.mp3' },
-  lyrics: { file: 'input/lyrics.lrc' },
-  canvas: { renderer: 'world-execute-me' },
-})
-
-/** The built-in dsh-pv preset (MisakaZentai's world.execute(me) PV, real-time canvas port) written as a pack. */
-export const DSH_PV_EXAMPLE = Object.freeze({
-  $schema: `../${MV_PACK_SCHEMA_FILE}`,
-  format: MV_PACK_FORMAT,
-  version: MV_PACK_VERSION,
-  title: 'world.execute(me); · 大肥鱼眼中的 world.execute(me)',
-  artist: 'Mili',
-  credits: ['Song and lyrics © Mili', 'PV: MisakaZentai/world-execute-me-dsh-pv (code MIT; whale-girl artwork CC BY-NC-SA 4.0), real-time canvas port'],
-  duration: 211.913,
-  audio: { file: 'input/song.mp3' },
-  lyrics: { file: 'input/lyrics.lrc' },
-  canvas: { renderer: 'dsh-pv' },
 })
 
 const fileRef = (description, offset) => ({
@@ -87,7 +59,8 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
     canvas: {
       type: 'object', additionalProperties: false, patternProperties: { '^x-': {} },
       properties: {
-        renderer: { enum: MV_CANVAS_RENDERERS, default: 'generic', description: 'generic | world-execute-me | dsh-pv | script (needs canvas.script).' },
+        renderer: { enum: MV_RENDERERS_BUILTIN, default: 'generic', description: 'generic | script (needs canvas.script) | dsh-pv (needs canvas.assets; used by the dsh PV workshop pack).' },
+        assets: { type: 'object', description: 'Data files a renderer reads (name → relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv.', additionalProperties: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] } },
         script: { type: 'string', pattern: '\\.m?js$', description: 'Scene script (.js) for renderer "script": defines render(t, cols, rows, ctx). Runs sandboxed in the panel.' },
         fontSize: { type: 'number', minimum: 8, maximum: 32 },
         bpm: { type: 'number', minimum: 20, maximum: 400, description: 'Song tempo for scene scripts: ctx.beat = { bpm, index, bar, phase, pulse }.' },
@@ -125,7 +98,7 @@ VS Code completion and checks.
 | \`audio\` | no | \`{ "file": "song.mp3", "offset": 0 }\`. Without audio the MV plays silently. \`offset\` (±30 s) shifts the picture against the audio. |
 | \`lyrics\` | no | \`{ "file": "lyrics.lrc", "offset": 0 }\`. Bilingual LRC: two lines with the same time stamp, or \`English / 中文\` on one line. |
 | \`spectrum\` | no | \`{ "file": "spectrum.json" }\` with \`{ fps, frames }\` (48 bands per frame). Without it the panel analyses the audio live. |
-| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song), \`world-execute-me\` (the built-in world.execute(me) scenes, timed for that song only), \`dsh-pv\` (the built-in dsh-pv PV, also timed for world.execute(me) only) or \`script\` (your own scene script, see below). |
+| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song), \`script\` (your own scene script, see below) or \`dsh-pv\` (the dsh PV renderer; its data comes from \`canvas.assets\`, see the dsh PV pack in 创意工坊). |
 | \`canvas.script\` | no | \`scenes.js\`: the scene script for \`script\` (setting it implies \`renderer: "script"\`). |
 | \`canvas.fontSize\` | no | 8–32 px. |
 | \`canvas.bpm\`, \`canvas.beatOffset\` | no | Tempo (20–400) and first-beat time for scene scripts (\`ctx.beat\`). |
@@ -169,8 +142,8 @@ should take under ${SCENE_LIMITS.frameBudgetMs} ms; a script that throws, hangs 
 ${SCENE_LIMITS.hardTimeoutMs} ms or is too slow is stopped and the panel falls back to the
 \`generic\` renderer. \`examples/scenes.example.js\` is a working example.
 
-See \`examples/\` for the two built-in world.execute(me) presets written as packs
-(put them in a folder with your own \`input/song.mp3\` and \`input/lyrics.lrc\`).
+The former built-in world.execute(me) presets are now workshop packs (MV 放映室 → 创意工坊);
+install one and open its folder to see a complete script pack and a \`canvas.assets\` pack.
 `
 
 const README_ZH = `# dsh-mv MV 包模板
@@ -198,7 +171,7 @@ VS Code 等编辑器提供补全和校验。
 | \`audio\` | 否 | \`{ "file": "song.mp3", "offset": 0 }\`；没有音频时静音播放画面。\`offset\`（±30 秒）调整画面与音频的同步。 |
 | \`lyrics\` | 否 | \`{ "file": "lyrics.lrc", "offset": 0 }\`；双语 LRC：同一时间戳写两行，或一行写 \`English / 中文\`。 |
 | \`spectrum\` | 否 | \`{ "file": "spectrum.json" }\`，格式 \`{ fps, frames }\`（每帧 48 个频段）；不填则实时分析音频。 |
-| \`canvas.renderer\` | 否 | \`generic\`（通用：频谱 + 标题 + 歌词，任何歌都能放）、\`world-execute-me\`（内置的 world.execute(me) 场景，只适合这首歌的时间轴）、\`dsh-pv\`（内置的 dsh-pv PV，同样只适合这首歌）或 \`script\`（你自己的场景脚本，见下）。 |
+| \`canvas.renderer\` | 否 | \`generic\`（通用：频谱 + 标题 + 歌词，任何歌都能放）、\`script\`（你自己的场景脚本，见下）或 \`dsh-pv\`（dsh PV 渲染器，数据来自 \`canvas.assets\`，参考创意工坊里的 dsh PV 包）。 |
 | \`canvas.script\` | 否 | \`scenes.js\`：\`script\` 渲染器用的场景脚本（填了它就默认 \`renderer: "script"\`）。 |
 | \`canvas.fontSize\` | 否 | 8–32 像素。 |
 | \`canvas.bpm\`、\`canvas.beatOffset\` | 否 | 歌曲速度（20–400）和第一拍时间，供场景脚本使用（\`ctx.beat\`）。 |
@@ -235,8 +208,8 @@ MP4/MOV/WebM/MKV 视频里的音轨、Ogg Vorbis/Opus、FLAC、WAV（PCM / 浮�
 脚本报错、卡住 ${SCENE_LIMITS.hardTimeoutMs} 毫秒或持续太慢时会被停止，面板自动换回 \`generic\` 通用画面。
 \`examples/scenes.example.js\` 是一个能直接运行的示例。
 
-\`examples/\` 里是用 MV 包写法表示的两个内置 world.execute(me) 预设（放进带有你自己的
-\`input/song.mp3\` 和 \`input/lyrics.lrc\` 的文件夹即可）。
+以前内置的两个 world.execute(me) 预设现在是创意工坊里的包（MV 放映室 → 创意工坊）；
+安装后打开它的文件夹，就能看到完整的场景脚本包和使用 \`canvas.assets\` 的包。
 `
 
 const LRC_EXAMPLE = `[ti:Song title]
@@ -257,8 +230,6 @@ export function templateFiles() {
     { path: 'README.md', text: README_EN },
     { path: 'README.zh.md', text: README_ZH },
     { path: 'lyrics.example.lrc', text: LRC_EXAMPLE },
-    { path: 'examples/world-execute-me.mv.json', text: json(WORLD_EXECUTE_ME_EXAMPLE) },
-    { path: 'examples/dsh-pv.mv.json', text: json(DSH_PV_EXAMPLE) },
     { path: 'examples/scenes.example.js', text: EXAMPLE_SCENE },
     ...Object.entries(TEMPLATE_ASSETS).map(([path, text]) => ({ path, text })),
   ]

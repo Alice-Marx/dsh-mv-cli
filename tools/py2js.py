@@ -1,8 +1,8 @@
 """Development-only transpiler: the restricted Python subset of world.execute-me-ascii's
-scenes.py -> an ES module that runs on the JS Canvas in .dsh-plugin/client/mv/canvas.mjs.
+scenes.py -> an ES module that runs on the JS Canvas in presets/world-execute-me/src/canvas.mjs.
 
 Python semantics that differ from JS are routed through small runtime helpers
-(.dsh-plugin/client/mv/pyrt.mjs): floor division and modulo, negative indices,
+(presets/world-execute-me/src/pyrt.mjs): floor division and modulo, negative indices,
 slices, list/str concatenation and repetition, tuple comparison, dict/set with
 tuple keys, banker's rounding, code-point string indexing and format specs.
 Not shipped in the npm package; the generated module is.

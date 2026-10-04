@@ -1,12 +1,13 @@
 // Screenshot script for tools/ui-preview (not shipped). Needs puppeteer-core and Chrome:
 //   node tools/ui-preview/build-preview.mjs && node tools/ui-preview/shoot.mjs <outDir> [filter]
-// The dsh-pv scenes read the preset's files from .dsh-plugin/assets over HTTP. LOCAL_LRC may point at
+// The preset scenes (empty / moved / wem / dshpv / workshop) read the two former presets from a dsh-mv-workshop
+// checkout over HTTP: DSH_MV_ASSETS=<workshop repo>/ (serves /assets/index.json and /assets/packs/…). LOCAL_LRC may point at
 // a lyrics file of your own copy of the song for the screenshots; it is served, never copied or shipped.
 import puppeteer from 'puppeteer-core'
 import http from 'node:http'
 import fs from 'node:fs'
 import path from 'node:path'
-const ASSETS = process.env.DSH_MV_ASSETS ?? new URL('../../.dsh-plugin/assets/', import.meta.url).pathname // set it when running a copy of this script
+const ASSETS = process.env.DSH_MV_ASSETS ?? new URL('../../../dsh-mv-workshop/', import.meta.url).pathname // set it when running a copy of this script
 const DIR = '/tmp/mv-ui-preview', OUT = process.argv[2] || '/workspace/dsh-mv-cli-ui-shots'
 fs.mkdirSync(OUT, { recursive: true })
 const TYPES = { '.png': 'image/png', '.js': 'text/javascript', '.json': 'application/json', '.webp': 'image/webp', '.lrc': 'text/plain; charset=utf-8', '.html': 'text/html; charset=utf-8' }
@@ -96,6 +97,28 @@ if (process.env.LISTVIEW) {
   if (!process.env.COLLAPSED) shots.push(['C-list-wallpaper-follow', 'many', 'light', 'hoverrow', '&skin=c&mode=auto&libview=list&host=art'])
   if (!process.env.COLLAPSED) shots.push(['C-list-narrow', 'many', 'light', '', '&skin=c&mode=light&libview=list', 560])
 }
+// PRESETS=1: 0.9.0 presets-in-the-workshop set (empty library, moved hint, workshop listing with source links,
+// one-click install, both packs playing) per skin.
+if (process.env.PRESETS) {
+  shots.length = 0
+  for (const [dir, skin, mode] of [['C', 'c', 'light'], ['C', 'c', 'dark'], ['A', 'a', 'dark'], ['B', 'b', 'dark'], ['B', 'b', 'light']]) {
+    const q = `&skin=${skin}&mode=${mode}`
+    shots.push([`01-empty-library-${dir}-${mode}`, 'empty', mode, '', q])
+    shots.push([`03-workshop-presets-${dir}-${mode}`, 'workshop', mode, 'wsnav', q])
+    shots.push([`04-workshop-detail-wem-${dir}-${mode}`, 'workshop', mode, 'wsdetail:yym8224961', q])
+    shots.push([`05-workshop-detail-dshpv-${dir}-${mode}`, 'workshop', mode, 'wsdetail:大肥鱼', q])
+  }
+  shots.push(['02-moved-preset-hint-C-light', 'moved', 'light', '', '&skin=c&mode=light'])
+  shots.push(['02-moved-preset-hint-A-dark', 'moved', 'dark', '', '&skin=a&mode=dark&legacy=builtin:world-execute-me'])
+  shots.push(['06-one-click-install-C-light', 'empty', 'light', 'presetinstall', '&skin=c&mode=light'])
+  shots.push(['07-wem-playing-devotion-C-dark', 'wem', 'dark', 'wsplay:41', '&skin=c&mode=dark'])
+  shots.push(['08-wem-playing-execution-A-dark', 'wem', 'dark', 'wsplay:150', '&skin=a&mode=dark'])
+  shots.push(['09-wem-title-B-light', 'wem', 'light', 'wsplay:24', '&skin=b&mode=light'])
+  shots.push(['10-dshpv-playing-satisfaction-C-dark', 'dshpv', 'dark', 'dsh:66.5', '&skin=c&mode=dark'])
+  shots.push(['11-dshpv-playing-chat-C-light', 'dshpv', 'light', 'dsh:96', '&skin=c&mode=light'])
+  shots.push(['12-dshpv-playing-execution-A-dark', 'dshpv', 'dark', 'dsh:151', '&skin=a&mode=dark'])
+  shots.push(['13-dshpv-whale-fall-B-dark', 'dshpv', 'dark', 'dsh:197', '&skin=b&mode=dark'])
+}
 // A synthetic, silent-ish WAV for the AI dialog's file chooser (no real media).
 const AUDIO = path.join(OUT, '..', 'starlight-run-preview.wav')
 {
@@ -172,6 +195,9 @@ for (const [name, scene, theme, action, extra = '', width = 1280] of shots) {
   const seek = async t => page.evaluate(t => { const r = document.querySelector('.mv-seek'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(r, t); r.dispatchEvent(new Event('input', { bubbles: true })) }, t)
   if (String(action ?? '').startsWith('ws')) await sleep(1500)
   if (action === 'wssearch') { await typeInto(page, '.mv-ws-search', 'token'); await page.select('.mv-ws-filters select', 'CC-BY-4.0'); await sleep(600) }
+  if (action === 'wsnav' || String(action ?? '').startsWith('wsdetail:')) { if (await clickText(page, '.mv-side-item, .mv-tmux-tab', '工坊')) await sleep(1200) }
+  if (String(action ?? '').startsWith('wsdetail:')) { await clickText(page, '.mv-ws-card', action.slice(9)); await sleep(1200) }
+  if (action === 'presetinstall') { await clickText(page, '.mv-preset button', '安装'); await sleep(4000) }
   if (action === 'wsdetail') { await clickText(page, '.mv-ws-card', 'heartbeat.exe'); await sleep(1200) }
   if (action === 'wsupdate') { await clickText(page, '.mv-ws-card', 'Neon Terminal'); await sleep(1200) }
   if (action === 'wsinstall') { await clickText(page, '.mv-ws-card', 'Whale Fall'); await sleep(800); await clickText(page, '.mv-ws button', '安装到曲库'); await sleep(3000); await page.evaluate(() => window.scrollTo(0, 0)) }
@@ -208,7 +234,8 @@ for (const [name, scene, theme, action, extra = '', width = 1280] of shots) {
     await page.setViewport({ width: 1280, height: Math.min(4000, Math.max(900, h)), deviceScaleFactor: 1 }); await sleep(600)
     await sleep(700); await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await sleep(200)
   }
-  await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: !process.env.SKINS && !process.env.LISTVIEW })
+  if (process.env.PRESETS) { const h = await page.evaluate(() => document.documentElement.scrollHeight); await page.setViewport({ width, height: Math.min(3000, Math.max(900, h)), deviceScaleFactor: 1 }); await sleep(500); await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await sleep(200) }
+  await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: !process.env.SKINS && !process.env.LISTVIEW && !process.env.PRESETS })
   console.log(name, errors.length ? 'ERRORS ' + errors.join(' | ').slice(0, 400) : 'ok')
   await context.close()
 }

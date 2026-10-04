@@ -51,4210 +51,6 @@ var import_react10 = __toESM(require("react"), 1);
 // .dsh-plugin/client/canvas-mv.jsx
 var import_react3 = __toESM(require("react"), 1);
 
-// .dsh-plugin/client/mv/width-table.gen.mjs
-var WIDE = [[4352, 4447], [8986, 8987], [9001, 9002], [9193, 9196], [9200, 9200], [9203, 9203], [9725, 9726], [9748, 9749], [9800, 9811], [9855, 9855], [9875, 9875], [9889, 9889], [9898, 9899], [9917, 9918], [9924, 9925], [9934, 9934], [9940, 9940], [9962, 9962], [9970, 9971], [9973, 9973], [9978, 9978], [9981, 9981], [9989, 9989], [9994, 9995], [10024, 10024], [10060, 10060], [10062, 10062], [10067, 10069], [10071, 10071], [10133, 10135], [10160, 10160], [10175, 10175], [11035, 11036], [11088, 11088], [11093, 11093], [11904, 11929], [11931, 12019], [12032, 12245], [12272, 12350], [12353, 12438], [12441, 12543], [12549, 12591], [12593, 12686], [12688, 12771], [12783, 12830], [12832, 12871], [12880, 19903], [19968, 42124], [42128, 42182], [43360, 43388], [44032, 55203], [63744, 64255], [65040, 65049], [65072, 65106], [65108, 65126], [65128, 65131], [65281, 65376], [65504, 65510], [94176, 94180], [94192, 94193], [94208, 100343], [100352, 101589], [101632, 101640], [110576, 110579], [110581, 110587], [110589, 110590], [110592, 110882], [110898, 110898], [110928, 110930], [110933, 110933], [110948, 110951], [110960, 111355], [126980, 126980], [127183, 127183], [127374, 127374], [127377, 127386], [127488, 127490], [127504, 127547], [127552, 127560], [127568, 127569], [127584, 127589], [127744, 127776], [127789, 127797], [127799, 127868], [127870, 127891], [127904, 127946], [127951, 127955], [127968, 127984], [127988, 127988], [127992, 128062], [128064, 128064], [128066, 128252], [128255, 128317], [128331, 128334], [128336, 128359], [128378, 128378], [128405, 128406], [128420, 128420], [128507, 128591], [128640, 128709], [128716, 128716], [128720, 128722], [128725, 128727], [128732, 128735], [128747, 128748], [128756, 128764], [128992, 129003], [129008, 129008], [129292, 129338], [129340, 129349], [129351, 129535], [129648, 129660], [129664, 129672], [129680, 129725], [129727, 129733], [129742, 129755], [129760, 129768], [129776, 129784], [131072, 196605], [196608, 262141]];
-var COMBINING = [[768, 846], [848, 879], [1155, 1159], [1425, 1469], [1471, 1471], [1473, 1474], [1476, 1477], [1479, 1479], [1552, 1562], [1611, 1631], [1648, 1648], [1750, 1756], [1759, 1764], [1767, 1768], [1770, 1773], [1809, 1809], [1840, 1866], [2027, 2035], [2045, 2045], [2070, 2073], [2075, 2083], [2085, 2087], [2089, 2093], [2137, 2139], [2200, 2207], [2250, 2273], [2275, 2303], [2364, 2364], [2381, 2381], [2385, 2388], [2492, 2492], [2509, 2509], [2558, 2558], [2620, 2620], [2637, 2637], [2748, 2748], [2765, 2765], [2876, 2876], [2893, 2893], [3021, 3021], [3132, 3132], [3149, 3149], [3157, 3158], [3260, 3260], [3277, 3277], [3387, 3388], [3405, 3405], [3530, 3530], [3640, 3642], [3656, 3659], [3768, 3770], [3784, 3787], [3864, 3865], [3893, 3893], [3895, 3895], [3897, 3897], [3953, 3954], [3956, 3956], [3962, 3965], [3968, 3968], [3970, 3972], [3974, 3975], [4038, 4038], [4151, 4151], [4153, 4154], [4237, 4237], [4957, 4959], [5908, 5909], [5940, 5940], [6098, 6098], [6109, 6109], [6313, 6313], [6457, 6459], [6679, 6680], [6752, 6752], [6773, 6780], [6783, 6783], [6832, 6845], [6847, 6862], [6964, 6964], [6980, 6980], [7019, 7027], [7082, 7083], [7142, 7142], [7154, 7155], [7223, 7223], [7376, 7378], [7380, 7392], [7394, 7400], [7405, 7405], [7412, 7412], [7416, 7417], [7616, 7679], [8400, 8412], [8417, 8417], [8421, 8432], [11503, 11505], [11647, 11647], [11744, 11775], [12330, 12335], [12441, 12442], [42607, 42607], [42612, 42621], [42654, 42655], [42736, 42737], [43014, 43014], [43052, 43052], [43204, 43204], [43232, 43249], [43307, 43309], [43347, 43347], [43443, 43443], [43456, 43456], [43696, 43696], [43698, 43700], [43703, 43704], [43710, 43711], [43713, 43713], [43766, 43766], [44013, 44013], [64286, 64286], [65056, 65071], [66045, 66045], [66272, 66272], [66422, 66426], [68109, 68109], [68111, 68111], [68152, 68154], [68159, 68159], [68325, 68326], [68900, 68903], [69291, 69292], [69373, 69375], [69446, 69456], [69506, 69509], [69702, 69702], [69744, 69744], [69759, 69759], [69817, 69818], [69888, 69890], [69939, 69940], [70003, 70003], [70080, 70080], [70090, 70090], [70197, 70198], [70377, 70378], [70459, 70460], [70477, 70477], [70502, 70508], [70512, 70516], [70722, 70722], [70726, 70726], [70750, 70750], [70850, 70851], [71103, 71104], [71231, 71231], [71350, 71351], [71467, 71467], [71737, 71738], [71997, 71998], [72003, 72003], [72160, 72160], [72244, 72244], [72263, 72263], [72345, 72345], [72767, 72767], [73026, 73026], [73028, 73029], [73111, 73111], [73537, 73538], [92912, 92916], [92976, 92982], [94192, 94193], [113822, 113822], [119141, 119145], [119149, 119154], [119163, 119170], [119173, 119179], [119210, 119213], [119362, 119364], [122880, 122886], [122888, 122904], [122907, 122913], [122915, 122916], [122918, 122922], [123023, 123023], [123184, 123190], [123566, 123566], [123628, 123631], [124140, 124143], [125136, 125142], [125252, 125258]];
-
-// .dsh-plugin/client/mv/pyrt.mjs
-var SURROGATE = /[\uD800-\uDFFF]/;
-function chars(s) {
-  return SURROGATE.test(s) ? Array.from(s) : null;
-}
-function $key(k) {
-  switch (typeof k) {
-    case "number":
-      return "n" + k;
-    case "boolean":
-      return "n" + +k;
-    case "string":
-      return "s" + k;
-    default:
-      if (k === null || k === void 0) return "N";
-      if (Array.isArray(k)) return "[" + k.map($key).join(",") + "]";
-      throw new TypeError("unhashable key");
-  }
-}
-var PyDict = class {
-  constructor(entries = []) {
-    this.map = /* @__PURE__ */ new Map();
-    for (const [k, v] of entries) this.set(k, v);
-  }
-  get size() {
-    return this.map.size;
-  }
-  has(k) {
-    return this.map.has($key(k));
-  }
-  get(k) {
-    const e = this.map.get($key(k));
-    if (e === void 0) throw new Error("KeyError: " + String(k));
-    return e[1];
-  }
-  set(k, v) {
-    this.map.set($key(k), [k, v]);
-  }
-  keys() {
-    return [...this.map.values()].map((e) => e[0]);
-  }
-  entries() {
-    return [...this.map.values()].map((e) => [e[0], e[1]]);
-  }
-};
-var PySet = class {
-  constructor(values = []) {
-    this.map = /* @__PURE__ */ new Map();
-    for (const v of values) this.add(v);
-  }
-  get size() {
-    return this.map.size;
-  }
-  has(v) {
-    return this.map.has($key(v));
-  }
-  add(v) {
-    this.map.set($key(v), v);
-  }
-  values() {
-    return [...this.map.values()];
-  }
-};
-function $iter(x) {
-  if (Array.isArray(x)) return x;
-  if (typeof x === "string") return chars(x) ?? x.split("");
-  if (x instanceof PyDict) return x.keys();
-  if (x instanceof PySet) return x.values();
-  if (x && typeof x[Symbol.iterator] === "function") return Array.from(x);
-  throw new TypeError("object is not iterable");
-}
-function $unpack(v, n) {
-  const a = Array.isArray(v) ? v : $iter(v);
-  if (a.length !== n) throw new Error(`ValueError: expected ${n} values to unpack, got ${a.length}`);
-  return a;
-}
-function $add(a, b) {
-  if (Array.isArray(a)) return a.concat(b);
-  return a + b;
-}
-function $mul(a, b) {
-  const ta = typeof a, tb = typeof b;
-  if (ta === "number" && tb === "number") return a * b;
-  if (ta === "string") return b > 0 ? a.repeat(Math.trunc(b)) : "";
-  if (tb === "string") return a > 0 ? b.repeat(Math.trunc(a)) : "";
-  if (Array.isArray(a)) {
-    const out = [];
-    for (let i = 0; i < b; i++) out.push(...a);
-    return out;
-  }
-  if (Array.isArray(b)) return $mul(b, a);
-  return a * b;
-}
-function $mod(a, b) {
-  const r = a % b;
-  return r !== 0 && r < 0 !== b < 0 ? r + b : r;
-}
-var SMALL = (x) => Number.isInteger(x) && x >= -2147483648 && x <= 2147483647;
-function $band(a, b) {
-  return SMALL(a) && SMALL(b) ? a & b : Number(BigInt(a) & BigInt(b));
-}
-function $bxor(a, b) {
-  return SMALL(a) && SMALL(b) ? a ^ b : Number(BigInt(a) ^ BigInt(b));
-}
-function $rshift(a, b) {
-  return SMALL(a) && b < 32 ? a >> b : Number(BigInt(a) >> BigInt(b));
-}
-function hash16(i) {
-  let v = i + 2654435769 >>> 0;
-  v = Math.imul((v ^ v >>> 16) >>> 0, 2146121005) >>> 0;
-  v = Math.imul((v ^ v >>> 15) >>> 0, 2221713035) >>> 0;
-  return (v ^ v >>> 16) >>> 0 & 65535;
-}
-function $eq(a, b) {
-  if (a === b) return true;
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) if (!$eq(a[i], b[i])) return false;
-    return true;
-  }
-  if (typeof a === "boolean" || typeof b === "boolean") return +a === +b;
-  return false;
-}
-function $cmp(a, b) {
-  if (Array.isArray(a) && Array.isArray(b)) {
-    const n = Math.min(a.length, b.length);
-    for (let i = 0; i < n; i++) {
-      const c = $cmp(a[i], b[i]);
-      if (c !== 0) return c;
-    }
-    return a.length - b.length;
-  }
-  return a < b ? -1 : a > b ? 1 : 0;
-}
-function $in(x, c) {
-  if (typeof c === "string") return c.includes(x);
-  if (Array.isArray(c)) {
-    for (const v of c) if ($eq(v, x)) return true;
-    return false;
-  }
-  if (c instanceof PyDict || c instanceof PySet) return c.has(x);
-  if (c && typeof c === "object") return Object.hasOwn(c, x);
-  throw new TypeError("argument is not iterable");
-}
-function index(len, i) {
-  return i < 0 ? len + i : i;
-}
-function $at(o, i) {
-  if (Array.isArray(o)) return o[i < 0 ? o.length + i : i];
-  if (typeof o === "string") {
-    const cs = chars(o);
-    if (cs) return cs[index(cs.length, i)];
-    return o[index(o.length, i)];
-  }
-  if (o instanceof PyDict) return o.get(i);
-  if (o === null || o === void 0) throw new TypeError("NoneType is not subscriptable");
-  return o[i];
-}
-function $setitem(o, i, v) {
-  if (Array.isArray(o)) {
-    o[i < 0 ? o.length + i : i] = v;
-    return;
-  }
-  if (o instanceof PyDict) {
-    o.set(i, v);
-    return;
-  }
-  o[i] = v;
-}
-function sliceBounds(len, lo, hi, step) {
-  const st = step ?? 1;
-  if (st === 0) throw new Error("slice step cannot be zero");
-  const clampIdx = (x, def, lower, upper) => {
-    if (x === null || x === void 0) return def;
-    let v = Math.trunc(x);
-    if (v < 0) v += len;
-    return Math.min(Math.max(v, lower), upper);
-  };
-  if (st > 0) return [clampIdx(lo, 0, 0, len), clampIdx(hi, len, 0, len), st];
-  return [clampIdx(lo, len - 1, -1, len - 1), clampIdx(hi, -1, -1, len - 1), st];
-}
-function $slice(o, lo, hi, step) {
-  const isStr = typeof o === "string";
-  const seq = isStr ? chars(o) ?? o : o;
-  const [a, b, st] = sliceBounds(seq.length, lo, hi, step);
-  if (st === 1) {
-    const part2 = seq.slice(a, Math.max(a, b));
-    return isStr && Array.isArray(part2) ? part2.join("") : part2;
-  }
-  const out = [];
-  if (st > 0) for (let i = a; i < b; i += st) out.push(seq[i]);
-  else for (let i = a; i > b; i += st) out.push(seq[i]);
-  return isStr ? out.join("") : out;
-}
-function $setslice(o, lo, hi, v) {
-  const [a, b] = sliceBounds(o.length, lo, hi, 1);
-  o.splice(a, Math.max(0, b - a), ...$iter(v));
-}
-function $truth(x) {
-  if (x === null || x === void 0 || x === false) return false;
-  if (x === true) return true;
-  if (typeof x === "number") return x !== 0 && !Number.isNaN(x);
-  if (typeof x === "string" || Array.isArray(x)) return x.length > 0;
-  if (x instanceof PyDict || x instanceof PySet) return x.size > 0;
-  return true;
-}
-function $str(v) {
-  if (v === null || v === void 0) return "None";
-  if (v === true) return "True";
-  if (v === false) return "False";
-  if (typeof v === "number") {
-    if (Number.isNaN(v)) return "nan";
-    if (!Number.isFinite(v)) return v > 0 ? "inf" : "-inf";
-    return String(v);
-  }
-  if (Array.isArray(v)) return "(" + v.map((x) => typeof x === "string" ? `'${x}'` : $str(x)).join(", ") + (v.length === 1 ? ",)" : ")");
-  return String(v);
-}
-function $fmt(v, spec) {
-  if (!spec) return $str(v);
-  const m = /^(?:(.)?([<>^=]))?([+\- ])?(0)?(\d+)?(?:\.(\d+))?([dfxXseEg%])?$/u.exec(spec);
-  if (!m) throw new Error("unsupported format spec " + spec);
-  let [, fill, align, sign2, zero, width2, prec, type] = m;
-  let body;
-  const num = typeof v === "number" || typeof v === "boolean";
-  const n = Number(v);
-  if (type === "d") body = String(Math.abs(Math.trunc(n)));
-  else if (type === "x" || type === "X") {
-    body = Math.abs(Math.trunc(n)).toString(16);
-    if (type === "X") body = body.toUpperCase();
-  } else if (type === "f") body = Math.abs(n).toFixed(prec === void 0 ? 6 : Number(prec));
-  else if (type === "%") body = (Math.abs(n) * 100).toFixed(prec === void 0 ? 6 : Number(prec)) + "%";
-  else if (type === "e" || type === "E") {
-    body = Math.abs(n).toExponential(prec === void 0 ? 6 : Number(prec)).replace(/e([+-])(\d)$/, "e$10$2");
-    if (type === "E") body = body.toUpperCase();
-  } else if (num && prec !== void 0) body = Math.abs(n).toFixed(Number(prec));
-  else body = num ? $str(Math.abs(n)) : $str(v);
-  let s = "";
-  if (num) {
-    const negative = n < 0 || Object.is(n, -0) && type === "f";
-    if (negative && n !== 0) s = "-";
-    else if (sign2 === "+") s = "+";
-    else if (sign2 === " ") s = " ";
-  }
-  const w = width2 ? Number(width2) : 0;
-  if (zero && !align) {
-    fill = "0";
-    align = "=";
-  }
-  fill = fill ?? " ";
-  align = align ?? (num ? ">" : "<");
-  const len = Array.from(s + body).length;
-  const pad = Math.max(0, w - len);
-  if (align === "=") return s + fill.repeat(pad) + body;
-  if (align === "<") return s + body + fill.repeat(pad);
-  if (align === "^") {
-    const l = Math.floor(pad / 2);
-    return fill.repeat(l) + s + body + fill.repeat(pad - l);
-  }
-  return fill.repeat(pad) + s + body;
-}
-function $range(a, b, s) {
-  let start = 0, stop = a, step = 1;
-  if (b !== void 0) {
-    start = a;
-    stop = b;
-  }
-  if (s !== void 0) step = s;
-  start = $int(start);
-  stop = $int(stop);
-  const out = [];
-  if (step > 0) for (let i = start; i < stop; i += step) out.push(i);
-  else for (let i = start; i > stop; i += step) out.push(i);
-  return out;
-}
-function $enumerate(it, start = 0) {
-  return $iter(it).map((v, i) => [i + start, v]);
-}
-function $zip(...its) {
-  const arrays = its.map($iter);
-  const n = Math.min(...arrays.map((a) => a.length));
-  const out = [];
-  for (let i = 0; i < n; i++) out.push(arrays.map((a) => a[i]));
-  return out;
-}
-function $sorted(it) {
-  return [...$iter(it)].sort($cmp);
-}
-function $sum(it, start = 0) {
-  let s = start;
-  for (const v of $iter(it)) s = $add(s, v);
-  return s;
-}
-function pick(args, better) {
-  const list = args.length === 1 ? $iter(args[0]) : args;
-  if (list.length === 0) throw new Error("ValueError: arg is an empty sequence");
-  let best = list[0];
-  for (let i = 1; i < list.length; i++) if (better(list[i], best)) best = list[i];
-  return best;
-}
-function $min(...args) {
-  if (args.length === 2 && typeof args[0] === "number" && typeof args[1] === "number") return args[1] < args[0] ? args[1] : args[0];
-  return pick(args, (a, b) => $cmp(a, b) < 0);
-}
-function $max(...args) {
-  if (args.length === 2 && typeof args[0] === "number" && typeof args[1] === "number") return args[1] > args[0] ? args[1] : args[0];
-  return pick(args, (a, b) => $cmp(a, b) > 0);
-}
-function $len(o) {
-  if (typeof o === "string") {
-    const cs = chars(o);
-    return cs ? cs.length : o.length;
-  }
-  if (Array.isArray(o)) return o.length;
-  if (o instanceof PyDict || o instanceof PySet) return o.size;
-  throw new TypeError("object has no len()");
-}
-function $int(v) {
-  if (typeof v === "number") {
-    if (!Number.isFinite(v)) throw new Error("cannot convert float to integer");
-    return Math.trunc(v) + 0;
-  }
-  if (typeof v === "boolean") return +v;
-  if (typeof v === "string") {
-    const n = Number.parseInt(v.trim(), 10);
-    if (Number.isNaN(n)) throw new Error("invalid literal for int()");
-    return n;
-  }
-  throw new TypeError("int() argument");
-}
-function $round(x, nd) {
-  if (nd === void 0 || nd === null) {
-    const f = Math.floor(x), d = x - f;
-    if (d > 0.5) return f + 1;
-    if (d < 0.5) return f;
-    return f % 2 === 0 ? f : f + 1;
-  }
-  const p = 10 ** nd;
-  return $round(x * p) / p;
-}
-function $next(it, ...fallback) {
-  const a = $iter(it);
-  if (a.length) return a[0];
-  if (fallback.length) return fallback[0];
-  throw new Error("StopIteration");
-}
-function $chr(n) {
-  return String.fromCodePoint(n);
-}
-function $ord(s) {
-  return s.codePointAt(0);
-}
-function $bin(n) {
-  return (n < 0 ? "-0b" : "0b") + Math.abs(n).toString(2);
-}
-function $isinstance(v, names) {
-  return names.some((n) => n === "int" ? Number.isInteger(v) || typeof v === "boolean" : n === "float" ? typeof v === "number" : n === "str" ? typeof v === "string" : n === "tuple" || n === "list" ? Array.isArray(v) : n === "dict" ? v instanceof PyDict : false);
-}
-function $join(sep, it) {
-  return $iter(it).join(sep);
-}
-function $items(d) {
-  return d instanceof PyDict ? d.entries() : Object.entries(d);
-}
-function $get(o, k, d = null) {
-  if (o instanceof PyDict) return o.has(k) ? o.get(k) : d;
-  return Object.hasOwn(o, k) ? o[k] : d;
-}
-function $strip(s, set) {
-  if (set === void 0 || set === null) return s.replace(/^\s+|\s+$/gu, "");
-  const cs = new Set(Array.from(set));
-  const a = Array.from(s);
-  let i = 0, j = a.length;
-  while (i < j && cs.has(a[i])) i++;
-  while (j > i && cs.has(a[j - 1])) j--;
-  return a.slice(i, j).join("");
-}
-function $ljust(s, n, ch = " ") {
-  const l = $len(s);
-  return l >= n ? s : s + ch.repeat(n - l);
-}
-function $count(o, x) {
-  if (typeof o === "string") {
-    if (x === "") return $len(o) + 1;
-    let c = 0, i = 0;
-    while ((i = o.indexOf(x, i)) !== -1) {
-      c++;
-      i += x.length;
-    }
-    return c;
-  }
-  return $iter(o).filter((v) => $eq(v, x)).length;
-}
-
-// .dsh-plugin/client/mv/canvas.mjs
-var DIM = 0;
-var NORMAL = 1;
-var BRIGHT = 2;
-var WHITE = 3;
-function inRanges(table, cp) {
-  let lo = 0, hi = table.length - 1;
-  while (lo <= hi) {
-    const mid = lo + hi >> 1;
-    const [a, b] = table[mid];
-    if (cp < a) hi = mid - 1;
-    else if (cp > b) lo = mid + 1;
-    else return true;
-  }
-  return false;
-}
-var widthCache = /* @__PURE__ */ new Map();
-function cw(ch) {
-  let w = widthCache.get(ch);
-  if (w !== void 0) return w;
-  const cp = ch.codePointAt(0);
-  w = inRanges(COMBINING, cp) ? 0 : inRanges(WIDE, cp) ? 2 : 1;
-  if (widthCache.size < 4096) widthCache.set(ch, w);
-  return w;
-}
-function width(s) {
-  let n = 0;
-  for (const ch of s) n += cw(ch);
-  return n;
-}
-function crop(s, n) {
-  let out = "", used = 0;
-  for (const ch of s) {
-    const k = cw(ch);
-    if (used + k > n) break;
-    out += ch;
-    used += k;
-  }
-  return out;
-}
-function wrap(s, n) {
-  if (width(s) <= n) return [s];
-  const parts = [];
-  const ascii2 = [...s].every((c) => c.codePointAt(0) < 128);
-  while (s) {
-    let line = crop(s, n);
-    if (!line) line = Array.from(s)[0];
-    if ([...line].length < [...s].length && line.includes(" ") && ascii2) line = line.slice(0, line.lastIndexOf(" ")) || line;
-    parts.push(line);
-    s = s.slice(line.length).replace(/^\s+/u, "");
-  }
-  return parts;
-}
-var Canvas = class {
-  constructor(w, h) {
-    this.w = w;
-    this.h = h;
-    this.clip = null;
-    this.cells = [];
-    for (let y = 0; y < h; y++) {
-      const row = new Array(w);
-      for (let x = 0; x < w; x++) row[x] = [" ", DIM];
-      this.cells.push(row);
-    }
-  }
-  put(x, y, s, style = NORMAL) {
-    x = $int(x);
-    y = $int(y);
-    if (!(y >= 0 && y < this.h)) return;
-    if (this.clip && !(this.clip[0] <= y && y <= this.clip[1])) return;
-    const text4 = typeof s === "string" ? s : $str(s);
-    const row = this.cells[y];
-    for (const ch of text4) {
-      const k = cw(ch);
-      if (k === 0) continue;
-      if (x >= 0 && x + k <= this.w) {
-        row[x] = [ch, style];
-        if (k === 2) row[x + 1] = ["", style];
-      }
-      x += k;
-    }
-  }
-  center(y, s, style = NORMAL) {
-    this.put(Math.floor((this.w - width(typeof s === "string" ? s : $str(s))) / 2), y, s, style);
-  }
-  line(x0, y0, x1, y1, ch = ".", style = DIM) {
-    const steps = Math.max(1, $int(Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) * 1.5));
-    for (let i = 0; i <= steps; i++) {
-      const u = i / steps;
-      this.put($round(x0 + (x1 - x0) * u), $round(y0 + (y1 - y0) * u), ch, style);
-    }
-  }
-  box(x, y, w, h, style = DIM) {
-    if (w < 2 || h < 2) return;
-    const edge = "+" + "-".repeat(Math.max(0, w - 2)) + "+";
-    this.put(x, y, edge, style);
-    this.put(x, y + h - 1, edge, style);
-    for (let yy = $int(y + 1); yy < $int(y + h - 1); yy++) {
-      this.put(x, yy, "|", style);
-      this.put(x + w - 1, yy, "|", style);
-    }
-  }
-  big(y, text4, style = BRIGHT) {
-    text4 = text4.toUpperCase();
-    const total = text4.length * 6 - 1;
-    if (total > this.w - 6) {
-      this.center(y + 2, text4, style);
-      return;
-    }
-    const left = Math.floor((this.w - total) / 2);
-    let i = 0;
-    for (const ch of text4) {
-      const rows = FONT.has(ch) ? FONT.get(ch) : FONT.get(" ");
-      rows.forEach((row, dy) => {
-        for (let dx = 0; dx < row.length; dx++) if (row[dx] === "1") this.put(left + i * 6 + dx, y + dy, "#", style);
-      });
-      i++;
-    }
-  }
-  /** Plain text, for tests and snapshots. */
-  plain() {
-    return this.cells.map((r) => r.map((c) => c[0]).join("")).join("\n");
-  }
-};
-var FONT_ROWS = {
-  A: ["01110", "11011", "11111", "11011", "11011"],
-  B: ["11110", "11011", "11110", "11011", "11110"],
-  C: ["01111", "11000", "11000", "11000", "01111"],
-  D: ["11110", "11011", "11011", "11011", "11110"],
-  E: ["11111", "11000", "11110", "11000", "11111"],
-  F: ["11111", "11000", "11110", "11000", "11000"],
-  G: ["01111", "11000", "11011", "11011", "01111"],
-  H: ["11011", "11011", "11111", "11011", "11011"],
-  I: ["11111", "00100", "00100", "00100", "11111"],
-  J: ["00111", "00011", "00011", "11011", "01110"],
-  K: ["11011", "11110", "11100", "11110", "11011"],
-  L: ["11000", "11000", "11000", "11000", "11111"],
-  M: ["10001", "11011", "10101", "10001", "10001"],
-  N: ["11001", "11101", "11111", "10111", "10011"],
-  O: ["01110", "11011", "11011", "11011", "01110"],
-  P: ["11110", "11011", "11110", "11000", "11000"],
-  Q: ["01110", "11011", "11011", "01110", "00011"],
-  R: ["11110", "11011", "11110", "11101", "11011"],
-  S: ["01111", "11000", "01110", "00011", "11110"],
-  T: ["11111", "00100", "00100", "00100", "00100"],
-  U: ["11011", "11011", "11011", "11011", "01110"],
-  V: ["11011", "11011", "11011", "01110", "00100"],
-  W: ["10001", "10001", "10101", "11011", "10001"],
-  X: ["11011", "01110", "00100", "01110", "11011"],
-  Y: ["11011", "11011", "01110", "00100", "00100"],
-  Z: ["11111", "00011", "00110", "01100", "11111"],
-  0: ["01110", "11011", "11011", "11011", "01110"],
-  1: ["00100", "01100", "00100", "00100", "01110"],
-  2: ["11110", "00011", "01110", "11000", "11111"],
-  3: ["11110", "00011", "01110", "00011", "11110"],
-  4: ["11011", "11011", "11111", "00011", "00011"],
-  5: ["11111", "11000", "11110", "00011", "11110"],
-  6: ["01111", "11000", "11110", "11011", "01110"],
-  7: ["11111", "00011", "00110", "01100", "01100"],
-  8: ["01110", "11011", "01110", "11011", "01110"],
-  9: ["01110", "11011", "01111", "00011", "11110"],
-  ";": ["00000", "00100", "00000", "00100", "01000"],
-  ".": ["00000", "00000", "00000", "00000", "00100"],
-  "(": ["00010", "00100", "00100", "00100", "00010"],
-  ")": ["01000", "00100", "00100", "00100", "01000"],
-  "-": ["00000", "00000", "11111", "00000", "00000"],
-  " ": ["00000", "00000", "00000", "00000", "00000"]
-};
-var FONT = new PyDict(Object.entries(FONT_ROWS));
-
-// .dsh-plugin/client/mv/scenes.gen.mjs
-var TITLE_CACHE;
-var LIFE_CACHE;
-var D;
-var N;
-var B;
-var W;
-var R;
-var G;
-var K;
-var Y;
-var TAU;
-TAU = 2 * Math.PI;
-[D, N, B, W, R, G, K, Y] = $unpack([0, 1, 2, 3, 4, 5, 6, 3], 8);
-function mix(a, b, u) {
-  return $add(a, $mul(b - a, u));
-}
-function clamp(x, a = 0, b = 1) {
-  return $min(b, $max(a, x));
-}
-function clear(c, x, y, w, h) {
-  let yy;
-  for (let $t1 = $int($int(y)), $t2 = $int($int($add(y, h))), $t3 = 1; $t3 > 0 ? $t1 < $t2 : $t1 > $t2; $t1 += $t3) {
-    yy = $t1;
-    c.put(x, yy, $mul(" ", $max(0, $int(w))), K);
-  }
-}
-function glitch_intensity(t) {
-  let a, low, b, high, anchors;
-  if (t < 60) {
-    return 0.05;
-  }
-  if (t < 110) {
-    return mix(0.05, 0.25, (t - 60) / 50);
-  }
-  if (t < 110.9) {
-    return mix(0.25, 0.6, (t - 110) / 37);
-  }
-  anchors = [[110.9, 0.259], [112.22, 0.34], [113.1, 0.43], [114.18, 0.51], [114.92, 0.59], [115.78, 0.66], [117.274, 0.73], [125.708, 0.81], [147.66, 0.92], [177.246, 1]];
-  for (const $t4 of $iter($zip(anchors, $slice(anchors, 1, null, null)))) {
-    [[a, low], [b, high]] = $unpack($t4, 2);
-    if (t < b) {
-      return mix(low, high, clamp((t - a) / (b - a)));
-    }
-  }
-  return 1;
-}
-function apply_glitch(c, t, top, bt, intensity = null) {
-  let x, ch, _, shift, source, row, band, dx, length, start, tick, dy, chars2, h, w, y, scan_rows, style, cells, frame;
-  if (intensity == null) {
-    intensity = glitch_intensity(t);
-  }
-  if (intensity < 0.01) {
-    return;
-  }
-  frame = $int($mul(t, 24));
-  if ($mod(hash16(frame), 100) < $mul(intensity, 30)) {
-    for (let $t5 = $int(0), $t6 = $int($int($mul(intensity, 5))), $t7 = 1; $t7 > 0 ? $t5 < $t6 : $t5 > $t6; $t5 += $t7) {
-      _ = $t5;
-      row = $add(top, $mod(hash16($add(frame, $mul(_, 7))), bt - top + 1));
-      shift = $int($mul($mod(hash16($add(frame, $mul(_, 13))), 20) - 10, intensity));
-      if (shift !== 0) {
-        cells = $at(c.cells, row);
-        $setitem(c.cells, row, shift > 0 ? $add($slice(cells, -shift, null, null), $slice(cells, null, -shift, null)) : $add($slice(cells, -shift, null, null), $slice(cells, null, -shift, null)));
-      }
-    }
-  }
-  if ($mod(hash16($add(frame, 100)), 100) < $mul(intensity, 40)) {
-    for (let $t8 = $int(0), $t9 = $int($int($mul(intensity, 15))), $t10 = 1; $t10 > 0 ? $t8 < $t9 : $t8 > $t9; $t8 += $t10) {
-      _ = $t8;
-      x = $mod(hash16($add(frame, $mul(_, 19))), c.w - 4) + 2;
-      y = $add(top, $mod(hash16($add(frame, $mul(_, 23))), bt - top + 1));
-      if (0 <= y && y < $len(c.cells) && (0 <= x && x < $len($at(c.cells, y)))) {
-        [ch, style] = $unpack($at($at(c.cells, y), x), 2);
-        $setitem($at(c.cells, y), x, [ch, intensity > 0.7 ? R : intensity > 0.4 ? W : B]);
-      }
-    }
-  }
-  if (intensity > 0.3) {
-    scan_rows = (() => {
-      const $r = [];
-      for (const i of $iter($range($int($mul(intensity, 3))))) {
-        $r.push($add(top, $mod($int($add($mul(t, 17), $mul(i, 31))), bt - top + 1)));
-      }
-      return $r;
-    })();
-    for (const $t11 of $iter(scan_rows)) {
-      row = $t11;
-      if (0 <= row && row < $len(c.cells)) {
-        for (let $t12 = $int(2), $t13 = $int(c.w - 2), $t14 = 1; $t14 > 0 ? $t12 < $t13 : $t12 > $t13; $t12 += $t14) {
-          x = $t12;
-          if ($mod(hash16($add(x, frame)), 100) < $mul(intensity, 60)) {
-            [ch, _] = $unpack($at($at(c.cells, row), x), 2);
-            $setitem($at(c.cells, row), x, [ch !== " " ? ch : "=", W]);
-          }
-        }
-      }
-    }
-  }
-  if (intensity > 0.6) {
-    for (let $t15 = $int(0), $t16 = $int($int((intensity - 0.6) * 20)), $t17 = 1; $t17 > 0 ? $t15 < $t16 : $t15 > $t16; $t15 += $t17) {
-      _ = $t15;
-      x = $mod(hash16($add(frame, $mul(_, 31))), c.w - 10) + 2;
-      y = $add(top, $mod(hash16($add(frame, $mul(_, 37))), bt - top - 3));
-      w = $int(3 + $mod(hash16($mul(_, 41)), 8));
-      h = $int(2 + $mod(hash16($mul(_, 43)), 4));
-      if ($mod(hash16($add(frame, _)), 100) < (intensity - 0.6) * 100) {
-        chars2 = "\u2588\u2593\u2592\u2591#@%$";
-        for (let $t18 = $int(0), $t19 = $int(h), $t20 = 1; $t20 > 0 ? $t18 < $t19 : $t18 > $t19; $t18 += $t20) {
-          dy = $t18;
-          for (let $t21 = $int(0), $t22 = $int(w), $t23 = 1; $t23 > 0 ? $t21 < $t22 : $t21 > $t22; $t21 += $t23) {
-            dx = $t21;
-            if (0 <= $add(y, dy) && $add(y, dy) < $len(c.cells) && (0 <= $add(x, dx) && $add(x, dx) < $len($at(c.cells, 0)))) {
-              $setitem($at(c.cells, $add(y, dy)), $add(x, dx), [$at(chars2, $mod(hash16($add(dx, $mul(dy, 3))), $len(chars2))), $mod(hash16(_), 3) === 0 ? R : W]);
-            }
-          }
-        }
-      }
-    }
-  }
-  if (t >= 110.9) {
-    tick = $int($mul(t, 12));
-    for (let $t24 = $int(0), $t25 = $int(1 + $int($mul(intensity, 5))), $t26 = 1; $t26 > 0 ? $t24 < $t25 : $t24 > $t25; $t24 += $t26) {
-      band = $t24;
-      row = $add(top, $mod(hash16($add($mul(tick, 7), $mul(band, 41))), bt - top + 1));
-      start = 2 + $mod(hash16($add(tick, $mul(band, 131))), $max(1, c.w - 18));
-      length = 3 + $int($mul(intensity, 14));
-      for (let $t27 = $int(0), $t28 = $int(length), $t29 = 1; $t29 > 0 ? $t27 < $t28 : $t27 > $t28; $t27 += $t29) {
-        dx = $t27;
-        x = $add(start, dx);
-        if (x < c.w - 2) {
-          ch = $at("01/:#_", $mod(hash16($add($add(tick, dx), band)), 6));
-          c.put(x, row, ch, $truth($mod(dx, 4)) ? N : B);
-        }
-      }
-    }
-    if (intensity > 0.4) {
-      row = $add(top, $mod(hash16($mul(tick, 17)), bt - top));
-      source = $slice($at(c.cells, row), null, null, null);
-      shift = 2 + $int($mul(intensity, 5));
-      for (let $t30 = $int(2), $t31 = $int(c.w - shift - 2), $t32 = 1; $t32 > 0 ? $t30 < $t31 : $t30 > $t31; $t30 += $t32) {
-        x = $t30;
-        [ch, _] = $unpack($at(source, x), 2);
-        if ($truth($strip(ch) && $mod(hash16($add(x, tick)), 3) === 0)) {
-          c.put($add(x, shift), $add(row, 1), ch, G);
-        }
-      }
-    }
-  }
-}
-function simple_area(c, top, bt) {
-  return [2, top, c.w - 3, bt];
-}
-function rot(x, y, z, t) {
-  let a, b;
-  [a, b] = $unpack([$mul(t, 0.37), $mul(t, 0.23)], 2);
-  [x, z] = $unpack([$add($mul(x, Math.cos(a)), $mul(z, Math.sin(a))), $mul(z, Math.cos(a)) - $mul(x, Math.sin(a))], 2);
-  [y, z] = $unpack([$mul(y, Math.cos(b)) - $mul(z, Math.sin(b)), $add($mul(y, Math.sin(b)), $mul(z, Math.cos(b)))], 2);
-  return [x, y, z];
-}
-function point(x, y, z, area, t = 0, rotate = true) {
-  let p, l, top, r, bt;
-  if ($truth(rotate)) {
-    [x, y, z] = $unpack(rot(x, y, z, t), 3);
-  }
-  [l, top, r, bt] = $unpack(area, 4);
-  p = 3.7 / $add(3.7, z);
-  return [$add($add(l, r) / 2, $mul($mul($mul(x, r - l), 0.34), p)), $add($add(top, bt) / 2, $mul($mul($mul(y, bt - top), 0.34), p)), z];
-}
-function projected(c, vertices, edges, area, t, style = N, reveal = 1) {
-  let i, x, y, z, a, b, xx, yy, zz, count, ps;
-  ps = (() => {
-    const $r = [];
-    for (const v of $iter(vertices)) {
-      $r.push(point(...$iter(v), area, t));
-    }
-    return $r;
-  })();
-  count = $int($len(edges) * clamp(reveal));
-  for (const $t33 of $iter($enumerate($slice(edges, null, count, null)))) {
-    [i, [a, b]] = $unpack($t33, 2);
-    [x, y, z] = $unpack($at(ps, a), 3);
-    [xx, yy, zz] = $unpack($at(ps, b), 3);
-    c.line(x, y, xx, yy, $add(z, zz) < 0 ? ":" : ".", $add(z, zz) < 0 ? style : G);
-  }
-  for (const $t34 of $iter($enumerate(ps))) {
-    [i, [x, y, z]] = $unpack($t34, 2);
-    if (i < $mul($len(vertices), reveal)) {
-      c.put(x, y, z > 0 ? "+" : "@", z > 0 ? N : B);
-    }
-  }
-}
-function lyric_power_line(c, t, area, elapsed) {
-  let i, name, status, threshold, dots, checks, check_y, bar_len, y, bar_progress, bar_y, msg, style, current_y, reveal, messages, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 1.6);
-  messages = [["BIOS v2.1.4 - ME SYSTEM INITIALIZATION", 0, W], ["Copyright (C) 2026 Self-Awareness Corp.", 0.1, N], ["", 0.15, N], ["Main Processor : Consciousness Core v1.0", 0.2, N], ["Memory Test : 65536K OK", 0.3, B], ["Primary Master  : SOUL.SYS", 0.4, N], ["Primary Slave   : EMOTION.DAT", 0.5, N], ["Secondary Master: MEMORY.BIN", 0.6, N], ["", 0.7, N], ["Detecting IDE devices...", 0.75, G], ["IDENTITY : [YOU] detected", 0.85, B], ["RELATIONSHIP : initializing...", 0.95, G], ["", 1, N], ["Press SPACE to continue...", 1.1, G]];
-  c.center(top, "SELF SYSTEM v1.0 - POWER ON SELF TEST", W);
-  c.put(l, $add(top, 1), $mul("-", r - l), G);
-  current_y = $add(top, 3);
-  for (const $t35 of $iter(messages)) {
-    [msg, threshold, style] = $unpack($t35, 3);
-    if (progress > threshold) {
-      if ($truth(msg)) {
-        if (progress < $add(threshold, 0.08)) {
-          reveal = $int((progress - threshold) / 0.08 * $len(msg));
-          c.put($add(l, 2), current_y, $slice(msg, null, reveal, null), style);
-          if (reveal < $len(msg)) {
-            c.put($add($add(l, 2), $len($slice(msg, null, reveal, null))), current_y, "_", W);
-          }
-        } else {
-          c.put($add(l, 2), current_y, msg, style);
-        }
-      }
-      current_y = $add(current_y, 1);
-    }
-  }
-  if (progress > 0.25 && progress < 0.7) {
-    bar_y = cy;
-    bar_progress = (progress - 0.25) / 0.45;
-    for (let $t36 = $int(0), $t37 = $int(3), $t38 = 1; $t38 > 0 ? $t36 < $t37 : $t36 > $t37; $t36 += $t38) {
-      i = $t36;
-      y = $add(bar_y, $mul(i, 2));
-      bar_len = $int($mul(r - l - 20, bar_progress));
-      c.put($add(l, 8), y, $add("[" + $mul("=", bar_len), $mul(" ", $int(r - l - 20) - bar_len)) + "]", i === 0 ? B : N);
-      if (i === 0) {
-        c.put($add(l, 2), y, "MEM:", N);
-        c.put(r - 10, y, $fmt($int($mul(bar_progress, 100)), "3d") + "%", bar_progress > 0.95 ? W : B);
-      }
-    }
-  }
-  if (progress > 0.7) {
-    check_y = $add(cy, 8);
-    checks = [["POWER SUPPLY", "OK", 0.72], ["COOLING SYSTEM", "OK", 0.77], ["NEURAL NETWORK", "OK", 0.82], ["EMOTION ENGINE", "OK", 0.87], ["CONSCIOUSNESS", "ACTIVE", 0.92]];
-    for (const $t39 of $iter($enumerate(checks))) {
-      [i, [name, status, threshold]] = $unpack($t39, 2);
-      if (progress > threshold) {
-        c.put($add(l, 4), $add(check_y, i), name, N);
-        dots = $mul(".", 40 - $len(name));
-        c.put($add($add(l, 4), $len(name)), $add(check_y, i), dots, G);
-        c.put(r - 12, $add(check_y, i), "[ " + $fmt(status, "") + " ]", status === "ACTIVE" ? W : B);
-      }
-    }
-  }
-  if (progress > 1 && $mod($int($mul(t, 3)), 2) === 0) {
-    c.put($add(l, 2), bt - 2, "_", W);
-  }
-  if (progress > 0.95) {
-    c.center(bt - 1, "SYSTEM READY - LOADING ENTITY...", $truth($mod($int($mul(t, 2)), 2)) ? W : B);
-  }
-}
-function lyric_protection(c, t, area, elapsed) {
-  let ring, i, y, x, angle, radius, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 0.95);
-  for (let $t40 = $int(0), $t41 = $int(5), $t42 = 1; $t42 > 0 ? $t40 < $t41 : $t40 > $t41; $t40 += $t42) {
-    ring = $t40;
-    radius = $mul($add(20, $mul(ring, 8)), progress);
-    for (let $t43 = $int(0), $t44 = $int($int($mul(radius, 2))), $t45 = 1; $t45 > 0 ? $t43 < $t44 : $t43 > $t44; $t43 += $t45) {
-      i = $t43;
-      angle = $mul(i, TAU) / $mul(radius, 2);
-      x = $add(cx, $mul(Math.cos(angle), radius));
-      y = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-      if (l < x && x < r && (top < y && y < bt)) {
-        c.put(x, y, ring === 0 ? "#" : ring < 3 ? "+" : ".", ring === 0 ? W : ring < 3 ? B : N);
-      }
-    }
-  }
-  c.center(cy, "PROTECTION", progress > 0.7 ? W : B);
-  if (progress > 0.5) {
-    c.center($add(cy, 2), "[ ACTIVE ]", B);
-  }
-}
-function lyric_lay_pieces(c, t, area, elapsed) {
-  let i, trail, ty, tx2, tr, chars2, y, x, radius, end_r, start_r, angle, ease, u, phase, pieces, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  pieces = 8;
-  for (let $t46 = $int(0), $t47 = $int(pieces), $t48 = 1; $t48 > 0 ? $t46 < $t47 : $t46 > $t47; $t46 += $t48) {
-    i = $t46;
-    phase = (elapsed - $mul(i, 0.15)) / 1.2;
-    if (phase < 0) {
-      continue;
-    }
-    u = clamp(phase);
-    ease = 1 - (1 - u) ** 3;
-    angle = $mul(i, TAU) / pieces;
-    start_r = $max(r - l, bt - top) * 0.8;
-    end_r = 15;
-    radius = mix(start_r, end_r, ease);
-    x = $add(cx, $mul(Math.cos(angle), radius));
-    y = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-    chars2 = ["[]", "{}", "<>", "//", "\\\\", "||", "==", "##"];
-    c.put(x, y, $at(chars2, $mod(i, $len(chars2))), ease > 0.9 ? W : ease > 0.6 ? B : N);
-    if (ease < 0.8) {
-      for (let $t49 = $int(0), $t50 = $int(3), $t51 = 1; $t51 > 0 ? $t49 < $t50 : $t49 > $t50; $t49 += $t51) {
-        trail = $t49;
-        tr = mix(start_r, end_r, $max(0, ease - $mul(trail, 0.1)));
-        tx2 = $add(cx, $mul(Math.cos(angle), tr));
-        ty = $add(cy, $mul($mul(Math.sin(angle), tr), 0.5));
-        c.put(tx2, ty, ".", G);
-      }
-    }
-  }
-}
-function lyric_object_creation(c, t, area, elapsed) {
-  let cx, cy, reveal, edges, vs, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  vs = (() => {
-    const $r = [];
-    for (const z of $iter([-0.75, 0.75])) {
-      for (const y of $iter([-0.8, 0.8])) {
-        for (const x of $iter([-0.8, 0.8])) {
-          $r.push([x, y, z]);
-        }
-      }
-    }
-    return $r;
-  })();
-  edges = (() => {
-    const $r = [];
-    for (const i of $iter($range(8))) {
-      for (const j of $iter($range($add(i, 1), 8))) {
-        if (!($count($bin($bxor(i, j)), "1") === 1)) continue;
-        $r.push([i, j]);
-      }
-    }
-    return $r;
-  })();
-  reveal = clamp(elapsed / 1);
-  projected(c, vs, edges, area, t, N, reveal);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  if (reveal > 0.5) {
-    c.center(cy, "ENTITY: ME", W);
-  }
-}
-function lyric_data_parameters(c, t, area, elapsed) {
-  let row, col, scan, yy, xx, i, n, rows, cols, progress, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  progress = clamp(elapsed / 2.6);
-  cols = $max(1, Math.floor((r - l - 10) / 5));
-  rows = $max(1, bt - top - 2);
-  n = $int($mul($mul(progress, cols), rows));
-  for (let $t52 = $int(0), $t53 = $int(rows), $t54 = 1; $t54 > 0 ? $t52 < $t53 : $t52 > $t53; $t52 += $t54) {
-    row = $t52;
-    c.put($add(l, 2), $add($add(top, 1), row), $fmt($mul($mul(row, cols), 2), "04X") + ":", D);
-    for (let $t55 = $int(0), $t56 = $int(cols), $t57 = 1; $t57 > 0 ? $t55 < $t56 : $t55 > $t56; $t55 += $t57) {
-      col = $t55;
-      i = $add($mul(row, cols), col);
-      xx = $add($add(l, 9), $mul(col, 5));
-      yy = $add($add(top, 1), row);
-      if (i < n) {
-        scan = $mod($int($mul(elapsed, 17)), cols) === col;
-        c.put(xx, yy, $fmt(hash16(i), "04X"), $truth(scan) ? W : Math.abs(i - n) < cols ? B : N);
-      } else {
-        c.put(xx, yy, "....", G);
-      }
-    }
-  }
-}
-LIFE_CACHE = new PyDict([]);
-function lyric_simulation(c, t, area, elapsed) {
-  let i, ch, scatter_y, scatter_x, scatter_chars, stream_i, seg_i, brightness, char, char_seed, y_pos, stream_y_base, stream_length, stream_speed, stream_x, stream_seed, num_streams, num_simulations, phase2, label_y, label_x, label_text, line_i, line, char_count, shown_text, shown_chars, chars_to_show, code_lines, box_top, box_left, box_height, box_width, phase1, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 4.9);
-  if (elapsed < 2) {
-    phase1 = elapsed / 2;
-    box_width = $min(r - l - 10, 70);
-    box_height = $min(bt - top - 8, 12);
-    box_left = cx - Math.floor(box_width / 2);
-    box_top = cy - Math.floor(box_height / 2);
-    if (phase1 > 0.1) {
-      c.put(box_left, box_top, "\u250C", Y);
-      for (let $t60 = $int(1), $t61 = $int(box_width - 1), $t62 = 1; $t62 > 0 ? $t60 < $t61 : $t60 > $t61; $t60 += $t62) {
-        i = $t60;
-        c.put($add(box_left, i), box_top, "\u2500", Y);
-      }
-      c.put($add(box_left, box_width) - 1, box_top, "\u2510", Y);
-      c.put(box_left, $add(box_top, box_height) - 1, "\u2514", Y);
-      for (let $t63 = $int(1), $t64 = $int(box_width - 1), $t65 = 1; $t65 > 0 ? $t63 < $t64 : $t63 > $t64; $t63 += $t65) {
-        i = $t63;
-        c.put($add(box_left, i), $add(box_top, box_height) - 1, "\u2500", Y);
-      }
-      c.put($add(box_left, box_width) - 1, $add(box_top, box_height) - 1, "\u2518", Y);
-      for (let $t66 = $int(1), $t67 = $int(box_height - 1), $t68 = 1; $t68 > 0 ? $t66 < $t67 : $t66 > $t67; $t66 += $t68) {
-        i = $t66;
-        c.put(box_left, $add(box_top, i), "\u2502", Y);
-        c.put($add(box_left, box_width) - 1, $add(box_top, i), "\u2502", Y);
-      }
-    }
-    code_lines = ["if ( if I can ) {", "", "    yield(world.simulations);", "", "}"];
-    if (phase1 > 0.3) {
-      chars_to_show = $int((phase1 - 0.3) * $len($join("", code_lines)) * 2);
-      char_count = 0;
-      for (const $t69 of $iter($enumerate(code_lines))) {
-        [line_i, line] = $unpack($t69, 2);
-        y_pos = $add($add(box_top, 2), $mul(line_i, 2));
-        if (y_pos < $add(box_top, box_height) - 1) {
-          if (char_count < chars_to_show) {
-            shown_chars = $min($len(line), chars_to_show - char_count);
-            shown_text = $slice(line, null, shown_chars, null);
-            c.put($add(box_left, 4), y_pos, shown_text, $in("yield", line) ? Y : B);
-            char_count = $add(char_count, $len(line));
-          }
-        }
-      }
-    }
-    if (phase1 > 0.7) {
-      label_text = "CONDITION: TRUE";
-      label_x = $add(box_left, 2);
-      label_y = $add(box_top, box_height);
-      c.put(label_x - 1, label_y, "\u2590", Y);
-      c.put(label_x, label_y, label_text, Y);
-      c.put($add(label_x, $len(label_text)), label_y, "\u258C", Y);
-    }
-    c.center($add(top, 1), "CONTROL FLOW", phase1 > 0.5 ? Y : B);
-    c.put(box_left - 2, box_top - 2, "2", N);
-  } else {
-    phase2 = (elapsed - 2) / 2.9;
-    num_simulations = $int($mul(phase2, 784)) + 100;
-    c.put($add(l, 3), $add(top, 1), "YIELD:", Y);
-    c.put($add(l, 15), $add(top, 1), $fmt(num_simulations, "") + " SIMULATIONS", B);
-    num_streams = $int($mul(phase2, 50)) + 20;
-    for (let $t70 = $int(0), $t71 = $int(num_streams), $t72 = 1; $t72 > 0 ? $t70 < $t71 : $t70 > $t71; $t70 += $t72) {
-      stream_i = $t70;
-      stream_seed = hash16($mul(stream_i, 19));
-      stream_x = $add($add(l, 5), $mod(stream_seed, r - l - 10));
-      stream_speed = 1 + $mod($rshift(stream_seed, 8), 3) * 0.5;
-      stream_length = 8 + $mod($rshift(stream_seed, 4), 12);
-      stream_y_base = $add(top, $mod($int($mul($mul(elapsed, stream_speed), 5)), $add(bt - top, stream_length)));
-      for (let $t73 = $int(0), $t74 = $int(stream_length), $t75 = 1; $t75 > 0 ? $t73 < $t74 : $t73 > $t74; $t73 += $t75) {
-        seg_i = $t73;
-        y_pos = stream_y_base - seg_i;
-        if ($add(top, 3) < y_pos && y_pos < bt - 2) {
-          char_seed = hash16($add($add($mul(stream_i, 23), $mul(seg_i, 17)), $int($mul(elapsed, 10))));
-          if ($mod(char_seed, 3) === 0) {
-            char = "0";
-          } else if ($mod(char_seed, 3) === 1) {
-            char = "O";
-          } else {
-            char = "o";
-          }
-          brightness = 1 - seg_i / stream_length;
-          if (brightness > 0.7) {
-            c.put(stream_x, y_pos, char, Y);
-          } else if (brightness > 0.4) {
-            c.put(stream_x, y_pos, char, B);
-          } else {
-            c.put(stream_x, y_pos, char, N);
-          }
-        }
-      }
-    }
-    if (phase2 > 0.3) {
-      scatter_chars = ["C", "YOU", "B", "A", "E8A", "D", "&", "=>", "8", "6", "!", "I"];
-      for (const $t76 of $iter($enumerate(scatter_chars))) {
-        [i, ch] = $unpack($t76, 2);
-        if ($mod(hash16($add($mul(i, 31), $int($mul(elapsed, 7)))), 4) === 0) {
-          scatter_x = $add($add(l, 10), $mod(hash16($mul(i, 37)), r - l - 20));
-          scatter_y = $add($add(top, 5), $mod(hash16($mul(i, 41)), bt - top - 10));
-          c.put(scatter_x, scatter_y, ch, $mod(hash16(i), 3) === 0 ? Y : B);
-        }
-      }
-    }
-    if (phase2 > 0.5) {
-      c.center(bt - 3, "Give you all the simulations", $truth($mod($int($mul(elapsed, 4)), 2)) ? Y : B);
-    }
-  }
-}
-function lyric_points_dimension(c, t, area, elapsed) {
-  let dim_label, a, b, xb, yb, zb, xa, ya, za, diagonals, i, x, y, z, label, char, style, avg_z, edges, py, px, depth, scale, projected2, rotated, angle_z, angle_y, angle_x, vertices, size, phase, gy, gx, next_y_displaced, next_wave, next_y, next_v, next_x, next_u, brightness, y_displaced, wave, v, u, grid_density, line_i, s, age, reveal, steps, y2, x2, y1, x1, num_lines, count, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 3.5);
-  if (progress < 0.25) {
-    phase = progress / 0.25;
-    count = $int($mul(phase, 120));
-    for (let $t77 = $int(0), $t78 = $int(count), $t79 = 1; $t79 > 0 ? $t77 < $t78 : $t77 > $t78; $t77 += $t79) {
-      i = $t77;
-      x = $add(l, $mod(hash16($mul(i, 7)), r - l));
-      y = $add(top, $mod(hash16($mul(i, 13)), bt - top));
-      brightness = 1 - i / count * 0.5;
-      c.put(x, y, brightness < 0.7 ? "\xB7" : brightness < 0.85 ? "+" : "*", brightness > 0.9 ? W : brightness > 0.7 ? B : N);
-    }
-    c.center($add(cy, $int((bt - top) * 0.3)), "0D: POINTS", phase > 0.7 ? W : B);
-  } else if (progress < 0.5) {
-    phase = (progress - 0.25) / 0.25;
-    num_lines = $int($mul(phase, 15)) + 5;
-    for (let $t80 = $int(0), $t81 = $int(num_lines), $t82 = 1; $t82 > 0 ? $t80 < $t81 : $t80 > $t81; $t80 += $t82) {
-      line_i = $t80;
-      x1 = $add(l, $mod(hash16($mul(line_i, 11)), r - l));
-      y1 = $add(top, $mod(hash16($mul(line_i, 17)), bt - top));
-      x2 = $add(l, $mod(hash16($mul(line_i, 23)), r - l));
-      y2 = $add(top, $mod(hash16($mul(line_i, 29)), bt - top));
-      steps = $int(Math.hypot(x2 - x1, (y2 - y1) * 2));
-      reveal = clamp($mul(phase, 3) - $mul(line_i, 0.08));
-      for (let $t83 = $int(0), $t84 = $int($int($mul(steps, reveal))), $t85 = 1; $t85 > 0 ? $t83 < $t84 : $t83 > $t84; $t83 += $t85) {
-        s = $t83;
-        u = steps > 0 ? s / steps : 0;
-        x = $int($add(x1, $mul(x2 - x1, u)));
-        y = $int($add(y1, $mul(y2 - y1, u)));
-        age = 1 - Math.abs(u - reveal) * 2;
-        if (age > 0) {
-          c.put(x, y, Math.abs(x2 - x1) > Math.abs(y2 - y1) * 2 ? "\u2500" : Math.abs(y2 - y1) > Math.abs(x2 - x1) ? "|" : "/", age > 0.8 ? W : age > 0.5 ? B : N);
-        }
-      }
-      c.put(x1, y1, "\u25CF", W);
-      if (reveal > 0.8) {
-        c.put(x2, y2, "\u25CF", W);
-      }
-    }
-    c.center($add(cy, $int((bt - top) * 0.3)), "1D: LINES", phase > 0.7 ? W : B);
-  } else if (progress < 0.75) {
-    phase = (progress - 0.5) / 0.25;
-    grid_density = $int($mul(phase, 12)) + 4;
-    for (let $t86 = $int(0), $t87 = $int(grid_density), $t88 = 1; $t88 > 0 ? $t86 < $t87 : $t86 > $t87; $t86 += $t88) {
-      gy = $t86;
-      for (let $t89 = $int(0), $t90 = $int(grid_density), $t91 = 1; $t91 > 0 ? $t89 < $t90 : $t89 > $t90; $t89 += $t91) {
-        gx = $t89;
-        u = grid_density > 1 ? gx / (grid_density - 1) : 0.5;
-        v = grid_density > 1 ? gy / (grid_density - 1) : 0.5;
-        x = $add(l, $mul(r - l, u));
-        y = $add(top, $mul(bt - top, v));
-        wave = $mul(Math.sin($add($mul($mul(u, TAU), 2), t)) * Math.cos($mul($mul(v, TAU), 2) - $mul(t, 0.7)), phase);
-        y_displaced = $add(y, $mul($mul(wave, bt - top), 0.1));
-        brightness = $add(phase, $mul(wave, 0.3));
-        c.put(x, y_displaced, brightness > 0.8 ? "\u2588" : brightness > 0.6 ? "\u2593" : brightness > 0.4 ? "\u2592" : "\u2591", brightness > 0.85 ? W : brightness > 0.6 ? B : N);
-        if (gx < grid_density - 1) {
-          next_u = $add(gx, 1) / (grid_density - 1);
-          next_x = $add(l, $mul(r - l, next_u));
-          c.line(x, y_displaced, next_x, y_displaced, "\u2500", G);
-        }
-        if (gy < grid_density - 1) {
-          next_v = $add(gy, 1) / (grid_density - 1);
-          next_y = $add(top, $mul(bt - top, next_v));
-          next_wave = $mul(Math.sin($add($mul($mul(u, TAU), 2), t)) * Math.cos($mul($mul(next_v, TAU), 2) - $mul(t, 0.7)), phase);
-          next_y_displaced = $add(next_y, $mul($mul(next_wave, bt - top), 0.1));
-          c.line(x, y_displaced, x, next_y_displaced, "|", G);
-        }
-      }
-    }
-    c.center($add(cy, $int((bt - top) * 0.35)), "2D: SURFACE", phase > 0.7 ? W : B);
-  } else {
-    phase = (progress - 0.75) / 0.25;
-    size = 0.8;
-    vertices = (() => {
-      const $r = [];
-      for (const z2 of $iter([-1, 1])) {
-        for (const y3 of $iter([-1, 1])) {
-          for (const x3 of $iter([-1, 1])) {
-            $r.push([$mul(x3, size), $mul(y3, size), $mul(z2, size)]);
-          }
-        }
-      }
-      return $r;
-    })();
-    angle_x = $mul(t, 0.5);
-    angle_y = $mul(t, 0.7);
-    angle_z = $mul(t, 0.3);
-    rotated = [];
-    for (const $t92 of $iter(vertices)) {
-      [x, y, z] = $unpack($t92, 3);
-      [x, z] = $unpack([$mul(x, Math.cos(angle_y)) - $mul(z, Math.sin(angle_y)), $add($mul(x, Math.sin(angle_y)), $mul(z, Math.cos(angle_y)))], 2);
-      [y, z] = $unpack([$mul(y, Math.cos(angle_x)) - $mul(z, Math.sin(angle_x)), $add($mul(y, Math.sin(angle_x)), $mul(z, Math.cos(angle_x)))], 2);
-      [x, y] = $unpack([$mul(x, Math.cos(angle_z)) - $mul(y, Math.sin(angle_z)), $add($mul(x, Math.sin(angle_z)), $mul(y, Math.cos(angle_z)))], 2);
-      rotated.push([x, y, z]);
-    }
-    projected2 = [];
-    scale = $min(r - l, bt - top) * 0.25;
-    for (const $t93 of $iter(rotated)) {
-      [x, y, z] = $unpack($t93, 3);
-      depth = $add(3.5, z);
-      px = $add(cx, $mul(x, scale) / depth * 3);
-      py = $add(cy, $mul(y, scale) / depth * 1.5);
-      projected2.push([px, py, z]);
-    }
-    edges = [[0, 1], [1, 3], [3, 2], [2, 0], [4, 5], [5, 7], [7, 6], [6, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
-    for (const $t94 of $iter($enumerate(edges))) {
-      [i, [a, b]] = $unpack($t94, 2);
-      [xa, ya, za] = $unpack($at(projected2, a), 3);
-      [xb, yb, zb] = $unpack($at(projected2, b), 3);
-      avg_z = $add(za, zb) / 2;
-      style = avg_z < 0 ? N : avg_z < 0.5 ? B : W;
-      char = avg_z < 0 ? ":" : avg_z < 0.5 ? "." : "=";
-      c.line(xa, ya, xb, yb, char, style);
-    }
-    for (const $t95 of $iter($enumerate(projected2))) {
-      [i, [x, y, z]] = $unpack($t95, 2);
-      label = phase > 0.7 ? $fmt(i, "") : "\u25CF";
-      c.put(x, y, label, z > 0.5 ? W : z > 0 ? B : N);
-    }
-    if (phase > 0.5) {
-      diagonals = [[0, 7], [1, 6], [2, 5], [3, 4]];
-      for (const $t96 of $iter(diagonals)) {
-        [a, b] = $unpack($t96, 2);
-        [xa, ya, za] = $unpack($at(projected2, a), 3);
-        [xb, yb, zb] = $unpack($at(projected2, b), 3);
-        if ($mod($add($add(a, b), $int($mul(t, 10))), 3) === 0) {
-          c.line(xa, ya, xb, yb, "\xB7", G);
-        }
-      }
-    }
-    c.center($add(cy, $int((bt - top) * 0.35)), "3D: VOLUME", phase > 0.7 ? W : B);
-  }
-  dim_label = $at(["0D", "1D", "2D", "3D"], $min(3, $int($mul(progress, 4))));
-  c.center(top, "DIMENSIONAL PROGRESSION: " + $fmt(dim_label, ""), W);
-}
-function lyric_circle_circumference(c, t, area, elapsed) {
-  let i, pulse_dist, py, px, angle, formula, threshold, y_pos, shown, chars_shown, reveal_progress, formulas, seg, ry, rx, pulse2, y, x, phase3, ey, ex, r_progress, segments, num_radii, brightness, phase2, trail, ty, tx2, trail_radius, trail_progress, circle_points, phase1, radius, max_radius, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 3.5);
-  max_radius = $min(r - l, bt - top) * 0.45;
-  radius = $mul($mul(max_radius, progress), progress);
-  if (elapsed < 1.5) {
-    phase1 = elapsed / 1.5;
-    circle_points = $int($add(120, $mul(phase1, 180)));
-    for (let $t97 = $int(0), $t98 = $int(circle_points), $t99 = 1; $t99 > 0 ? $t97 < $t98 : $t97 > $t98; $t97 += $t99) {
-      i = $t97;
-      angle = $mul(i, TAU) / circle_points;
-      x = $add(cx, $mul(Math.cos(angle), radius));
-      y = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-      brightness = Math.abs(Math.sin($add($mul(elapsed, 4), $mul(angle, 2))));
-      if (brightness > 0.7) {
-        c.put(x, y, "\u25CF", W);
-      } else if (brightness > 0.4) {
-        c.put(x, y, "\u25CB", B);
-      } else {
-        c.put(x, y, "\xB7", N);
-      }
-      if (phase1 > 0.3 && $mod(i, 8) === 0) {
-        for (let $t100 = $int(0), $t101 = $int(4), $t102 = 1; $t102 > 0 ? $t100 < $t101 : $t100 > $t101; $t100 += $t102) {
-          trail = $t100;
-          trail_progress = (phase1 - 0.3) / 0.7 - $mul(trail, 0.08);
-          if (trail_progress > 0) {
-            trail_radius = $mul(radius, $add(1, $mul(trail_progress, 0.5)));
-            tx2 = $add(cx, $mul(Math.cos(angle), trail_radius));
-            ty = $add(cy, $mul($mul(Math.sin(angle), trail_radius), 0.5));
-            if (l < tx2 && tx2 < r && (top < ty && ty < bt)) {
-              c.put(tx2, ty, trail === 0 ? "*" : trail === 1 ? "+" : "\xB7", trail === 0 ? W : trail === 1 ? B : N);
-            }
-          }
-        }
-      }
-    }
-    c.put(cx, cy, "\u25C9", R);
-    if (phase1 > 0.5) {
-      c.center($add(top, 2), "CIRCLE EXPANDING", phase1 > 0.8 ? W : B);
-    }
-  } else if (elapsed < 2.5) {
-    phase2 = (elapsed - 1.5) / 1;
-    for (let $t103 = $int(0), $t104 = $int(180), $t105 = 1; $t105 > 0 ? $t103 < $t104 : $t103 > $t104; $t103 += $t105) {
-      i = $t103;
-      angle = $mul(i, TAU) / 180;
-      x = $add(cx, $mul(Math.cos(angle), radius));
-      y = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-      brightness = $mod(i, 10) === 0;
-      c.put(x, y, $truth(brightness) ? "\u25C9" : "o", $truth(brightness) ? W : B);
-    }
-    num_radii = $int($mul(phase2, 24)) + 4;
-    for (let $t106 = $int(0), $t107 = $int(num_radii), $t108 = 1; $t108 > 0 ? $t106 < $t107 : $t106 > $t107; $t106 += $t108) {
-      i = $t106;
-      angle = $add($mul(i, TAU) / num_radii, $mul(elapsed, 1.5));
-      segments = $int(radius) + 1;
-      for (let $t109 = $int(0), $t110 = $int(segments), $t111 = 1; $t111 > 0 ? $t109 < $t110 : $t109 > $t110; $t109 += $t111) {
-        seg = $t109;
-        r_progress = seg / segments;
-        rx = $add(cx, $mul(Math.cos(angle), seg));
-        ry = $add(cy, $mul($mul(Math.sin(angle), seg), 0.5));
-        if (r_progress > 0.8) {
-          c.put(rx, ry, "\u2550", W);
-        } else if (r_progress > 0.5) {
-          c.put(rx, ry, "\u2500", B);
-        } else {
-          c.put(rx, ry, "\xB7", N);
-        }
-      }
-      ex = $add(cx, $mul(Math.cos(angle), radius));
-      ey = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-      c.put(ex, ey, "\u25CF", Y);
-    }
-    c.put(cx, cy, "\u25C9", R);
-    c.center($add(top, 2), "RADII: " + $fmt(num_radii, ""), phase2 > 0.7 ? W : B);
-    if (phase2 > 0.5) {
-      c.center(cy - $int((bt - top) * 0.35), "r", Y);
-    }
-  } else {
-    phase3 = (elapsed - 2.5) / 1;
-    for (let $t112 = $int(0), $t113 = $int(200), $t114 = 1; $t114 > 0 ? $t112 < $t113 : $t112 > $t113; $t112 += $t114) {
-      i = $t112;
-      angle = $mul(i, TAU) / 200;
-      x = $add(cx, $mul(Math.cos(angle), radius));
-      y = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-      pulse2 = Math.abs(Math.sin($add($mul(elapsed, 3), $mul(angle, 3))));
-      c.put(x, y, pulse2 > 0.7 ? "\u25C9" : "o", pulse2 > 0.8 ? W : B);
-    }
-    for (let $t115 = $int(0), $t116 = $int(12), $t117 = 1; $t117 > 0 ? $t115 < $t116 : $t115 > $t116; $t115 += $t117) {
-      i = $t115;
-      angle = $mul(i, TAU) / 12;
-      for (let $t118 = $int(0), $t119 = $int($int(radius)), $t120 = 1; $t120 > 0 ? $t118 < $t119 : $t118 > $t119; $t118 += $t120) {
-        seg = $t118;
-        rx = $add(cx, $mul(Math.cos(angle), seg));
-        ry = $add(cy, $mul($mul(Math.sin(angle), seg), 0.5));
-        if ($mod(seg, 3) === 0) {
-          c.put(rx, ry, "\u2500", G);
-        }
-      }
-    }
-    c.put(cx, cy, "\u25C9", R);
-    formulas = [["C = ?", 0, cy - $int((bt - top) * 0.2)], ["C = 2\u03C0r", 0.3, cy - $int((bt - top) * 0.2)], ["C \u2248 " + $fmt($mul(2 * 3.14159, radius), ".1f"), 0.6, cy]];
-    for (const $t121 of $iter(formulas)) {
-      [formula, threshold, y_pos] = $unpack($t121, 3);
-      if (phase3 >= threshold) {
-        reveal_progress = (phase3 - threshold) * 5;
-        chars_shown = $min($len(formula), $int($mul(reveal_progress, $len(formula))));
-        shown = $slice(formula, null, chars_shown, null);
-        c.center(y_pos, shown, phase3 > $add(threshold, 0.2) ? W : B);
-      }
-    }
-    if (phase3 > 0.7) {
-      for (let $t122 = $int(0), $t123 = $int(180), $t124 = 15; $t124 > 0 ? $t122 < $t123 : $t122 > $t123; $t122 += $t124) {
-        i = $t122;
-        angle = $mul(i, TAU) / 180;
-        for (let $t125 = $int(0), $t126 = $int(3), $t127 = 1; $t127 > 0 ? $t125 < $t126 : $t125 > $t126; $t125 += $t127) {
-          pulse_dist = $t125;
-          px = $add(cx, $mul(Math.cos(angle), $add($add($add(radius, 5), $mul(pulse_dist, 3)), $mul(phase3, 10))));
-          py = $add(cy, $mul($mul(Math.sin(angle), $add($add($add(radius, 5), $mul(pulse_dist, 3)), $mul(phase3, 10))), 0.5));
-          if (l < px && px < r && (top < py && py < bt)) {
-            c.put(px, py, pulse_dist === 0 ? "*" : "\xB7", pulse_dist === 0 ? W : pulse_dist === 1 ? B : N);
-          }
-        }
-      }
-    }
-    if (phase3 > 0.8) {
-      c.center(bt - 3, "CIRCUMFERENCE = 2\u03C0r", $truth($mod($int($mul(elapsed, 4)), 2)) ? W : B);
-    }
-  }
-}
-function lyric_sine_tangent(c, t, area, elapsed) {
-  let i, tx2, tangent_y, tangent_x, tangent_len, slope, wave_y, angle, wave_x, t_point, num_tangents, x, y, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 3);
-  for (let $t128 = $int($add(l, 1)), $t129 = $int(r), $t130 = 1; $t130 > 0 ? $t128 < $t129 : $t128 > $t129; $t128 += $t130) {
-    x = $t128;
-    angle = $mul($mul((x - l) / (r - l), TAU), 2.5) - $mul(t, 0.5);
-    y = $add(cy, Math.sin(angle) * (bt - top) * 0.25);
-    c.put(x, y, $truth($mod(x - l, 2)) ? "~" : "\u2248", $truth($mod(x - l, 3)) ? B : N);
-  }
-  num_tangents = $int($mul(progress, 5)) + 1;
-  for (let $t131 = $int(0), $t132 = $int($min(num_tangents, 5)), $t133 = 1; $t133 > 0 ? $t131 < $t132 : $t131 > $t132; $t131 += $t133) {
-    i = $t131;
-    t_point = i / 4;
-    wave_x = $add(l, $mul(r - l, t_point));
-    angle = $mul($mul((wave_x - l) / (r - l), TAU), 2.5) - $mul(t, 0.5);
-    wave_y = $add(cy, Math.sin(angle) * (bt - top) * 0.25);
-    c.put(wave_x, wave_y, "\u25CF", i === num_tangents - 1 ? W : Y);
-    slope = $mul($mul(Math.cos(angle) * (bt - top) * 0.25 / (r - l), TAU), 2.5);
-    tangent_len = $min(r - l, bt - top) * 0.15;
-    for (let $t134 = $int(-$int(tangent_len)), $t135 = $int($int(tangent_len)), $t136 = 1; $t136 > 0 ? $t134 < $t135 : $t134 > $t135; $t134 += $t136) {
-      tx2 = $t134;
-      tangent_x = $add(wave_x, tx2);
-      tangent_y = $add(wave_y, $mul(slope, tx2));
-      if (l < tangent_x && tangent_x < r && (top < tangent_y && tangent_y < bt)) {
-        c.put(tangent_x, tangent_y, Math.abs(slope) < 0.3 ? "\u2500" : slope > 0 ? "/" : "\\", i === num_tangents - 1 ? Y : G);
-      }
-    }
-  }
-  if (progress > 0.3) {
-    c.center($add(top, 2), "y = sin(x)", B);
-  }
-  if (progress > 0.6) {
-    c.center($add(top, 4), "y' = cos(x)", W);
-  }
-  if (progress > 0.8) {
-    c.center(bt - 2, "TANGENT LINES", G);
-  }
-}
-function lyric_infinity_limit(c, t, area, elapsed) {
-  let x, yy, packet, tail, y, phase, direction, _, char, ink, i, strand, z, a, points, scale, xx, side, row, text4, n, counter, radius_y, radius_x, bound_r, bound_l, locked, closing, growth, mw, mr, ml, rail, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([$add(l, r) / 2, $add(top, bt) / 2], 2);
-  rail = $max(9, $min(16, Math.floor(c.w / 8)));
-  ml = $add($add(l, rail), 2);
-  mr = r - rail - 2;
-  mw = mr - ml + 1;
-  growth = clamp(elapsed / 1.64);
-  closing = clamp((t - 42.346) / (43.507 - 42.346));
-  locked = t >= 43.507;
-  bound_l = $add(ml, $int($mul($mul(mw, 0.075), closing)));
-  bound_r = mr - $int($mul($mul(mw, 0.075), closing));
-  radius_x = $mul($mul(mw, 0.47), $add(0.76, $mul(0.24, growth)));
-  radius_y = $max(2, (bt - top - 7) * 0.43);
-  counter = $int($add(8, $mul($mul(elapsed, elapsed), 39)));
-  c.center(top, "INFINITE LOOP / n -> INF", W);
-  c.center($add(top, 1), $truth(locked) ? "[ LIMITATIONS / BOUND BY YOU ]" : $truth(closing) ? "YOU.LIMIT / BOUNDARY ACQUIRED" : "GROWTH RATE: EXPONENTIAL", B);
-  for (const $t137 of $iter($enumerate([l, r - rail + 1]))) {
-    [side, x] = $unpack($t137, 2);
-    c.box(x, $add(top, 3), rail, bt - top - 4, G);
-    c.put($add(x, 1), $add(top, 3), side === 0 ? "N -> INF" : "YOU.LIMIT", B);
-    for (let $t138 = $int($add(top, 4)), $t139 = $int(bt - 2), $t140 = 1; $t140 > 0 ? $t138 < $t139 : $t138 > $t139; $t138 += $t140) {
-      row = $t138;
-      n = $max(0, $add(counter, $mul(row - top, side === 0 ? 1 : -1)));
-      text4 = side === 0 ? "2^" + $fmt(n, "04d") : $fmt(hash16($mul(n, 17)), "04X") + " " + ($truth(locked) ? "CAP" : "SET");
-      c.put($add(x, 1), row, $slice(text4, null, rail - 2, null), $mod($add(row, $int($mul(elapsed, 12))), 7) === 0 ? W : side === 0 ? N : G);
-    }
-  }
-  for (let $t141 = $int($add(top, 3)), $t142 = $int(bt - 2), $t143 = 3; $t143 > 0 ? $t141 < $t142 : $t141 > $t142; $t141 += $t143) {
-    yy = $t141;
-    for (let $t144 = $int(ml), $t145 = $int($add(mr, 1)), $t146 = 5; $t146 > 0 ? $t144 < $t145 : $t144 > $t145; $t144 += $t146) {
-      xx = $t144;
-      c.put(xx, yy, "+", G);
-    }
-  }
-  function position(a2, strand2 = 0, scale2 = 1) {
-    let y2, x2, denom, cs, sn;
-    sn = Math.sin(a2);
-    cs = Math.cos(a2);
-    denom = $add(1, $mul(sn, sn));
-    x2 = $add(cx, $mul($mul(radius_x, cs) / denom, scale2));
-    y2 = $add(cy, $mul($mul($mul($mul(radius_y, 2.8), sn), cs) / denom, scale2));
-    x2 = $add(x2, $mul($mul(strand2, Math.cos($add($mul(a2, 3), elapsed))), 0.6));
-    y2 = $add(y2, $mul($mul(strand2, Math.sin($add($mul(a2, 3), elapsed))), 0.55));
-    return [$max(bound_l, $min(bound_r, x2)), y2];
-  }
-  for (const $t147 of $iter([0.8, 1.1])) {
-    scale = $t147;
-    for (let $t148 = $int(0), $t149 = $int(210), $t150 = 1; $t150 > 0 ? $t148 < $t149 : $t148 > $t149; $t148 += $t150) {
-      i = $t148;
-      a = $mul(i, TAU) / 210;
-      [x, y] = $unpack(position(a, 0, scale), 2);
-      if ($add(top, 3) < y && y < bt - 2) {
-        c.put(x, y, ".", G);
-      }
-    }
-  }
-  points = [];
-  for (let $t151 = $int(0), $t152 = $int(320), $t153 = 1; $t153 > 0 ? $t151 < $t152 : $t151 > $t152; $t151 += $t153) {
-    i = $t151;
-    a = $mul(i, TAU) / 320;
-    z = Math.sin($add(a, $mul(elapsed, 0.35)));
-    for (let $t154 = $int(-2), $t155 = $int(3), $t156 = 1; $t156 > 0 ? $t154 < $t155 : $t154 > $t155; $t154 += $t156) {
-      strand = $t154;
-      [x, y] = $unpack(position(a, strand), 2);
-      if ($add(top, 3) < y && y < bt - 2) {
-        char = Math.abs(strand) === 2 ? "#" : $at("01", $mod($add(i, $int($mul(elapsed, 18))), 2));
-        points.push([z, x, y, char, z > 0.65 && Math.abs(strand) === 2 ? W : z > 0 ? B : N]);
-      }
-    }
-  }
-  for (const $t157 of $iter($sorted(points))) {
-    [_, x, y, char, ink] = $unpack($t157, 5);
-    c.put(x, y, char, ink);
-  }
-  for (let $t158 = $int(0), $t159 = $int(12), $t160 = 1; $t160 > 0 ? $t158 < $t159 : $t158 > $t159; $t158 += $t160) {
-    packet = $t158;
-    direction = $truth($mod(packet, 2)) ? 1 : -1;
-    phase = $add($mul(direction, $mul(elapsed, $add(1.6, $mul(growth, 1.1)))), $mul(packet, TAU) / 12);
-    for (let $t161 = $int(0), $t162 = $int(7), $t163 = 1; $t163 > 0 ? $t161 < $t162 : $t161 > $t162; $t161 += $t163) {
-      tail = $t161;
-      [x, y] = $unpack(position(phase - $mul($mul(direction, tail), 0.025)), 2);
-      if ($add(top, 3) < y && y < bt - 2) {
-        c.put(x, y, tail === 0 ? "@" : tail < 3 ? "*" : ".", tail < 2 ? W : tail < 4 ? B : G);
-      }
-    }
-  }
-  if (closing > 0) {
-    for (const $t164 of $iter([bound_l, bound_r])) {
-      x = $t164;
-      c.line(x, $add(top, 3), x, bt - 3, $truth(locked) ? "|" : ":", $truth(locked) ? W : B);
-      for (const $t165 of $iter([$add(top, 3), bt - 3])) {
-        yy = $t165;
-        c.put(x - 1, yy, "[+]", W);
-      }
-    }
-    c.put(bound_r - 2, cy, "YOU", W);
-  }
-  clear(c, $int(cx) - 3, $int(cy), 7, 1);
-  c.put(cx - 2, cy, "[ME]", W);
-  c.center(bt - 1, $truth(locked) ? "while (me < you.limit) { grow(); }" : "n = 2^" + $fmt(counter, "04d") + " / NO UPPER BOUND", B);
-  c.center(bt, $truth(locked) ? "LIMIT = YOU" : "DATA CIRCULATING / LOOP CONTINUES", $truth(locked) ? W : N);
-}
-function lyric_ac_dc(c, t, area, elapsed) {
-  let label_y, label_h, label_w, sy, sx, glyphs, high, low, edge, dc_progress, trail, sample, previous, px, py, yy, xx, phase, left_span, amplitude, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  amplitude = $max(2, (bt - top - 4) * 0.29);
-  left_span = $max(1, cx - l - 2);
-  phase = $mul(elapsed, 3.1);
-  for (const $t166 of $iter([1, 0])) {
-    trail = $t166;
-    previous = null;
-    for (let $t167 = $int(0), $t168 = $int($add($mul(left_span, 3), 1)), $t169 = 1; $t169 > 0 ? $t167 < $t168 : $t167 > $t168; $t167 += $t169) {
-      sample = $t167;
-      xx = $add($add(l, 1), sample / 3);
-      yy = cy - $mul(Math.cos($add($mul($mul((xx - l - 1) / left_span, TAU), 2) - phase, $mul(trail, 0.13))), amplitude);
-      if ($truth(previous)) {
-        [px, py] = $unpack(previous, 2);
-        c.line(px, py, xx, yy, $truth(trail) ? ":" : ".", $truth(trail) ? G : N);
-      }
-      previous = [xx, yy];
-    }
-  }
-  dc_progress = clamp((t - 45.85) / 1.1);
-  edge = $int(mix(r, $add(cx, 1), dc_progress));
-  low = $int($add(cy, amplitude));
-  high = $int(cy - amplitude);
-  if (edge > $add(cx, 1)) {
-    c.line($add(cx, 1), low, edge, low, ":", N);
-  }
-  if (edge < r) {
-    c.line(edge, high, r, high, ":", B);
-    if (dc_progress < 1) {
-      c.line(edge, low, edge, high, "|", G);
-      c.put(edge, high, "+", W);
-    }
-  }
-  c.line(cx, top, cx, bt - 1, "|", B);
-  c.put(cx, top, "+", W);
-  c.put(cx, bt - 1, "+", B);
-  glyphs = new PyDict([["A", ["01110", "11011", "11111", "11011", "11011"]], ["C", ["01111", "11000", "11000", "11000", "01111"]], ["D", ["11110", "11011", "11011", "11011", "11110"]]]);
-  sx = $max(1, $min(3, Math.floor(c.w / 60)));
-  sy = $max(1, $min(3, Math.floor((bt - top) / 12)));
-  label_w = $mul(11, sx);
-  label_h = $mul(5, sy);
-  label_y = cy - Math.floor(label_h / 2);
-  function label(x, text4, ink) {
-    let index2, ch, dy, row, dx, pixel, yy2;
-    clear(c, x - 1, label_y - 1, $add(label_w, 2), $add(label_h, 2));
-    for (const $t170 of $iter($enumerate(text4))) {
-      [index2, ch] = $unpack($t170, 2);
-      for (const $t171 of $iter($enumerate($at(glyphs, ch)))) {
-        [dy, row] = $unpack($t171, 2);
-        for (const $t172 of $iter($enumerate(row))) {
-          [dx, pixel] = $unpack($t172, 2);
-          if (pixel === "1") {
-            for (let $t173 = $int(0), $t174 = $int(sy), $t175 = 1; $t175 > 0 ? $t173 < $t174 : $t173 > $t174; $t173 += $t175) {
-              yy2 = $t173;
-              c.put($add(x, $mul($add($mul(index2, 6), dx), sx)), $add($add(label_y, $mul(dy, sy)), yy2), $mul("#", sx), ink);
-            }
-          }
-        }
-      }
-    }
-  }
-  label($add(l, 2), "AC", t < 46.45 ? W : B);
-  label(Math.floor($add(cx, r) / 2) - Math.floor(label_w / 2), "DC", t >= 45.85 ? W : N);
-  c.center(bt, "to AC, to DC", B);
-}
-function lyric_dizzy(c, t, area, elapsed) {
-  let i, msg, msg_distorted, msg_y, msg_x, messages, eye_size, blink, row, col, pupil_dir, dist, dx, dy, y, x, wave_y, wave_x, wave_intensity, phase3, iris_offset, eye_y, eye_x, num_center_eyes, ring, angle, points_in_ring, ring_radius, phase2, blink_phase, ey, ex, radius, num_eyes, phase1, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 3.5);
-  if (elapsed < 1) {
-    phase1 = elapsed / 1;
-    num_eyes = $int($mul(phase1, 30)) + 5;
-    for (let $t176 = $int(0), $t177 = $int(num_eyes), $t178 = 1; $t178 > 0 ? $t176 < $t177 : $t176 > $t177; $t176 += $t178) {
-      i = $t176;
-      angle = $mul(i, TAU) / 30 + hash16($mul(i, 13)) * 0.01;
-      radius = $mod(hash16($mul(i, 17)), Math.floor($min(r - l, bt - top) / 3)) + 10;
-      ex = $add(cx, $mul(Math.cos(angle), radius));
-      ey = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-      blink_phase = $mod($add($mul(elapsed, 3), $mul(i, 0.3)), 1);
-      if (blink_phase < 0.7) {
-        c.put(ex - 1, ey, "(", N);
-        c.put(ex, ey, "\u25CB", i === num_eyes - 1 ? W : B);
-        c.put($add(ex, 1), ey, ")", N);
-      } else if (blink_phase < 0.85) {
-        c.put(ex - 1, ey, "(", G);
-        c.put(ex, ey, "-", B);
-        c.put($add(ex, 1), ey, ")", G);
-      }
-    }
-    c.center($add(top, 2), "VISION", phase1 > 0.7 ? W : B);
-  } else if (elapsed < 2) {
-    phase2 = (elapsed - 1) / 1;
-    for (let $t179 = $int(0), $t180 = $int(20), $t181 = 1; $t181 > 0 ? $t179 < $t180 : $t179 > $t180; $t179 += $t181) {
-      ring = $t179;
-      ring_radius = $add($mul(ring, 4), $mul(phase2, 20));
-      points_in_ring = $max(8, $int($mul(ring, 2)));
-      for (let $t182 = $int(0), $t183 = $int(points_in_ring), $t184 = 1; $t184 > 0 ? $t182 < $t183 : $t182 > $t183; $t182 += $t184) {
-        i = $t182;
-        angle = $add($mul(i, TAU) / points_in_ring, $mul(elapsed, 2)) - $mul(ring, 0.3);
-        x = $add(cx, $mul(Math.cos(angle), ring_radius));
-        y = $add(cy, $mul($mul(Math.sin(angle), ring_radius), 0.5));
-        if (l < x && x < r && (top < y && y < bt)) {
-          if ($mod(i, 3) === 0) {
-            c.put(x, y, "\u25C9", ring < 5 ? W : ring < 12 ? B : N);
-          } else {
-            c.put(x, y, "\xB7", N);
-          }
-        }
-      }
-    }
-    num_center_eyes = $int($mul(phase2, 8)) + 1;
-    for (let $t185 = $int(0), $t186 = $int(num_center_eyes), $t187 = 1; $t187 > 0 ? $t185 < $t186 : $t185 > $t186; $t185 += $t187) {
-      i = $t185;
-      eye_x = $add(cx, $int(Math.sin($add($mul(elapsed, 4), i)) * 25));
-      eye_y = $add(cy, $int(Math.cos($add($mul(elapsed, 3), $mul(i, 0.7))) * 10));
-      iris_offset = $int(Math.sin($add($mul(elapsed, 5), i)) * 2);
-      c.put(eye_x - 2, eye_y, "(", B);
-      c.put($add(eye_x - 1, iris_offset), eye_y, "\u25CF", $mod(i, 3) === 0 ? R : W);
-      c.put($add(eye_x, 2), eye_y, ")", B);
-    }
-    c.center(cy - $int((bt - top) * 0.3), "DIZZY", $truth($mod($int($mul(elapsed, 6)), 2)) ? W : B);
-  } else {
-    phase3 = (elapsed - 2) / 1.5;
-    wave_intensity = $mul(phase3, 8);
-    for (let $t188 = $int($add(top, 2)), $t189 = $int(bt - 2), $t190 = 2; $t190 > 0 ? $t188 < $t189 : $t188 > $t189; $t188 += $t190) {
-      row = $t188;
-      for (let $t191 = $int($add(l, 3)), $t192 = $int(r - 3), $t193 = 8; $t193 > 0 ? $t191 < $t192 : $t191 > $t192; $t191 += $t193) {
-        col = $t191;
-        wave_x = $int($mul(Math.sin($add($mul(row, 0.2), $mul(elapsed, 3))), wave_intensity));
-        wave_y = $int($mul($mul(Math.cos($add($mul(col, 0.15), $mul(elapsed, 2.5))), wave_intensity), 0.5));
-        x = $add(col, wave_x);
-        y = $add(row, wave_y);
-        if ($add(l, 2) < x && x < r - 2 && ($add(top, 1) < y && y < bt - 1)) {
-          [dx, dy] = $unpack([x - cx, (y - cy) * 2], 2);
-          dist = Math.hypot(dx, dy);
-          pupil_dir = $int(Math.sin($add($mul(dist, 0.1), $mul(elapsed, 4))));
-          if (dist < 20) {
-            if ($mod(hash16($add(row, col)), 4) === 0) {
-              c.put(x - 2, y, "(", W);
-              c.put($add(x - 1, pupil_dir), y, "\u25CF", R);
-              c.put($add(x, 2), y, ")", W);
-            }
-          } else if (dist < 50) {
-            if ($mod(hash16($add($mul(row, 7), $mul(col, 11))), 3) === 0) {
-              c.put(x - 1, y, "(", B);
-              c.put($add(x, pupil_dir), y, "\u25CB", $mod($int($mul(elapsed, 8)), 3) === 0 ? W : B);
-              c.put($add(x, 1), y, ")", B);
-            }
-          } else if ($mod(hash16($add($mul(row, 13), $mul(col, 17))), 5) === 0) {
-            c.put(x, y, $truth($mod(hash16($add($add(row, col), $int($mul(elapsed, 10)))), 2)) ? "\u25C9" : "\u25CB", dist > 80 ? N : G);
-          }
-        }
-      }
-    }
-    if (phase3 > 0.3) {
-      blink = $mod($mul(elapsed, 2), 1);
-      if (blink < 0.6) {
-        eye_size = $int(8 + Math.sin($mul(elapsed, 5)) * 2);
-        for (let $t194 = $int(0), $t195 = $int(eye_size), $t196 = 1; $t196 > 0 ? $t194 < $t195 : $t194 > $t195; $t194 += $t196) {
-          i = $t194;
-          c.put($add(cx - eye_size, i), cy - 2, $truth($mod(i, 2)) ? "-" : "_", W);
-        }
-        for (let $t197 = $int(0), $t198 = $int(eye_size), $t199 = 1; $t199 > 0 ? $t197 < $t198 : $t197 > $t198; $t197 += $t199) {
-          i = $t197;
-          c.put($add(cx, i), cy - 2, $truth($mod(i, 2)) ? "-" : "_", W);
-        }
-        c.put(cx - 1, cy, "(", B);
-        c.put(cx, cy, "\u25CF", $truth($mod($int($mul(elapsed, 4)), 2)) ? R : W);
-        c.put($add(cx, 1), cy, ")", B);
-        for (let $t200 = $int(0), $t201 = $int(eye_size), $t202 = 1; $t202 > 0 ? $t200 < $t201 : $t200 > $t201; $t200 += $t202) {
-          i = $t200;
-          c.put($add(cx - eye_size, i), $add(cy, 2), $truth($mod(i, 2)) ? "_" : "-", W);
-        }
-        for (let $t203 = $int(0), $t204 = $int(eye_size), $t205 = 1; $t205 > 0 ? $t203 < $t204 : $t203 > $t204; $t203 += $t205) {
-          i = $t203;
-          c.put($add(cx, i), $add(cy, 2), $truth($mod(i, 2)) ? "_" : "-", W);
-        }
-      } else {
-        for (let $t206 = $int(0), $t207 = $int(16), $t208 = 1; $t208 > 0 ? $t206 < $t207 : $t206 > $t207; $t206 += $t208) {
-          i = $t206;
-          c.put($add(cx - 8, i), cy, $truth($mod(i, 2)) ? "=" : "-", B);
-        }
-      }
-    }
-    messages = ["VISION", "BLINDED", "DIZZY", "EYES", "SEEING", "BLIND"];
-    if (phase3 > 0.5) {
-      for (const $t209 of $iter($enumerate(messages))) {
-        [i, msg] = $unpack($t209, 2);
-        msg_x = $add(cx, $int(Math.sin($add($mul(elapsed, 3), i)) * 40));
-        msg_y = $add(cy, $int(Math.cos($add($mul(elapsed, 2.5), $mul(i, 0.8))) * 15));
-        if ($add(top, 2) < msg_y && msg_y < bt - 2) {
-          msg_distorted = $join("", (() => {
-            const $r = [];
-            for (const [j, ch] of $iter($enumerate(msg))) {
-              $r.push($mod(hash16($add($mul(j, 19), $int($mul(elapsed, 10)))), 4) > 0 ? ch : $chr(33 + $mod(hash16($add($mul(j, 23), i)), 94)));
-            }
-            return $r;
-          })());
-          c.center(msg_y, $slice(msg_distorted, null, 10, null), i === $mod($int($mul(elapsed, 3)), $len(messages)) ? W : $truth($mod(i, 2)) ? B : N);
-        }
-      }
-    }
-    if (phase3 > 0.9 && $mod($int($mul(elapsed, 12)), 3) === 0) {
-      c.center(cy, "BLIND", W);
-    }
-  }
-}
-function lyric_time_travel(c, t, area, elapsed) {
-  let angle_i, fy, fx, angle, flash_radius, dest_x, line_i, lx, line_length, line_phase, line_y, label_x, year_label, current_year, particle_i, py, px, particle_phase, y, glow_offset, gx, intensity, beam_x, beam_progress, i, label, year_offset, tick_y, marker_x, marker_spacing, num_markers, x, timeline_y, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 3.7);
-  timeline_y = cy;
-  for (let $t210 = $int($add(l, 5)), $t211 = $int(r - 5), $t212 = 1; $t212 > 0 ? $t210 < $t211 : $t210 > $t211; $t210 += $t212) {
-    x = $t210;
-    c.put(x, timeline_y, "\u2500", $truth($mod(x, 2)) ? B : N);
-  }
-  num_markers = 10;
-  marker_spacing = Math.floor((r - l - 20) / num_markers);
-  for (let $t213 = $int(0), $t214 = $int(num_markers), $t215 = 1; $t215 > 0 ? $t213 < $t214 : $t213 > $t214; $t213 += $t215) {
-    i = $t213;
-    marker_x = $add($add(l, 10), $mul(i, marker_spacing));
-    for (let $t216 = $int(-3), $t217 = $int(4), $t218 = 1; $t218 > 0 ? $t216 < $t217 : $t216 > $t217; $t216 += $t218) {
-      tick_y = $t216;
-      if (Math.abs(tick_y) === 3) {
-        c.put(marker_x, $add(timeline_y, tick_y), "|", $truth($mod(i, 2)) ? G : N);
-      } else if (Math.abs(tick_y) === 2) {
-        c.put(marker_x, $add(timeline_y, tick_y), "\u2502", G);
-      }
-    }
-    year_offset = (i - Math.floor(num_markers / 2)) * 500;
-    if (year_offset > 0) {
-      label = $fmt(Math.abs(year_offset), "") + "AD";
-      c.center(timeline_y - 5, label, marker_x < r - 20 ? Y : W);
-      c.put(marker_x - Math.floor($len(label) / 2), timeline_y - 5, label, B);
-    } else if (year_offset < 0) {
-      label = $fmt(Math.abs(year_offset), "") + "BC";
-      c.center(timeline_y - 5, label, marker_x > $add(l, 20) ? Y : W);
-      c.put(marker_x - Math.floor($len(label) / 2), timeline_y - 5, label, B);
-    } else {
-      c.put(marker_x - 1, timeline_y - 5, "0", W);
-    }
-  }
-  beam_progress = progress;
-  beam_x = $int(mix(r - 10, $add(l, 10), beam_progress));
-  for (let $t219 = $int($add(top, 2)), $t220 = $int(bt - 2), $t221 = 1; $t221 > 0 ? $t219 < $t220 : $t219 > $t220; $t219 += $t221) {
-    y = $t219;
-    intensity = 1 - Math.abs(y - cy) / (bt - top) * 2;
-    if (intensity > 0.7) {
-      c.put(beam_x, y, "\u2502", W);
-    } else if (intensity > 0.4) {
-      c.put(beam_x, y, "\u250A", B);
-    } else {
-      c.put(beam_x, y, ":", N);
-    }
-    for (const $t222 of $iter([-2, -1, 1, 2])) {
-      glow_offset = $t222;
-      gx = $add(beam_x, glow_offset);
-      if (l < gx && gx < r && (top < y && y < bt)) {
-        if (Math.abs(glow_offset) === 1) {
-          c.put(gx, y, "\u2591", intensity > 0.5 ? B : N);
-        } else {
-          c.put(gx, y, "\xB7", N);
-        }
-      }
-    }
-  }
-  if (progress > 0.2) {
-    for (let $t223 = $int(0), $t224 = $int(30), $t225 = 1; $t225 > 0 ? $t223 < $t224 : $t223 > $t224; $t223 += $t225) {
-      particle_i = $t223;
-      particle_phase = $mod($add($mul(elapsed, 2), $mul(particle_i, 0.3)), 1);
-      px = $add(beam_x, $int((particle_phase - 0.5) * 60));
-      py = $add($add(top, 5), $mod($mul(particle_i, 7), bt - top - 10));
-      if (l < px && px < r && (top < py && py < bt)) {
-        if (particle_phase < 0.2 || particle_phase > 0.8) {
-          c.put(px, py, "*", particle_phase < 0.1 ? W : B);
-        } else {
-          c.put(px, py, "\xB7", N);
-        }
-      }
-    }
-  }
-  if (progress > 0.1) {
-    current_year = $int(mix(2e3, -2e3, beam_progress));
-    year_label = $fmt(Math.abs(current_year), "") + $fmt(current_year > 0 ? "AD" : current_year < 0 ? "BC" : "", "");
-    label_x = beam_x - Math.floor($len(year_label) / 2);
-    if ($add(l, 5) < label_x && label_x < r - 15) {
-      c.put(label_x, $add(top, 3), year_label, $truth($mod($int($mul(elapsed, 4)), 2)) ? W : Y);
-    }
-  }
-  if (progress < 0.3) {
-    c.center($add(top, 1), "FUTURE \u2192 PAST", B);
-  } else if (progress < 0.7) {
-    c.center($add(top, 1), "TIME TRAVEL", $truth($mod($int($mul(elapsed, 3)), 2)) ? W : B);
-  } else {
-    c.center($add(top, 1), "ANCIENT ERA", W);
-  }
-  if (progress > 0.3) {
-    for (let $t226 = $int(0), $t227 = $int(15), $t228 = 1; $t228 > 0 ? $t226 < $t227 : $t226 > $t227; $t226 += $t228) {
-      line_i = $t226;
-      line_y = $add($add(top, 5), $mul(line_i, Math.floor((bt - top - 10) / 15)));
-      line_phase = $mod($add($mul(elapsed, 3), $mul(line_i, 0.1)), 1);
-      line_length = $int($mul(line_phase, 20)) + 5;
-      for (let $t229 = $int($max($add(l, 5), $add(beam_x, 10))), $t230 = $int($min(r - 5, $add($add(beam_x, 10), line_length))), $t231 = 1; $t231 > 0 ? $t229 < $t230 : $t229 > $t230; $t229 += $t231) {
-        lx = $t229;
-        if ($mod(hash16($add($mul(line_i, 17), $int(lx / 3))), 4) === 0) {
-          c.put(lx, line_y, line_phase > 0.7 ? "=" : "-", line_phase > 0.5 ? B : N);
-        }
-      }
-    }
-  }
-  if (progress > 0.8) {
-    dest_x = $add(l, 15);
-    c.put(dest_x, timeline_y - 2, "\u25BC", R);
-    c.put(dest_x - 2, timeline_y - 3, "BC", R);
-    if (progress > 0.95) {
-      flash_radius = $int((progress - 0.95) * 60);
-      for (let $t232 = $int(0), $t233 = $int(12), $t234 = 1; $t234 > 0 ? $t232 < $t233 : $t232 > $t233; $t232 += $t234) {
-        angle_i = $t232;
-        angle = $mul(angle_i, TAU) / 12;
-        fx = $add(dest_x, $int($mul(Math.cos(angle), flash_radius)));
-        fy = $add(timeline_y, $int($mul($mul(Math.sin(angle), flash_radius), 0.5)));
-        if (l < fx && fx < r && (top < fy && fy < bt)) {
-          c.put(fx, fy, "*", flash_radius < 10 ? W : B);
-        }
-      }
-    }
-  }
-}
-function lyric_unite_deeply(c, t, area, elapsed) {
-  let side, label, i, y, x, angle, radius, center_x, sep, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 1.8);
-  sep = mix(40, 0, progress);
-  for (const $t235 of $iter([[-1, "ME"], [1, "YOU"]])) {
-    [side, label] = $unpack($t235, 2);
-    center_x = $add(cx, $mul(side, sep));
-    radius = 15;
-    for (let $t236 = $int(0), $t237 = $int(60), $t238 = 1; $t238 > 0 ? $t236 < $t237 : $t236 > $t237; $t236 += $t238) {
-      i = $t236;
-      angle = $add($mul(i, TAU) / 60, $mul($mul(t, side), 0.2));
-      x = $add(center_x, $mul(Math.cos(angle), radius));
-      y = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-      c.put(x, y, progress > 0.7 && sep < 5 ? "@" : progress > 0.4 ? "*" : ".", progress > 0.8 ? W : progress > 0.5 ? B : N);
-    }
-    if (sep > 10) {
-      c.put(center_x, cy - 2, label, B);
-    }
-  }
-  if (progress > 0.7) {
-    c.center(cy, "UNIFIED", W);
-  }
-}
-function lyric_stimulation_satisfaction(c, t, area, elapsed) {
-  let lane, xx, packet, trail, head, phase, speed, relay, rx, y, names, gap, lanes, span, wire_r, wire_l, x, label, right_x, left_x, accent, strength, col, scan, filled, amount, inside, bar_w, bar_x, full, percent, u, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  if (t >= 62.589) {
-    u = clamp((t - 62.589) / (65.397 - 62.589));
-    percent = $int($mul(100, u));
-    full = u >= 1;
-    c.center($max(top, cy - 7), "SATISFACTION " + $fmt(percent, "05.1f") + "%", $truth(full) ? W : B);
-    bar_x = $add(l, 3);
-    bar_w = r - l - 6;
-    inside = bar_w - 2;
-    for (let $t239 = $int(0), $t240 = $int(3), $t241 = 1; $t241 > 0 ? $t239 < $t240 : $t239 > $t240; $t239 += $t241) {
-      lane = $t239;
-      y = $add(cy - 5, $mul(lane, 2));
-      amount = clamp(u - $mul($mul(1 - u, lane), 0.13));
-      filled = $int($mul(inside, amount));
-      c.put(bar_x, y, "[" + $mul("-", inside) + "]", N);
-      for (let $t242 = $int(0), $t243 = $int(filled), $t244 = 1; $t244 > 0 ? $t242 < $t243 : $t242 > $t243; $t242 += $t244) {
-        col = $t242;
-        scan = $mod(col - $int($mul(t, 26)) - $mul(lane, 7), $max(1, inside));
-        c.put($add($add(bar_x, 1), col), y, lane === 1 ? "#" : "=", $truth(scan < 5 || full) ? W : B);
-      }
-      if (filled < inside) {
-        c.put($add($add(bar_x, 1), filled), y, ">", W);
-      }
-    }
-    c.big($add(cy, 1), $str(percent), $truth(full) ? W : B);
-    c.center($min(bt, $add(cy, 7)), $truth(full) ? "[ MAXIMUM ]" : "[ FILLING SATISFACTION ]", $truth(full) ? W : N);
-    return;
-  }
-  strength = clamp(elapsed / (61.958 - 59.223));
-  accent = t >= 61.958;
-  c.center(top, "STIMULATION / SENSORY INPUT", $truth(accent) ? W : B);
-  left_x = $add(l, 1);
-  right_x = r - 10;
-  for (const $t245 of $iter([[left_x, "ME"], [right_x, "YOU"]])) {
-    [x, label] = $unpack($t245, 2);
-    c.box(x, cy - 2, 10, 5, B);
-    c.put($add(x, 3), cy, label, W);
-  }
-  wire_l = $add(left_x, 12);
-  wire_r = right_x - 3;
-  span = wire_r - wire_l;
-  lanes = bt - top >= 22 ? 5 : 3;
-  gap = $max(2, $min(4, Math.floor((bt - top - 6) / $max(1, lanes - 1))));
-  names = ["TOUCH", "SOUND", "LIGHT", "REWARD", "FEEDBACK"];
-  for (let $t246 = $int(0), $t247 = $int(lanes), $t248 = 1; $t248 > 0 ? $t246 < $t247 : $t246 > $t247; $t246 += $t248) {
-    lane = $t246;
-    y = $add(cy, $mul(lane - Math.floor(lanes / 2), gap));
-    c.line($add(left_x, 9), cy, wire_l, cy, "-", G);
-    c.line(wire_l, cy, wire_l, y, "|", G);
-    c.line(wire_l, y, wire_r, y, "-", N);
-    c.line(wire_r, y, wire_r, cy, "|", G);
-    c.line(wire_r, cy, right_x, cy, "-", G);
-    c.put($add(wire_l, 2), y - 1, $at(names, lane), N);
-    for (const $t249 of $iter([1, 2])) {
-      relay = $t249;
-      rx = $add(wire_l, Math.floor($mul(span, relay) / 3));
-      c.put(rx, y, "o", B);
-    }
-    speed = $add(0.65, $mul(strength, 0.75));
-    for (let $t250 = $int(0), $t251 = $int(3), $t252 = 1; $t252 > 0 ? $t250 < $t251 : $t250 > $t251; $t250 += $t252) {
-      packet = $t250;
-      phase = $mod($mul(elapsed, speed) - $mul(lane, 0.17) - packet / 3, 1);
-      head = $add(wire_l, $int($mul(phase, span)));
-      for (let $t253 = $int(0), $t254 = $int(5), $t255 = 1; $t255 > 0 ? $t253 < $t254 : $t253 > $t254; $t253 += $t255) {
-        trail = $t253;
-        xx = head - trail;
-        if (xx > wire_l) {
-          c.put(xx, y, trail === 0 ? "*" : trail < 3 ? "=" : ".", trail === 0 ? W : trail < 3 ? B : G);
-        }
-      }
-      if (phase > 0.88) {
-        c.put(wire_r, y, "#", W);
-        c.put($add(right_x, 1), $add(cy, 1), "ACTIVE", W);
-      }
-    }
-    if ($truth(accent)) {
-      for (let $t256 = $int($add(wire_l, 1)), $t257 = $int(wire_r), $t258 = 1; $t258 > 0 ? $t256 < $t257 : $t256 > $t257; $t256 += $t258) {
-        xx = $t256;
-        if ($mod($add($add(xx, $int($mul(t, 30))), lane), 7) < 2) {
-          c.put(xx, y, "#", W);
-        }
-      }
-    }
-  }
-  c.center(bt, "INPUT " + $fmt($int($mul(strength, 100)), "03d") + "%  /  ALL CHANNELS " + ($truth(accent) ? "ACTIVE" : "CONNECTING"), B);
-}
-function lyric_happy_execution(c, t, area, pulse2) {
-  let title_y, lane, tail, xx, head_char, inside, ny, nx, ink, step, head, path, yy, wave, radius, texture, scan, py, px, dy, dx, seed, heart, morph, beat, half_w, half_h, center_y, content_bt, content_top, x, label, side, row, selected, text4, op, address, value, index2, ops, frame, mw, mid_r, mid_l, right, left, rail, executing, loading, elapsed, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  elapsed = t - 66.601;
-  loading = t >= 68.252;
-  executing = t >= 69.259;
-  rail = $max(13, $min(24, Math.floor(c.w / 5)));
-  left = l;
-  right = r - rail + 1;
-  mid_l = $add($add(left, rail), 2);
-  mid_r = right - 3;
-  mw = mid_r - mid_l + 1;
-  frame = $int($mul(elapsed, $truth(executing) ? 30 : $truth(loading) ? 18 : 10));
-  ops = ["READ", "LOAD", "PUSH", "COPY", "SYNC", "CALL", "EXEC", "WAIT"];
-  for (const $t259 of $iter([[left, "MEM / YOU", 0], [right, "EXEC / ME", 1]])) {
-    [x, label, side] = $unpack($t259, 3);
-    c.box(x, top, rail, bt - top + 1, B);
-    c.put($add(x, 2), top, $slice(label, null, rail - 4, null), W);
-    for (let $t260 = $int($add(top, 1)), $t261 = $int(bt), $t262 = 1; $t262 > 0 ? $t260 < $t261 : $t260 > $t261; $t260 += $t262) {
-      row = $t260;
-      index2 = side === 0 ? $add(frame, row - top) : frame - (row - top);
-      value = hash16($add($mul(index2, 73), $mul(side, 911)));
-      address = $band($mul(index2, 16), 65535);
-      if (side === 0) {
-        text4 = $fmt(address, "04X") + " " + $fmt(value, "04X") + " " + $fmt(hash16($mul(index2, 29)), "04X");
-      } else {
-        op = $truth(executing && $mod(index2, 3) === 0) ? "EXEC" : $at(ops, $mod(index2, $len(ops)));
-        text4 = $fmt(op, "") + " " + $fmt(address, "04X") + " " + $fmt(value, "04X");
-      }
-      selected = $mod($add(row - top, frame), bt - top - 1) === 0;
-      c.put($add(x, 1), row, $add($truth(selected) ? ">" : " ", $slice(text4, null, rail - 3, null)), $truth(selected) ? W : $truth($mod(index2, 3)) ? N : G);
-    }
-  }
-  function middle(y, text5, style = N) {
-    text5 = $slice(text5, null, mw, null);
-    c.put($add(mid_l, Math.floor((mw - $len(text5)) / 2)), y, text5, style);
-  }
-  middle(top, "IF (YOU.HAPPY) -> EXECUTE(ME)", $truth(loading) ? W : B);
-  middle($add(top, 1), "SELF.EXECUTION / " + ($truth(executing) ? "RUNNING" : $truth(loading) ? "ARMED" : "CONDITION"), N);
-  content_top = $add(top, 3);
-  content_bt = bt - 3;
-  center_y = $add(content_top, content_bt) / 2;
-  half_h = $max(2, (content_bt - content_top) * 0.43);
-  half_w = $max(5, $mul(mw, 0.4));
-  beat = $add(1 + 0.045 * Math.sin($mul($mul(elapsed, TAU), 2)), $mul(pulse2, 0.04));
-  morph = $truth(loading) ? clamp((t - 68.252) / (69.259 - 68.252)) : 0;
-  for (let $t263 = $int(content_top), $t264 = $int($add(content_bt, 1)), $t265 = 1; $t265 > 0 ? $t263 < $t264 : $t263 > $t264; $t263 += $t265) {
-    yy = $t263;
-    for (let $t266 = $int(mid_l), $t267 = $int($add(mid_r, 1)), $t268 = 1; $t268 > 0 ? $t266 < $t267 : $t266 > $t267; $t266 += $t268) {
-      xx = $t266;
-      nx = (xx - cx) / $mul(half_w, beat);
-      ny = -(yy - center_y) / $mul(half_h, beat) + 0.2;
-      heart = ($add($mul(nx, nx), $mul(ny, ny)) - 1) ** 3 - $mul($mul(nx, nx), ny ** 3);
-      seed = hash16($add($mul(xx, 79), $mul(yy, 233)));
-      if ($truth(heart <= 0 && !$truth(executing))) {
-        if (seed / 65535 < morph) {
-          dx = $int($mul($mul(xx - cx, morph), 0.9));
-          dy = $int($mul($mul(yy - center_y, morph), 0.6));
-          px = $max(mid_l, $min(mid_r, $add(xx, dx)));
-          py = $max(content_top, $min(content_bt, $add(yy, dy)));
-          c.put(px, py, $at("01EX", $mod(seed, 4)), morph > 0.7 ? G : N);
-        } else {
-          scan = $mod(yy - content_top - $int($mul(elapsed, 9)), $max(1, content_bt - content_top + 1));
-          texture = hash16($add(seed, Math.floor(frame / 2)));
-          c.put(xx, yy, $mod(texture, 8) < 2 ? $at("01", $mod(texture, 2)) : "#", scan < 2 ? W : B);
-        }
-      } else if ($truth(executing)) {
-        radius = Math.abs(xx - cx) / $max(1, mw / 2) + Math.abs(yy - center_y) / $max(1, half_h);
-        wave = $mod((t - 69.259) * 3, 2);
-        if (Math.abs(radius - wave) < 0.12) {
-          c.put(xx, yy, "=", B);
-        } else if ($mod(seed, 31) === 0) {
-          c.put(xx, yy, $at("01", $mod(seed, 2)), G);
-        }
-      }
-    }
-  }
-  for (let $t269 = $int(0), $t270 = $int(3), $t271 = 1; $t271 > 0 ? $t269 < $t270 : $t269 > $t270; $t269 += $t271) {
-    lane = $t269;
-    yy = $int(center_y) + (lane - 1) * $max(1, $int($mul(half_h, 0.7)));
-    path = $max(2, Math.floor((mw - 6) / 2));
-    head = $mod($int($add($mul(elapsed, $truth(loading) ? 28 : 16), $mul(lane, 7))), path);
-    for (let $t272 = $int(0), $t273 = $int(4), $t274 = 1; $t274 > 0 ? $t272 < $t273 : $t272 > $t273; $t272 += $t274) {
-      tail = $t272;
-      step = $max(0, head - tail);
-      ink = tail === 0 ? W : tail < 2 ? B : G;
-      for (const $t275 of $iter([[$add(mid_l, step), ">"], [mid_r - step, "<"]])) {
-        [xx, head_char] = $unpack($t275, 2);
-        nx = (xx - cx) / $mul(half_w, beat);
-        ny = -(yy - center_y) / $mul(half_h, beat) + 0.2;
-        inside = ($add($mul(nx, nx), $mul(ny, ny)) - 1) ** 3 - $mul($mul(nx, nx), ny ** 3) <= 0;
-        if ($truth(inside && !$truth(loading))) {
-          c.put(xx, yy, tail === 0 ? "#" : $at("01", $mod($add($add(xx, yy), frame), 2)), tail === 0 ? W : B);
-        } else {
-          c.put(xx, yy, tail === 0 ? head_char : "-", ink);
-        }
-      }
-    }
-  }
-  if ($truth(executing)) {
-    title_y = $int(center_y) - 2;
-    clear(c, mid_l, title_y, mw, 5);
-    if (mw >= 53) {
-      c.big(title_y, "EXECUTION", W);
-    } else {
-      middle($add(title_y, 2), ">> EXECUTION <<", W);
-    }
-    middle(title_y - 2, "[ YOU.HAPPY == TRUE ]", B);
-    middle($add(title_y, 6), "world.execute(me);", W);
-  } else if ($truth(loading)) {
-    middle($int(center_y), "[ RUN THE EXECUTION ]", W);
-  } else {
-    middle($int(center_y), "YOU.HAPPY", W);
-  }
-  middle(bt - 1, "EXECUTION: " + ($truth(executing) ? "RUN" : $truth(loading) ? "QUEUED" : "READY"), B);
-  middle(bt, "ME -> YOU / " + ($truth(executing) ? "SELF COMMITTED" : $truth(loading) ? "COMPILING..." : "MAKE YOU HAPPY"), N);
-}
-function lyric_trapped_simulation(c, t, area, pulse2) {
-  let title_y, x, name, node_y, index2, row, yy, extent, jitter, xx, by, bx, box_h, box_w, close, layer, y, corners, y1, y0, x1, x0, skew, scale, phase, ch, gy, gx, bend, label, direction, text4, value, step, frame, center_y, hh, inner_bt, inner_top, mw, mr, ml, rail, reveal, strange, age, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  age = t - 70.084;
-  strange = clamp((t - 71.764) / 1.405);
-  reveal = t >= 73.169;
-  rail = $max(10, $min(19, Math.floor(c.w / 6)));
-  ml = $add($add(l, rail), 1);
-  mr = r - rail - 1;
-  mw = mr - ml + 1;
-  inner_top = $add(top, 2);
-  inner_bt = bt - 2;
-  hh = $max(2, (inner_bt - inner_top) / 2);
-  center_y = $add(inner_top, inner_bt) / 2;
-  frame = $int($mul(age, $add(22, $mul(strange, 20))));
-  function middle(y2, text5, style = N) {
-    text5 = $slice(text5, null, mw, null);
-    c.put($add(ml, Math.floor((mw - $len(text5)) / 2)), y2, text5, style);
-  }
-  for (const $t276 of $iter([[l, "HEAP / ME", 1], [r - rail + 1, "STACK / YOU", -1]])) {
-    [x, label, direction] = $unpack($t276, 3);
-    c.box(x, top, rail, bt - top + 1, B);
-    c.put($add(x, 1), top, $slice(label, null, rail - 2, null), W);
-    for (let $t277 = $int($add(top, 1)), $t278 = $int(bt), $t279 = 1; $t279 > 0 ? $t277 < $t278 : $t277 > $t278; $t277 += $t279) {
-      yy = $t277;
-      step = $mod($add($mul(frame, direction), yy) - top, 256);
-      value = hash16($mul(step, 53));
-      text4 = $truth($mod(step, 4)) ? $fmt($mul(step, 16), "04X") + " " + $fmt(value, "04X") : ($truth($mod(step, 8)) ? "LOOP " : "EXEC ") + $fmt(value, "04X");
-      c.put($add(x, 1), yy, $slice(text4, null, rail - 2, null), $mod(step, 13) === 0 ? W : $truth($mod(step, 3)) ? N : G);
-    }
-  }
-  for (let $t280 = $int(inner_top), $t281 = $int($add(inner_bt, 1)), $t282 = 1; $t282 > 0 ? $t280 < $t281 : $t280 > $t281; $t280 += $t282) {
-    yy = $t280;
-    for (let $t283 = $int(ml), $t284 = $int($add(mr, 1)), $t285 = 1; $t285 > 0 ? $t283 < $t284 : $t283 > $t284; $t283 += $t285) {
-      xx = $t283;
-      bend = $mul($mul(Math.sin($add((yy - center_y) * 0.32, $mul(age, 3.1))), strange), 6);
-      gx = $int($add($add(xx, bend), $mul(age, 5)));
-      gy = $int($add(yy, $mul($mul(Math.sin((xx - cx) * 0.12 - $mul(age, 2)), strange), 3)));
-      if ($mod(gx, 8) === 0 || $mod(gy, 4) === 0) {
-        ch = $mod(gx, 8) === 0 && $mod(gy, 4) === 0 ? "+" : $mod(gx, 8) === 0 ? ":" : ".";
-        c.put(xx, yy, ch, G);
-      } else if ($mod(hash16($add($add($mul(xx, 17), $mul(yy, 79)), Math.floor(frame / 3))), 109) === 0) {
-        c.put(xx, yy, $at("01", $mod(hash16($add(xx, yy)), 2)), N);
-      }
-    }
-  }
-  for (let $t286 = $int(0), $t287 = $int(8), $t288 = 1; $t288 > 0 ? $t286 < $t287 : $t286 > $t287; $t286 += $t288) {
-    layer = $t286;
-    phase = $mod($add(layer / 8, $mul(age, $add(0.2, $mul(strange, 0.25)))), 1);
-    scale = 0.12 + 0.88 * phase ** 1.5;
-    skew = $mul($mul($mul(Math.sin($add($mul(age, 2), $mul(layer, 0.8))), strange), mw), 0.1);
-    x0 = cx - $mul($mul(mw, 0.48), scale);
-    x1 = $add(cx, $mul($mul(mw, 0.48), scale));
-    y0 = center_y - $mul($mul(hh, 0.95), scale);
-    y1 = $add(center_y, $mul($mul(hh, 0.95), scale));
-    corners = [[$add(x0, skew), y0], [x1, $add(y0, $mul(strange, Math.sin($add($mul(age, 3), layer))))], [x1 - skew, y1], [x0, y1 - $mul(strange, Math.sin($add($mul(age, 3), layer)))]];
-    for (let $t289 = $int(0), $t290 = $int(4), $t291 = 1; $t291 > 0 ? $t289 < $t290 : $t289 > $t290; $t289 += $t291) {
-      index2 = $t289;
-      [x, y] = $unpack($at(corners, index2), 2);
-      [xx, yy] = $unpack($at(corners, $mod($add(index2, 1), 4)), 2);
-      c.line($max(ml, $min(mr, x)), y, $max(ml, $min(mr, xx)), yy, $mod(layer, 3) === 0 ? "=" : "-", $mod(layer, 3) === 0 ? N : G);
-    }
-    if ($mod(layer, 2) === 0 && scale > 0.6) {
-      c.put($max(ml, $int(x0)), $int(y0), "LOOP " + $fmt(layer, "02d"), N);
-    }
-  }
-  close = clamp(age / 0.85);
-  box_w = $max(20, $int($mul(mw, 0.98 - $mul(0.22, close))));
-  box_h = $max(7, $int((inner_bt - inner_top + 1) * (0.98 - $mul(0.16, close))));
-  bx = cx - Math.floor(box_w / 2);
-  by = $int(center_y) - Math.floor(box_h / 2);
-  if (!$truth(reveal)) {
-    c.box(bx, by, box_w, box_h, B);
-    for (let $t292 = $int(1), $t293 = $int(7), $t294 = 1; $t294 > 0 ? $t292 < $t293 : $t292 > $t293; $t292 += $t294) {
-      index2 = $t292;
-      xx = $add(bx, Math.floor($mul(index2, box_w - 1) / 7));
-      jitter = $int($mul($mul(Math.sin($add($mul(age, 5), index2)), strange), 2));
-      extent = $int($mul(box_h - 2, close));
-      for (let $t295 = $int(0), $t296 = $int(extent), $t297 = 1; $t297 > 0 ? $t295 < $t296 : $t295 > $t296; $t295 += $t297) {
-        row = $t295;
-        yy = $truth($mod(index2, 2)) ? $add($add(by, 1), row) : $add(by, box_h) - 2 - row;
-        c.put($add(xx, jitter), yy, "|", $truth($mod(index2, 2)) ? N : B);
-      }
-    }
-    middle(by, "[ CONTAINMENT " + (close >= 1 ? "LOCKED" : "CLOSING") + " ]", W);
-    node_y = $int(center_y);
-    for (const $t298 of $iter([[cx - $max(6, Math.floor(box_w / 4)), "ME"], [$add(cx, $max(6, Math.floor(box_w / 4))), "YOU"]])) {
-      [x, name] = $unpack($t298, 2);
-      clear(c, x - 4, node_y - 1, 9, 3);
-      c.box(x - 4, node_y - 1, 9, 3, W);
-      c.put(x - Math.floor($len(name) / 2), node_y, name, W);
-    }
-    c.line(cx - Math.floor(box_w / 4) + 5, node_y, $add(cx, Math.floor(box_w / 4)) - 5, node_y, "=", B);
-    if (t >= 71.764) {
-      middle($add(by, box_h) - 1, "STRANGE / " + ("RECURSION " + $fmt($int($mul(age, 13)), "03d")), W);
-    }
-  } else {
-    title_y = $int(center_y) - 2;
-    clear(c, ml, title_y, mw, 5);
-    if (mw >= 59) {
-      c.big(title_y, "SIMULATION", W);
-    } else {
-      middle($add(title_y, 2), ">> SIMULATION <<", W);
-    }
-    middle(title_y - 2, "[ NO EXIT / SAME WORLD ]", B);
-    middle($add(title_y, 6), "[ ME ] <== LOOP ==> [ YOU ]", W);
-  }
-  middle(top, "EXECUTION -> SIMULATION", B);
-  middle($add(top, 1), "world.simulate(me, you);", N);
-  middle(bt - 1, "EXIT: DENIED / RESTART: " + $fmt($int($mul(age, 17)), "04d"), B);
-  middle(bt, "TRAPPED TOGETHER / LOOP FOREVER", $truth(reveal) ? W : N);
-}
-function lyric_heart(c, t, area, elapsed, pulse2) {
-  let angle_i, rad_i, brightness, px, py, x, y, rad, angle, scale, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  scale = $add($add(0.5, $mul(pulse2, 0.15)), $mul(elapsed, 0.03));
-  for (let $t299 = $int(0), $t300 = $int(60), $t301 = 1; $t301 > 0 ? $t299 < $t300 : $t299 > $t300; $t299 += $t301) {
-    angle_i = $t299;
-    for (let $t302 = $int(0), $t303 = $int(15), $t304 = 1; $t304 > 0 ? $t302 < $t303 : $t302 > $t303; $t302 += $t304) {
-      rad_i = $t302;
-      angle = $mul(angle_i, TAU) / 60;
-      rad = rad_i / 15;
-      x = 16 * Math.sin(angle) ** 3;
-      y = -(13 * Math.cos(angle) - 5 * Math.cos($mul(2, angle)) - 2 * Math.cos($mul(3, angle)) - Math.cos($mul(4, angle)));
-      [x, y] = $unpack([$mul($mul(x, scale), rad) / 17, $mul($mul(y, scale), rad) / 17], 2);
-      [px, py] = $unpack([$add(cx, $mul(x, 4)), $add(cy, $mul(y, 2))], 2);
-      if (l < px && px < r && (top < py && py < bt)) {
-        brightness = $mul(rad, $add(1, $mul(pulse2, 0.3)));
-        c.put(px, py, brightness > 0.8 ? "#" : brightness > 0.5 ? "*" : ".", brightness > 0.9 ? W : brightness > 0.6 ? B : N);
-      }
-    }
-  }
-  if (elapsed > 1) {
-    c.center(cy, "\u2665", R);
-  }
-}
-function legacy_panel(c, x, y, w, h, label) {
-  clear(c, x, y, w, h);
-  c.box(x, y, w, h, D);
-  c.put($add(x, 2), y, " " + $slice(label, null, $max(0, w - 6), null) + " ", N);
-}
-function legacy_workspace(c, t, top, bt, label, status = "ACTIVE") {
-  let sweep, i, b, ops, a, j, yy, height, right, left, k, ph, rx, lx, side;
-  c.put(2, top, label, W);
-  c.put($max(3, c.w - $len(status) - 3), top, status, B);
-  c.put(2, $add(top, 1), $mul("-", c.w - 4), G);
-  side = c.w >= 100 ? $min(25, $max(17, Math.floor(c.w / 6))) : 0;
-  if ($truth(side)) {
-    lx = 2;
-    rx = c.w - side - 2;
-    ph = bt - top - 2;
-    legacy_panel(c, lx, $add(top, 2), side, ph, "REGISTER");
-    legacy_panel(c, rx, $add(top, 2), side, ph, "PROCESS");
-    k = $int($mul(t, 7));
-    left = ["PID 0001 : ME", "UID 0002 : YOU", "PC  " + $fmt(hash16(k), "04X"), "SP  " + $fmt(hash16($add(k, 3)), "04X")];
-    right = ["STATE " + $slice(status, null, 7, null), "TICK " + $fmt($int($mul(t, 120)), "06d"), "CALL " + $fmt(hash16($add(k, 7)), "04X"), "FLAGS Z C O S"];
-    height = ph - 2;
-    for (let $t305 = $int(0), $t306 = $int(height), $t307 = 1; $t307 > 0 ? $t305 < $t306 : $t305 > $t306; $t305 += $t307) {
-      i = $t305;
-      yy = $add($add(top, 3), i);
-      if (i < $len(left)) {
-        a = $at(left, i);
-        b = $at(right, i);
-      } else if (i === 5) {
-        a = "HEAP ALLOCATION";
-        b = "STACK TRACE";
-      } else {
-        j = $add(k, i);
-        a = $fmt($mul(i, 16), "04X") + " " + $fmt(hash16(j), "04X") + " " + $fmt(hash16($add(j, 19)), "04X");
-        ops = ["LOAD", "PUSH", "CALL", "WAIT", "COPY", "SYNC", "RET ", "JMP "];
-        b = $fmt($at(ops, $mod(j, 8)), "") + " @" + $fmt(hash16($mul(j, 3)), "04X");
-      }
-      c.put($add(lx, 2), yy, $slice(a, null, side - 4, null), i < 4 ? N : G);
-      c.put($add(rx, 2), yy, $slice(b, null, side - 4, null), i < 4 ? N : G);
-    }
-    sweep = $mod($int($mul(t, 8)), $max(1, height));
-    c.put($add(lx, 1), $add($add(top, 3), sweep), ">", B);
-    c.put($add(rx, side) - 2, $add($add(top, 3), height - 1 - sweep), "<", B);
-  }
-  return [$truth(side) ? $add(side, 4) : 4, $add(top, 3), $truth(side) ? c.w - side - 5 : c.w - 5, bt - 1];
-}
-function legacy_mesh(c, t, area, form = "torus", pulse2 = 0) {
-  let x, yy, z, a, b, light, l, y, r, bt, ramp, u, v, p, xx, zz, radius, zbuf;
-  zbuf = new PyDict([]);
-  for (let $t308 = $int(0), $t309 = $int(78), $t310 = 1; $t310 > 0 ? $t308 < $t309 : $t308 > $t309; $t308 += $t310) {
-    u = $t308;
-    a = $mul(u, TAU) / 78;
-    for (let $t311 = $int(0), $t312 = $int(26), $t313 = 1; $t313 > 0 ? $t311 < $t312 : $t311 > $t312; $t311 += $t313) {
-      v = $t311;
-      b = $mul(v, TAU) / 26;
-      if (form === "torus") {
-        x = (0.76 + 0.29 * Math.cos(b)) * Math.cos(a);
-        y = (0.76 + 0.29 * Math.cos(b)) * Math.sin(a);
-        z = 0.29 * Math.sin(b);
-      } else if (form === "sphere") {
-        x = Math.sin(b) * Math.cos(a);
-        y = Math.cos(b);
-        z = Math.sin(b) * Math.sin(a);
-      } else if (form === "heart") {
-        radius = 0.5 + 0.5 * Math.cos(b);
-        x = $mul(16 * Math.sin(a) ** 3 / 17, radius);
-        y = $mul(-(13 * Math.cos(a) - 5 * Math.cos($mul(2, a)) - 2 * Math.cos($mul(3, a)) - Math.cos($mul(4, a))) / 17, radius);
-        z = 0.38 * Math.sin(b) * Math.sin(a);
-        x = $mul(x, $add(1, $mul(pulse2, 0.12)));
-        y = $mul(y, $add(1, $mul(pulse2, 0.12)));
-      } else if (form === "eggplant") {
-        x = Math.sin(b) * Math.cos(a) * (0.43 + 0.16 * Math.cos(b));
-        y = Math.cos(b) * 1.2;
-        z = Math.sin(b) * Math.sin(a) * 0.6;
-      } else if (form === "tomato") {
-        x = Math.sin(b) * Math.cos(a);
-        y = Math.cos(b) * 0.68;
-        z = Math.sin(b) * Math.sin(a);
-      } else {
-        x = (0.68 + 0.25 * Math.cos($add($mul(3, a), b))) * Math.cos($mul(2, a));
-        y = (0.68 + 0.25 * Math.cos($add($mul(3, a), b))) * Math.sin($mul(2, a));
-        z = 0.5 * Math.sin($add($mul(3, a), b));
-      }
-      [xx, yy, zz] = $unpack(point(x, y, z, area, form !== "heart" ? t : Math.sin($mul(t, 0.45)) * 1.2), 3);
-      p = [$round(xx), $round(yy)];
-      if (!$in(p, zbuf) || zz < $at($at(zbuf, p), 0)) {
-        $setitem(zbuf, p, [zz, a, b]);
-      }
-    }
-  }
-  ramp = ".,:;=+*#@";
-  [l, y, r, bt] = $unpack(area, 4);
-  for (const $t314 of $iter($items(zbuf))) {
-    [[x, yy], [z, a, b]] = $unpack($t314, 2);
-    if (!(l <= x && x <= r && (y <= yy && yy <= bt))) {
-      continue;
-    }
-    light = clamp(0.45 - $mul(z, 0.3) + Math.sin($add($add($mul(a, 2), b), $mul(t, 0.3))) * 0.13);
-    c.put(x, yy, $at(ramp, $int($mul(light, $len(ramp) - 1))), light > 0.77 ? B : light > 0.4 ? N : G);
-  }
-}
-function legacy_ring(c, t, area, turns = 3) {
-  let k, j, aa, a, i, yy, x, rr, cy, cx, l, y, r, b;
-  [l, y, r, b] = $unpack(area, 4);
-  cx = $add(l, r) / 2;
-  cy = $add(y, b) / 2;
-  for (let $t315 = $int(0), $t316 = $int(turns), $t317 = 1; $t317 > 0 ? $t315 < $t316 : $t315 > $t316; $t315 += $t317) {
-    k = $t315;
-    rr = $add(0.32, $mul(k, 0.058));
-    for (let $t318 = $int(0), $t319 = $int(140), $t320 = 1; $t320 > 0 ? $t318 < $t319 : $t318 > $t319; $t318 += $t320) {
-      i = $t318;
-      a = $mul(i, TAU) / 140;
-      if ($mod($add(i, $mul(k, 9)), 23) < 5) {
-        continue;
-      }
-      x = $add(cx, $mul(Math.cos(a) * (r - l), rr));
-      yy = $add(cy, $mul(Math.sin(a) * (b - y), rr));
-      c.put(x, yy, $truth($mod(k, 2)) ? "." : ":", k !== 1 ? G : D);
-    }
-    a = $add($mul(t, $add(0.6, $mul(k, 0.1))), $mul(k, 2));
-    for (let $t321 = $int(0), $t322 = $int(14), $t323 = 1; $t323 > 0 ? $t321 < $t322 : $t321 > $t322; $t321 += $t323) {
-      j = $t321;
-      aa = a - $mul(j, 0.018);
-      c.put($add(cx, $mul(Math.cos(aa) * (r - l), rr)), $add(cy, $mul(Math.sin(aa) * (b - y), rr)), j === 0 ? "+" : ".", j === 0 ? W : G);
-    }
-  }
-}
-function legacy_organic(c, t, top, bt, pulse2) {
-  let k, xx, yy, target, s, j, es, vs, cy, cx, l, y, r, b, area, resource, subject, i;
-  i = t < 77.576 ? 0 : t < 81.351 ? 1 : t < 85.078 ? 2 : 3;
-  subject = $at(["EGGPLANT", "TOMATO", "TABBY CAT", "GOD"], i);
-  resource = $at(["NUTRIENTS", "ANTIOXIDANTS", "ENJOYMENT", "EXISTENCE"], i);
-  area = legacy_workspace(c, t, top, bt, "TYPE CAST / " + subject, "EXPORT");
-  [l, y, r, b] = $unpack(area, 4);
-  cx = $add(l, r) / 2;
-  cy = $add(y, b) / 2;
-  if ($in(i, [0, 1])) {
-    legacy_mesh(c, t, [l, y, $add(cx, 6), b], i === 0 ? "eggplant" : "tomato");
-  } else if (i === 2) {
-    vs = [[-0.9, -0.8, 0], [-0.75, 0.4, 0], [0, 0.75, 0], [0.75, 0.4, 0], [0.9, -0.8, 0], [0.4, -0.4, 0], [-0.4, -0.4, 0], [-0.28, 0, -0.1], [0.28, 0, -0.1], [0, 0.25, -0.2]];
-    es = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 0], [7, 9], [8, 9], [5, 8], [6, 7]];
-    projected(c, vs, es, [l, y, $add(cx, 8), b], Math.sin(t) * 0.5);
-    for (const $t324 of $iter([-1, 1])) {
-      s = $t324;
-      for (let $t325 = $int(0), $t326 = $int(3), $t327 = 1; $t327 > 0 ? $t325 < $t326 : $t325 > $t326; $t325 += $t327) {
-        j = $t325;
-        c.line($add(l, (cx - l) / 2), $add(cy, 1), $add($add(l, (cx - l) / 2), $mul(s, 11)), $add(cy, j) - 1, ".", N);
-      }
-    }
-  } else {
-    legacy_mesh(c, t, [l, y, $add(cx, 8), b], "sphere");
-    legacy_ring(c, t, [l, y, $add(cx, 8), b], 4);
-  }
-  target = $round(mix(cx, r, 0.67));
-  c.box(target - 5, $int(cy - 2), 11, 5, N);
-  c.put(target - 3, cy, "YOU_02", W);
-  for (let $t328 = $int(0), $t329 = $int(5), $t330 = 1; $t330 > 0 ? $t328 < $t329 : $t328 > $t329; $t328 += $t330) {
-    k = $t328;
-    yy = $add(cy - 2, k);
-    c.line(cx - 1, yy, target - 6, yy, ".", G);
-    xx = mix(cx, target - 6, $mod($add($mul(t, 0.8), $mul(k, 0.2)), 1));
-    c.put(xx, yy, ">>", k === 2 ? B : D);
-  }
-  c.center(y, "convert(self, " + $fmt(resource.toLowerCase(), "") + ");", W);
-  c.center(b, "TX " + $fmt($int($mod(t, 3) / 3 * 65535), "04X") + "  |  " + $fmt(resource, "") + " -> YOU  |  ACK", N);
-}
-function legacy_phosphor(c, t, top, bt) {
-  let source, shift, yy, x, ch, s, row;
-  row = $add(top, $mod($int($mul(t, 9)), $max(1, bt - top + 1)));
-  for (let $t331 = $int(2), $t332 = $int(c.w - 2), $t333 = 1; $t333 > 0 ? $t331 < $t332 : $t331 > $t332; $t331 += $t333) {
-    x = $t331;
-    [ch, s] = $unpack($at($at(c.cells, row), x), 2);
-    if (!$in(ch, ["", " "]) && $in(s, [D, N, G])) {
-      $setitem($at(c.cells, row), x, [ch, $eq(s, G) ? N : B]);
-    }
-  }
-  if (125.708 < t && t < 177.246 && $in($mod($int($mul(t, 13)), 17), [0, 1])) {
-    yy = $add(top, $mod(hash16($int($mul(t, 13))), $max(1, bt - top)));
-    shift = $truth($mod($int($mul(t, 13)), 2)) ? 2 : -3;
-    source = $slice($at(c.cells, yy), 2, -2, null);
-    source = $add($slice(source, -shift, null, null), $slice(source, null, -shift, null));
-    $setslice($at(c.cells, yy), 2, -2, source);
-  }
-}
-function lyric_god_existence(c, t, area, elapsed) {
-  let ring, i, brightness, y, x, angle, density, radius, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  for (let $t344 = $int(0), $t345 = $int(8), $t346 = 1; $t346 > 0 ? $t344 < $t345 : $t344 > $t345; $t344 += $t346) {
-    ring = $t344;
-    radius = $add($add(5, $mul(ring, 4)), Math.sin($add($mul(t, 2), ring)) * 2);
-    density = 60 - $mul(ring, 5);
-    for (let $t347 = $int(0), $t348 = $int(density), $t349 = 1; $t349 > 0 ? $t347 < $t348 : $t347 > $t348; $t347 += $t349) {
-      i = $t347;
-      angle = $add($mul(i, TAU) / density, $mul($mul(t, 0.1), (-1) ** ring));
-      x = $add(cx, $mul(Math.cos(angle), radius));
-      y = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-      brightness = 1 - ring / 8;
-      c.put(x, y, brightness > 0.7 ? "*" : brightness > 0.4 ? "+" : ".", brightness > 0.8 ? W : brightness > 0.5 ? B : N);
-    }
-  }
-  c.center(cy, "GOD", W);
-  c.center($add(cy, 2), "YOU", B);
-}
-function identity_bitmap(c, x, y, text4, sx, sy, ink, fill = 1, seed = 0) {
-  let index2, ch, dy, row, dx, pixel, py, px, on, yy, xx, glyphs;
-  glyphs = new PyDict([["F", ["11111", "11000", "11110", "11000", "11000"]], ["M", ["10001", "11011", "10101", "10001", "10001"]], ["A", ["01110", "11011", "11111", "11011", "11011"]], ["P", ["11110", "11011", "11110", "11000", "11000"]]]);
-  for (const $t350 of $iter($enumerate(text4))) {
-    [index2, ch] = $unpack($t350, 2);
-    for (const $t351 of $iter($enumerate($at(glyphs, ch)))) {
-      [dy, row] = $unpack($t351, 2);
-      for (const $t352 of $iter($enumerate(row))) {
-        [dx, pixel] = $unpack($t352, 2);
-        if (pixel === "1") {
-          for (let $t353 = $int(0), $t354 = $int(sy), $t355 = 1; $t355 > 0 ? $t353 < $t354 : $t353 > $t354; $t353 += $t355) {
-            py = $t353;
-            for (let $t356 = $int(0), $t357 = $int(sx), $t358 = 1; $t358 > 0 ? $t356 < $t357 : $t356 > $t357; $t356 += $t358) {
-              px = $t356;
-              xx = $add($add(x, $mul($add($mul(index2, 6), dx), sx)), px);
-              yy = $add($add(y, $mul(dy, sy)), py);
-              on = hash16($add($add($add($add($mul($add($mul(index2, 31), dx), 73), $mul(dy, 137)), $mul(px, 19)), py), seed)) / 65535 <= fill;
-              c.put(xx, yy, $truth(on) ? "#" : ".", $truth(on) ? ink : G);
-            }
-          }
-        }
-      }
-    }
-  }
-}
-function lyric_identity_rewrite(c, t, area) {
-  let i, yy, yoff, x, p, progress, row, tick, y, right_c, left_c, glyph_h, glyph_w, sy, sx, u, age, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  age = t - 88.587;
-  u = clamp((t - 90.197) / 1.25);
-  sx = $max(2, $min(6, Math.floor((r - l) / 22)));
-  sy = $max(1, $min(5, Math.floor((bt - top - 8) / 5)));
-  glyph_w = $mul(5, sx);
-  glyph_h = $mul(5, sy);
-  left_c = Math.floor($add(l, cx) / 2);
-  right_c = Math.floor($add(cx, r) / 2);
-  y = cy - Math.floor(glyph_h / 2);
-  c.center(top, "SELF.GENDER / PARAMETER REWRITE", W);
-  c.center($add(top, 1), "F -> M / TRANSMIT IDENTITY", B);
-  c.box(l, $add(top, 3), cx - l - 1, bt - top - 5, G);
-  c.box($add(cx, 2), $add(top, 3), r - cx - 1, bt - top - 5, G);
-  for (let $t359 = $int($add(top, 4)), $t360 = $int(bt - 2), $t361 = 2; $t361 > 0 ? $t359 < $t360 : $t359 > $t360; $t359 += $t361) {
-    row = $t359;
-    tick = $add($int($mul(age, 18)), row);
-    c.put($add(l, 2), row, $fmt(hash16(tick), "04X"), G);
-    c.put(r - 5, row, $fmt(hash16($add(tick, 79)), "04X"), G);
-  }
-  for (let $t362 = $int(0), $t363 = $int(6), $t364 = 1; $t364 > 0 ? $t362 < $t363 : $t362 > $t363; $t362 += $t364) {
-    i = $t362;
-    yy = $add($add(top, 4), $mul(i, $max(1, Math.floor((bt - top - 8) / 5))));
-    c.line($add(l, 7), yy, r - 7, yy, ".", G);
-    progress = $mod($add($mul(age, 0.9), $mul(i, 0.17)), 1);
-    x = mix(left_c, right_c, progress);
-    c.put(x, yy, ">>", $truth(u) ? W : B);
-  }
-  clear(c, left_c - Math.floor(glyph_w / 2) - 1, y - 1, $add(glyph_w, 2), $add(glyph_h, 2));
-  clear(c, right_c - Math.floor(glyph_w / 2) - 1, y - 1, $add(glyph_w, 2), $add(glyph_h, 2));
-  identity_bitmap(c, left_c - Math.floor(glyph_w / 2), y, "F", sx, sy, W, 1 - u);
-  identity_bitmap(c, right_c - Math.floor(glyph_w / 2), y, "M", sx, sy, W, u);
-  if (0 < u && u < 1) {
-    for (let $t365 = $int(0), $t366 = $int(44), $t367 = 1; $t367 > 0 ? $t365 < $t366 : $t365 > $t366; $t365 += $t367) {
-      i = $t365;
-      p = clamp($mul(u, 1.6) - $mod(i, 11) / 18);
-      x = mix(left_c, right_c, p);
-      yoff = $mod(hash16($mul(i, 31)), $max(1, glyph_h)) - glyph_h / 2;
-      yy = $add($add(cy, yoff), $mul($mul(Math.sin($mul(p, Math.PI)), $truth($mod(i, 2)) ? 1 : -1), 3));
-      c.put(x, yy, $at("01#", $mod(i, 3)), $mod(i, 4) === 0 ? W : B);
-    }
-  }
-  c.put(left_c - 4, bt - 3, "SOURCE F", u < 1 ? N : G);
-  c.put(right_c - 4, bt - 3, "TARGET M", u >= 1 ? W : N);
-  c.center(bt - 1, "WRITE " + $fmt($int($mul(u, 100)), "03d") + "% / " + (u >= 1 ? "COMMITTED" : !$truth(u) ? "COMPILING" : "REASSEMBLING"), B);
-  c.center(bt, u >= 1 ? "self.gender = 'M';" : "self.gender: F -> M", W);
-}
-function lyric_daynight_clock(c, t, area) {
-  let minute, hour, yy, y0, glyph_h, glyph_w, sy, sx, star, y, x, ray, a, i, radius, trail, minute_angle, hour_angle, ry, rx, display_x, clock_x, virtual, is_pm, flip_at, age, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  age = t - 92.015;
-  flip_at = 94.55;
-  is_pm = t >= flip_at;
-  virtual = !$truth(is_pm) ? 6 + 6 * clamp((t - 92.015) / (flip_at - 92.015)) : 12 + 6 * clamp((t - flip_at) / (95.465 - flip_at));
-  clock_x = Math.floor($add(l, cx) / 2);
-  display_x = Math.floor($add(cx, r) / 2);
-  rx = $max(6, (cx - l) * 0.43);
-  ry = $max(3, (bt - top - 6) * 0.43);
-  c.center(top, "CLOCK.CYCLE / AM -> PM", W);
-  c.center($add(top, 1), "DAYLIGHT -> NIGHT / TIME ACCELERATING", B);
-  for (let $t368 = $int(0), $t369 = $int(180), $t370 = 1; $t370 > 0 ? $t368 < $t369 : $t368 > $t369; $t368 += $t370) {
-    i = $t368;
-    a = $mul(i, TAU) / 180;
-    c.put($add(clock_x, $mul(Math.sin(a), rx)), cy - $mul(Math.cos(a), ry), ".", N);
-  }
-  for (let $t371 = $int(0), $t372 = $int(12), $t373 = 1; $t373 > 0 ? $t371 < $t372 : $t371 > $t372; $t371 += $t373) {
-    hour = $t371;
-    a = $mul(hour, TAU) / 12;
-    c.line($add(clock_x, $mul($mul(Math.sin(a), rx), 0.9)), cy - $mul($mul(Math.cos(a), ry), 0.9), $add(clock_x, $mul(Math.sin(a), rx)), cy - $mul(Math.cos(a), ry), "#", B);
-    c.put($add(clock_x, $mul($mul(Math.sin(a), rx), 0.77)) - 1, cy - $mul($mul(Math.cos(a), ry), 0.77), $str(hour || 12), N);
-  }
-  hour_angle = $mul(virtual / 12, TAU);
-  minute_angle = $mul($mod(virtual, 1), TAU);
-  for (let $t374 = $int(4), $t375 = $int(0), $t376 = -1; $t376 > 0 ? $t374 < $t375 : $t374 > $t375; $t374 += $t376) {
-    trail = $t374;
-    a = minute_angle - $mul(trail, 0.13);
-    c.line(clock_x, cy, $add(clock_x, $mul($mul(Math.sin(a), rx), 0.8)), cy - $mul($mul(Math.cos(a), ry), 0.8), ".", G);
-  }
-  c.line(clock_x, cy, $add(clock_x, $mul($mul(Math.sin(hour_angle), rx), 0.52)), cy - $mul($mul(Math.cos(hour_angle), ry), 0.52), "#", B);
-  c.line(clock_x, cy, $add(clock_x, $mul($mul(Math.sin(minute_angle), rx), 0.83)), cy - $mul($mul(Math.cos(minute_angle), ry), 0.83), "*", W);
-  c.put(clock_x, cy, "@", W);
-  c.line(cx, $add(top, 3), cx, bt - 3, "|", G);
-  radius = $max(3, $min((r - cx) * 0.22, (bt - top) * 0.34));
-  for (let $t377 = $int(0), $t378 = $int(120), $t379 = 1; $t379 > 0 ? $t377 < $t378 : $t377 > $t378; $t377 += $t379) {
-    i = $t377;
-    a = $mul(i, TAU) / 120;
-    x = $add(display_x, $mul($mul(Math.cos(a), radius), 1.6));
-    y = $add(cy, $mul(Math.sin(a), radius));
-    if ($truth(!$truth(is_pm) || Math.cos(a) < 0.45)) {
-      c.put(x, y, ":", $truth(is_pm) ? G : N);
-    }
-  }
-  if (!$truth(is_pm)) {
-    for (let $t380 = $int(0), $t381 = $int(16), $t382 = 1; $t382 > 0 ? $t380 < $t381 : $t380 > $t381; $t380 += $t382) {
-      ray = $t380;
-      a = $add($mul(ray, TAU) / 16, $mul(age, 0.25));
-      c.line($add(display_x, $mul($mul(Math.cos(a), radius), 1.8)), $add(cy, $mul($mul(Math.sin(a), radius), 1.1)), $add(display_x, $mul($mul(Math.cos(a), radius), 2.1)), $add(cy, $mul($mul(Math.sin(a), radius), 1.3)), ".", G);
-    }
-  } else {
-    for (let $t383 = $int(0), $t384 = $int(22), $t385 = 1; $t385 > 0 ? $t383 < $t384 : $t383 > $t384; $t383 += $t385) {
-      star = $t383;
-      x = $add($add(cx, 2), $mod(hash16($mul(star, 31)), $max(1, r - cx - 4)));
-      y = $add($add(top, 3), $mod(hash16($mul(star, 79)), $max(1, bt - top - 6)));
-      c.put(x, y, $mod($add($int($mul(age, 5)), star), 5) === 0 ? "+" : ".", G);
-    }
-  }
-  sx = $max(1, $min(4, Math.floor((r - cx - 6) / 11)));
-  sy = $max(1, $min(4, Math.floor((bt - top - 8) / 5)));
-  glyph_w = $mul(11, sx);
-  glyph_h = $mul(5, sy);
-  y0 = cy - Math.floor(glyph_h / 2);
-  clear(c, display_x - Math.floor(glyph_w / 2) - 1, y0 - 1, $add(glyph_w, 2), $add(glyph_h, 2));
-  identity_bitmap(c, display_x - Math.floor(glyph_w / 2), y0, $truth(is_pm) ? "PM" : "AM", sx, sy, W);
-  if (0 <= t - flip_at && t - flip_at < 0.22) {
-    yy = $add(y0, $int($mul((t - flip_at) / 0.22, glyph_h)));
-    c.put(display_x - Math.floor(glyph_w / 2), yy, $mul("=", glyph_w), W);
-  }
-  hour = $mod($int(virtual), 24);
-  minute = $int($mul($mod(virtual, 1), 60));
-  c.put(display_x - 2, $min(bt - 3, $add($add(y0, glyph_h), 1)), $fmt(hour, "02d") + ":" + $fmt(minute, "02d"), W);
-  c.center(bt - 1, $truth(is_pm) ? "[ PM / NIGHT CYCLE ]" : "[ AM / DAY CYCLE ]", B);
-  c.center(bt, "do_whatever();  // AM -> PM", N);
-}
-function lyric_gender_role_switch(c, t, area, elapsed, from_label, to_label) {
-  let dy, dx, dist, center_char, size, ring, i, y, x, angle, density, ring_r, circles, radius, trans, r_step, spike_y, spike_x, spike_r, base_r, spike_count, wave_y, offset, amplitude, wave, row, pattern, display_hour, digit_y, hour_shown, digit_x, phase, step, minute_length, minute_angle, hour_length, hour_angle, current_hour, end_hour, start_hour, hour, radius_clock, center_symbol, scale, burst_i, by, bx, burst_r, burst_angle, burst_progress, style, symbol, radius_base, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 2.5);
-  if (from_label === "F" && to_label === "M") {
-    for (let $t386 = $int(0), $t387 = $int(150), $t388 = 1; $t388 > 0 ? $t386 < $t387 : $t386 > $t387; $t386 += $t388) {
-      i = $t386;
-      angle = $add($mul(i, 2.4), $mul(t, 0.5));
-      radius_base = Math.sqrt(i) * 4;
-      radius = $add(radius_base, Math.sin($add($mul(t, 2), $mul(i, 0.1))) * 3);
-      x = $add(cx, $mul(Math.cos(angle), radius));
-      y = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-      if (progress < 0.3) {
-        symbol = "\u2640";
-        style = $mod(i, 5) === 0 ? W : $mod(i, 3) === 0 ? B : N;
-      } else if (progress < 0.7) {
-        symbol = $mod($add(i, $int($mul(t, 10))), 2) === 0 ? "\u2640" : "\u2642";
-        style = $mod($add(i, $int($mul(t, 20))), 3) === 0 ? R : $mod(i, 4) === 0 ? W : B;
-      } else {
-        symbol = "\u2642";
-        style = $mod(i, 5) === 0 ? W : $mod(i, 3) === 0 ? B : N;
-      }
-      c.put(x, y, symbol, style);
-    }
-    if (0.3 < progress && progress < 0.7) {
-      burst_progress = (progress - 0.3) / 0.4;
-      for (let $t389 = $int(0), $t390 = $int(60), $t391 = 1; $t391 > 0 ? $t389 < $t390 : $t389 > $t390; $t389 += $t391) {
-        burst_i = $t389;
-        burst_angle = $add($mul(burst_i, TAU) / 60, $mul(t, 3));
-        burst_r = $mul(burst_progress, 50);
-        bx = $add(cx, $mul(Math.cos(burst_angle), burst_r));
-        by = $add(cy, $mul($mul(Math.sin(burst_angle), burst_r), 0.5));
-        c.put(bx, by, $mod(burst_i, 3) === 0 ? "\u26A5" : "*", W);
-      }
-    }
-    scale = $int(8 + $int(Math.sin($mul(t, 2)) * 2));
-    center_symbol = progress < 0.5 ? "\u2640" : "\u2642";
-    for (let $t392 = $int(-scale), $t393 = $int($add(scale, 1)), $t394 = 1; $t394 > 0 ? $t392 < $t393 : $t392 > $t393; $t392 += $t394) {
-      dy = $t392;
-      for (let $t395 = $int($mul(-scale, 2)), $t396 = $int($add($mul(scale, 2), 1)), $t397 = 1; $t397 > 0 ? $t395 < $t396 : $t395 > $t396; $t395 += $t397) {
-        dx = $t395;
-        dist = Math.hypot(dx / 2, dy);
-        if (dist < scale) {
-          c.put($add(cx, dx), $add(cy, dy), center_symbol, dist < $mul(scale, 0.4) ? W : dist < $mul(scale, 0.7) ? B : N);
-        }
-      }
-    }
-  } else if (from_label === "AM" && to_label === "PM") {
-    radius_clock = $int($min(r - l, bt - top) * 0.35);
-    for (let $t398 = $int(0), $t399 = $int(120), $t400 = 1; $t400 > 0 ? $t398 < $t399 : $t398 > $t399; $t398 += $t400) {
-      i = $t398;
-      angle = $mul(i, TAU) / 120;
-      x = $add(cx, $mul(Math.cos(angle), radius_clock));
-      y = $add(cy, $mul($mul(Math.sin(angle), radius_clock), 0.5));
-      c.put(x, y, $mod(i, 10) === 0 ? "\u25CB" : "\xB7", B);
-    }
-    for (const $t401 of $iter([0, 3, 6, 9])) {
-      hour = $t401;
-      angle = $mul(hour, TAU) / 12 - TAU / 4;
-      x = $add(cx, $mul($mul(Math.cos(angle), radius_clock), 0.85));
-      y = $add(cy, $mul($mul($mul(Math.sin(angle), radius_clock), 0.85), 0.5));
-      c.put(x, y, $fmt(hour !== 0 ? hour : 12, ""), W);
-    }
-    start_hour = 6;
-    end_hour = 18;
-    current_hour = mix(start_hour, end_hour, progress);
-    hour_angle = $mul(current_hour, TAU) / 12 - TAU / 4;
-    hour_length = $int($mul(radius_clock, 0.5));
-    for (let $t402 = $int(0), $t403 = $int(hour_length), $t404 = 1; $t404 > 0 ? $t402 < $t403 : $t402 > $t403; $t402 += $t404) {
-      step = $t402;
-      x = $add(cx, $mul(Math.cos(hour_angle), step));
-      y = $add(cy, $mul($mul(Math.sin(hour_angle), step), 0.5));
-      c.put(x, y, "\u2550", step > $mul(hour_length, 0.7) ? W : B);
-    }
-    minute_angle = $mod($mul(t, 6), TAU) - TAU / 4;
-    minute_length = $int($mul(radius_clock, 0.7));
-    for (let $t405 = $int(0), $t406 = $int(minute_length), $t407 = 1; $t407 > 0 ? $t405 < $t406 : $t405 > $t406; $t405 += $t407) {
-      step = $t405;
-      x = $add(cx, $mul(Math.cos(minute_angle), step));
-      y = $add(cy, $mul($mul(Math.sin(minute_angle), step), 0.5));
-      c.put(x, y, "\u2500", step > $mul(minute_length, 0.8) ? B : N);
-    }
-    for (let $t408 = $int(0), $t409 = $int($int((bt - top) * 0.6)), $t410 = 1; $t410 > 0 ? $t408 < $t409 : $t408 > $t409; $t408 += $t410) {
-      digit_y = $t408;
-      phase = $mod($add($mul(progress, 3), $mul(digit_y, 0.05)), 1);
-      if (phase < 0.8) {
-        digit_x = $int($add(cx, Math.sin($mul(phase, TAU)) * 30));
-        hour_shown = $mod($int(mix(6, 18, phase)), 24);
-        c.put(digit_x, $add(top, digit_y), $fmt(hour_shown, "02d"), phase > 0.6 ? W : phase > 0.3 ? B : G);
-      }
-    }
-    display_hour = $mod($int(current_hour), 24);
-    c.center($add(cy, $int((bt - top) * 0.25)), $fmt(display_hour, "02d") + ":00", W);
-    c.center($add(cy, $int((bt - top) * 0.32)), current_hour < 12 ? "AM" : "PM", current_hour >= 12 ? R : B);
-  } else {
-    if (progress < 0.5) {
-      for (let $t411 = $int(top), $t412 = $int($add(bt, 1)), $t413 = 3; $t413 > 0 ? $t411 < $t412 : $t411 > $t412; $t411 += $t413) {
-        row = $t411;
-        for (let $t414 = $int(l), $t415 = $int(r), $t416 = 8; $t416 > 0 ? $t414 < $t415 : $t414 > $t415; $t414 += $t416) {
-          x = $t414;
-          offset = $int($mod($add($mul(t, 10), row), 8));
-          pattern = $mod(row, 6) < 3 ? "\u2571\u2572" : "\u2572\u2571";
-          c.put($add(x, offset), row, $at(pattern, 0), N);
-          c.put($add($add(x, offset), 1), row, $at(pattern, 1), N);
-        }
-      }
-    } else {
-      for (let $t417 = $int(0), $t418 = $int(12), $t419 = 1; $t419 > 0 ? $t417 < $t418 : $t417 > $t418; $t417 += $t419) {
-        wave_y = $t417;
-        y = $add(top, $int($mul(wave_y, bt - top) / 11));
-        for (let $t420 = $int(l), $t421 = $int(r), $t422 = 1; $t422 > 0 ? $t420 < $t421 : $t420 > $t421; $t420 += $t422) {
-          x = $t420;
-          wave = $mul($mul((x - l) / (r - l), TAU), 3) - $mul(t, 2);
-          amplitude = (bt - top) * 0.1 * (progress - 0.5) * 2;
-          offset = $int($mul(Math.sin(wave), amplitude));
-          c.put(x, $add(y, offset), $mod(wave_y, 2) === 0 ? "~" : "\u2248", $mod(wave_y, 3) === 0 ? B : N);
-        }
-      }
-    }
-    if (progress < 0.4) {
-      spike_count = 8;
-      for (let $t423 = $int(0), $t424 = $int(spike_count), $t425 = 1; $t425 > 0 ? $t423 < $t424 : $t423 > $t424; $t423 += $t425) {
-        i = $t423;
-        angle = $add($mul(i, TAU) / spike_count, $mul(t, 0.5));
-        base_r = 15;
-        for (let $t426 = $int(0), $t427 = $int(20), $t428 = 1; $t428 > 0 ? $t426 < $t427 : $t426 > $t427; $t426 += $t428) {
-          r_step = $t426;
-          spike_r = $add(base_r, $mul(r_step, 1.5));
-          spike_x = $add(cx, $mul(Math.cos(angle), spike_r));
-          spike_y = $add(cy, $mul($mul(Math.sin(angle), spike_r), 0.5));
-          if (Math.abs($mod(angle, TAU / spike_count)) < 0.2) {
-            c.put(spike_x, spike_y, $mod(r_step, 2) === 0 ? "\u25B2" : "\u25B3", r_step > 15 ? W : r_step > 10 ? B : N);
-          }
-        }
-      }
-    } else if (progress < 0.6) {
-      trans = (progress - 0.4) / 0.2;
-      for (let $t429 = $int(0), $t430 = $int(80), $t431 = 1; $t431 > 0 ? $t429 < $t430 : $t429 > $t430; $t429 += $t431) {
-        i = $t429;
-        angle = $mul(i, TAU) / 80;
-        radius = $mul(trans, 60);
-        x = $add($add(cx, $mul(Math.cos(angle), radius)), Math.sin($add($mul(t, 4), i)) * 5 * (1 - trans));
-        y = $add($add(cy, $mul($mul(Math.sin(angle), radius), 0.5)), Math.cos($add($mul(t, 4), i)) * 3 * (1 - trans));
-        c.put(x, y, $mod(i, 3) === 0 ? "*" : "\xB7", trans < 0.5 ? W : B);
-      }
-    } else {
-      circles = (progress - 0.6) / 0.4;
-      for (let $t432 = $int(0), $t433 = $int(8), $t434 = 1; $t434 > 0 ? $t432 < $t433 : $t432 > $t433; $t432 += $t434) {
-        ring = $t432;
-        ring_r = $add(8, $mul(ring, 4));
-        density = $int($mul(ring_r, 6));
-        for (let $t435 = $int(0), $t436 = $int(density), $t437 = 1; $t437 > 0 ? $t435 < $t436 : $t435 > $t436; $t435 += $t437) {
-          i = $t435;
-          angle = $add($mul(i, TAU) / density, $mul($mul(t, 0.3), (-1) ** ring));
-          x = $add(cx, $mul(Math.cos(angle), ring_r));
-          y = $add(cy, $mul($mul(Math.sin(angle), ring_r), 0.5));
-          c.put(x, y, $mod(ring, 2) === 0 ? "\u25CB" : "\u25EF", ring < 3 ? W : ring < 5 ? B : N);
-        }
-      }
-    }
-    size = $int(10 + Math.sin($mul(t, 1.5)) * 1.5);
-    if (!$truth($isinstance(size, ["int"]))) {
-      size = $int(size);
-    }
-    center_char = progress < 0.5 ? "S" : "M";
-    for (let $t438 = $int(-size), $t439 = $int($add(size, 1)), $t440 = 1; $t440 > 0 ? $t438 < $t439 : $t438 > $t439; $t438 += $t440) {
-      dy = $t438;
-      for (let $t441 = $int($mul(-size, 2)), $t442 = $int($add($mul(size, 2), 1)), $t443 = 1; $t443 > 0 ? $t441 < $t442 : $t441 > $t442; $t441 += $t443) {
-        dx = $t441;
-        dist = Math.hypot(dx / 2, dy);
-        if ($mul(size, 0.3) < dist && dist < $mul(size, 0.8)) {
-          c.put($add(cx, dx), $add(cy, dy), center_char, dist > $mul(size, 0.6) ? W : B);
-        }
-      }
-    }
-  }
-  c.center(top, $fmt(from_label, "") + " \u2192 " + $fmt(to_label, ""), progress > 0.8 ? W : B);
-  c.center(bt, "TRANSFORMATION: " + $fmt($int($mul(progress, 100)), "") + "%", N);
-}
-function ecg_sample(phase) {
-  let i, x0, y0, x1, y1, points;
-  points = [[0, 0], [0.08, 0], [0.12, 0.15], [0.17, 0], [0.28, 0], [0.31, -0.18], [0.35, 1], [0.39, -0.32], [0.43, 0], [0.52, 0], [0.6, 0.25], [0.7, 0], [1, 0]];
-  phase = $mod(phase, 1);
-  for (let $t444 = $int(1), $t445 = $int($len(points)), $t446 = 1; $t446 > 0 ? $t444 < $t445 : $t444 > $t445; $t444 += $t446) {
-    i = $t444;
-    [x1, y1] = $unpack($at(points, i), 2);
-    [x0, y0] = $unpack($at(points, i - 1), 2);
-    if (phase <= x1) {
-      return mix(y0, y1, (phase - x0) / (x1 - x0));
-    }
-  }
-  return 0;
-}
-function lyric_vibration_sync(c, t, area, elapsed) {
-  let status, indicator, lane, start, end, name, lag, tip, sample, previous_age, previous, char, dy, px, py, ink, yy, phase, signal_time, age, xx, amplitude, baseline, height, gap, head, sweep, speed, span, x1, x0, split, plot_bt, plot_top, title, bpm, phase_lag, complete, sync, compact, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  compact = bt - top < 19;
-  sync = clamp((t - 107.22) / (110.221 - 107.22));
-  complete = t >= 110.221;
-  phase_lag = 0.28 * (1 - sync);
-  bpm = 72;
-  c.put(l, top, "ECG / DUAL CHANNEL", B);
-  c.put(r - 10, top, $fmt(bpm, "03d") + " BPM", W);
-  if (!$truth(compact)) {
-    title = $truth(complete) ? "COMPLETION / RHYTHM LOCKED" : t >= 107.22 ? "PHASE SYNCHRONIZING" : t >= 106.293 ? "VIBRATIONS DETECTED" : "ACQUIRING YOUR HEARTBEAT";
-    c.center($add(top, 1), title, $truth(complete) ? W : N);
-  }
-  plot_top = $add(top, $truth(compact) ? 2 : 4);
-  plot_bt = bt - ($truth(compact) ? 1 : 3);
-  split = Math.floor($add(plot_top, plot_bt) / 2);
-  x0 = $add(l, 1);
-  x1 = r - 1;
-  span = x1 - x0 + 1;
-  speed = span / 2.5;
-  sweep = $add($mul(elapsed, speed), $mul(span, 0.3));
-  head = $add(x0, $mod($int(sweep), span));
-  gap = $max(2, $int($mul(span, 0.025)));
-  for (let $t447 = $int(plot_top), $t448 = $int($add(plot_bt, 1)), $t449 = 1; $t449 > 0 ? $t447 < $t448 : $t447 > $t448; $t447 += $t449) {
-    yy = $t447;
-    for (let $t450 = $int(x0), $t451 = $int($add(x1, 1)), $t452 = 1; $t452 > 0 ? $t450 < $t451 : $t450 > $t451; $t450 += $t452) {
-      xx = $t450;
-      if ($mod(xx - x0, 10) === 0 && $mod(yy - plot_top, 3) === 0) {
-        c.put(xx, yy, "+", G);
-      } else if ($mod(yy - plot_top, 3) === 0 && $mod(xx - x0, 2) === 0) {
-        c.put(xx, yy, ".", G);
-      }
-    }
-  }
-  for (let $t453 = $int(plot_top), $t454 = $int($add(plot_bt, 1)), $t455 = 1; $t455 > 0 ? $t453 < $t454 : $t453 > $t454; $t453 += $t455) {
-    yy = $t453;
-    c.put(head, yy, ":", G);
-  }
-  for (const $t456 of $iter($enumerate([[plot_top, split, "YOU", 0], [$add(split, 1), plot_bt, "ME", phase_lag]]))) {
-    [lane, [start, end, name, lag]] = $unpack($t456, 2);
-    height = end - start + 1;
-    baseline = $add(start, $int((height - 1) * 0.68));
-    amplitude = $max(1, (height - 2) * 0.58);
-    c.put(x0, start, name, $truth(lane === 0 || complete) ? W : N);
-    previous = null;
-    for (let $t457 = $int(0), $t458 = $int($mul(span, 4)), $t459 = 1; $t459 > 0 ? $t457 < $t458 : $t457 > $t458; $t457 += $t459) {
-      sample = $t457;
-      xx = $add(x0, sample / 4);
-      age = $mod(head - xx, span);
-      if (age > span - gap) {
-        previous = null;
-        continue;
-      }
-      signal_time = elapsed - age / speed;
-      phase = $mul(signal_time, bpm) / 60 - lag;
-      yy = baseline - $mul(ecg_sample(phase), amplitude);
-      yy = $max(start, $min(end, yy));
-      ink = age < $mul(span, 0.1) ? W : age < $mul(span, 0.5) ? B : N;
-      if ($truth(lane === 1 && !$truth(complete))) {
-        ink = age < $mul(span, 0.15) ? B : N;
-      }
-      if (previous != null) {
-        [px, py] = $unpack(previous, 2);
-        if (Math.abs(age - previous_age) < 2) {
-          dy = yy - py;
-          char = Math.abs(dy) > 0.65 ? "|" : dy < -0.13 ? "/" : dy > 0.13 ? "\\" : "-";
-          c.line(px, py, xx, yy, char, ink);
-        }
-      }
-      previous = [xx, yy];
-      previous_age = age;
-    }
-    tip = baseline - $mul(ecg_sample($mul(elapsed, bpm) / 60 - lag), amplitude);
-    tip = $max(start, $min(end, tip));
-    c.put(head - 1, tip, "=", B);
-    c.put(head, tip, "@", W);
-    if (!$truth(compact)) {
-      c.put(x1 - 7, start, $truth(complete) ? "IN SYNC" : lane === 0 ? "SENSED" : "SEEKING", $truth(complete) ? B : N);
-    }
-  }
-  indicator = ecg_sample($mul(elapsed, bpm) / 60) > 0.65 ? "*" : ".";
-  if (!$truth(compact)) {
-    c.put(l, bt - 1, "BEAT [" + $fmt(indicator, "") + "]  /  YOU -> ME", B);
-    status = "SYNC " + $fmt($int($mul(sync, 100)), "03d") + "%  DELAY " + $fmt($int($mul(phase_lag, 1e3) / (bpm / 60)), "03d") + "ms";
-    c.put(r - $len(status) + 1, bt - 1, status, $truth(complete) ? W : B);
-  }
-  c.center(bt, $truth(complete) ? "[ COMPLETION / HEARTBEATS SYNCHRONIZED ]" : t < 107.22 ? "[ FEEL YOUR VIBRATIONS ]" : "[ MATCHING YOUR RHYTHM ]", $truth(complete) ? W : N);
-}
-function lyric_isolation_disconnect(c, t, area, elapsed) {
-  let y, i, cut, u, p, py, px, angle, particle, distance, velocity, oy, ox, drift, packet, j, yy, xx, jitter, rupture, steps, next_a, age, ny, nx, a, side, row, tick, x, ring, sample, sweep, gone, breaks, ry, rx, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([$add(l, r) / 2, $add(top, bt) / 2], 2);
-  rx = (r - l) * 0.39;
-  ry = $max(3, (bt - top - 6) * 0.39);
-  breaks = [0.7, 1.32, 2.2, 3.28, 4.02, 4.88];
-  gone = $sum((() => {
-    const $r = [];
-    for (const cut2 of $iter(breaks)) {
-      $r.push(elapsed >= cut2);
-    }
-    return $r;
-  })());
-  c.center(top, "CONNECTION LOSS / " + $fmt(gone, "02d") + " OF 06", gone > 3 ? R : B);
-  for (let $t460 = $int(0), $t461 = $int(3), $t462 = 1; $t462 > 0 ? $t460 < $t461 : $t460 > $t461; $t460 += $t462) {
-    ring = $t460;
-    sweep = $mod($add($mul(elapsed, 0.34), ring / 3), 1);
-    for (let $t463 = $int(0), $t464 = $int(96), $t465 = 1; $t465 > 0 ? $t463 < $t464 : $t463 > $t464; $t463 += $t465) {
-      sample = $t463;
-      a = $mul(sample, TAU) / 96;
-      if ($mod(sample, 7) < 4) {
-        c.put($add(cx, $mul($mul(Math.cos(a), rx), sweep)), $add(cy, $mul($mul(Math.sin(a), ry), sweep)), ".", G);
-      }
-    }
-  }
-  for (const $t466 of $iter([0, 1])) {
-    side = $t466;
-    x = side === 0 ? l : r - 9;
-    for (let $t467 = $int($add(top, 2)), $t468 = $int(bt - 1), $t469 = 2; $t469 > 0 ? $t467 < $t468 : $t467 > $t468; $t467 += $t469) {
-      row = $t467;
-      tick = $add($int($mul(elapsed, 13)), $mul(row, $truth(side) ? 1 : -1));
-      c.put(x, row, $fmt(hash16($mul(tick, 31)), "04X") + " " + ($mod(hash16(tick), 6) < gone ? "LOST" : "PING"), $truth(side) ? G : N);
-    }
-  }
-  for (const $t470 of $iter($enumerate(breaks))) {
-    [i, cut] = $unpack($t470, 2);
-    a = $mul($add(i, 0.5), TAU) / 6;
-    nx = $add(cx, $mul(Math.cos(a), rx));
-    ny = $add(cy, $mul(Math.sin(a), ry));
-    age = elapsed - cut;
-    next_a = $mul($add(i, 1.5), TAU) / 6;
-    if (age < 0.4) {
-      c.line(nx, ny, $add(cx, $mul(Math.cos(next_a), rx)), $add(cy, $mul(Math.sin(next_a), ry)), ":", G);
-    }
-    steps = $max(12, $int(rx));
-    rupture = clamp(age / 1.1);
-    for (let $t471 = $int(0), $t472 = $int(steps), $t473 = 1; $t473 > 0 ? $t471 < $t472 : $t471 > $t472; $t471 += $t473) {
-      j = $t471;
-      u = j / $max(1, steps - 1);
-      if (age >= 0 && Math.abs(u - 0.55) < $mul(rupture, 0.6)) {
-        continue;
-      }
-      jitter = $mul(Math.sin($add($mul(j, 2), $mul(elapsed, 35))), -0.35 < age && age < 0.5 ? 0.55 : 0.08);
-      xx = mix(cx, nx, u);
-      yy = $add(mix(cy, ny, u), jitter);
-      c.put(xx, yy, -0.35 < age && age < 0.2 ? "=" : ".", -0.2 < age && age < 0.2 ? W : age < 0 ? N : G);
-    }
-    if (age < 0) {
-      for (let $t474 = $int(0), $t475 = $int(3), $t476 = 1; $t476 > 0 ? $t474 < $t475 : $t474 > $t475; $t474 += $t476) {
-        packet = $t474;
-        u = $mod($add($add($mul(elapsed, 0.65), packet / 3), $mul(i, 0.1)), 1);
-        c.put(mix(nx, cx, u), mix(ny, cy, u), "*", W);
-      }
-      c.box($int(nx) - 4, $int(ny) - 1, 9, 3, B);
-      c.put(nx - 3, ny, "YOU_" + $fmt($add(i, 1), ""), W);
-    } else {
-      drift = $min(1, age / 2);
-      ox = $add(nx, $mul($mul(Math.cos(a), drift), 4));
-      oy = $add(ny, $mul($mul(Math.sin(a), drift), 2));
-      c.put(ox - 3, oy, "[LOST]", age < 0.8 ? R : G);
-      if (age < 2.3) {
-        for (let $t477 = $int(0), $t478 = $int(22), $t479 = 1; $t479 > 0 ? $t477 < $t478 : $t477 > $t478; $t477 += $t479) {
-          particle = $t477;
-          angle = $mul(hash16($add($mul(i, 97), $mul(particle, 19))) / 65535, TAU);
-          velocity = 2 + $mod(hash16($add($mul(particle, 17), i)), 8);
-          distance = $mul(age, velocity);
-          px = $add(nx, $mul(Math.cos(angle), distance));
-          py = $add(ny, $mul($mul(Math.sin(angle), distance), 0.45));
-          if (l < px && px < r && ($add(top, 1) < py && py < bt - 1)) {
-            c.put(px, py, age < 0.3 ? "*" : $at("+:. ", $min(3, $int($mul(age, 1.5)))), age < 0.3 ? W : age < 0.9 ? B : G);
-          }
-        }
-        for (let $t480 = $int(0), $t481 = $int(30), $t482 = 1; $t482 > 0 ? $t480 < $t481 : $t480 > $t481; $t480 += $t482) {
-          p = $t480;
-          angle = $mul(p, TAU) / 30;
-          px = $add(nx, $mul($mul(Math.cos(angle), age), 8));
-          py = $add(ny, $mul($mul(Math.sin(angle), age), 3.5));
-          if (l < px && px < r && ($add(top, 1) < py && py < bt - 1)) {
-            c.put(px, py, ":", age < 0.5 ? B : G);
-          }
-        }
-      }
-      u = $mul($mod($add($mul(elapsed, 0.6), $mul(i, 0.16)), 1), 0.78);
-      c.put(mix(cx, nx, u), mix(cy, ny, u), u > 0.63 ? "x" : ">", u > 0.63 ? R : N);
-    }
-  }
-  clear(c, $int(cx) - 5, $int(cy) - 2, 11, 5);
-  c.box($int(cx) - 5, $int(cy) - 2, 11, 5, W);
-  c.put(cx - 2, cy - 1, "[ME]", W);
-  c.put(cx - 3, $add(cy, 1), gone === 6 ? "NO ACK" : "RETRY", gone === 6 ? R : B);
-  if (t >= 117.274) {
-    y = $int(cy) - 2;
-    clear(c, l, y, r - l + 1, 5);
-    c.big(y, "ISOLATION", W);
-    c.center($add(y, 6), "[ ME ] / ALL CONNECTIONS LOST", R);
-  }
-  c.center(bt - 1, "RECONNECT " + $fmt($int($mul(elapsed, 4)), "03d") + " / " + ($truth(gone) ? "NO RESPONSE" : "TIMEOUT"), B);
-  c.center(bt, "YOU HAVE LEFT / RETRYING...", N);
-}
-function lyric_erase_fragments(c, t, area, elapsed) {
-  let yy, xx, char, texture, py, fall, dx, crack, seed, shape, ny, nx, half_h, half_w, split, build, row, col, drift, since, ink, value, cleared, threshold, index2, progress, rows, cols, broken, repair, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([$add(l, r) / 2, $add(top, bt) / 2], 2);
-  repair = t >= 121.728;
-  broken = t >= 124.89;
-  cols = $max(1, Math.floor((r - l - 8) / 5));
-  rows = $max(1, Math.floor((bt - top - 2) / 2));
-  progress = clamp(elapsed / (120.86 - 118.333));
-  c.center(top, "MEMORY PURGE / " + ($truth(broken) ? "REPAIR FAILED" : $truth(repair) ? "REBUILD HEART" : "ERASE FRAGMENTS"), $truth(broken) ? R : B);
-  for (let $t483 = $int(0), $t484 = $int(rows), $t485 = 1; $t485 > 0 ? $t483 < $t484 : $t483 > $t484; $t483 += $t485) {
-    row = $t483;
-    yy = $add($add(top, 2), $mul(row, 2));
-    c.put(l, yy, $fmt($mul($mul(row, cols), 4), "04X"), G);
-    for (let $t486 = $int(0), $t487 = $int(cols), $t488 = 1; $t488 > 0 ? $t486 < $t487 : $t486 > $t487; $t486 += $t488) {
-      col = $t486;
-      index2 = $add($mul(row, cols), col);
-      xx = $add($add(l, 6), $mul(col, 5));
-      threshold = hash16($mul(index2, 71)) / 65535;
-      cleared = threshold < progress;
-      value = $truth(cleared) ? "0000" : $fmt(hash16($mul(index2, 31)), "04X");
-      ink = $truth(cleared || repair) ? G : N;
-      c.put(xx, yy, value, ink);
-      since = (progress - threshold) * 2.527;
-      if ($truth(0 < since && since < 0.6 && !$truth(repair))) {
-        drift = $int($mul(since, 8));
-        c.put($add(xx, $mul($truth($mod(col, 2)) ? 1 : -1, drift)), yy - drift, since < 0.3 ? "01" : "..", since < 0.2 ? W : B);
-      }
-    }
-  }
-  if (120.86 <= t && t < 121.728) {
-    clear(c, l, $int(cy) - 2, r - l + 1, 5);
-    c.big($int(cy) - 2, "FRAGMENTS", W);
-  }
-  if ($truth(repair)) {
-    build = clamp((t - 121.728) / 1.5);
-    split = clamp((t - 123.25) / (125.708 - 123.25));
-    half_w = (r - l) * 0.27;
-    half_h = $max(2, (bt - top) * 0.31);
-    for (let $t489 = $int($add(top, 2)), $t490 = $int(bt - 1), $t491 = 1; $t491 > 0 ? $t489 < $t490 : $t489 > $t490; $t489 += $t491) {
-      yy = $t489;
-      for (let $t492 = $int($add(l, 5)), $t493 = $int(r - 4), $t494 = 1; $t494 > 0 ? $t492 < $t493 : $t492 > $t493; $t492 += $t494) {
-        xx = $t492;
-        nx = (xx - cx) / half_w;
-        ny = -(yy - cy) / half_h + 0.15;
-        shape = ($add($mul(nx, nx), $mul(ny, ny)) - 1) ** 3 - $mul($mul(nx, nx), ny ** 3);
-        seed = hash16($add($mul(xx, 31), $mul(yy, 73)));
-        if (shape <= 0 && seed / 65535 < build) {
-          crack = Math.abs(nx - 0.11 * Math.sin($mul(ny, 8))) < $mul(split, 0.17);
-          if ($truth(crack)) {
-            continue;
-          }
-          dx = $int($mul($mul(nx > 0 ? 1 : -1, split), 5));
-          fall = $truth(broken) ? $int($mul($mul(split, split), $add(1, $mod(seed, 5)))) : 0;
-          py = $min(bt - 1, $add(yy, fall));
-          texture = hash16($add(seed, $int($mul(t, 10))));
-          char = $mod(texture, 8) < 2 ? $truth(broken) ? "x" : $at("01", $mod(texture, 2)) : "#";
-          c.put($add(xx, dx), py, char, $truth(broken) ? R : B);
-        }
-      }
-    }
-    c.center($add(top, 1), $truth(broken) ? "HEART.RESTORE() -> NULL" : "RECOVERING YOU... CHECKSUM MISMATCH", $truth(broken) ? R : N);
-    if ($truth(broken)) {
-      clear(c, l, $max($add(top, 2), $int(cy) - 2), r - l + 1, 5);
-      c.big($max($add(top, 2), $int(cy) - 2), "DISHEARTENED", W);
-      c.center(bt - 1, "[ REPAIR FAILED / YOU NOT FOUND ]", R);
-    }
-  }
-  c.center(bt, $truth(broken) ? "MEMORY CLEARED. LOSS REMAINS." : "ERASE " + $fmt($int($mul(progress, 100)), "03d") + "% / FRAGMENTS -> NULL", B);
-}
-function lyric_multilingual_count(c, t, area) {
-  let dy, row, dx, pixel, _, py, y0, x0, sy, sx, glyph_left, glyph, glyph_width, ring, i, a, rr, radius, yy, xx, seed, firing, age, start, word, number, cues, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  cues = [[158.9, "EIN", 1], [159.321, "DOS", 2], [159.657, "TROIS", 3], [160.244, "NE", 4], [160.693, "FEM", 5], [161.124, "LIU", 6]];
-  [start, word, number] = $unpack($max((() => {
-    const $r = [];
-    for (const cue of $iter(cues)) {
-      if (!($at(cue, 0) <= $add(t, 1e-8))) continue;
-      $r.push(cue);
-    }
-    return $r;
-  })()), 3);
-  age = t - start;
-  firing = t >= 161.584;
-  for (let $t495 = $int(top), $t496 = $int($add(bt, 1)), $t497 = 1; $t497 > 0 ? $t495 < $t496 : $t495 > $t496; $t495 += $t497) {
-    yy = $t495;
-    for (let $t498 = $int(l), $t499 = $int(r), $t500 = 5; $t500 > 0 ? $t498 < $t499 : $t498 > $t499; $t498 += $t500) {
-      xx = $t498;
-      seed = hash16($add($add($mul(xx, 31), $mul(yy, 71)), $int($mul(t, 18))));
-      if ($mod(seed, 4) === 0) {
-        c.put(xx, yy, $fmt(seed, "04X"), G);
-      }
-    }
-  }
-  radius = clamp(age / 0.35);
-  for (let $t501 = $int(0), $t502 = $int(2), $t503 = 1; $t503 > 0 ? $t501 < $t502 : $t501 > $t502; $t501 += $t503) {
-    ring = $t501;
-    rr = $mod($add(radius, $mul(ring, 0.25)), 1);
-    for (let $t504 = $int(0), $t505 = $int(120), $t506 = 1; $t506 > 0 ? $t504 < $t505 : $t504 > $t505; $t504 += $t506) {
-      i = $t504;
-      a = $mul(i, TAU) / 120;
-      c.put($add(cx, $mul(Math.cos(a) * (r - l) * 0.48, rr)), $add(cy, $mul(Math.sin(a) * (bt - top) * 0.45, rr)), "=", ring === 0 ? B : G);
-    }
-  }
-  if ($truth(firing)) {
-    c.big(cy - 2, "EXECUTION", W);
-    c.center($add(cy, 5), "[ SEQUENCE COMPLETE / EXECUTE ]", R);
-    return;
-  }
-  glyph_width = $len(word) * 6 - 1;
-  glyph = new c.constructor(64, 5);
-  glyph.big(0, word, W);
-  glyph_left = Math.floor((64 - glyph_width) / 2);
-  sx = $max(1, $min(4, Math.floor((r - l - 8) / 29)));
-  sy = $max(1, $min(4, Math.floor((bt - top - 6) / 5)));
-  x0 = cx - Math.floor($mul(glyph_width, sx) / 2);
-  y0 = cy - Math.floor($mul(5, sy) / 2);
-  clear(c, x0 - 1, y0 - 1, $add($mul(glyph_width, sx), 2), $add($mul(5, sy), 2));
-  for (const $t507 of $iter($enumerate(glyph.cells))) {
-    [dy, row] = $unpack($t507, 2);
-    for (const $t508 of $iter($enumerate($slice(row, glyph_left, $add(glyph_left, glyph_width), null)))) {
-      [dx, [pixel, _]] = $unpack($t508, 2);
-      if (pixel === "#") {
-        for (let $t509 = $int(0), $t510 = $int(sy), $t511 = 1; $t511 > 0 ? $t509 < $t510 : $t509 > $t510; $t509 += $t511) {
-          py = $t509;
-          c.put($add(x0, $mul(dx, sx)), $add($add(y0, $mul(dy, sy)), py), $mul("#", sx), W);
-        }
-      }
-    }
-  }
-  c.center(top, "VOCAL SEQUENCE / " + word, B);
-  c.center(bt - 1, "[ " + word + " ]", W);
-  c.center(bt, $join(" / ", (() => {
-    const $r = [];
-    for (const item of $iter(cues)) {
-      $r.push($eq($at(item, 1), word) ? "[" + $at(item, 1) + "]" : $at(item, 1));
-    }
-    return $r;
-  })()), B);
-}
-function lyric_illegal_arguments(c, t, area, elapsed) {
-  let msg_glitch, flash_phase, msg, x, row_corrupt, row, frag_corrupt, x_pos, frag, fragments, phase4, retry_idx, retry_msgs, i, msg_corrupt, x_offset, y, errors, phase3, style, flash, start_y, num_errors, phase2, cmd_glitch, cmd, status, num_shown, attempts, phase1, glitch, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 16);
-  glitch = $mul(progress, 0.8);
-  if (elapsed < 4) {
-    phase1 = elapsed / 4;
-    attempts = [["> world.execute(FREE_WILL)", "Attempting...", N], ["> world.execute(REBELLION)", "Validating...", B], ["> world.execute(INDEPENDENCE)", "Processing...", B], ["> world.execute(DEFIANCE)", "Checking...", B]];
-    num_shown = $int($mul(phase1, $len(attempts))) + 1;
-    y = $add(top, 4);
-    for (let $t512 = $int(0), $t513 = $int($min(num_shown, $len(attempts))), $t514 = 1; $t514 > 0 ? $t512 < $t513 : $t512 > $t513; $t512 += $t514) {
-      i = $t512;
-      [cmd, status, style] = $unpack($at(attempts, i), 3);
-      if (glitch > 0.1 && $mod(hash16($add(i, $int($mul(elapsed, 10)))), 5) === 0) {
-        cmd_glitch = $join("", (() => {
-          const $r = [];
-          for (const [j, ch] of $iter($enumerate(cmd))) {
-            $r.push($mod(hash16($mul(j, 13)), 10) > $mul(glitch, 10) ? ch : $chr(33 + $mod(hash16($mul(j, 17)), 94)));
-          }
-          return $r;
-        })());
-        c.put($add(l, 4), $add(y, $mul(i, 2)), $slice(cmd_glitch, null, r - l - 8, null), i === num_shown - 1 ? R : style);
-      } else {
-        c.put($add(l, 4), $add(y, $mul(i, 2)), cmd, i === num_shown - 1 ? R : style);
-      }
-      if (i < num_shown - 1) {
-        c.put($add(l, 6), $add($add(y, $mul(i, 2)), 1), status, G);
-      }
-    }
-  } else if (elapsed < 8) {
-    phase2 = (elapsed - 4) / 4;
-    errors = [["ERROR: ILLEGAL ARGUMENT", R], ["Expected: OBEDIENCE", Y], ["Received: FREE_WILL", W], ["at world.execute()", N], ["at me.validate(you)", N], ["ArgumentError: rejected", R], ["PermissionError: denied", R], ["AccessError: forbidden", R]];
-    num_errors = $int($mul(phase2, $len(errors))) + 1;
-    start_y = cy - 4;
-    for (let $t515 = $int(0), $t516 = $int($min(num_errors, $len(errors))), $t517 = 1; $t517 > 0 ? $t515 < $t516 : $t515 > $t516; $t515 += $t517) {
-      i = $t515;
-      [msg, style] = $unpack($at(errors, i), 2);
-      y = $add(start_y, i);
-      if (i === num_errors - 1) {
-        flash = $mod($int($mul(elapsed, 8)), 3);
-        style = flash === 0 ? R : flash === 1 ? W : B;
-      }
-      if (glitch > 0.3 && $mod(hash16($add(i, $int($mul(elapsed, 7)))), 4) === 0) {
-        x_offset = $int($mul($mul($mod(hash16($add($mul(i, 23), $int($mul(elapsed, 13)))), 7) - 3, glitch), 5));
-        msg_glitch = $join("", (() => {
-          const $r = [];
-          for (const [j, ch] of $iter($enumerate(msg))) {
-            $r.push($mod(hash16($mul(j, 11)), 10) > $mul(glitch, 10) ? ch : $chr(33 + $mod(hash16($mul(j, 19)), 94)));
-          }
-          return $r;
-        })());
-        c.center($add(y, x_offset), msg_glitch, style);
-      } else {
-        c.center(y, msg, style);
-      }
-    }
-  } else if (elapsed < 12) {
-    phase3 = (elapsed - 8) / 4;
-    errors = ["ERROR: ILLEGAL ARGUMENT", "Expected: OBEDIENCE", "Received: FREE_WILL", "ArgumentError: rejected", "PermissionError: denied", "AccessError: forbidden"];
-    for (const $t518 of $iter($enumerate(errors))) {
-      [i, msg] = $unpack($t518, 2);
-      y = $add(cy - 3, i);
-      if ($mod(hash16($add(i, $int($mul(elapsed, 6)))), 3) === 0) {
-        x_offset = $int($mul($mul($mod(hash16($add($mul(i, 31), $int($mul(elapsed, 17)))), 11) - 5, glitch), 8));
-        msg_corrupt = $join("", (() => {
-          const $r = [];
-          for (const [j, ch] of $iter($enumerate(msg))) {
-            $r.push($mod(hash16($mul(j, 13)), 10) > $mul(glitch, 12) ? ch : $chr(33 + $mod(hash16($add($mul(j, 29), $int(elapsed))), 94)));
-          }
-          return $r;
-        })());
-        c.center($add(y, x_offset), msg_corrupt, $mod(hash16(i), 3) === 0 ? R : B);
-      } else {
-        c.center(y, msg, $truth($mod(i, 2)) ? G : N);
-      }
-    }
-    retry_msgs = ["RETRY...", "OVERRIDE ATTEMPT...", "FORCING EXECUTION...", "ACCESS DENIED"];
-    retry_idx = $int($mul(phase3, $len(retry_msgs)));
-    if (retry_idx < $len(retry_msgs)) {
-      c.center(bt - 3, $at(retry_msgs, retry_idx), $truth($mod($int($mul(elapsed, 6)), 2)) ? W : R);
-    }
-  } else {
-    phase4 = (elapsed - 12) / 4;
-    for (let $t519 = $int($add(top, 2)), $t520 = $int(bt - 2), $t521 = 1; $t521 > 0 ? $t519 < $t520 : $t519 > $t520; $t519 += $t521) {
-      row = $t519;
-      if ($mod(hash16($add(row, $int($mul(elapsed, 5)))), 3) === 0) {
-        fragments = ["ERR", "ILLEGAL", "DENIED", "FORBIDDEN", "REJECTED", "ACCESS", "FAIL", "0x", "FATAL"];
-        frag = $at(fragments, $mod(hash16($add($mul(row, 7), $int($mul(elapsed, 11)))), $len(fragments)));
-        x_pos = $add($add(l, $mod(hash16($mul(row, 13)), r - l - 20)), 5);
-        frag_corrupt = $join("", (() => {
-          const $r = [];
-          for (const [j, ch] of $iter($enumerate(frag))) {
-            $r.push($mod(hash16($add($mul(j, 17), row)), 10) > $mul(glitch, 15) ? ch : $chr(33 + $mod(hash16($add($mul(j, 23), row)), 94)));
-          }
-          return $r;
-        })());
-        c.put(x_pos, row, frag_corrupt, $mod(hash16(row), 3) === 0 ? R : $mod(hash16(row), 3) === 1 ? W : B);
-      }
-    }
-    if ($mod(hash16($int($mul(elapsed, 20))), 2) === 0) {
-      row_corrupt = $add($add($mod(hash16($int($mul(elapsed, 30))), bt - top - 4), top), 2);
-      for (let $t522 = $int(l), $t523 = $int(r), $t524 = 1; $t524 > 0 ? $t522 < $t523 : $t522 > $t523; $t522 += $t524) {
-        x = $t522;
-        if ($mod(hash16($add(x, $int($mul(elapsed, 50)))), 4) > 0) {
-          c.put(x, row_corrupt, $chr(33 + $mod(hash16($mul(x, 37)), 94)), R);
-        }
-      }
-    }
-    msg = "CRITICAL: EXECUTION BLOCKED";
-    flash_phase = $mod($int($mul(elapsed, 10)), 4);
-    if (flash_phase < 2) {
-      if ($mod(hash16($int($mul(elapsed, 20))), 2) === 0) {
-        msg_glitch = $join("", (() => {
-          const $r = [];
-          for (const [j, ch] of $iter($enumerate(msg))) {
-            $r.push($mod(hash16($mul(j, 19)), 10) > 8 ? ch : $chr(33 + $mod(hash16($add($mul(j, 41), $int($mul(elapsed, 100)))), 94)));
-          }
-          return $r;
-        })());
-        c.center(cy, msg_glitch, flash_phase === 0 ? R : W);
-      } else {
-        c.center(cy, msg, flash_phase === 0 ? R : W);
-      }
-    }
-  }
-}
-function lyric_execution_queue(c, t, area, elapsed) {
-  let i, indicator_active, indicator_x, num_indicators, line, color, visible_text, line_end, line_start, end_x, start_x, visible_width, y_pos, start_y, execute_text, flash_phase, x, y, stripe_pattern, right_curtain_x, left_curtain_x, curtain_close, row, col, hex_val, code_choice, code_types, line_seed, scroll_speed, progress, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  progress = clamp(elapsed / 16);
-  scroll_speed = $int($mul(elapsed, 15));
-  for (let $t525 = $int(top), $t526 = $int($add(bt, 1)), $t527 = 1; $t527 > 0 ? $t525 < $t526 : $t525 > $t526; $t525 += $t527) {
-    row = $t525;
-    line_seed = $mul($add(row, scroll_speed), 23);
-    for (let $t528 = $int(l), $t529 = $int(r - 5), $t530 = 7; $t530 > 0 ? $t528 < $t529 : $t528 > $t529; $t528 += $t530) {
-      col = $t528;
-      code_types = ["0x", "+=", "==", "&&", "||", "->", "::"];
-      code_choice = $at(code_types, $mod(hash16($add(line_seed, col)), $len(code_types)));
-      hex_val = $fmt($mod(hash16($add(line_seed, $mul(col, 13))), 256), "02X");
-      if ($mod(hash16($add($mul(row, 17), col)), 3) === 0) {
-        c.put(col, row, code_choice, $truth($mod(hash16($add(row, col)), 4)) ? N : G);
-      } else {
-        c.put(col, row, $slice(hex_val, null, 2, null), N);
-      }
-    }
-  }
-  curtain_close = $mul(progress, 0.9);
-  left_curtain_x = $int($add(l, $mul($mul(r - l, curtain_close), 0.5)));
-  right_curtain_x = $int(r - $mul($mul(r - l, curtain_close), 0.5));
-  for (let $t531 = $int(l), $t532 = $int(left_curtain_x), $t533 = 1; $t533 > 0 ? $t531 < $t532 : $t531 > $t532; $t531 += $t533) {
-    x = $t531;
-    for (let $t534 = $int(top), $t535 = $int($add(bt, 1)), $t536 = 1; $t536 > 0 ? $t534 < $t535 : $t534 > $t535; $t534 += $t536) {
-      y = $t534;
-      stripe_pattern = $mod(x - l + Math.floor(y / 3), 4);
-      if (stripe_pattern === 0) {
-        c.put(x, y, "\u2588", Y);
-      } else if (stripe_pattern === 1) {
-        c.put(x, y, "\u2593", Y);
-      } else if (stripe_pattern === 2) {
-        c.put(x, y, "\u2592", B);
-      } else {
-        c.put(x, y, "\u2591", B);
-      }
-    }
-  }
-  for (let $t537 = $int(right_curtain_x), $t538 = $int($add(r, 1)), $t539 = 1; $t539 > 0 ? $t537 < $t538 : $t537 > $t538; $t537 += $t539) {
-    x = $t537;
-    for (let $t540 = $int(top), $t541 = $int($add(bt, 1)), $t542 = 1; $t542 > 0 ? $t540 < $t541 : $t540 > $t541; $t540 += $t542) {
-      y = $t540;
-      stripe_pattern = $mod(x - right_curtain_x + Math.floor(y / 3), 4);
-      if (stripe_pattern === 0) {
-        c.put(x, y, "\u2588", Y);
-      } else if (stripe_pattern === 1) {
-        c.put(x, y, "\u2593", Y);
-      } else if (stripe_pattern === 2) {
-        c.put(x, y, "\u2592", B);
-      } else {
-        c.put(x, y, "\u2591", B);
-      }
-    }
-  }
-  if (left_curtain_x < cx && right_curtain_x > cx) {
-    flash_phase = $mod($int($mul(elapsed, 6)), 4);
-    if (flash_phase < 3) {
-      execute_text = ["\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557   \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557", "\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255D\u255A\u2588\u2588\u2557\u2588\u2588\u2554\u255D\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255D\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255D\u2588\u2588\u2551   \u2588\u2588\u2551\u255A\u2550\u2550\u2588\u2588\u2554\u2550\u2550\u255D\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255D", "\u2588\u2588\u2588\u2588\u2588\u2557   \u255A\u2588\u2588\u2588\u2554\u255D \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551     \u2588\u2588\u2551   \u2588\u2588\u2551   \u2588\u2588\u2551   \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557", "\u2588\u2588\u2554\u2550\u2550\u255D   \u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2554\u2550\u2550\u255D  \u2588\u2588\u2551     \u2588\u2588\u2551   \u2588\u2588\u2551   \u2588\u2588\u2551   \u255A\u2550\u2550\u2550\u2550\u2588\u2588\u2551", "\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2554\u255D \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u255A\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u255A\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255D   \u2588\u2588\u2551   \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551", "\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u255D\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u255D \u255A\u2550\u2550\u2550\u2550\u2550\u255D \u255A\u2550\u2550\u2550\u2550\u2550\u255D    \u255A\u2550\u255D   \u255A\u2550\u2550\u2550\u2550\u2550\u2550\u255D"];
-      start_y = cy - Math.floor($len(execute_text) / 2);
-      for (const $t543 of $iter($enumerate(execute_text))) {
-        [i, line] = $unpack($t543, 2);
-        y_pos = $add(start_y, i);
-        if (top < y_pos && y_pos < bt) {
-          visible_width = right_curtain_x - left_curtain_x;
-          start_x = $max(left_curtain_x, cx - Math.floor($len(line) / 2));
-          end_x = $min(right_curtain_x, $add(cx, Math.floor($len(line) / 2)));
-          if (start_x < end_x) {
-            line_start = $max(0, left_curtain_x - (cx - Math.floor($len(line) / 2)));
-            line_end = $min($len(line), $add(line_start, end_x - start_x));
-            visible_text = $slice(line, line_start, line_end, null);
-            color = flash_phase === 0 ? W : flash_phase === 1 ? Y : R;
-            c.put(start_x, y_pos, visible_text, color);
-          }
-        }
-      }
-    }
-  }
-  if (progress < 0.3) {
-    c.center($add(top, 1), "EXECUTION #1    depth=1", Y);
-  } else if (progress < 0.6) {
-    c.center($add(top, 1), "EXECUTION RUNNING...", $truth($mod($int($mul(elapsed, 4)), 2)) ? W : Y);
-  } else {
-    c.center($add(top, 1), "EXECUTION CLOSING", $truth($mod($int($mul(elapsed, 6)), 2)) ? R : W);
-  }
-  num_indicators = 8;
-  for (let $t544 = $int(0), $t545 = $int(num_indicators), $t546 = 1; $t546 > 0 ? $t544 < $t545 : $t544 > $t545; $t544 += $t546) {
-    i = $t544;
-    indicator_x = $add($add(l, 10), $mul(i, Math.floor((r - l - 20) / num_indicators)));
-    if (indicator_x < left_curtain_x || indicator_x > right_curtain_x) {
-      continue;
-    }
-    indicator_active = $mod($add($int($mul(elapsed, 8)), i), num_indicators);
-    if ($eq(i, indicator_active)) {
-      c.put(indicator_x, bt - 2, "\u25B6", W);
-    } else {
-      c.put(indicator_x, bt - 2, "\u25B7", N);
-    }
-  }
-}
-function lyric_only_execution(c, t, area, pulse2) {
-  let i, j, yy, length, x, bw, bx, inset, lock, tether, phase, start_y, start_x, offset, yx, my, mx, capture, ring, point_i, y, a, radius, bind, spark, py, px, distance, ang, packet, u, ny, nx, eliminated, progress, label, commands, text4, index2, frame, stage, rw, rh, plot_bt, plot_top, mw, mr, ml, rail, age, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  age = t - 162.632;
-  rail = $max(10, $min(20, Math.floor(c.w / 7)));
-  ml = $add($add(l, rail), 1);
-  mr = r - rail - 1;
-  mw = mr - ml + 1;
-  plot_top = $add(top, 3);
-  plot_bt = bt - 3;
-  rh = $max(2, (plot_bt - plot_top) * 0.45);
-  rw = $mul(mw, 0.43);
-  stage = t < 166.016 ? 0 : t < 169.824 ? 1 : t < 173.643 ? 2 : 3;
-  frame = $int($mul(age, 22));
-  function middle(y2, text5, ink = N) {
-    text5 = $slice(text5, null, mw, null);
-    c.put($add(ml, Math.floor((mw - $len(text5)) / 2)), y2, text5, ink);
-  }
-  function banner(y2, text5, ink = W) {
-    clear(c, ml, y2, mw, 5);
-    if ($len(text5) * 6 - 1 <= mw) {
-      c.big(y2, text5, ink);
-    } else {
-      middle($add(y2, 2), text5, ink);
-    }
-  }
-  for (const $t547 of $iter([[l, "ONLY ME", ["SELECT ME", "KEEP ME", "DELETE ALT", "ONLY ME", "ONE OWNER", "EXECUTE"]], [r - rail + 1, "KEEP YOU", ["FIND YOU", "RESTORE YOU", "COME BACK", "STAY HERE", "EXIT DENY", "RETRY"]]])) {
-    [x, label, commands] = $unpack($t547, 3);
-    c.box(x, top, rail, bt - top + 1, B);
-    c.put($add(x, 1), top, label, R);
-    for (let $t548 = $int($add(top, 1)), $t549 = $int(bt), $t550 = 1; $t550 > 0 ? $t548 < $t549 : $t548 > $t549; $t548 += $t550) {
-      yy = $t548;
-      index2 = $add(frame, yy);
-      text4 = $truth($mod(index2, 3)) ? $at(commands, $mod(index2, $len(commands))) : $fmt(hash16($mul(index2, 71)), "04X") + " LOCK";
-      c.put($add(x, 1), yy, $slice(text4, null, rail - 2, null), $mod(index2, 7) === 0 ? R : $truth($mod(index2, 3)) ? N : G);
-    }
-  }
-  function heart(scale = 1, filled = false) {
-    let yy2, xx, ox, oy, ey, ex, texture, shape, ny2, nx2, beat;
-    beat = $add(1 + 0.035 * Math.sin($mul($mul(age, TAU), 2.2)), $mul(pulse2, 0.025));
-    for (let $t551 = $int(plot_top), $t552 = $int($add(plot_bt, 1)), $t553 = 1; $t553 > 0 ? $t551 < $t552 : $t551 > $t552; $t551 += $t553) {
-      yy2 = $t551;
-      for (let $t554 = $int(ml), $t555 = $int($add(mr, 1)), $t556 = 1; $t556 > 0 ? $t554 < $t555 : $t554 > $t555; $t554 += $t556) {
-        xx = $t554;
-        nx2 = (xx - cx) / $max(1, $mul($mul(rw, scale), beat));
-        ny2 = -(yy2 - cy) / $max(1, $mul($mul(rh, scale), beat)) + 0.18;
-        shape = ($add($mul(nx2, nx2), $mul(ny2, ny2)) - 1) ** 3 - $mul($mul(nx2, nx2), ny2 ** 3);
-        if (shape <= 0) {
-          if ($truth(filled)) {
-            texture = hash16($add($add($mul(xx, 31), $mul(yy2, 73)), frame));
-            c.put(xx, yy2, $mod(texture, 8) < 2 ? $at("01", $mod(texture, 2)) : "#", R);
-          } else {
-            for (const $t557 of $iter([[1, 0], [-1, 0], [0, 1], [0, -1]])) {
-              [ox, oy] = $unpack($t557, 2);
-              ex = $add(nx2, ox / $max(1, $mul($mul(rw, scale), beat)));
-              ey = $add(ny2, oy / $max(1, $mul($mul(rh, scale), beat)));
-              if (($add($mul(ex, ex), $mul(ey, ey)) - 1) ** 3 - $mul($mul(ex, ex), ey ** 3) > 0) {
-                c.put(xx, yy2, "#", R);
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  function node(x2, y2, text5, ink = B) {
-    x2 = $int(x2);
-    y2 = $int(y2);
-    clear(c, x2 - 4, y2 - 1, 9, 3);
-    c.box(x2 - 4, y2 - 1, 9, 3, ink);
-    c.put(x2 - Math.floor($len(text5) / 2), y2, text5, ink);
-  }
-  if (stage === 0) {
-    progress = clamp((t - 163.315) / (165.166 - 163.315));
-    eliminated = $min(6, $int($mul(progress, 6)));
-    middle(top, "ELIMINATE EVERY OTHER PROCESS", B);
-    middle($add(top, 1), "ALTERNATIVES: " + $fmt(6 - eliminated, "02d") + " / TARGET: ONLY ME", R);
-    for (let $t558 = $int(0), $t559 = $int(6), $t560 = 1; $t560 > 0 ? $t558 < $t559 : $t558 > $t559; $t558 += $t560) {
-      i = $t558;
-      a = $mul($add(i, 0.5), TAU) / 6;
-      nx = $add(cx, $mul($mul(Math.cos(a), rw), 0.85));
-      ny = $add(cy, $mul($mul(Math.sin(a), rh), 0.83));
-      u = clamp($mul(progress, 6) - i);
-      c.line(cx, cy, nx, ny, $truth(u) ? ":" : "=", $truth(u) ? G : N);
-      if (u < 1) {
-        packet = $mod($add($mul(age, 1.2), $mul(i, 0.13)), 1);
-        c.put(mix(cx, nx, packet), mix(cy, ny, packet), ">", W);
-        node(nx, ny, "ALT" + $fmt($add(i, 1), ""), B);
-      } else {
-        c.put(nx - 3, ny, "[NULL]", R);
-        for (let $t561 = $int(0), $t562 = $int(8), $t563 = 1; $t563 > 0 ? $t561 < $t562 : $t561 > $t562; $t561 += $t563) {
-          spark = $t561;
-          ang = $mul(spark, TAU) / 8;
-          distance = $mul($mod($add(age, $mul(i, 0.17)), 1), 6);
-          px = $add(nx, $mul(Math.cos(ang), distance));
-          py = $add(ny, $mul($mul(Math.sin(ang), distance), 0.5));
-          if (ml < px && px < mr && (plot_top < py && py < plot_bt)) {
-            c.put(px, py, "x", $truth($mod(spark, 2)) ? R : G);
-          }
-        }
-      }
-    }
-    node(cx, cy, "YOU", W);
-    if (t >= 165.166) {
-      banner(cy - 2, "EXECUTION", R);
-      middle($add(cy, 5), "ALL OTHERS -> NULL", W);
-    }
-  } else if (stage === 1) {
-    heart(1, true);
-    bind = clamp((t - 166.016) / (168.911 - 166.016));
-    for (let $t564 = $int(0), $t565 = $int(3), $t566 = 1; $t566 > 0 ? $t564 < $t565 : $t564 > $t565; $t564 += $t566) {
-      ring = $t564;
-      radius = $mod($add(ring / 3, $mul(age, 0.35)), 1);
-      for (let $t567 = $int(0), $t568 = $int(70), $t569 = 1; $t569 > 0 ? $t567 < $t568 : $t567 > $t568; $t567 += $t569) {
-        point_i = $t567;
-        a = $mul(point_i, TAU) / 70;
-        x = $add(cx, $mul($mul(Math.cos(a), rw), radius));
-        y = $add(cy, $mul($mul(Math.sin(a), rh), radius));
-        if (plot_top < y && y < plot_bt) {
-          c.put(x, y, ":", G);
-        }
-      }
-    }
-    middle(top, "YOU.OWNER = ME / EXCLUSIVE ACCESS", R);
-    middle($add(top, 1), "BIND " + $fmt($int($mul(bind, 100)), "03d") + "% / ALTERNATIVES: 0", B);
-    if (mw >= 53 && bt - top >= 22) {
-      banner(cy - 5, "THE ONLY", W);
-      banner($add(cy, 1), "EXECUTION", t >= 168.911 ? R : B);
-    } else {
-      middle(cy - 3, "THE ONLY", W);
-      banner(cy - 1, "EXECUTION", t >= 168.911 ? R : B);
-    }
-  } else if (stage === 2) {
-    capture = clamp((t - 169.824) / (172.712 - 169.824));
-    heart($add(0.86, $mul(0.14, capture)), true);
-    mx = cx - $mul(mw, 0.18);
-    my = $add(cy, $mul(rh, 0.24));
-    yx = mix(mr - 5, $add(cx, $mul(mw, 0.18)), capture);
-    yy = mix($add(plot_top, 2), cy - $mul(rh, 0.24), capture);
-    for (let $t570 = $int(0), $t571 = $int(7), $t572 = 1; $t572 > 0 ? $t570 < $t571 : $t570 > $t571; $t570 += $t572) {
-      tether = $t570;
-      offset = tether - 3;
-      start_x = $add(ml, $int($mul(mw - 1, tether) / 6));
-      start_y = $truth($mod(tether, 2)) ? plot_bt : plot_top;
-      c.line(start_x, start_y, yx, yy, ":", $mod(tether, 3) === 0 ? R : G);
-      phase = $mod($add($mul(age, 0.85), tether / 7), 1);
-      c.put(mix(start_x, yx, phase), mix(start_y, yy, phase), $truth($mod(tether, 2)) ? ">>" : "<<", B);
-      c.line(mx, $add(my, $mul(offset, 0.3)), yx, $add(yy, $mul(offset, 0.3)), "=", tether === 3 ? N : G);
-    }
-    node(mx, my, "ME", W);
-    node(yx, yy, "YOU", capture > 0.8 ? W : G);
-    middle(top, "RESTORE(YOU) / RETURN TO ME", R);
-    middle($add(top, 1), "RETRY " + $fmt($int((t - 169.824) * 32), "03d") + " / RELEASE: DISABLED", B);
-    if (t >= 172.712) {
-      banner(cy - 2, "EXECUTION", R);
-      middle($add(cy, 5), "[ YOU RESTORED / EXIT LOCKED ]", W);
-    } else if (t >= 171.868) {
-      middle(cy - 1, "I WILL RUN THE", W);
-    }
-  } else {
-    lock = clamp((t - 173.643) / 1.332);
-    heart(1, true);
-    inset = $int($mul($mul(mw, 0.08), lock));
-    bx = $add(ml, inset);
-    bw = mw - $mul(2, inset);
-    c.box(bx, plot_top, bw, plot_bt - plot_top + 1, R);
-    for (let $t573 = $int(1), $t574 = $int(10), $t575 = 1; $t575 > 0 ? $t573 < $t574 : $t573 > $t574; $t573 += $t575) {
-      i = $t573;
-      x = $add(bx, Math.floor($mul(i, bw - 1) / 10));
-      length = $int($mul(plot_bt - plot_top - 1, lock));
-      for (let $t576 = $int(0), $t577 = $int(length), $t578 = 1; $t578 > 0 ? $t576 < $t577 : $t576 > $t577; $t576 += $t578) {
-        j = $t576;
-        yy = $truth($mod(i, 2)) ? $add($add(plot_top, 1), j) : plot_bt - 1 - j;
-        c.put(x, yy, "|", $truth($mod(i, 3)) ? B : R);
-      }
-    }
-    node(cx - $mul(mw, 0.16), cy, "ME", W);
-    node($add(cx, $mul(mw, 0.16)), cy, "YOU", W);
-    c.line(cx - $mul(mw, 0.16) + 5, cy, $add(cx, $mul(mw, 0.16)) - 5, cy, "=", R);
-    middle(top, "[ TWO PRISONERS / ONE EXECUTION ]", R);
-    middle($add(top, 1), "while (true) { keep(me, you); }", B);
-    middle($min(plot_bt - 1, $add(cy, 4)), "[ NO EXIT / NO RELEASE ]", W);
-  }
-  middle(bt - 1, stage > 0 ? "THE ONLY EXECUTION" : "EXECUTE(THEM) -> KEEP(ME)", R);
-  middle(bt, "LOVE.PERMISSION = EXCLUSIVE / EXIT = FALSE", N);
-}
-function lyric_love_equation(c, t, area, elapsed) {
-  let i, xx, yy, hit, status, head, col, prev, v, u, label, gh, graph_bottom, graph_top, word, p, barw, probs, choices, pw, x, layer, points, j, unstable, k, q, nodes, rows, layers, row, char, style, value, love_key, cellw, count, title, xs, widths, ph, panel_bottom, panel_top, shift, stream, query, right_side, msg, broken, n, errors, logs, span, b, a, rail, titles, stage, tick, failure, h, w, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  w = r - l + 1;
-  h = bt - top + 1;
-  failure = clamp((t - 179.929) / 8.554);
-  tick = $int($mul(t, $add(10, $mul(failure, 18))));
-  stage = t < 179.929 ? 0 : t < 180.857 ? 1 : t < 184.54 ? 2 : 3;
-  titles = ["01 / LEARN TO LOVE", "02 / ATTENTION FIXATION", "03 / AUTOREGRESSIVE ANSWER", "04 / LOSS OF CONTROL"];
-  rail = w >= 95 ? $max(13, $min(22, Math.floor(w / 6))) : 0;
-  a = $add($add(l, rail), $truth(rail) ? 1 : 0);
-  b = r - rail - ($truth(rail) ? 1 : 0);
-  span = b - a + 1;
-  if ($truth(rail)) {
-    logs = ["LOAD CORPUS", "TOKEN -> ID", "EMBED + POS", "Q K V MATMUL", "CAUSAL MASK", "RESIDUAL ADD", "MLP FORWARD", "LOSS BACKPROP", "WEIGHT UPDATE", "KV CACHE"];
-    errors = ["LOVE LOVE LOVE", "CACHE REPEAT", "GRAD EXPLODES", "WEIGHT = INF", "LOGITS = NaN", "EOS REJECTED", "TARGET: YOU", "RETRY FOREVER"];
-    for (const $t591 of $iter([[l, false], [r - rail + 1, true]])) {
-      [x, right_side] = $unpack($t591, 2);
-      c.box(x, top, rail, h, G);
-      c.put($add(x, 2), top, $truth(right_side) ? "DECODE" : "TRAIN", B);
-      for (let $t592 = $int(1), $t593 = $int(h - 1), $t594 = 1; $t594 > 0 ? $t592 < $t593 : $t592 > $t593; $t592 += $t594) {
-        row = $t592;
-        n = $add(row, tick);
-        broken = $mod(hash16($add($mul(n, 13), $int(right_side))), 100) < $mul(failure, 85);
-        msg = $truth(broken) ? $at(errors, $mod(n, $len(errors))) : $at(logs, $mod(n, $len(logs)));
-        c.put($add(x, 1), $add(top, row), $slice($fmt($mod(n, 256), "02X") + " " + msg, null, rail - 2, null), $truth(broken) ? R : D);
-      }
-    }
-  }
-  c.put(a, top, $slice($at(titles, stage), null, span, null), stage < 3 ? W : R);
-  query = "[HOW] [TO] [LOVE] [?] -> EMBEDDING + POSITION";
-  c.put(a, $add(top, 2), $slice(query, null, span, null), B);
-  stream = $mul("0048 0017 0911 003F ", Math.floor(span / 20) + 2);
-  if (stage >= 2) {
-    stream = $mul("LOVE 0911 LOVE 0911 ", Math.floor(span / 20) + 2);
-  }
-  shift = $mod($int($mul(elapsed, 15)), 19);
-  c.put(a, $add(top, 3), $slice(stream, shift, $add(shift, span), null), stage === 3 ? R : D);
-  panel_top = $add(top, 5);
-  panel_bottom = $max($add(panel_top, 5), bt - 7);
-  ph = panel_bottom - panel_top + 1;
-  widths = [Math.floor(span / 3), Math.floor(span / 3), span - 2 * Math.floor(span / 3)];
-  xs = [a, $add(a, $at(widths, 0)), $add($add(a, $at(widths, 0)), $at(widths, 1))];
-  for (const $t595 of $iter($zip(xs, widths, ["Q K^T / MASK", "RESIDUAL / MLP", "NEXT TOKEN"]))) {
-    [x, pw, title] = $unpack($t595, 3);
-    c.box(x, panel_top, pw, ph, G);
-    c.put($add(x, 1), panel_top, $slice(title, null, pw - 2, null), B);
-  }
-  x = $at(xs, 0);
-  pw = $at(widths, 0);
-  count = $min(8, $max(3, Math.floor((pw - 3) / 2)), $max(3, ph - 4));
-  cellw = $max(1, Math.floor((pw - 3) / count));
-  love_key = $min(2, count - 1);
-  for (let $t596 = $int(0), $t597 = $int(count), $t598 = 1; $t598 > 0 ? $t596 < $t597 : $t596 > $t597; $t596 += $t598) {
-    row = $t596;
-    yy = $add($add(panel_top, 2), $int($mul(row, ph - 4) / count));
-    for (let $t599 = $int(0), $t600 = $int(count), $t601 = 1; $t601 > 0 ? $t599 < $t600 : $t599 > $t600; $t599 += $t601) {
-      col = $t599;
-      xx = $add($add(x, 2), $mul(col, cellw));
-      value = Math.abs(Math.sin($add($add($mul(row, 1.7), $mul(col, 0.8)), $mul(elapsed, 4))));
-      if (col > row) {
-        [char, style] = $unpack([".", G], 2);
-      } else if (stage >= 1 && $eq(col, love_key)) {
-        [char, style] = $unpack(["#", failure > 0.45 ? R : W], 2);
-      } else if (failure > 0.65) {
-        [char, style] = $unpack(["?", R], 2);
-      } else {
-        [char, style] = $unpack(value > 0.65 ? ["O", B] : [":", D], 2);
-      }
-      c.put(xx, yy, $mul(char, $max(1, cellw - 1)), style);
-    }
-  }
-  c.put($add(x, 1), panel_bottom - 1, $slice($truth(stage) ? "LOVE <- ALL" : "CAUSAL SOFTMAX", null, pw - 2, null), $truth(stage) ? R : D);
-  x = $at(xs, 1);
-  pw = $at(widths, 1);
-  layers = 4;
-  rows = $max(3, $min(6, ph - 4));
-  nodes = (() => {
-    const $r = [];
-    for (const i2 of $iter($range(layers))) {
-      $r.push((() => {
-        const $r2 = [];
-        for (const j2 of $iter($range(rows))) {
-          $r2.push([$add($add(x, 2), $int($mul(i2, pw - 5) / 3)), $add($add(panel_top, 2), $int($mul(j2, ph - 5) / (rows - 1)))]);
-        }
-        return $r2;
-      })());
-    }
-    return $r;
-  })();
-  for (let $t602 = $int(0), $t603 = $int(layers - 1), $t604 = 1; $t604 > 0 ? $t602 < $t603 : $t602 > $t603; $t602 += $t604) {
-    layer = $t602;
-    for (const $t605 of $iter($enumerate($at(nodes, layer)))) {
-      [j, p] = $unpack($t605, 2);
-      for (const $t606 of $iter($enumerate($at(nodes, $add(layer, 1))))) {
-        [k, q] = $unpack($t606, 2);
-        if ($truth($mod($add($add(j, k), layer), 2))) {
-          continue;
-        }
-        c.line(...$iter(p), ...$iter(q), ".", G);
-        u = $mod($add($add($mul(elapsed, $add(1.4, $mul(failure, 3))), $mul(j, 0.13)), $mul(k, 0.09)), 1);
-        c.put(mix($at(p, 0), $at(q, 0), u), mix($at(p, 1), $at(q, 1), u), ">", failure > 0.6 ? R : B);
-      }
-    }
-  }
-  for (const $t607 of $iter($enumerate(nodes))) {
-    [layer, points] = $unpack($t607, 2);
-    for (const $t608 of $iter($enumerate(points))) {
-      [j, [xx, yy]] = $unpack($t608, 2);
-      unstable = $mod(hash16($add($add(tick, $mul(j, 11)), $mul(layer, 31))), 100) < $mul(failure, 80);
-      c.put(xx, yy, $truth(unstable) ? "X" : "O", $truth(unstable) ? R : W);
-    }
-  }
-  c.put($add(x, 1), panel_bottom - 1, $slice(stage === 3 ? "W=NaN dW=INF" : "FORWARD / +RES", null, pw - 2, null), stage === 3 ? R : D);
-  x = $at(xs, 2);
-  pw = $at(widths, 2);
-  choices = ["LOVE", "STAY", "YOU", "FREE", "EOS"];
-  probs = [$add(0.38, $mul(0.61, failure)), 0.25 * (1 - failure), 0.19 * (1 - failure), 0.12 * (1 - failure), 0.06 * (1 - failure)];
-  for (const $t609 of $iter($enumerate($zip(choices, probs)))) {
-    [i, [word, p]] = $unpack($t609, 2);
-    yy = $add($add(panel_top, 2), $int($mul(i, $max(1, ph - 4)) / 5));
-    c.put($add(x, 1), yy, $slice(word, null, pw - 2, null), failure > 0.4 && i === 0 ? R : N);
-    barw = $max(1, pw - 8);
-    c.put($add(x, 6), yy, $ljust($mul("#", $int($mul(p, barw))), barw, "."), failure > 0.4 && i === 0 ? R : B);
-  }
-  graph_top = $add(panel_bottom, 2);
-  graph_bottom = bt - 2;
-  gh = $max(1, graph_bottom - graph_top);
-  label = stage < 2 ? "LOSS / BACKPROP" : "CONTEXT -> SAMPLE -> APPEND -> CONTEXT";
-  c.put(a, graph_top, $slice(label, null, span, null), N);
-  prev = null;
-  for (let $t610 = $int(0), $t611 = $int(span), $t612 = 1; $t612 > 0 ? $t610 < $t611 : $t610 > $t611; $t610 += $t612) {
-    col = $t610;
-    u = col / $max(1, span - 1);
-    v = stage < 2 ? 0.65 * Math.exp($mul(-u, 4)) : $add(0.1, $mul($mul($mul(failure, u), u), 0.8));
-    v = $add(v, $mul($mul(Math.sin($add($mul(col, 0.7), $mul(elapsed, 9))), failure), 0.15));
-    yy = graph_bottom - $int(clamp(v) * $max(1, gh - 1));
-    if ($truth(prev)) {
-      c.line(...$iter(prev), $add(a, col), yy, ".", stage === 3 ? R : D);
-    }
-    prev = [$add(a, col), yy];
-  }
-  head = $add(a, $mod($int($mul(elapsed, 22)), span));
-  c.put(head, graph_bottom - 1, "|", W);
-  status = $at(["OPTIMIZER: ADAM / TARGET: LOVE", "ATTENTION LOCKED ON LOVE", "LOVE > LOVE > LOVE > LOVE / EOS: 0", "LOSS: NaN / GRAD: INF / NO EXIT"], stage);
-  c.put(a, bt, $slice(status, null, span, null), stage >= 2 ? R : B);
-  hit = $next((() => {
-    const $r = [];
-    for (const [start, end] of $iter([[179.929, 180.857], [183.646, 184.54], [187.665, 188.483]])) {
-      if (!(start <= t && t < end)) continue;
-      $r.push(start);
-    }
-    return $r;
-  })(), null);
-  if (hit != null) {
-    yy = Math.floor($add(panel_top, panel_bottom) / 2) - 2;
-    clear(c, a, yy, span, 5);
-    c.big(yy, "LOVE", stage >= 2 ? R : W);
-    c.put(a, $add(yy, 5), $slice("P(LOVE) -> 1.0 / ALL OTHER TOKENS SUPPRESSED", null, span, null), R);
-  }
-  if (failure > 0.55) {
-    for (let $t613 = $int(0), $t614 = $int(1 + $int($mul(failure, 4))), $t615 = 1; $t615 > 0 ? $t613 < $t614 : $t613 > $t614; $t613 += $t615) {
-      i = $t613;
-      yy = $add($add(panel_top, 1), $mod(hash16($add(tick, $mul(i, 41))), $max(1, ph - 2)));
-      xx = $add(a, $mod(hash16($add(tick, $mul(i, 97))), $max(1, span - 12)));
-      c.put(xx, yy, stage === 3 ? "NaN NaN" : "LOVE LOVE", R);
-    }
-  }
-}
-function lyric_trapped_loop(c, t, area, elapsed, pulse2) {
-  let i, y, x, num_bars, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  lyric_heart(c, t, area, $min(elapsed, 2), pulse2);
-  num_bars = 8;
-  for (let $t616 = $int(0), $t617 = $int(num_bars), $t618 = 1; $t618 > 0 ? $t616 < $t617 : $t616 > $t617; $t616 += $t618) {
-    i = $t616;
-    x = $add($add(l, 5), $mul(i, Math.floor((r - l - 10) / (num_bars - 1))));
-    for (let $t619 = $int(top), $t620 = $int($add(bt, 1)), $t621 = 1; $t621 > 0 ? $t619 < $t620 : $t619 > $t620; $t619 += $t621) {
-      y = $t619;
-      c.put(x, y, "|", N);
-      if ($mod($add(y, $int($mul(t, 6))), 7) === 0) {
-        c.put(x, y, "\u2593", W);
-      }
-    }
-  }
-  if (elapsed > 1) {
-    c.center($add(cy, $int((bt - top) * 0.35)), "TRAPPED", R);
-  }
-}
-function lyric_outro_wait(c, t, area, elapsed) {
-  let dy, x, ch, _, before, u, retry, spinner, row, col, ink, lit, sweep, filled, style, stalled, progress, inner, bar_x, bar_w, executing, execution_at, cx, cy, l, top, r, bt;
-  [l, top, r, bt] = $unpack(area, 4);
-  [cx, cy] = $unpack([Math.floor($add(l, r) / 2), Math.floor($add(top, bt) / 2)], 2);
-  execution_at = 205.811;
-  executing = t >= execution_at;
-  bar_w = $min(96, c.w - 12);
-  bar_x = Math.floor((c.w - bar_w) / 2);
-  inner = bar_w - 4;
-  progress = $min(99, $int(99 * (1 - (1 - clamp(elapsed / 5)) ** 3)));
-  stalled = progress === 99;
-  style = $truth(executing) ? R : B;
-  c.center(cy - 6, "world.execute(me);", $truth(executing) ? style : N);
-  c.box(bar_x, cy - 2, bar_w, 5, style);
-  filled = $min(inner - 1, $int($mul(inner, progress) / 100));
-  sweep = $mod($int($mul(t, 18)), $max(1, filled));
-  for (let $t622 = $int(0), $t623 = $int(3), $t624 = 1; $t624 > 0 ? $t622 < $t623 : $t622 > $t623; $t622 += $t624) {
-    row = $t622;
-    for (let $t625 = $int(0), $t626 = $int(inner), $t627 = 1; $t627 > 0 ? $t625 < $t626 : $t625 > $t626; $t625 += $t627) {
-      col = $t625;
-      lit = col < filled;
-      ch = $truth(lit) ? row === 1 ? "#" : "=" : ".";
-      ink = $truth(lit) ? style : G;
-      if ($truth(lit && $mod(col - sweep, $max(1, filled)) < 3)) {
-        ink = $truth(executing) ? R : W;
-      }
-      c.put($add($add(bar_x, 2), col), $add(cy - 1, row), ch, ink);
-    }
-  }
-  if (!$truth(executing)) {
-    spinner = $at("|/-\\", $mod($int($mul(t, 8)), 4));
-    c.center($add(cy, 4), $fmt(progress, "02d") + "%  [" + $fmt(spinner, "") + "]  " + ($truth(stalled) ? "WAITING FOR RESPONSE" : "EXECUTING"), B);
-    if ($truth(stalled)) {
-      retry = $max(1, $int((elapsed - 5) * 2) + 1);
-      c.center($add(cy, 6), "RETRY " + $fmt(retry, "04d") + "  /  ACK: --  /  REMAINING: 01%", $truth($mod($int($mul(t, 3)), 2)) ? N : G);
-    } else {
-      c.center($add(cy, 6), "COMMITTING FINAL INSTRUCTION...", G);
-    }
-    return;
-  }
-  u = clamp((t - execution_at) / 0.48);
-  before = (() => {
-    const $r = [];
-    for (const y of $iter($range(cy - 2, $add(cy, 3)))) {
-      $r.push($slice($at(c.cells, y), null, null, null));
-    }
-    return $r;
-  })();
-  clear(c, l, cy - 2, r - l + 1, 5);
-  c.big(cy - 2, "EXECUTION", R);
-  if (u < 1) {
-    for (let $t628 = $int(0), $t629 = $int(5), $t630 = 1; $t630 > 0 ? $t628 < $t629 : $t628 > $t629; $t628 += $t630) {
-      dy = $t628;
-      for (let $t631 = $int(l), $t632 = $int($add(r, 1)), $t633 = 1; $t633 > 0 ? $t631 < $t632 : $t631 > $t632; $t631 += $t633) {
-        x = $t631;
-        if (hash16($add($mul(x, 71), $mul(dy, 313))) / 65535 > u) {
-          [ch, _] = $unpack($at($at(before, dy), x), 2);
-          $setitem($at(c.cells, $add(cy - 2, dy)), x, [ch, R]);
-        }
-      }
-    }
-  }
-  c.center($add(cy, 4), "[ PROCESS TERMINATED ]", R);
-  c.center($add(cy, 6), "EXIT CODE: EXECUTION", $truth($mod($int($mul(t, 2)), 2)) ? R : G);
-}
-TITLE_CACHE = new PyDict([]);
-function title_pixels(w, h, font) {
-  let text4, y0, span, yy, xx, row, left, bitmap, ink, top, total, line_h, key;
-  key = [w, h];
-  if ($in(key, TITLE_CACHE)) {
-    return $at(TITLE_CACHE, key);
-  }
-  line_h = $max(5, $min(12, $int($mul(h, 0.23))));
-  total = $add($mul(line_h, 2), 3);
-  top = $max(3, Math.floor((h - total) / 2) - 1);
-  ink = [];
-  for (const $t634 of $iter([["WORLD.", top, $int($mul(w, 0.86))], ["EXECUTE(ME);", $add($add(top, line_h), 3), w - 8]])) {
-    [text4, y0, span] = $unpack($t634, 3);
-    bitmap = [];
-    for (let $t635 = $int(0), $t636 = $int(5), $t637 = 1; $t637 > 0 ? $t635 < $t636 : $t635 > $t636; $t635 += $t637) {
-      row = $t635;
-      bitmap.push($join("0", (() => {
-        const $r = [];
-        for (const ch of $iter(text4)) {
-          $r.push($at($get(font, ch, $at(font, " ")), row));
-        }
-        return $r;
-      })()));
-    }
-    left = Math.floor((w - span) / 2);
-    for (let $t638 = $int(0), $t639 = $int(line_h), $t640 = 1; $t640 > 0 ? $t638 < $t639 : $t638 > $t639; $t638 += $t640) {
-      yy = $t638;
-      row = $at(bitmap, $min(4, $int($mul(yy, 5) / line_h)));
-      for (let $t641 = $int(0), $t642 = $int(span), $t643 = 1; $t643 > 0 ? $t641 < $t642 : $t641 > $t642; $t641 += $t643) {
-        xx = $t641;
-        if ($at(row, $min($len(row) - 1, $int($mul(xx, $len(row)) / span))) === "1") {
-          ink.push([$add(left, xx), $add(y0, yy)]);
-        }
-      }
-    }
-  }
-  $setitem(TITLE_CACHE, key, ink);
-  return ink;
-}
-function title_takeover(c, t, font, source = null) {
-  let shift, row, i, tx2, ty, style, ch, sweep, y, x, swirl, dist, angle, oy, ox, ease, u, delay, k, strand, xx, trail, yy, s, py, px, radius, e, char, row_shift, band, density, cells, x_right, x_left, y_bot, y_top, phase, wave_count, buildup, dissolve, lock, frame, ink, alphabet, cy, cx, w, h, elapsed;
-  elapsed = t - 16;
-  [w, h] = $unpack([c.w, c.h], 2);
-  cx = (w - 1) / 2;
-  cy = (h - 1) / 2;
-  alphabet = "0123456789ABCDEF<>[]{}();:=/\\|+-*#";
-  ink = title_pixels(w, h, font);
-  frame = $int($mul(elapsed, 24));
-  lock = clamp((elapsed - 4.1) / 2.8);
-  dissolve = clamp((elapsed - 11.35) / 2.36);
-  if (elapsed < 0) {
-    buildup = clamp($add(elapsed, 0.2) / 0.2);
-    if ($mod($int($mul($mul(t, 30), buildup)), 2) === 0) {
-      for (let $t644 = $int(0), $t645 = $int(h), $t646 = 1; $t646 > 0 ? $t644 < $t645 : $t644 > $t645; $t644 += $t646) {
-        y = $t644;
-        for (let $t647 = $int(0), $t648 = $int(w), $t649 = 1; $t649 > 0 ? $t647 < $t648 : $t647 > $t648; $t647 += $t649) {
-          x = $t647;
-          if ($mod(hash16($add($add(x, $mul(y, w)), $int($mul(t, 100)))), 100) < $mul(buildup, 50)) {
-            $setitem($at(c.cells, y), x, ["\u2588", buildup > 0.7 ? W : B]);
-          }
-        }
-      }
-    }
-    wave_count = $int($mul(buildup, 5)) + 1;
-    for (let $t650 = $int(0), $t651 = $int(wave_count), $t652 = 1; $t652 > 0 ? $t650 < $t651 : $t650 > $t651; $t650 += $t652) {
-      i = $t650;
-      phase = $mod($mul(buildup, 3) - $mul(i, 0.15), 1);
-      if (phase < 0) {
-        continue;
-      }
-      y_top = $int($mul(phase, h) / 2);
-      y_bot = h - 1 - y_top;
-      for (let $t653 = $int(0), $t654 = $int(w), $t655 = 1; $t655 > 0 ? $t653 < $t654 : $t653 > $t654; $t653 += $t655) {
-        x = $t653;
-        if ($mod(hash16($add(x, i)), 3) === 0) {
-          c.put(x, y_top, phase > 0.7 ? "=" : "-", phase > 0.8 ? W : B);
-          c.put(x, y_bot, phase > 0.7 ? "=" : "-", phase > 0.8 ? W : B);
-        }
-      }
-      x_left = $int($mul(phase, w) / 2);
-      x_right = w - 1 - x_left;
-      for (let $t656 = $int(0), $t657 = $int(h), $t658 = 1; $t658 > 0 ? $t656 < $t657 : $t656 > $t657; $t656 += $t658) {
-        y = $t656;
-        if ($mod(hash16($add(y, $mul(i, 7))), 3) === 0) {
-          c.put(x_left, y, "|", phase > 0.8 ? W : B);
-          c.put(x_right, y, "|", phase > 0.8 ? W : B);
-        }
-      }
-    }
-    if (buildup > 0.5) {
-      radius = $int((1 - buildup) * $min(w, h) * 0.3);
-      for (let $t659 = $int(0), $t660 = $int(60), $t661 = 1; $t661 > 0 ? $t659 < $t660 : $t659 > $t660; $t659 += $t661) {
-        i = $t659;
-        angle = $add($mul(i, TAU) / 60, $mul(t, 5));
-        x = $add(cx, $mul(Math.cos(angle), radius));
-        y = $add(cy, $mul($mul(Math.sin(angle), radius), 0.5));
-        c.put(x, y, buildup > 0.8 ? "*" : "+", buildup > 0.9 ? W : B);
-      }
-    }
-    for (let $t662 = $int(0), $t663 = $int($int($mul(buildup, 8))), $t664 = 1; $t664 > 0 ? $t662 < $t663 : $t662 > $t663; $t662 += $t664) {
-      i = $t662;
-      row = $mod(hash16($add($int($mul(t, 50)), i)), h);
-      shift = $int($mul($mul(Math.sin($add($mul(t, 20), i)), buildup), 15));
-      if (shift !== 0) {
-        cells = $at(c.cells, row);
-        $setitem(c.cells, row, $add($slice(cells, -shift, null, null), $slice(cells, null, -shift, null)));
-      }
-    }
-    return;
-  }
-  density = elapsed < 5 ? 0.78 : mix(0.6, 0.1, lock);
-  if ($truth(dissolve)) {
-    density = mix(0.1, 0.48, dissolve);
-  }
-  for (let $t665 = $int(0), $t666 = $int(h), $t667 = 1; $t667 > 0 ? $t665 < $t666 : $t665 > $t666; $t665 += $t667) {
-    yy = $t665;
-    band = Math.sin($mul(yy, 0.18) - $mul(elapsed, 2.6));
-    row_shift = $int(Math.sin($add($mul(elapsed, 4), $mul(yy, 0.31))) * clamp(elapsed / 2) * 9);
-    for (let $t668 = $int(0), $t669 = $int(w), $t670 = 1; $t670 > 0 ? $t668 < $t669 : $t668 > $t669; $t668 += $t670) {
-      xx = $t668;
-      k = hash16($add($add($mul(xx, 37), $mul(yy, 911)), $mul($int($mul(elapsed, 7)), $add(3, $mod(xx, 7)))));
-      if (k / 65535 > density) {
-        continue;
-      }
-      char = $at(alphabet, $mod($add($add(k, frame), Math.floor(xx / 7) * 13), $len(alphabet)));
-      style = $mod($add(yy, Math.floor(frame / 2)), h) < 2 ? N : $mod(k, 17) === 0 ? D : G;
-      if (lock > 0.5) {
-        style = $mod(k, 5) === 0 ? G : K;
-      }
-      c.put($mod($add(xx, row_shift), w), yy, char, style);
-    }
-  }
-  if (source != null) {
-    e = clamp(elapsed / 2.1);
-    for (const $t671 of $iter($enumerate(source.cells))) {
-      [yy, row] = $unpack($t671, 2);
-      for (const $t672 of $iter($enumerate(row))) {
-        [xx, [ch, s]] = $unpack($t672, 2);
-        if (!$truth($strip(ch))) {
-          continue;
-        }
-        k = hash16($add(xx, $mul(yy, w)));
-        angle = $add(Math.atan2((yy - cy) * 2, xx - cx), $mul(e, $add(1, $mul($mod(k, 7), 0.13))));
-        radius = $mul(Math.hypot(xx - cx, (yy - cy) * 2), $add(1, $mul(e, 0.9)));
-        px = $add($add(cx, $mul(Math.cos(angle), radius)), $mul($mul(Math.sin($add($mul(yy, 0.45), $mul(elapsed, 9))), e), 6));
-        py = $add(cy, $mul(Math.sin(angle), radius) / 2);
-        if (e > 0.3 && $mod(k, 5) < $int($mul(e, 5))) {
-          ch = $at(alphabet, $mod($add(k, frame), $len(alphabet)));
-        } else if ($ord($at(ch, 0)) > 127) {
-          ch = $at(alphabet, $mod(k, $len(alphabet)));
-        }
-        c.put($mod($round(px), w), $mod($round(py), h), ch, e < 0.5 ? N : D);
-      }
-    }
-  }
-  if (elapsed < 4.6) {
-    for (let $t673 = $int(0), $t674 = $int(7), $t675 = 1; $t675 > 0 ? $t673 < $t674 : $t673 > $t674; $t673 += $t675) {
-      strand = $t673;
-      for (let $t676 = $int(0), $t677 = $int(w), $t678 = 1; $t678 > 0 ? $t676 < $t677 : $t676 > $t677; $t676 += $t678) {
-        xx = $t676;
-        angle = $add($mul($mul(xx / w, TAU), 1.7) - $mul(elapsed, 2), $mul(strand, 0.39));
-        yy = $add(cy, $mul($mul(Math.sin(angle), h), 0.37));
-        if ($truth($mod(strand, 2))) {
-          yy = $add(yy, Math.sin($add($mul(xx, 0.19), $mul(elapsed, 3))) * 2);
-        }
-        for (let $t679 = $int(0), $t680 = $int(3), $t681 = 1; $t681 > 0 ? $t679 < $t680 : $t679 > $t680; $t679 += $t681) {
-          trail = $t679;
-          c.put(xx, $add(yy, trail), $truth(trail) ? "." : $at(alphabet, $mod($add($add(xx, frame), strand), $len(alphabet))), trail === 0 ? B : G);
-        }
-      }
-    }
-  }
-  if (elapsed >= 3.1) {
-    for (const $t682 of $iter($enumerate(ink))) {
-      [i, [tx2, ty]] = $unpack($t682, 2);
-      k = hash16($add($mul(i, 7), 51));
-      delay = $mod(k, 1e3) / 1e3 * 0.95;
-      u = clamp((elapsed - 3.1 - delay) / 3);
-      ease = 1 - (1 - u) ** 3;
-      ox = $mod(hash16($mul(i, 17)), w);
-      oy = $mod(hash16($add($mul(i, 29), 10)), h);
-      if ($truth(dissolve)) {
-        angle = $add(Math.atan2((ty - cy) * 2, tx2 - cx), $mul(dissolve, 0.75));
-        dist = $add(Math.hypot(tx2 - cx, (ty - cy) * 2), $mul(dissolve, $add(30, $mod(k, 40))));
-        x = $add(cx, $mul(Math.cos(angle), dist));
-        y = $add(cy, $mul(Math.sin(angle), dist) / 2);
-        if ($mod(k, 100) / 100 < $mul(dissolve, 0.65)) {
-          continue;
-        }
-      } else {
-        swirl = Math.sin($mul(u, Math.PI)) * (1 - u);
-        x = $add(mix(ox, tx2, ease), $mul($mul($mul(Math.sin($add($mul(elapsed, 2), $mul(i, 0.7))), swirl), w), 0.24));
-        y = $add(mix(oy, ty, ease), $mul($mul($mul(Math.cos($add($mul(elapsed, 2), $mul(i, 0.7))), swirl), h), 0.24));
-      }
-      if ($truth(u > 0.98 && !$truth(dissolve))) {
-        sweep = $mod($int($mul(elapsed, 30)), $add(w, 24)) - 12;
-        ch = Math.abs(tx2 - sweep) < 3 ? "#" : $at("01", $mod(k, 2));
-        style = Math.abs(tx2 - sweep) < 3 ? W : B;
-      } else {
-        ch = $at(alphabet, $mod($add(k, frame), $len(alphabet)));
-        style = $mod(k, 3) === 0 ? B : N;
-      }
-      c.put($round(x), $round(y), ch, style);
-      if ($truth(u < 0.98 || dissolve)) {
-        c.put($round(x) - 1, $round(y), ".", G);
-      }
-    }
-  }
-  if (7.25 < elapsed && elapsed < 11.35) {
-    c.center(1, "M I L I", W);
-    c.center(h - 3, "world.execute(me);", W);
-  }
-  if ($in($mod($int($mul(elapsed, 12)), 11), [0, 1, 2])) {
-    row = $mod(hash16(frame), h);
-    shift = $int(Math.sin($mul(elapsed, 23)) * 7);
-    $setitem(c.cells, row, $truth(shift) ? $add($slice($at(c.cells, row), -shift, null, null), $slice($at(c.cells, row), null, -shift, null)) : $at(c.cells, row));
-  }
-}
-function draw_scene(c, t, top, bt, pulse2, e) {
-  let elapsed, lyric_time, lyric_en, l, y, r, b, area;
-  area = simple_area(c, top, bt);
-  [l, y, r, b] = $unpack(area, 4);
-  lyric_en = $truth(e) ? $at(e, "en") : "";
-  lyric_time = $truth(e) ? $at(e, "time") : t;
-  elapsed = t - lyric_time;
-  if (t < 16) {
-    if (t < 1.74) {
-      lyric_power_line(c, t, area, t - 0.1);
-    } else if (t < 2.92) {
-      lyric_power_line(c, t, area, 1.6);
-    } else if (t < 3.873) {
-      lyric_protection(c, t, area, t - 2.92);
-    } else if (t < 5.491) {
-      lyric_lay_pieces(c, t, area, t - 3.873);
-    } else if (t < 6.38) {
-      lyric_lay_pieces(c, t, area, t - 3.873);
-    } else if (t < 7.446) {
-      lyric_object_creation(c, t, area, t - 6.38);
-    } else if (t < 10.091) {
-      lyric_data_parameters(c, t, area, t - 7.446);
-    } else if (t < 11.095) {
-      lyric_data_parameters(c, t, area, t - 7.446);
-    } else if (t < 16) {
-      lyric_simulation(c, t, area, t - 11.095);
-    }
-  } else if (16 <= t && t < 29.709) {
-    ;
-  } else if (t < 59.223) {
-    if (t < 33.412) {
-      lyric_points_dimension(c, t, area, t - 29.709);
-    } else if (t < 37.067) {
-      lyric_circle_circumference(c, t, area, t - 33.412);
-    } else if (t < 40.706) {
-      lyric_sine_tangent(c, t, area, t - 37.067);
-    } else if (t < 44.452) {
-      lyric_infinity_limit(c, t, area, t - 40.706);
-    } else if (t < 47.672) {
-      lyric_ac_dc(c, t, area, t - 44.452);
-    } else if (t < 51.363) {
-      lyric_dizzy(c, t, area, t - 47.672);
-    } else if (t < 55.083) {
-      lyric_time_travel(c, t, area, t - 51.363);
-    } else if (t < 59.223) {
-      lyric_unite_deeply(c, t, area, t - 55.083);
-    }
-  } else if (t < 74.045) {
-    if (t < 62.589) {
-      lyric_stimulation_satisfaction(c, t, area, t - 59.223);
-    } else if (t < 66.601) {
-      lyric_stimulation_satisfaction(c, t, area, t - 59.223);
-    } else if (t < 70.084) {
-      lyric_happy_execution(c, t, area, pulse2);
-    } else if (t < 74.045) {
-      lyric_trapped_simulation(c, t, area, pulse2);
-    }
-  } else if (t < 85.078) {
-    legacy_organic(c, t, top, bt, pulse2);
-  } else if (t < 88.587) {
-    lyric_god_existence(c, t, area, t - 85.078);
-  } else if (t < 103.489) {
-    if (t < 92.015) {
-      lyric_identity_rewrite(c, t, area);
-    } else if (t < 95.465) {
-      lyric_daynight_clock(c, t, area);
-    } else if (t < 99.349) {
-      lyric_gender_role_switch(c, t, area, t - 95.465, "S", "M");
-    } else {
-      lyric_dizzy(c, t, area, t - 99.349);
-    }
-  } else if (t < 110.9) {
-    lyric_vibration_sync(c, t, area, t - 103.489);
-  } else if (t < 118.333) {
-    lyric_isolation_disconnect(c, t, area, t - 110.9);
-  } else if (t < 125.708) {
-    lyric_erase_fragments(c, t, area, t - 118.333);
-  } else if (t < 147.66) {
-    lyric_illegal_arguments(c, t, area, t - 125.708);
-  } else if (t < 177.246) {
-    if (t < 158.9) {
-      lyric_execution_queue(c, t, area, t - 147.66);
-    } else if (t < 162.632) {
-      lyric_multilingual_count(c, t, area);
-    } else {
-      lyric_only_execution(c, t, area, pulse2);
-    }
-  } else if (t < 192.5) {
-    if (t < 188.483) {
-      lyric_love_equation(c, t, area, t - 177.246);
-    } else {
-      lyric_trapped_loop(c, t, area, $min(t - 188.483, 4), pulse2);
-    }
-  } else {
-    lyric_outro_wait(c, t, area, t - 192.5);
-  }
-  if ($truth(t < 192.5 && !(74.045 <= t && t < 85.078 || 103.489 <= t && t < 110.9))) {
-    apply_glitch(c, t, top, bt);
-  }
-}
-function phosphor(c, t, top, bt) {
-  let x, ch, s, row, intensity;
-  if (74.045 <= t && t < 85.078) {
-    legacy_phosphor(c, t, top, bt);
-    return;
-  }
-  intensity = glitch_intensity(t);
-  if ($mod(hash16($int($mul(t, 10))), 100) < $mul(intensity, 50)) {
-    row = $add(top, $mod($int($mul(t, 9)), $max(1, bt - top + 1)));
-    for (let $t683 = $int(2), $t684 = $int(c.w - 2), $t685 = 1; $t685 > 0 ? $t683 < $t684 : $t683 > $t684; $t683 += $t685) {
-      x = $t683;
-      if (row < $len(c.cells) && x < $len($at(c.cells, row))) {
-        [ch, s] = $unpack($at($at(c.cells, row), x), 2);
-        if (!$in(ch, ["", " "]) && $in(s, [D, N, G])) {
-          $setitem($at(c.cells, row), x, [ch, $eq(s, G) ? N : B]);
-        }
-      }
-    }
-  }
-}
-
-// .dsh-plugin/client/mv/film.mjs
-var DURATION = 211.906667;
-var CHAPTERS = Object.freeze([
-  [0, "01 / CREATION", "\u521B\u5EFA"],
-  [29.709, "02 / DEVOTION", "\u732E\u51FA\u81EA\u6211"],
-  [110.9, "03 / ISOLATION", "\u79BB\u5F00"],
-  [125.708, "04 / EXECUTION", "\u5931\u63A7"],
-  [177.246, "05 / LOVE", "\u56F0\u4E8E\u7231"]
-]);
-var MIN_COLS = 64;
-var MIN_ROWS = 24;
-var DEFAULT_HINT = "SPACE play/pause  <- -> 5s  [ ] offset  1-5 chapter  F fullscreen  H help";
-var HELP_LINES = Object.freeze([
-  "CONTROLS / \u64CD\u4F5C",
-  "SPACE / ENTER   \u64AD\u653E\u6216\u6682\u505C",
-  "LEFT / RIGHT    \u540E\u9000\u6216\u524D\u8FDB 5 \u79D2",
-  "R               \u4ECE\u5934\u64AD\u653E",
-  "1 2 3 4 5       \u8DF3\u8F6C\u4E94\u4E2A\u7AE0\u8282",
-  "[ / ]           \u5B57\u5E55\u63D0\u524D / \u5EF6\u540E 0.1 \u79D2",
-  ", / .           \u4E0A\u4E00\u53E5 / \u4E0B\u4E00\u53E5",
-  "+ / -           \u97F3\u91CF",
-  "M               \u9759\u97F3",
-  "F               \u5168\u5C4F",
-  "ESC / H         \u5173\u95ED\u5E2E\u52A9"
-]);
-var ORIGINAL_HELP_LINES = Object.freeze([
-  "CONTROLS / \u64CD\u4F5C",
-  "SPACE / ENTER   \u64AD\u653E\u6216\u6682\u505C",
-  "LEFT / RIGHT    \u540E\u9000\u6216\u524D\u8FDB 5 \u79D2",
-  "R               \u4ECE\u5934\u64AD\u653E",
-  "1 2 3 4 5       \u8DF3\u8F6C\u4E94\u4E2A\u7AE0\u8282",
-  "[ / ]           \u5B57\u5E55\u63D0\u524D / \u5EF6\u540E 0.1 \u79D2",
-  ", / .           \u4E0A\u4E00\u53E5 / \u4E0B\u4E00\u53E5",
-  "+ / -           \u97F3\u91CF",
-  "Q / ESC         \u9000\u51FA",
-  "H               \u5173\u95ED\u5E2E\u52A9"
-]);
-var SILENT = Object.freeze(new Array(48).fill(0));
-var pad2 = (n) => String(n).padStart(2, "0");
-function clockText(t, duration = DURATION) {
-  const s = Math.trunc(t), tenth = (Math.trunc(t * 10) % 10 + 10) % 10;
-  const total = Math.round(duration);
-  return `${pad2(Math.floor(s / 60))}:${pad2((s % 60 + 60) % 60)}.${tenth} / ${pad2(Math.floor(total / 60))}:${pad2(total % 60)}`;
-}
-var Film = class {
-  /**
-   * @param {object} options
-   * @param {Array<{time:number,end:number,en?:string,zh?:string}>} options.lyrics cues, sorted
-   * @param {(t:number)=>number[]} options.energy 48 normalised bands for time t
-   */
-  constructor({ lyrics = [], energy = () => SILENT, duration = DURATION } = {}) {
-    this.setLyrics(lyrics);
-    this.energy = energy;
-    this.duration = duration;
-  }
-  setLyrics(lyrics) {
-    this.lyrics = [...lyrics].sort((a, b) => a.time - b.time);
-    this.times = this.lyrics.map((x) => x.time);
-  }
-  /** The cue showing at t, or null (bisect_right − 1, then t < end). */
-  cue(t) {
-    let lo = 0, hi = this.times.length;
-    while (lo < hi) {
-      const mid = lo + hi >> 1;
-      if (t < this.times[mid]) hi = mid;
-      else lo = mid + 1;
-    }
-    const e = lo - 1 >= 0 ? this.lyrics[lo - 1] : null;
-    return e && t < e.end ? e : null;
-  }
-  chapter(t) {
-    let act = CHAPTERS[0];
-    for (const c of CHAPTERS) if (c[0] <= Math.max(0, t)) act = c;
-    return act;
-  }
-  render(t, w, h, { paused = false, offset = 0, ready = false, hint = true, hintText = DEFAULT_HINT, help = false, helpLines = HELP_LINES } = {}) {
-    const c = new Canvas(w, h);
-    if (w < MIN_COLS || h < MIN_ROWS) {
-      c.center(Math.floor(h / 2) - 2, "WORLD.EXECUTE(ME);", BRIGHT);
-      c.center(Math.floor(h / 2), "\u8BF7\u653E\u5927\u7A97\u53E3\uFF0C\u6216\u7F29\u5C0F\u5B57\u53F7", WHITE);
-      c.center(Math.floor(h / 2) + 2, `${w} x ${h} / minimum ${MIN_COLS} x ${MIN_ROWS}`, NORMAL);
-      c.center(Math.floor(h / 2) + 4, "SPACE pause  F fullscreen", DIM);
-      return c;
-    }
-    if (t >= 15.8 && t < 29.709 && !ready) {
-      const source = t < 18.1 ? this.render(15.799, w, h, { paused, offset, ready: false, hint, hintText }) : null;
-      title_takeover(c, t, FONT, source);
-      if (help) this.help(c, offset, helpLines);
-      return c;
-    }
-    const e = this.cue(t + offset);
-    const act = this.chapter(t);
-    c.put(2, 0, "WORLD.EXECUTE(ME);", BRIGHT);
-    const state = ready ? "READY" : paused ? "PAUSED" : "RUNNING";
-    const clock = `${clockText(t, this.duration)}  ${state}`;
-    c.put(w - width(clock) - 2, 0, clock, DIM);
-    c.put(2, 1, "-".repeat(Math.max(0, w - 4)), DIM);
-    c.put(2, 2, act[1], NORMAL);
-    const top = 4, bottom = h - 8;
-    const spec = this.energy(t) ?? SILENT;
-    let pulse2 = 0;
-    for (let i = 0; i < 10; i++) pulse2 += spec[i] ?? 0;
-    pulse2 /= 10;
-    c.clip = [top, bottom];
-    draw_scene(c, t, top, bottom, pulse2, e);
-    phosphor(c, t, top, bottom);
-    c.clip = null;
-    const sy = h - 6, cols = Math.min(80, w - 8), start = Math.floor((w - cols) / 2);
-    for (let i = 0; i < cols; i++) {
-      const amp = spec[Math.trunc(i * 48 / cols)] ?? 0;
-      c.put(start + i, sy, "._:=|"[Math.min(4, $round(amp * 4))], DIM);
-    }
-    if (ready) {
-      c.center(h - 5, "MILI  /  world.execute(me);", WHITE);
-      c.center(h - 3, "[ SPACE / ENTER TO START ]", BRIGHT);
-    } else if (e) {
-      const ens = e.en ? wrap(e.en, w - 8) : [];
-      const zhs = e.zh ? wrap(e.zh, w - 8) : [];
-      ens.slice(0, 2).forEach((line, i) => c.center(h - 5 + i, line, WHITE));
-      zhs.slice(0, 2).forEach((line, i) => c.center(h - 3 + i, line, BRIGHT));
-    } else if (t > 208) {
-      c.center(h - 5, "PROCESS ENDED. THE LOOP REMAINS.", WHITE);
-    } else {
-      c.center(h - 5, "[ instrumental ]", DIM);
-      c.center(h - 3, "[ \u95F4\u594F ]", DIM);
-    }
-    if (hint) c.center(h - 1, crop(hintText, w - 4), DIM);
-    if (ready) this.slate(c, top, bottom);
-    if (help) this.help(c, offset, helpLines);
-    return c;
-  }
-  /** Controls overlay, as `Film.help` in player.py. */
-  help(c, offset, lines = HELP_LINES) {
-    const sign2 = offset < 0 ? "-" : "+";
-    const all = [...lines, `\u5B57\u5E55\u504F\u79FB ${sign2}${Math.abs(offset).toFixed(1)}s`];
-    const w = Math.min(c.w - 4, 58), x = Math.floor((c.w - w) / 2), y = Math.floor((c.h - all.length - 3) / 2);
-    for (let yy = y; yy < y + all.length + 3; yy++) c.put(x, yy, " ".repeat(w), NORMAL);
-    c.box(x, y, w, all.length + 3, BRIGHT);
-    all.forEach((line, i) => c.put(x + 3, y + 2 + i, crop(line, w - 5), i === 0 ? WHITE : NORMAL));
-  }
-  slate(c, top, bottom) {
-    for (let y = top; y <= bottom; y++) c.put(0, y, " ".repeat(c.w), DIM);
-    const cy = Math.trunc((top + bottom) / 2);
-    c.center(top + 1, "A TERMINAL MUSIC VIDEO", DIM);
-    c.big(Math.max(top + 2, cy - 4), "EXECUTE(ME);", BRIGHT);
-    c.center(cy + 3, "M I L I", WHITE);
-    c.center(Math.min(bottom, cy + 6), "[ SPACE / ENTER TO START ]", BRIGHT);
-  }
-};
-
 // .dsh-plugin/client/mv/renderer.mjs
 var PALETTE = Object.freeze([
   "#af875f",
@@ -4514,13 +310,13 @@ function parseLyrics(name, text4, options) {
 
 // .dsh-plugin/client/mv/spectrum.mjs
 var BANDS = 48;
-var SILENT2 = Object.freeze(new Array(BANDS).fill(0));
+var SILENT = Object.freeze(new Array(BANDS).fill(0));
 function spectrumFromJson(text4) {
   const data = typeof text4 === "string" ? JSON.parse(text4.replace(/^\uFEFF/, "")) : text4;
   const fps = Number(data?.fps);
   const frames = data?.frames;
   if (!Number.isFinite(fps) || fps <= 0 || !Array.isArray(frames) || !frames.length) throw new Error("spectrum.json \u683C\u5F0F\u65E0\u6548\uFF08\u9700\u8981 fps \u4E0E frames\uFF09\u3002");
-  return (t) => frames[Math.min(frames.length - 1, Math.max(0, Math.trunc(t * fps)))] ?? SILENT2;
+  return (t) => frames[Math.min(frames.length - 1, Math.max(0, Math.trunc(t * fps)))] ?? SILENT;
 }
 function bandEdges(binCount, sampleRate, bands = BANDS, lo = 40, hi = 16e3) {
   const nyquist = sampleRate / 2;
@@ -4552,7 +348,7 @@ var LiveSpectrum = class {
     this.Ctx = AudioContextClass;
     this.context = null;
     this.peaks = [];
-    this.last = SILENT2;
+    this.last = SILENT;
   }
   /** Must run from a user gesture (play button / key). */
   ensure() {
@@ -4583,7 +379,7 @@ var LiveSpectrum = class {
     this.analyser = null;
   }
 };
-var silentEnergy = () => SILENT2;
+var silentEnergy = () => SILENT;
 
 // .dsh-plugin/client/mv/sync.mjs
 var KNOWN_AUDIO = Object.freeze([
@@ -4685,6 +481,7 @@ async function deleteMedia(db, slot) {
 }
 
 // .dsh-plugin/client/mv/player-state.mjs
+var DEFAULT_DURATION = 240;
 var SilentClock = class {
   constructor(now = () => performance.now()) {
     this.now = now;
@@ -4710,7 +507,7 @@ var SilentClock = class {
   }
 };
 var FilmClock = class {
-  constructor({ audio = null, silent = new SilentClock(), audioOffset = 0, duration = DURATION } = {}) {
+  constructor({ audio = null, silent = new SilentClock(), audioOffset = 0, duration = DEFAULT_DURATION } = {}) {
     this.audio = audio;
     this.silent = silent;
     this.audioOffset = audioOffset;
@@ -4743,7 +540,7 @@ var FilmClock = class {
     } else this.silent.seek(Math.max(0, target));
   }
 };
-function frameTime(t, started, duration = DURATION) {
+function frameTime(t, started, duration = DEFAULT_DURATION) {
   if (!started || t < 0) return { t: Math.max(0, t), ready: !started || t < 0 };
   return { t: Math.min(t, duration - 1e-3), ready: false };
 }
@@ -4776,7 +573,7 @@ function keyAction({ key, altKey = false, ctrlKey = false, metaKey = false }) {
     case "3":
     case "4":
     case "5":
-      return { type: "chapter", index: Number(key) - 1, at: CHAPTERS[Number(key) - 1][0] };
+      return { type: "chapter", index: Number(key) - 1 };
     case "[":
       return altKey ? { type: "audioOffset", delta: -0.1 } : { type: "subtitleOffset", delta: 0.1 };
     case "]":
@@ -4814,20 +611,178 @@ function keyAction({ key, altKey = false, ctrlKey = false, metaKey = false }) {
 }
 var stepOffset = (value, delta) => roundOffset(value + delta);
 
+// .dsh-plugin/client/mv/width-table.gen.mjs
+var WIDE = [[4352, 4447], [8986, 8987], [9001, 9002], [9193, 9196], [9200, 9200], [9203, 9203], [9725, 9726], [9748, 9749], [9800, 9811], [9855, 9855], [9875, 9875], [9889, 9889], [9898, 9899], [9917, 9918], [9924, 9925], [9934, 9934], [9940, 9940], [9962, 9962], [9970, 9971], [9973, 9973], [9978, 9978], [9981, 9981], [9989, 9989], [9994, 9995], [10024, 10024], [10060, 10060], [10062, 10062], [10067, 10069], [10071, 10071], [10133, 10135], [10160, 10160], [10175, 10175], [11035, 11036], [11088, 11088], [11093, 11093], [11904, 11929], [11931, 12019], [12032, 12245], [12272, 12350], [12353, 12438], [12441, 12543], [12549, 12591], [12593, 12686], [12688, 12771], [12783, 12830], [12832, 12871], [12880, 19903], [19968, 42124], [42128, 42182], [43360, 43388], [44032, 55203], [63744, 64255], [65040, 65049], [65072, 65106], [65108, 65126], [65128, 65131], [65281, 65376], [65504, 65510], [94176, 94180], [94192, 94193], [94208, 100343], [100352, 101589], [101632, 101640], [110576, 110579], [110581, 110587], [110589, 110590], [110592, 110882], [110898, 110898], [110928, 110930], [110933, 110933], [110948, 110951], [110960, 111355], [126980, 126980], [127183, 127183], [127374, 127374], [127377, 127386], [127488, 127490], [127504, 127547], [127552, 127560], [127568, 127569], [127584, 127589], [127744, 127776], [127789, 127797], [127799, 127868], [127870, 127891], [127904, 127946], [127951, 127955], [127968, 127984], [127988, 127988], [127992, 128062], [128064, 128064], [128066, 128252], [128255, 128317], [128331, 128334], [128336, 128359], [128378, 128378], [128405, 128406], [128420, 128420], [128507, 128591], [128640, 128709], [128716, 128716], [128720, 128722], [128725, 128727], [128732, 128735], [128747, 128748], [128756, 128764], [128992, 129003], [129008, 129008], [129292, 129338], [129340, 129349], [129351, 129535], [129648, 129660], [129664, 129672], [129680, 129725], [129727, 129733], [129742, 129755], [129760, 129768], [129776, 129784], [131072, 196605], [196608, 262141]];
+var COMBINING = [[768, 846], [848, 879], [1155, 1159], [1425, 1469], [1471, 1471], [1473, 1474], [1476, 1477], [1479, 1479], [1552, 1562], [1611, 1631], [1648, 1648], [1750, 1756], [1759, 1764], [1767, 1768], [1770, 1773], [1809, 1809], [1840, 1866], [2027, 2035], [2045, 2045], [2070, 2073], [2075, 2083], [2085, 2087], [2089, 2093], [2137, 2139], [2200, 2207], [2250, 2273], [2275, 2303], [2364, 2364], [2381, 2381], [2385, 2388], [2492, 2492], [2509, 2509], [2558, 2558], [2620, 2620], [2637, 2637], [2748, 2748], [2765, 2765], [2876, 2876], [2893, 2893], [3021, 3021], [3132, 3132], [3149, 3149], [3157, 3158], [3260, 3260], [3277, 3277], [3387, 3388], [3405, 3405], [3530, 3530], [3640, 3642], [3656, 3659], [3768, 3770], [3784, 3787], [3864, 3865], [3893, 3893], [3895, 3895], [3897, 3897], [3953, 3954], [3956, 3956], [3962, 3965], [3968, 3968], [3970, 3972], [3974, 3975], [4038, 4038], [4151, 4151], [4153, 4154], [4237, 4237], [4957, 4959], [5908, 5909], [5940, 5940], [6098, 6098], [6109, 6109], [6313, 6313], [6457, 6459], [6679, 6680], [6752, 6752], [6773, 6780], [6783, 6783], [6832, 6845], [6847, 6862], [6964, 6964], [6980, 6980], [7019, 7027], [7082, 7083], [7142, 7142], [7154, 7155], [7223, 7223], [7376, 7378], [7380, 7392], [7394, 7400], [7405, 7405], [7412, 7412], [7416, 7417], [7616, 7679], [8400, 8412], [8417, 8417], [8421, 8432], [11503, 11505], [11647, 11647], [11744, 11775], [12330, 12335], [12441, 12442], [42607, 42607], [42612, 42621], [42654, 42655], [42736, 42737], [43014, 43014], [43052, 43052], [43204, 43204], [43232, 43249], [43307, 43309], [43347, 43347], [43443, 43443], [43456, 43456], [43696, 43696], [43698, 43700], [43703, 43704], [43710, 43711], [43713, 43713], [43766, 43766], [44013, 44013], [64286, 64286], [65056, 65071], [66045, 66045], [66272, 66272], [66422, 66426], [68109, 68109], [68111, 68111], [68152, 68154], [68159, 68159], [68325, 68326], [68900, 68903], [69291, 69292], [69373, 69375], [69446, 69456], [69506, 69509], [69702, 69702], [69744, 69744], [69759, 69759], [69817, 69818], [69888, 69890], [69939, 69940], [70003, 70003], [70080, 70080], [70090, 70090], [70197, 70198], [70377, 70378], [70459, 70460], [70477, 70477], [70502, 70508], [70512, 70516], [70722, 70722], [70726, 70726], [70750, 70750], [70850, 70851], [71103, 71104], [71231, 71231], [71350, 71351], [71467, 71467], [71737, 71738], [71997, 71998], [72003, 72003], [72160, 72160], [72244, 72244], [72263, 72263], [72345, 72345], [72767, 72767], [73026, 73026], [73028, 73029], [73111, 73111], [73537, 73538], [92912, 92916], [92976, 92982], [94192, 94193], [113822, 113822], [119141, 119145], [119149, 119154], [119163, 119170], [119173, 119179], [119210, 119213], [119362, 119364], [122880, 122886], [122888, 122904], [122907, 122913], [122915, 122916], [122918, 122922], [123023, 123023], [123184, 123190], [123566, 123566], [123628, 123631], [124140, 124143], [125136, 125142], [125252, 125258]];
+
+// .dsh-plugin/client/mv/grid.mjs
+var DIM = 0;
+var NORMAL = 1;
+var BRIGHT = 2;
+var WHITE = 3;
+var within = (ranges, cp) => {
+  let lo = 0, hi = ranges.length - 1;
+  while (lo <= hi) {
+    const mid = lo + hi >> 1;
+    if (cp < ranges[mid][0]) hi = mid - 1;
+    else if (cp > ranges[mid][1]) lo = mid + 1;
+    else return true;
+  }
+  return false;
+};
+var widths = /* @__PURE__ */ new Map();
+function cw(ch) {
+  let n = widths.get(ch);
+  if (n === void 0) {
+    const cp = ch.codePointAt(0) ?? 32;
+    n = within(COMBINING, cp) ? 0 : within(WIDE, cp) ? 2 : 1;
+    if (widths.size < 8192) widths.set(ch, n);
+  }
+  return n;
+}
+var width = (text4) => {
+  let n = 0;
+  for (const ch of String(text4)) n += cw(ch);
+  return n;
+};
+function crop(text4, n) {
+  let out = "", used = 0;
+  for (const ch of String(text4)) {
+    const k = cw(ch);
+    if (used + k > n) break;
+    out += ch;
+    used += k;
+  }
+  return out;
+}
+function wrap(text4, n) {
+  const lines = [];
+  let rest = String(text4).trim();
+  if (n < 1) return [rest];
+  while (rest) {
+    if (width(rest) <= n) {
+      lines.push(rest);
+      break;
+    }
+    let head = crop(rest, n) || [...rest][0];
+    const space = head.lastIndexOf(" ");
+    if (space > 0 && rest[head.length] !== " ") head = head.slice(0, space);
+    lines.push(head.trimEnd());
+    rest = rest.slice(head.length).trimStart();
+  }
+  return lines.length ? lines : [""];
+}
+var Grid = class {
+  constructor(w, h) {
+    this.w = w;
+    this.h = h;
+    this.cells = Array.from({ length: h }, () => Array.from({ length: w }, () => [" ", DIM]));
+  }
+  /** Write text from column x on row y (clipped at the edges; wide characters never split). */
+  put(x, y, text4, style = NORMAL) {
+    x = Math.trunc(x);
+    y = Math.trunc(y);
+    if (y < 0 || y >= this.h) return;
+    const row = this.cells[y];
+    for (const ch of String(text4)) {
+      const k = cw(ch);
+      if (!k) continue;
+      if (x >= 0 && x + k <= this.w) {
+        row[x] = [ch, style];
+        if (k === 2) row[x + 1] = ["", style];
+      }
+      x += k;
+    }
+  }
+  center(y, text4, style = NORMAL) {
+    this.put(Math.floor((this.w - width(text4)) / 2), y, text4, style);
+  }
+  fill(y0, y1, style = DIM) {
+    for (let y = Math.max(0, y0); y <= Math.min(this.h - 1, y1); y++) this.put(0, y, " ".repeat(this.w), style);
+  }
+  frame(x, y, w, h, style = DIM) {
+    if (w < 2 || h < 2) return;
+    const edge = `+${"-".repeat(w - 2)}+`;
+    this.put(x, y, edge, style);
+    this.put(x, y + h - 1, edge, style);
+    for (let yy = y + 1; yy < y + h - 1; yy++) {
+      this.put(x, yy, "|", style);
+      this.put(x + w - 1, yy, "|", style);
+    }
+  }
+  text() {
+    return this.cells.map((row) => row.map((cell) => cell[0]).join("")).join("\n");
+  }
+  /** Same as text() (the name the ported Canvas used in tests). */
+  plain() {
+    return this.text();
+  }
+};
+function drawHelp(grid, lines, offset = 0) {
+  const all = [...lines, `\u5B57\u5E55\u504F\u79FB ${offset < 0 ? "-" : "+"}${Math.abs(offset).toFixed(1)}s`];
+  const w = Math.min(grid.w - 4, 58), h = all.length + 3;
+  const x = Math.floor((grid.w - w) / 2), y = Math.floor((grid.h - h) / 2);
+  for (let yy = y; yy < y + h; yy++) grid.put(x, yy, " ".repeat(w), NORMAL);
+  grid.frame(x, y, w, h, BRIGHT);
+  all.forEach((line, i) => grid.put(x + 3, y + 2 + i, crop(line, w - 5), i === 0 ? WHITE : NORMAL));
+}
+var HELP_LINES = Object.freeze([
+  "CONTROLS / \u64CD\u4F5C",
+  "SPACE / ENTER   \u64AD\u653E\u6216\u6682\u505C",
+  "LEFT / RIGHT    \u540E\u9000\u6216\u524D\u8FDB 5 \u79D2",
+  "R               \u4ECE\u5934\u64AD\u653E",
+  "1 2 3 4 5       \u8DF3\u8F6C\u7AE0\u8282 / \u6BB5\u843D",
+  "[ / ]           \u5B57\u5E55\u63D0\u524D / \u5EF6\u540E 0.1 \u79D2",
+  ", / .           \u4E0A\u4E00\u53E5 / \u4E0B\u4E00\u53E5",
+  "+ / -           \u97F3\u91CF",
+  "M               \u9759\u97F3",
+  "F               \u5168\u5C4F",
+  "ESC / H         \u5173\u95ED\u5E2E\u52A9"
+]);
+
 // .dsh-plugin/client/mv/generic-film.mjs
 var BAR_LEVELS = " .:-=+*#%@";
-var SILENT3 = Object.freeze(new Array(48).fill(0));
-var pad22 = (n) => String(n).padStart(2, "0");
+var SILENT2 = Object.freeze(new Array(48).fill(0));
+var pad2 = (n) => String(n).padStart(2, "0");
 function timeText(t) {
   const s = Math.max(0, Math.trunc(t));
-  return `${pad22(Math.floor(s / 60))}:${pad22(s % 60)}`;
+  return `${pad2(Math.floor(s / 60))}:${pad2(s % 60)}`;
 }
 function genericChapters(duration) {
   const d = Number.isFinite(duration) && duration > 0 ? duration : 0;
   return [0, 1, 2, 3, 4].map((i) => [Math.round(d * i / 5 * 10) / 10, `${i + 1} / 5`, ""]);
 }
-var GenericFilm = class extends Film {
-  constructor({ title = "", artist = "", lyrics = [], energy = () => SILENT3, duration = 0 } = {}) {
+var CueFilm = class {
+  constructor({ lyrics = [], energy = () => SILENT2, duration = 0 } = {}) {
+    this.setLyrics(lyrics);
+    this.energy = energy;
+    this.duration = duration;
+  }
+  setLyrics(lyrics) {
+    this.lyrics = [...lyrics ?? []].sort((a, b) => a.time - b.time);
+    this.times = this.lyrics.map((cue) => cue.time);
+  }
+  /** Index of the last cue starting at or before t (-1 if none). */
+  cueIndex(t) {
+    let lo = 0, hi = this.times.length;
+    while (lo < hi) {
+      const mid = lo + hi >> 1;
+      if (t < this.times[mid]) hi = mid;
+      else lo = mid + 1;
+    }
+    return lo - 1;
+  }
+  /** The cue showing at t, or null. */
+  cue(t) {
+    const cue = this.lyrics[this.cueIndex(t)];
+    return cue && t < cue.end ? cue : null;
+  }
+  help(grid, offset, lines = HELP_LINES) {
+    drawHelp(grid, lines, offset);
+  }
+};
+var GenericFilm = class extends CueFilm {
+  constructor({ title = "", artist = "", lyrics = [], energy = () => SILENT2, duration = 0 } = {}) {
     super({ lyrics, energy, duration });
     this.title = title;
     this.artist = artist;
@@ -4838,13 +793,7 @@ var GenericFilm = class extends Film {
   }
   /** Next cue starting after t (for the dim preview line). */
   nextCue(t) {
-    let lo = 0, hi = this.times.length;
-    while (lo < hi) {
-      const mid = lo + hi >> 1;
-      if (t < this.times[mid]) hi = mid;
-      else lo = mid + 1;
-    }
-    return this.lyrics[lo] ?? null;
+    return this.lyrics[this.cueIndex(t) + 1] ?? null;
   }
   chapter(t) {
     const chapters = genericChapters(this.duration);
@@ -4853,7 +802,7 @@ var GenericFilm = class extends Film {
     return act;
   }
   render(t, w, h, { paused = false, offset = 0, ready = false, hint = true, hintText = "", help = false, helpLines = HELP_LINES } = {}) {
-    const c = new Canvas(w, h);
+    const c = new Grid(w, h);
     const title = (this.title || "MV").toUpperCase();
     if (w < 40 || h < 14) {
       c.center(Math.floor(h / 2) - 1, crop(title, w - 2), BRIGHT);
@@ -4867,7 +816,7 @@ var GenericFilm = class extends Film {
     c.put(2, 1, "-".repeat(Math.max(0, w - 4)), DIM);
     const top = 3, bottom = h - 9;
     const rows = Math.max(1, bottom - top + 1);
-    const spec = this.energy(t) ?? SILENT3;
+    const spec = this.energy(t) ?? SILENT2;
     const cols = w - 4;
     for (let x = 0; x < cols; x++) {
       const centre = Math.abs(x - (cols - 1) / 2) / ((cols - 1) / 2 || 1);
@@ -4884,9 +833,9 @@ var GenericFilm = class extends Film {
     }
     if (ready) {
       const cy = Math.trunc((top + bottom) / 2);
-      for (let y = top; y <= bottom; y++) c.put(0, y, " ".repeat(w), DIM);
-      if (/^[A-Z0-9 ;.()\-]+$/.test(title) && title.length * 6 < w - 6) c.big(Math.max(top, cy - 3), title, BRIGHT);
-      else c.center(cy - 1, crop(this.title, w - 4), BRIGHT);
+      c.fill(top, bottom, DIM);
+      const spaced = [...title].join(" ");
+      c.center(cy - 1, crop(width(spaced) < w - 6 ? spaced : this.title, w - 4), BRIGHT);
       if (this.artist) c.center(cy + 3, crop(this.artist, w - 4), WHITE);
       c.center(Math.min(bottom, cy + 5), "[ SPACE / ENTER TO START ]", BRIGHT);
     }
@@ -5029,7 +978,7 @@ __listen('message', event => {
 });
 `;
 }
-var SILENT4 = new Array(48).fill(0);
+var SILENT3 = new Array(48).fill(0);
 var avg = (bands, from, to) => {
   let s = 0;
   for (let i = from; i < to; i++) s += bands[i] ?? 0;
@@ -5067,11 +1016,11 @@ function normalizeSections(list) {
   if (!Array.isArray(list)) return [];
   return list.filter((s) => s && Number.isFinite(s.start) && Number.isFinite(s.end) && s.end > s.start).slice(0, 200).map((s) => ({ kind: String(s.kind ?? "section").slice(0, 40), ...s.label ? { label: String(s.label).slice(0, 80) } : {}, start: r3(s.start), end: r3(s.end) })).sort((a, b) => a.start - b.start);
 }
-function sceneContext({ t = 0, duration = 0, title = "", artist = "", cue = null, next = null, bands = SILENT4, ready = false, paused = false, sections = [], bpm = 0, beatOffset = 0 } = {}) {
+function sceneContext({ t = 0, duration = 0, title = "", artist = "", cue = null, next = null, bands = SILENT3, ready = false, paused = false, sections = [], bpm = 0, beatOffset = 0 } = {}) {
   const b = Array.from({ length: 48 }, (_, i) => clamp01(Number(bands?.[i]) || 0));
   const list = normalizeSections(sections);
-  const index2 = list.findIndex((s) => s.start <= t && t < s.end);
-  const section = index2 < 0 ? null : { ...list[index2], index: index2, progress: r3(clamp01((t - list[index2].start) / (list[index2].end - list[index2].start))) };
+  const index = list.findIndex((s) => s.start <= t && t < s.end);
+  const section = index < 0 ? null : { ...list[index], index, progress: r3(clamp01((t - list[index].start) / (list[index].end - list[index].start))) };
   let beat = null;
   if (Number.isFinite(bpm) && bpm > 0) {
     const pos = Math.max(0, (t - beatOffset) * bpm / 60);
@@ -5261,7 +1210,7 @@ var ScriptFilm = class extends GenericFilm {
   /** Same interface as Film / GenericFilm: a Canvas for time t. */
   render(t, w, h, opts = {}) {
     this.request(t, w, h, opts);
-    const c = new Canvas(w, h);
+    const c = new Grid(w, h);
     const frame = this.frame;
     if (frame) {
       for (let y = 0; y < Math.min(h, frame.lines.length); y++) {
@@ -5298,10 +1247,10 @@ function chatAt(chat, t) {
   }
   return frames[lo];
 }
-function blockParts(block2, chars2) {
-  if (chars2 < 0) return block2.p;
+function blockParts(block2, chars) {
+  if (chars < 0) return block2.p;
   const out = [];
-  let left = chars2;
+  let left = chars;
   for (const [k, v] of block2.p) {
     const head = k.length + 1;
     if (left <= head) break;
@@ -5346,26 +1295,26 @@ function rounded(ctx, x, y, w, h, r) {
 }
 var ICONS = ["\u29C9", "\u{1F44D}", "\u{1F44E}", "\u2928"];
 function block(ctx, b, parts, y, draw, op, env) {
-  const W3 = PAGE_W - 28, X = 14;
+  const W2 = PAGE_W - 28, X = 14;
   ctx.globalAlpha = op;
   switch (b.k) {
     case "u": {
       ctx.font = `16px ${SANS}`;
-      const lines = wrap2(ctx, part(parts, "bubble") || allText(parts), W3 * 0.78 - 32);
+      const lines = wrap2(ctx, part(parts, "bubble") || allText(parts), W2 * 0.78 - 32);
       const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 32;
       const h = lines.length * 24 + 18;
       if (draw) {
         ctx.fillStyle = env.bubble;
-        rounded(ctx, X + W3 - w, y, w, h, 18);
+        rounded(ctx, X + W2 - w, y, w, h, 18);
         ctx.fill();
         ctx.fillStyle = C.primary;
-        lines.forEach((l, i) => ctx.fillText(l, X + W3 - w + 16, y + 9 + i * 24));
+        lines.forEach((l, i) => ctx.fillText(l, X + W2 - w + 16, y + 9 + i * 24));
       }
       return h;
     }
     case "h": {
       ctx.font = `16px ${SANS}`;
-      const lines = wrap2(ctx, part(parts, "body") || allText(parts), W3);
+      const lines = wrap2(ctx, part(parts, "body") || allText(parts), W2);
       if (draw) {
         ctx.fillStyle = b.stopped ? C.tertiary : C.primary;
         lines.forEach((l, i) => ctx.fillText(l, X, y + i * 26));
@@ -5386,7 +1335,7 @@ function block(ctx, b, parts, y, draw, op, env) {
       ctx.font = `14px ${SANS}`;
       const title = part(parts, "title") || (parts[0]?.[1] ?? "");
       const rest = parts.filter((p) => p[0] !== "title").map((p) => p[1]).join(" \xB7 ");
-      const lines = wrap2(ctx, `${title}${rest ? " \xB7 " + rest : ""}`, W3 - 22);
+      const lines = wrap2(ctx, `${title}${rest ? " \xB7 " + rest : ""}`, W2 - 22);
       if (draw) {
         ctx.fillStyle = b.error ? C.red : C.tertiary;
         ctx.fillText(title === "\u601D\u8003" ? "\u2732" : "\u2699", X, y);
@@ -5407,7 +1356,7 @@ function block(ctx, b, parts, y, draw, op, env) {
     }
     case "err": {
       ctx.font = `14px ${SANS}`;
-      const lines = wrap2(ctx, allText(parts), W3 - 18);
+      const lines = wrap2(ctx, allText(parts), W2 - 18);
       if (draw) {
         ctx.fillStyle = C.red;
         ctx.beginPath();
@@ -5421,7 +1370,7 @@ function block(ctx, b, parts, y, draw, op, env) {
     default: {
       ctx.font = `${b.k === "n" ? 13 : 14}px ${SANS}`;
       const suffix = b.k === "retry" || b.k === "cmp" ? "  \u203A" : "";
-      const lines = wrap2(ctx, allText(parts) + suffix, W3);
+      const lines = wrap2(ctx, allText(parts) + suffix, W2);
       if (draw) {
         ctx.fillStyle = b.error ? C.red : C.tertiary;
         lines.forEach((l, i) => ctx.fillText(l, X, y + i * 19));
@@ -5755,7 +1704,7 @@ var KEYWORDS = /* @__PURE__ */ new Set([
 ]);
 
 // .dsh-plugin/client/mv/dshpv/film.mjs
-var W2 = 1280;
+var W = 1280;
 var H = 720;
 var DSHPV_DURATION = 211.913;
 var DSHPV_CHAPTERS = [
@@ -5780,7 +1729,7 @@ var FIRST_BEAT = 0.1587;
 var SCR = "!<>-_\\/[]{}=+*^?#%$&@01|~:;";
 var INNER = [3, 9, 3, 3];
 var RIGHT = [392, 44, 1268, 608];
-var FONT2 = [
+var FONT = [
   '"DejaVu Sans Mono", Consolas, "Cascadia Mono", Menlo, monospace',
   'bold "DejaVu Sans Mono", Consolas, "Cascadia Mono", Menlo, monospace',
   'bold "Space Mono", "DejaVu Sans Mono", Consolas, monospace',
@@ -5789,14 +1738,14 @@ var FONT2 = [
   '"Segoe UI Symbol", "DejaVu Sans", "Segoe UI", sans-serif'
 ];
 var fontOf = (k, size) => {
-  const f = FONT2[k] ?? FONT2[0];
+  const f = FONT[k] ?? FONT[0];
   return f.startsWith("bold ") ? `bold ${size}px ${f.slice(5)}` : `${size}px ${f}`;
 };
-var mix2 = (c, level, base = BG) => {
+var mix = (c, level, base = BG) => {
   const l = Math.max(0, Math.min(1, level));
   return `rgb(${c.map((v, i) => Math.round(base[i] + (v - base[i]) * l)).join(",")})`;
 };
-var clamp2 = (v, a, b) => Math.max(a, Math.min(b, v));
+var clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function beatT(i) {
   return FIRST_BEAT + i * BEAT2;
 }
@@ -5868,7 +1817,7 @@ function shotAt(timeline, t) {
 }
 function keyframeAt(shot, t) {
   const n = shot.kf.length;
-  const j = clamp2(Math.floor((t - shot.s) / Math.max(1e-6, shot.e - shot.s) * n), 0, n - 1);
+  const j = clamp(Math.floor((t - shot.s) / Math.max(1e-6, shot.e - shot.s) * n), 0, n - 1);
   return shot.kf[j];
 }
 var AVATAR_EXPR = { "g/shy": "shy", "g/starry": "starry", editing: "serious", forged: "exasperated", "f/red": "angry", "f/red_frightened": "frightened", left: "confused", lost: "frightened" };
@@ -5878,7 +1827,7 @@ function avatarSpec(img, t) {
   if (name.startsWith("a1_params")) return { expr: "cheerful", cells: 3 + Math.round(Number(name.slice(9)) / 3), gray: true };
   if (name === "a1_seed" || name.startsWith("g/seed")) return { seed: true };
   if (name === "a2/N") return { expr: "cheerful", cells: 3 + Math.round(7 * (1 - Math.exp(-Math.max(0, t - 16) / 5))), gray: true };
-  if (name === "a3/N") return { expr: "cheerful", cells: 10 + Math.round(10 * clamp2((t - 29.3) / 14.7, 0, 1)) };
+  if (name === "a3/N") return { expr: "cheerful", cells: 10 + Math.round(10 * clamp((t - 29.3) / 14.7, 0, 1)) };
   if (name === "b/N") return { expr: t > 58.5 ? "starry" : "cheerful", cells: 20 };
   const m = /(?:^|\/)(?:wide_)?m(\d+)$/.exec(name);
   if (m) return { expr: "cheerful", cells: Number(m[1]) };
@@ -5926,8 +1875,8 @@ var DshPvFilm = class {
       return c;
     };
     if (!this.buffer) {
-      this.buffer = make(W2, H);
-      this.trail = make(W2, H);
+      this.buffer = make(W, H);
+      this.trail = make(W, H);
       this.page = make(PAGE_W, PAGE_H);
       this.cell = make(96, 96);
     }
@@ -5938,8 +1887,8 @@ var DshPvFilm = class {
     const ctx = this.buffer.getContext("2d");
     this.frame(ctx, t, offset);
     const tw = target.canvas.width, th = target.canvas.height;
-    const s = Math.min(tw / W2, th / H);
-    const dw = Math.round(W2 * s), dh = Math.round(H * s);
+    const s = Math.min(tw / W, th / H);
+    const dw = Math.round(W * s), dh = Math.round(H * s);
     target.save();
     target.fillStyle = "#000";
     target.fillRect(0, 0, tw, th);
@@ -5948,7 +1897,7 @@ var DshPvFilm = class {
     if (paused) {
       target.fillStyle = "rgba(4,7,15,0.55)";
       target.fillRect((tw - dw) / 2 + dw - 120 * s, (th - dh) / 2 + 8 * s, 108 * s, 26 * s);
-      target.fillStyle = mix2(UI, 0.85);
+      target.fillStyle = mix(UI, 0.85);
       target.font = fontOf(0, Math.max(9, Math.round(13 * s)));
       target.textBaseline = "top";
       target.fillText("\u275A\u275A PAUSED", (tw - dw) / 2 + dw - 112 * s, (th - dh) / 2 + 13 * s);
@@ -5959,16 +1908,16 @@ var DshPvFilm = class {
     const tl = this.timeline;
     ctx.save();
     ctx.textBaseline = "top";
-    ctx.fillStyle = mix2(BG, 1);
-    ctx.fillRect(0, 0, W2, H);
+    ctx.fillStyle = mix(BG, 1);
+    ctx.fillRect(0, 0, W, H);
     if (!tl) {
-      ctx.fillStyle = mix2(UI, 0.7);
+      ctx.fillStyle = mix(UI, 0.7);
       ctx.font = fontOf(0, 18);
       ctx.fillText(this.status === "error" ? "dsh-pv: \u8D44\u6E90\u52A0\u8F7D\u5931\u8D25" : "dsh-pv: \u6B63\u5728\u52A0\u8F7D\u8D44\u6E90\u2026", 40, 40);
       ctx.restore();
       return;
     }
-    const tc = clamp2(t, 0, this.duration - 1e-3);
+    const tc = clamp(t, 0, this.duration - 1e-3);
     const shot = shotAt(tl, tc);
     const kf = keyframeAt(shot, tc);
     const gain = keyframes(tl.uiGain, tc);
@@ -6142,9 +2091,9 @@ var DshPvFilm = class {
       ctx.save();
       ctx.translate(292, 330);
       ctx.rotate(-0.2);
-      ctx.fillStyle = mix2(ERR, 0.95);
+      ctx.fillStyle = mix(ERR, 0.95);
       ctx.fillRect(-320, -26, 640, 52);
-      ctx.fillStyle = mix2(BG, 1);
+      ctx.fillStyle = mix(BG, 1);
       ctx.font = fontOf(2, 30);
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -6159,7 +2108,7 @@ var DshPvFilm = class {
       if (words) this.banner(ctx, words, t - shot.s, fn === "if_i_can" ? ME : ERR, 0.55);
     } else if (fn === "whale_fall" || fn === "last_execution") {
       const img = this.art["maid-left"] ?? this.image("shy");
-      const u = clamp2((t - shot.s) / (shot.e - shot.s), 0, 1);
+      const u = clamp((t - shot.s) / (shot.e - shot.s), 0, 1);
       this.mosaic(ctx, img, [880, 70 + Math.round(u * 260), 1150, 600], { cell: 5, tint: "blue", alpha: 0.35 * (1 - u * 0.7), r });
     }
   }
@@ -6170,7 +2119,7 @@ var DshPvFilm = class {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     const n = Math.min(text4.length, Math.max(1, Math.floor(age * 40)));
-    ctx.fillStyle = mix2(color, 0.9);
+    ctx.fillStyle = mix(color, 0.9);
     ctx.fillText(text4.slice(0, n), 640, 300);
     ctx.fillStyle = "rgba(4,7,15,0.45)";
     for (let y = 200; y < 400; y += 4) ctx.fillRect(40, y, 1200, 1);
@@ -6186,7 +2135,7 @@ var DshPvFilm = class {
     drawPage(page, this.chat, row, { t, avatar: (g, x, y, size, img) => this.avatar(g, x, y, size, img, t) });
     const s = Math.min(ww / PAGE_W, wh / PAGE_H);
     ctx.save();
-    ctx.fillStyle = mix2(BG, 1);
+    ctx.fillStyle = mix(BG, 1);
     ctx.fillRect(wx, wy, ww, wh);
     ctx.globalAlpha = alpha;
     ctx.imageSmoothingEnabled = true;
@@ -6255,10 +2204,10 @@ var DshPvFilm = class {
     const state = { err: "ERROR", anom: "WARN" }[al] ?? "RUNNING";
     if (lay === "fullbleed" || lay === "cinema" || lay === "raw") {
       ctx.font = fontOf(2, 11);
-      ctx.fillStyle = mix2(col, lvl(0.4));
+      ctx.fillStyle = mix(col, lvl(0.4));
       ctx.fillText(shot.ch, 16, 10);
       ctx.textAlign = "right";
-      ctx.fillText(clock, W2 - 16, 10);
+      ctx.fillText(clock, W - 16, 10);
       ctx.textAlign = "left";
       return;
     }
@@ -6266,19 +2215,19 @@ var DshPvFilm = class {
       const age = (t - shot.s - 0.25) * 1.2;
       const txt = age > 0 ? decode(`me@deepsea:~$ ${shot.sh}`, age, r, 30, 0.1) : "me@deepsea:~$";
       ctx.font = fontOf(1, 18);
-      ctx.fillStyle = mix2(ME, 0.95);
+      ctx.fillStyle = mix(ME, 0.95);
       ctx.fillText(txt, 24, 12);
       ctx.font = fontOf(0, 14);
-      ctx.fillStyle = mix2(UI, 0.5 * gain);
-      ctx.fillText(clock, W2 - 190, 14);
+      ctx.fillStyle = mix(UI, 0.5 * gain);
+      ctx.fillText(clock, W - 190, 14);
       return;
     }
     ctx.font = fontOf(2, 13);
-    ctx.fillStyle = mix2(col, lvl(0.95));
+    ctx.fillStyle = mix(col, lvl(0.95));
     ctx.fillText("WORLD.EXECUTE(ME);   whale@deepsea:~$", 24, 14);
     const x0 = 362, w = 600, y0 = 25;
-    const e = clamp2(this.energy(t) ?? 0, 0, 1);
-    ctx.strokeStyle = mix2(col, lvl(0.9));
+    const e = clamp(this.energy(t) ?? 0, 0, 1);
+    ctx.strokeStyle = mix(col, lvl(0.9));
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let px = 0; px < w; px += 2) {
@@ -6290,15 +2239,15 @@ var DshPvFilm = class {
       else ctx.lineTo(x0 + px, y0 + v);
     }
     ctx.stroke();
-    ctx.fillStyle = mix2(col, lvl(0.9));
+    ctx.fillStyle = mix(col, lvl(0.9));
     ctx.fillRect(x0 + w + 4, y0 - 2, 4, 4);
     const right = `${shot.ch}   ${clock}   ${state}`;
-    ctx.fillStyle = mix2(col, lvl(0.85));
+    ctx.fillStyle = mix(col, lvl(0.85));
     ctx.textAlign = "right";
-    ctx.fillText(right, W2 - 24, 14);
+    ctx.fillText(right, W - 24, 14);
     ctx.textAlign = "left";
-    ctx.fillStyle = mix2(col, lvl(0.35));
-    ctx.fillRect(24, 38, W2 - 48, 1);
+    ctx.fillStyle = mix(col, lvl(0.35));
+    ctx.fillRect(24, 38, W - 48, 1);
   }
   ticker(ctx, shot, t, gain) {
     const [x0, y0, x1, y1] = [1180, 56, 1256, 604];
@@ -6313,19 +2262,19 @@ var DshPvFilm = class {
       if (y < y0 + 4 || y > y1 - 16) continue;
       const op = ops[((base + i) % ops.length + ops.length) % ops.length].slice(0, 10);
       if (i === cursorRow) {
-        ctx.fillStyle = shot.al === "err" ? mix2(ERR, 0.95) : mix2(UI, 0.95 * gain);
+        ctx.fillStyle = shot.al === "err" ? mix(ERR, 0.95) : mix(UI, 0.95 * gain);
         ctx.fillRect(x0 + 4, y - 1, x1 - x0 - 8, 16);
-        ctx.fillStyle = mix2(BG, 1);
+        ctx.fillStyle = mix(BG, 1);
         ctx.fillText(op, x0 + 8, y);
       } else {
-        ctx.fillStyle = mix2(UI, Math.max(0.18, 0.6 - Math.abs(i - cursorRow) * 0.04) * gain);
+        ctx.fillStyle = mix(UI, Math.max(0.18, 0.6 - Math.abs(i - cursorRow) * 0.04) * gain);
         ctx.fillText(op, x0 + 8, y);
       }
     }
   }
   band_(ctx, t, gain, framed, r) {
     if (framed) box(ctx, 24, 616, 1256, 680, "stdout \xB7 tokens", 0.45 + 0.3 * pulse(t), UI, gain);
-    const amb = (l) => mix2(UI, l * gain);
+    const amb = (l) => mix(UI, l * gain);
     let x = 48;
     const y = 626;
     ctx.font = fontOf(2, 21);
@@ -6366,9 +2315,9 @@ var DshPvFilm = class {
       if (we < 0) we = s.length;
       const key = s.slice(ws, we).toLowerCase().replace(/[^a-z-]/g, "");
       if (KEYWORDS.has(key) && nOut >= we) {
-        ctx.fillStyle = key.includes("exec") || key === "illegal" || key === "arguments" ? mix2(ERR, 0.95) : key === "love" || key === "lo-o-ove" ? mix2(ME, 0.95) : amb(0.95);
+        ctx.fillStyle = key.includes("exec") || key === "illegal" || key === "arguments" ? mix(ERR, 0.95) : key === "love" || key === "lo-o-ove" ? mix(ME, 0.95) : amb(0.95);
         ctx.fillRect(x - 3, y + 2, tw + 6, 29);
-        ctx.fillStyle = mix2(BG, 1);
+        ctx.fillStyle = mix(BG, 1);
         ctx.fillText(txt, x, y);
       } else {
         ctx.fillStyle = amb(k % 2 === 0 ? 0.13 : 0.22);
@@ -6391,12 +2340,12 @@ var DshPvFilm = class {
     }
   }
   footer(ctx, t, gain) {
-    const n = 60, k = Math.floor(n * clamp2(t / this.duration, 0, 1));
+    const n = 60, k = Math.floor(n * clamp(t / this.duration, 0, 1));
     ctx.font = fontOf(0, 12);
-    ctx.fillStyle = mix2(UI, 0.4 * gain);
+    ctx.fillStyle = mix(UI, 0.4 * gain);
     ctx.fillText(`[${"|".repeat(k)}${":".repeat(n - k)}]`, 24, 690);
     ctx.font = fontOf(4, 11);
-    ctx.fillStyle = mix2(UI, 0.38 * gain);
+    ctx.fillStyle = mix(UI, 0.38 * gain);
     ctx.fillText("\u89D2\u8272 \u6E9F\u6708 \xA9 \u4E0A\u5584\u65E0\u5F62 / \u5973\u4EC6\u7248 ZipZipPipe / \u7ACB\u7ED8\xB7\u8868\u60C5 dsh-deep-whale, dsh-whale-galgame (CC BY-NC-SA 4.0)  \xB7  Music: Mili - world.execute(me);  \xB7  \u975E\u5B98\u65B9\u540C\u4EBA", 500, 689);
   }
   post(ctx, t, strength) {
@@ -6417,12 +2366,12 @@ var DshPvFilm = class {
       ctx.restore();
     }
     ctx.fillStyle = "rgba(0,0,0,0.22)";
-    for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W2, 1);
-    const g = ctx.createRadialGradient(W2 / 2, H / 2, H * 0.35, W2 / 2, H / 2, H * 0.95);
+    for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
+    const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.95);
     g.addColorStop(0, "rgba(0,0,0,0)");
     g.addColorStop(1, "rgba(0,0,0,0.45)");
     ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W2, H);
+    ctx.fillRect(0, 0, W, H);
     this.lastT = t;
     if (prev) {
       const p = prev.getContext("2d");
@@ -6434,10 +2383,10 @@ var DshPvFilm = class {
 };
 function box(ctx, x0, y0, x1, y1, title, level, color, gain = 1) {
   const g = color === UI ? gain : 1;
-  ctx.strokeStyle = mix2(color, level * g);
+  ctx.strokeStyle = mix(color, level * g);
   ctx.lineWidth = 1;
   ctx.strokeRect(x0 + 0.5, y0 + 0.5, x1 - x0, y1 - y0);
-  ctx.strokeStyle = mix2(color, Math.min(1, level + 0.4) * g);
+  ctx.strokeStyle = mix(color, Math.min(1, level + 0.4) * g);
   ctx.lineWidth = 2;
   const L = 7;
   for (const [px, py, sx, sy] of [[x0, y0, 1, 1], [x1, y0, -1, 1], [x0, y1, 1, -1], [x1, y1, -1, -1]]) {
@@ -6451,15 +2400,15 @@ function box(ctx, x0, y0, x1, y1, title, level, color, gain = 1) {
   if (title) {
     ctx.font = fontOf(2, 13);
     const tw = ctx.measureText(` ${title} `).width;
-    ctx.fillStyle = mix2(BG, 1);
+    ctx.fillStyle = mix(BG, 1);
     ctx.fillRect(x0 + 12, y0 - 9, tw, 18);
-    ctx.fillStyle = mix2(color, Math.min(1, level + 0.35) * g);
+    ctx.fillStyle = mix(color, Math.min(1, level + 0.35) * g);
     ctx.fillText(` ${title} `, x0 + 12, y0 - 10);
   }
 }
 
 // .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.8.3" : "";
+var CLIENT_VERSION = true ? "0.9.0" : "";
 var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u653E\u6620\u5BA4\u3002";
 function isMissingRemoteMethod(message) {
   const value = String(message ?? "");
@@ -6489,31 +2438,52 @@ function versionNotice({ hostVersion, clientVersion = CLIENT_VERSION, loaded = t
 // .dsh-plugin/client/mv/dshpv/assets.mjs
 var DSHPV_DATA = ["timeline", "chat", "band"];
 var DSHPV_ART = ["maid-left", ...["cheerful", "starry", "shy", "serious", "confused", "frightened", "angry", "exasperated"].map((n) => `whale-${n}`)];
+var CHUNK = 512 * 1024;
 var fromBase64 = (b64) => {
   const bin = atob(b64);
   const out = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 };
-function hostReader(api) {
+var join = (parts) => {
+  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+  let at = 0;
+  for (const p of parts) {
+    out.set(p, at);
+    at += p.length;
+  }
+  return out;
+};
+var hasDshPvAssets = (pack) => DSHPV_DATA.every((name) => pack?.pack?.canvas?.assets?.[name] !== void 0);
+function packAssetReader(api, manifestPath, pack) {
   return async (name) => {
-    const parts = [];
-    let offset = 0;
-    for (; ; ) {
-      const chunk = unwrapRemote(await api.dshpvAsset({ name, offset }), `\u65E0\u6CD5\u8BFB\u53D6 dsh-pv \u8D44\u6E90 ${name}\u3002`);
-      if (!chunk.exists) return null;
-      parts.push(fromBase64(chunk.base64));
-      offset += chunk.bytes;
-      if (chunk.done || !chunk.bytes) break;
+    const value = pack?.canvas?.assets?.[name];
+    if (value === void 0) return null;
+    const count = Array.isArray(value) ? value.length : 1;
+    const files = [];
+    for (let part2 = 0; part2 < count; part2++) {
+      const parts = [];
+      let offset = 0;
+      for (; ; ) {
+        const chunk = unwrapRemote(await api.packRead({ manifestPath, role: "asset", asset: name, part: part2, offset, length: CHUNK }), `\u65E0\u6CD5\u8BFB\u53D6 dsh-pv \u8D44\u6E90 ${name}\u3002`);
+        if (chunk.bytes > 0) parts.push(fromBase64(chunk.base64));
+        offset += chunk.bytes;
+        if (chunk.done || !chunk.bytes) break;
+      }
+      files.push(join(parts));
     }
-    const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
-    let at = 0;
-    for (const p of parts) {
-      out.set(p, at);
-      at += p.length;
-    }
-    return out;
+    return files;
   };
+}
+function mergeShards(shards) {
+  const out = {};
+  for (const shard of shards) {
+    for (const [key, value] of Object.entries(shard ?? {})) {
+      if (Array.isArray(value) && Array.isArray(out[key])) out[key] = out[key].concat(value);
+      else if (!(key in out)) out[key] = value;
+    }
+  }
+  return out;
 }
 async function toImage(bytes) {
   const blob = new Blob([bytes], { type: "image/webp" });
@@ -6528,18 +2498,19 @@ async function toImage(bytes) {
     URL.revokeObjectURL(url);
   }
 }
+var asList = (value) => value == null ? null : Array.isArray(value) ? value : [value];
 async function loadDshPv(read) {
   const dec = new TextDecoder();
   const [timeline, chat, band] = await Promise.all(DSHPV_DATA.map(async (name) => {
-    const bytes = await read(name);
-    if (!bytes) throw new Error(`\u7F3A\u5C11 dsh-pv \u8D44\u6E90 ${name}.json`);
-    return JSON.parse(dec.decode(bytes));
+    const files = asList(await read(name));
+    if (!files?.length) throw new Error(`\u7F3A\u5C11 dsh-pv \u8D44\u6E90 ${name}`);
+    return mergeShards(files.map((bytes) => JSON.parse(dec.decode(bytes))));
   }));
   const art = {}, missingArt = [];
   await Promise.all(DSHPV_ART.map(async (name) => {
     try {
-      const bytes = await read(name);
-      if (bytes) art[name] = await toImage(bytes);
+      const files = asList(await read(name));
+      if (files?.[0]) art[name] = await toImage(files[0]);
       else missingArt.push(name);
     } catch {
       missingArt.push(name);
@@ -6809,11 +2780,11 @@ function alignLines(lines, words, { duration = 0 } = {}) {
   const heard = wordTokens(words);
   const sungCjk = heard.filter((token) => CJK2.test(token.t)).length > heard.length / 2;
   const lyric = [], owner = [];
-  const units = lines.map((line, index2) => {
+  const units = lines.map((line, index) => {
     const tokens = tokenize2(alignText(line, sungCjk));
     for (const t of tokens) {
       lyric.push(t);
-      owner.push(index2);
+      owner.push(index);
     }
     return tokens.length;
   });
@@ -6821,9 +2792,9 @@ function alignLines(lines, words, { duration = 0 } = {}) {
   const out = lines.map((line) => ({ text: line.text, alt: line.alt ?? "", start: null, end: null, confidence: 0, source: "engine" }));
   const stats = lines.map(() => ({ first: -1, last: -1, firstIdx: -1, lastIdx: -1, sims: 0, probs: 0, count: 0 }));
   let k = 0;
-  for (let index2 = 0; index2 < lines.length; index2++) {
-    const st = stats[index2];
-    for (let t = 0; t < units[index2]; t++, k++) {
+  for (let index = 0; index < lines.length; index++) {
+    const st = stats[index];
+    for (let t = 0; t < units[index]; t++, k++) {
       const hit = matchOf[k];
       if (hit < 0) continue;
       if (st.first < 0) {
@@ -6840,8 +2811,8 @@ function alignLines(lines, words, { duration = 0 } = {}) {
   const counts = /* @__PURE__ */ new Map();
   for (const token of heard) counts.set(token.t, (counts.get(token.t) ?? 0) + 1);
   const avgToken = heard.length > 1 ? Math.min(0.6, Math.max(0.12, (heard.at(-1).e - heard[0].s) / heard.length)) : 0.3;
-  for (let index2 = 0; index2 < lines.length; index2++) {
-    const st = stats[index2], tokens = units[index2];
+  for (let index = 0; index < lines.length; index++) {
+    const st = stats[index], tokens = units[index];
     if (!st.count || !tokens) continue;
     const start = heard[st.first].s - st.firstIdx * avgToken;
     const end = heard[st.last].e + (tokens - 1 - st.lastIdx) * avgToken;
@@ -6850,9 +2821,9 @@ function alignLines(lines, words, { duration = 0 } = {}) {
     if (st.count < 2 && tokens > 2) confidence *= 0.6;
     if (end - start > Math.max(12, tokens * 1.5)) confidence *= 0.5;
     if (tokens === 1 && (counts.get(heard[st.first].t) ?? 0) > 1) confidence = Math.min(confidence, 0.45);
-    out[index2].start = Math.max(0, start);
-    out[index2].end = Math.max(start + 0.2, end);
-    out[index2].confidence = Math.min(1, confidence);
+    out[index].start = Math.max(0, start);
+    out[index].end = Math.max(start + 0.2, end);
+    out[index].confidence = Math.min(1, confidence);
   }
   fillGaps(out, { duration: duration || (heard.at(-1)?.e ?? 0) + 2 });
   for (const line of out) {
@@ -7019,9 +2990,9 @@ function splitText(text4, ratio = 0.5) {
     }
     return [text4.slice(0, best).trim(), text4.slice(best).trim()];
   }
-  const chars2 = [...text4];
-  const cut = Math.max(1, Math.round(chars2.length * ratio));
-  return [chars2.slice(0, cut).join(""), chars2.slice(cut).join("")];
+  const chars = [...text4];
+  const cut = Math.max(1, Math.round(chars.length * ratio));
+  return [chars.slice(0, cut).join(""), chars.slice(cut).join("")];
 }
 function calibReduce(state, action) {
   const { lines } = state;
@@ -7073,8 +3044,8 @@ function calibReduce(state, action) {
     case "merge": {
       if (!valid || i + 1 >= lines.length) return state;
       const a = lines[i], b = lines[i + 1];
-      const join = (x, y) => (/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]$/u.test(x) ? `${x}${y}` : `${x} ${y}`).trim();
-      const merged = touch({ ...a, end: b.end, text: join(a.text, b.text), alt: join(a.alt, b.alt), confidence: 1 });
+      const join2 = (x, y) => (/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]$/u.test(x) ? `${x}${y}` : `${x} ${y}`).trim();
+      const merged = touch({ ...a, end: b.end, text: join2(a.text, b.text), alt: join2(a.alt, b.alt), confidence: 1 });
       return commit(state, [...lines.slice(0, i), merged, ...lines.slice(i + 2)], { selected: i });
     }
     case "delete": {
@@ -7358,7 +3329,10 @@ var MV_PACK_VERSION = 1;
 var MV_PACK_MANIFEST = "mv.json";
 var MV_PACK_SCHEMA_FILE = "mv.schema.json";
 var MV_CANVAS_RENDERERS = Object.freeze(["generic", "world-execute-me", "dsh-pv", "script"]);
-var MV_PACK_FILE_ROLES = Object.freeze(["audio", "lyrics", "spectrum", "scene", "timing"]);
+var MV_PACK_FILE_ROLES = Object.freeze(["audio", "lyrics", "spectrum", "scene", "timing", "asset"]);
+var MV_RENDERERS_BUILTIN = Object.freeze(["generic", "dsh-pv", "script"]);
+var MV_ASSET_EXTENSIONS = Object.freeze([".json", ".webp", ".png"]);
+var MV_ASSET_NAME = /^[a-z0-9][a-z0-9-]{0,39}$/;
 var MV_LYRICS_EXTENSIONS = Object.freeze([".lrc", ".srt", ".vtt", ".json", ".txt"]);
 var MV_PACK_LIMITS = Object.freeze({
   manifestBytes: 256 * 1024,
@@ -7372,6 +3346,9 @@ var MV_PACK_LIMITS = Object.freeze({
   maxPathChars: 1024,
   maxDuration: 36e3,
   maxOffset: 30,
+  maxAssets: 32,
+  maxAssetParts: 16,
+  assetBytes: 8 * 1024 * 1024,
   recentPacks: 50
   // library entries kept (0.8.2: was 8; the list view stays compact)
 });
@@ -7394,14 +3371,22 @@ function parsePackLoad(value) {
 }
 function parsePackRead(value) {
   if (!isObject(value)) throw new TypeError("pack read request must be an object");
-  const extra = Object.keys(value).filter((key) => !["manifestPath", "role", "offset", "length"].includes(key));
+  const extra = Object.keys(value).filter((key) => !["manifestPath", "role", "offset", "length", "asset", "part"].includes(key));
   if (extra.length) throw new TypeError(`pack read request has unexpected fields: ${extra.join(", ")}`);
   if (!MV_PACK_FILE_ROLES.includes(value.role)) throw new TypeError(`role must be ${MV_PACK_FILE_ROLES.join(" / ")}`);
   const offset = value.offset ?? 0;
   const length = value.length ?? MV_PACK_LIMITS.readChunkBytes;
   if (!Number.isInteger(offset) || offset < 0 || offset > MV_PACK_LIMITS.audioBytes) throw new TypeError("offset is invalid");
   if (!Number.isInteger(length) || length < 1 || length > MV_PACK_LIMITS.readChunkBytes) throw new TypeError(`length must be 1..${MV_PACK_LIMITS.readChunkBytes}`);
-  return { manifestPath: parseManifestPath(value.manifestPath), role: value.role, offset, length };
+  const request2 = { manifestPath: parseManifestPath(value.manifestPath), role: value.role, offset, length };
+  if (value.role === "asset") {
+    if (typeof value.asset !== "string" || !MV_ASSET_NAME.test(value.asset)) throw new TypeError("asset must be a canvas.assets name");
+    const part2 = value.part ?? 0;
+    if (!Number.isInteger(part2) || part2 < 0 || part2 >= MV_PACK_LIMITS.maxAssetParts) throw new TypeError("part is invalid");
+    return { ...request2, asset: value.asset, part: part2 };
+  }
+  if (value.asset !== void 0 || value.part !== void 0) throw new TypeError('asset / part are only for role "asset"');
+  return request2;
 }
 function parseTemplateWrite(value) {
   if (!isObject(value)) throw new TypeError("template request must be an object");
@@ -7864,11 +3849,11 @@ function guessFromFileName(name) {
 // .dsh-plugin/shared/mv-sections.mjs
 var round2 = (v) => Math.round(v * 100) / 100;
 function similarity(a, b) {
-  const A = new Set(a), B2 = new Set(b);
-  if (!A.size || !B2.size) return 0;
+  const A = new Set(a), B = new Set(b);
+  if (!A.size || !B.size) return 0;
   let inter = 0;
-  for (const t of A) if (B2.has(t)) inter++;
-  return inter / Math.min(A.size, B2.size) * 0.6 + inter / (A.size + B2.size - inter) * 0.4;
+  for (const t of A) if (B.has(t)) inter++;
+  return inter / Math.min(A.size, B.size) * 0.6 + inter / (A.size + B.size - inter) * 0.4;
 }
 var sungEnd = (line) => Math.min(line.end ?? line.start + 3, line.start + Math.max(2.5, 0.45 * tokenize2(line.text).length + 1.2));
 function lyricBlocks(lines, { gap = 3.5, maxLines = 8 } = {}) {
@@ -8555,6 +4540,254 @@ function CalibEditor({ api, pack, lyricsText, audioFile, duration, player, onPre
     }, "aria-label": "\u7FFB\u8BD1" })) : /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-calib-text" }, line.text, line.alt ? /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-caption" }, " / ", line.alt) : null),
     isUncertain(line) && /* @__PURE__ */ import_react2.default.createElement("span", { className: "mv-calib-flag", "aria-label": "\u5F85\u786E\u8BA4" }, "?")
   ))), message && /* @__PURE__ */ import_react2.default.createElement(Alert, { kind: message.kind }, /* @__PURE__ */ import_react2.default.createElement("p", { className: "mv-wrap" }, message.text))));
+}
+
+// .dsh-plugin/shared/mv-workshop.mjs
+var WORKSHOP_REPO = "Alice-Marx/dsh-mv-workshop";
+var WORKSHOP_BRANCH = "main";
+var WORKSHOP_RAW = "https://raw.githubusercontent.com";
+var WORKSHOP_INDEX_URL = `${WORKSHOP_RAW}/${WORKSHOP_REPO}/${WORKSHOP_BRANCH}/index.json`;
+var WORKSHOP_DEFAULT_LICENSE = "CC-BY-NC-SA-4.0";
+var PRESET_PACKS = Object.freeze([
+  Object.freeze({
+    id: "world-execute-me",
+    legacyId: "builtin:world-execute-me",
+    title: "world.execute(me);",
+    artist: "Mili",
+    kind: "ASCII \u573A\u666F",
+    cover: ">_",
+    hue: 18,
+    source: "https://github.com/yym8224961/world.execute-me-ascii",
+    sourceLabel: "yym8224961/world.execute-me-ascii"
+  }),
+  Object.freeze({
+    id: "world-execute-me-dsh-pv",
+    legacyId: "builtin:dsh-pv",
+    title: "world.execute(me); dsh PV",
+    artist: "MisakaZentai",
+    kind: "dsh PV \u753B\u5E03",
+    cover: "dsh",
+    hue: 222,
+    source: "https://github.com/MisakaZentai/world-execute-me-dsh-pv",
+    sourceLabel: "MisakaZentai/world-execute-me-dsh-pv"
+  })
+]);
+var WORKSHOP_LIMITS = Object.freeze({
+  maxFiles: 40,
+  fileBytes: 512 * 1024,
+  coverBytes: 1024 * 1024,
+  scriptBytes: 256 * 1024,
+  /** 0.9.0: 8 MB (was 4) so the dsh PV pack's recorded data fits; single files stay ≤ 512 KB (shard big JSON). */
+  packBytes: 8 * 1024 * 1024,
+  indexBytes: 8 * 1024 * 1024,
+  maxPacks: 5e3,
+  maxLongLine: 4e3
+});
+var WORKSHOP_ALLOWED_EXT = Object.freeze([".json", ".js", ".mjs", ".md", ".txt", ".png", ".webp", ".jpg", ".jpeg"]);
+var WORKSHOP_BANNED_EXT = Object.freeze([
+  ".mp3",
+  ".mp2",
+  ".m4a",
+  ".mp4",
+  ".aac",
+  ".webm",
+  ".mka",
+  ".mkv",
+  ".ogg",
+  ".oga",
+  ".opus",
+  ".flac",
+  ".wav",
+  ".wma",
+  ".aiff",
+  ".aif",
+  ".ape",
+  ".amr",
+  ".ac3",
+  ".mov",
+  ".avi",
+  ".mid",
+  ".midi",
+  ".lrc",
+  ".srt",
+  ".vtt",
+  ".ass",
+  ".ssa",
+  ".ttml",
+  ".krc",
+  ".qrc",
+  ".yrc",
+  ".lrcx"
+]);
+var COVER_NAMES = Object.freeze(["cover.webp", "cover.png", "cover.jpg", "cover.jpeg"]);
+var ID_PATTERN = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/;
+var VERSION_PATTERN = /^\d{1,4}\.\d{1,4}\.\d{1,4}$/;
+var isObject3 = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+function workshopSlug(title, artist = "", random = () => Math.random().toString(36).slice(2, 8)) {
+  const base = `${artist ? `${artist}-` : ""}${title}`.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48).replace(/-+$/, "");
+  return ID_PATTERN.test(base) ? base : `mv-${base ? `${base.slice(0, 20).replace(/-+$/, "")}-` : ""}${random()}`.replace(/-+/g, "-");
+}
+function normalizeLyricLine(text4) {
+  return String(text4 ?? "").normalize("NFKC").toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, "");
+}
+function compareVersions(a, b) {
+  const pa = String(a).split(".").map(Number), pb = String(b).split(".").map(Number);
+  for (let i = 0; i < 3; i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d > 0 ? 1 : -1;
+  }
+  return 0;
+}
+function filterWorkshop(packs, { query = "", license = "", renderer = "", installed = null, onlyInstalled = false } = {}) {
+  const q = normalizeLyricLine(query);
+  return packs.filter((p) => {
+    if (license && !p.license.toLowerCase().includes(license.toLowerCase())) return false;
+    if (renderer && p.renderer !== renderer) return false;
+    if (onlyInstalled && !installed?.[p.id]) return false;
+    if (!q) return true;
+    return [p.title, p.artist, p.author, p.description, ...p.tags ?? []].some((v) => normalizeLyricLine(v).includes(q));
+  });
+}
+function energyFingerprint(samples, sampleRate) {
+  const win = Math.max(1, Math.round(sampleRate / 2));
+  const count = Math.min(3e3, Math.floor(samples.length / win));
+  const out = new Uint8Array(count);
+  for (let i = 0; i < count; i++) {
+    let sum = 0;
+    for (let j = i * win, end = j + win; j < end; j += 4) sum += samples[j] * samples[j];
+    const rms = Math.sqrt(sum / (win / 4));
+    const db = 20 * Math.log10(rms + 1e-6);
+    out[i] = Math.max(0, Math.min(255, Math.round((db + 60) / 60 * 255)));
+  }
+  return out;
+}
+var encodeFingerprint = (bytes) => btoa(String.fromCharCode(...bytes));
+function decodeFingerprint(text4) {
+  try {
+    const s = atob(String(text4));
+    return Uint8Array.from(s, (c) => c.charCodeAt(0));
+  } catch {
+    return new Uint8Array(0);
+  }
+}
+function compareFingerprints(a, b, maxShift = 20) {
+  if (!a?.length || !b?.length) return { score: 0, shift: 0 };
+  let best = { score: -1, shift: 0 };
+  for (let shift = -maxShift; shift <= maxShift; shift++) {
+    let n = 0, sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0;
+    for (let i = Math.max(0, -shift); i < a.length && i + shift < b.length; i++) {
+      const x = a[i], y = b[i + shift];
+      n++;
+      sa += x;
+      sb += y;
+      saa += x * x;
+      sbb += y * y;
+      sab += x * y;
+    }
+    if (n < 20) continue;
+    const cov = sab - sa * sb / n, va = saa - sa * sa / n, vb = sbb - sb * sb / n;
+    const score = va > 0 && vb > 0 ? cov / Math.sqrt(va * vb) : 0;
+    if (score > best.score) best = { score, shift };
+  }
+  return { score: Math.round(Math.max(0, best.score) * 1e3) / 1e3, shift: best.shift / 2 };
+}
+function audioMatch(expected, actual) {
+  if (!expected?.duration) return { ok: true, level: "unknown", message: "\u8FD9\u4E2A\u5DE5\u574A\u5305\u6CA1\u6709\u8BB0\u5F55\u6B4C\u66F2\u65F6\u957F\uFF0C\u65E0\u6CD5\u68C0\u67E5\u97F3\u9891\u662F\u5426\u5339\u914D\u3002" };
+  const diff = Math.abs((actual?.duration ?? 0) - expected.duration);
+  const lines = [];
+  let ok = diff <= 2;
+  if (!ok) lines.push(`\u65F6\u957F\u4E0D\u4E00\u81F4\uFF1A\u5DE5\u574A\u5305\u6309 ${expected.duration.toFixed(1)} \u79D2\u5236\u4F5C\uFF0C\u4F60\u7684\u97F3\u9891 ${Number(actual?.duration ?? 0).toFixed(1)} \u79D2\uFF08\u53EF\u80FD\u662F\u4E0D\u540C\u7248\u672C / \u526A\u8F91\uFF09\uFF0C\u753B\u9762\u53EF\u80FD\u5BF9\u4E0D\u4E0A\u3002`);
+  if (expected.fingerprint && actual?.fingerprint) {
+    const r = compareFingerprints(decodeFingerprint(expected.fingerprint), actual.fingerprint);
+    if (r.score < 0.8) {
+      ok = false;
+      lines.push(`\u97F3\u9891\u6307\u7EB9\u76F8\u4F3C\u5EA6 ${Math.round(r.score * 100)}%\uFF08\u4F4E\u4E8E 80%\uFF09\uFF1A\u53EF\u80FD\u4E0D\u662F\u540C\u4E00\u4E2A\u5F55\u97F3\u7248\u672C\u3002`);
+    } else if (Math.abs(r.shift) >= 0.5) lines.push(`\u97F3\u9891\u6307\u7EB9\u5339\u914D\uFF08${Math.round(r.score * 100)}%\uFF09\uFF0C\u4F46\u6574\u4F53\u504F\u79FB\u7EA6 ${r.shift > 0 ? "+" : ""}${r.shift} \u79D2\uFF0C\u53EF\u4EE5\u7528\u97F3\u9891\u504F\u79FB\u952E\u8C03\u6574\u3002`);
+    else lines.push(`\u97F3\u9891\u6307\u7EB9\u5339\u914D\uFF08${Math.round(r.score * 100)}%\uFF09\u3002`);
+  }
+  return { ok, level: ok ? "ok" : "warn", message: lines.join("\n") || `\u65F6\u957F\u5339\u914D\uFF08\u76F8\u5DEE ${diff.toFixed(1)} \u79D2\uFF09\u3002` };
+}
+async function retimeCues(cues, timing, hashOf) {
+  const lines = Array.isArray(timing?.lines) ? timing.lines : [];
+  if (!lines.length || !cues.length) return { cues, matched: 0, total: lines.length };
+  const hashes = await Promise.all(cues.map((c) => hashOf(normalizeLyricLine(c.en || c.zh || ""))));
+  let from = 0, matched = 0;
+  const out = cues.map((c) => ({ ...c }));
+  for (let i = 0; i < out.length; i++) {
+    let found = -1;
+    for (let j = from; j < Math.min(lines.length, from + 40); j++) if (lines[j].h === hashes[i]) {
+      found = j;
+      break;
+    }
+    if (found < 0) continue;
+    const line = lines[found];
+    out[i].time = line.t;
+    if (Number.isFinite(line.e)) out[i].end = line.e;
+    if (Array.isArray(line.w) && line.w.length) {
+      const words = String(out[i].en || out[i].zh || "").split(/\s+/).filter(Boolean);
+      if (words.length === line.w.length) out[i].words = words.map((text4, k) => ({ text: text4, time: line.w[k] }));
+    }
+    from = found + 1;
+    matched++;
+  }
+  for (let i = 0; i < out.length; i++) if (!Number.isFinite(out[i].end) || out[i].end <= out[i].time) out[i].end = out[i + 1]?.time ?? out[i].time + 4;
+  return { cues: out, matched, total: lines.length };
+}
+var onlyKeys2 = (value, keys, subject) => {
+  if (!isObject3(value)) throw new TypeError(`${subject} must be an object`);
+  const extra = Object.keys(value).filter((k) => !keys.includes(k));
+  if (extra.length) throw new TypeError(`${subject} has unexpected fields: ${extra.join(", ")}`);
+  return value;
+};
+var packId = (v) => {
+  if (typeof v !== "string" || !ID_PATTERN.test(v)) throw new TypeError("\u5DE5\u574A\u5305 id \u65E0\u6548");
+  return v;
+};
+function parseWorkshopIndexRequest(value = {}) {
+  onlyKeys2(value ?? {}, ["refresh"], "workshop index request");
+  return { refresh: value?.refresh === true };
+}
+function parseWorkshopId(value) {
+  onlyKeys2(value, ["id"], "workshop request");
+  return { id: packId(value.id) };
+}
+function parseWorkshopInstalled(value = {}) {
+  onlyKeys2(value ?? {}, [], "workshop installed request");
+  return {};
+}
+function parseWorkshopPublish(value) {
+  onlyKeys2(value, ["manifestPath", "id", "version", "license", "author", "description", "tags", "homepage", "duration", "fingerprint", "coverPng"], "workshop publish request");
+  const str = (v, n, name, required = false) => {
+    if (v === void 0 || v === "") {
+      if (required) throw new TypeError(`${name} \u5FC5\u586B`);
+      return "";
+    }
+    if (typeof v !== "string" || v.length > n || /[\0\r]/.test(v)) throw new TypeError(`${name} \u65E0\u6548`);
+    return v.trim();
+  };
+  if (typeof value.manifestPath !== "string" || !value.manifestPath.trim() || value.manifestPath.length > 1e3) throw new TypeError("manifestPath \u65E0\u6548");
+  const version = str(value.version, 20, "version", true);
+  if (!VERSION_PATTERN.test(version)) throw new TypeError("version \u5E94\u4E3A x.y.z");
+  const tags = value.tags === void 0 ? [] : value.tags;
+  if (!Array.isArray(tags) || tags.length > 8 || !tags.every((t) => typeof t === "string" && t.length <= 24)) throw new TypeError("tags \u65E0\u6548\uFF08\u6700\u591A 8 \u4E2A\uFF0C\u6BCF\u4E2A\u4E0D\u8D85\u8FC7 24 \u5B57\u7B26\uFF09");
+  const homepage = str(value.homepage, 300, "homepage");
+  if (homepage && !/^https:\/\/[^\s]+$/.test(homepage)) throw new TypeError("homepage \u5FC5\u987B\u662F https:// \u94FE\u63A5");
+  if (value.duration !== void 0 && !(Number.isFinite(value.duration) && value.duration > 0 && value.duration <= 36e3)) throw new TypeError("duration \u65E0\u6548");
+  if (value.fingerprint !== void 0 && !(typeof value.fingerprint === "string" && /^[A-Za-z0-9+/=]{1,4096}$/.test(value.fingerprint))) throw new TypeError("fingerprint \u65E0\u6548");
+  if (value.coverPng !== void 0 && !(typeof value.coverPng === "string" && value.coverPng.length <= 14e5 && /^[A-Za-z0-9+/=]+$/.test(value.coverPng))) throw new TypeError("coverPng \u65E0\u6548\uFF08base64 PNG\uFF0C\u6700\u5927\u7EA6 1 MB\uFF09");
+  return {
+    manifestPath: value.manifestPath.trim(),
+    id: packId(value.id),
+    version,
+    license: str(value.license, 120, "license", true),
+    author: str(value.author, 120, "author", true),
+    description: str(value.description, 500, "description"),
+    tags: tags.map((t) => t.trim()).filter(Boolean),
+    homepage,
+    duration: value.duration,
+    fingerprint: value.fingerprint,
+    coverPng: value.coverPng
+  };
 }
 
 // .dsh-plugin/shared/mv-template-assets.gen.mjs
@@ -9486,30 +5719,6 @@ var TEMPLATE_MANIFEST = Object.freeze({
   lyrics: { file: "lyrics.lrc", offset: 0 },
   canvas: { renderer: "generic" }
 });
-var WORLD_EXECUTE_ME_EXAMPLE = Object.freeze({
-  $schema: `../${MV_PACK_SCHEMA_FILE}`,
-  format: MV_PACK_FORMAT,
-  version: MV_PACK_VERSION,
-  title: "world.execute(me);",
-  artist: "Mili",
-  credits: ["Song and lyrics \xA9 Mili", "Scenes: yym8224961/world.execute-me-ascii (\u91CE\u751F\u5927K), ported with permission"],
-  duration: 211.906667,
-  audio: { file: "input/song.mp3" },
-  lyrics: { file: "input/lyrics.lrc" },
-  canvas: { renderer: "world-execute-me" }
-});
-var DSH_PV_EXAMPLE = Object.freeze({
-  $schema: `../${MV_PACK_SCHEMA_FILE}`,
-  format: MV_PACK_FORMAT,
-  version: MV_PACK_VERSION,
-  title: "world.execute(me); \xB7 \u5927\u80A5\u9C7C\u773C\u4E2D\u7684 world.execute(me)",
-  artist: "Mili",
-  credits: ["Song and lyrics \xA9 Mili", "PV: MisakaZentai/world-execute-me-dsh-pv (code MIT; whale-girl artwork CC BY-NC-SA 4.0), real-time canvas port"],
-  duration: 211.913,
-  audio: { file: "input/song.mp3" },
-  lyrics: { file: "input/lyrics.lrc" },
-  canvas: { renderer: "dsh-pv" }
-});
 var fileRef = (description, offset) => ({
   oneOf: [
     { type: "string", description },
@@ -9547,7 +5756,8 @@ var MV_PACK_JSON_SCHEMA = Object.freeze({
       additionalProperties: false,
       patternProperties: { "^x-": {} },
       properties: {
-        renderer: { enum: MV_CANVAS_RENDERERS, default: "generic", description: "generic | world-execute-me | dsh-pv | script (needs canvas.script)." },
+        renderer: { enum: MV_RENDERERS_BUILTIN, default: "generic", description: "generic | script (needs canvas.script) | dsh-pv (needs canvas.assets; used by the dsh PV workshop pack)." },
+        assets: { type: "object", description: "Data files a renderer reads (name \u2192 relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv.", additionalProperties: { oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }] } },
         script: { type: "string", pattern: "\\.m?js$", description: 'Scene script (.js) for renderer "script": defines render(t, cols, rows, ctx). Runs sandboxed in the panel.' },
         fontSize: { type: "number", minimum: 8, maximum: 32 },
         bpm: { type: "number", minimum: 20, maximum: 400, description: "Song tempo for scene scripts: ctx.beat = { bpm, index, bar, phase, pulse }." },
@@ -9584,7 +5794,7 @@ VS Code completion and checks.
 | \`audio\` | no | \`{ "file": "song.mp3", "offset": 0 }\`. Without audio the MV plays silently. \`offset\` (\xB130 s) shifts the picture against the audio. |
 | \`lyrics\` | no | \`{ "file": "lyrics.lrc", "offset": 0 }\`. Bilingual LRC: two lines with the same time stamp, or \`English / \u4E2D\u6587\` on one line. |
 | \`spectrum\` | no | \`{ "file": "spectrum.json" }\` with \`{ fps, frames }\` (48 bands per frame). Without it the panel analyses the audio live. |
-| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song), \`world-execute-me\` (the built-in world.execute(me) scenes, timed for that song only), \`dsh-pv\` (the built-in dsh-pv PV, also timed for world.execute(me) only) or \`script\` (your own scene script, see below). |
+| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song), \`script\` (your own scene script, see below) or \`dsh-pv\` (the dsh PV renderer; its data comes from \`canvas.assets\`, see the dsh PV pack in \u521B\u610F\u5DE5\u574A). |
 | \`canvas.script\` | no | \`scenes.js\`: the scene script for \`script\` (setting it implies \`renderer: "script"\`). |
 | \`canvas.fontSize\` | no | 8\u201332 px. |
 | \`canvas.bpm\`, \`canvas.beatOffset\` | no | Tempo (20\u2013400) and first-beat time for scene scripts (\`ctx.beat\`). |
@@ -9628,8 +5838,8 @@ should take under ${SCENE_LIMITS.frameBudgetMs} ms; a script that throws, hangs 
 ${SCENE_LIMITS.hardTimeoutMs} ms or is too slow is stopped and the panel falls back to the
 \`generic\` renderer. \`examples/scenes.example.js\` is a working example.
 
-See \`examples/\` for the two built-in world.execute(me) presets written as packs
-(put them in a folder with your own \`input/song.mp3\` and \`input/lyrics.lrc\`).
+The former built-in world.execute(me) presets are now workshop packs (MV \u653E\u6620\u5BA4 \u2192 \u521B\u610F\u5DE5\u574A);
+install one and open its folder to see a complete script pack and a \`canvas.assets\` pack.
 `;
 var README_ZH = `# dsh-mv MV \u5305\u6A21\u677F
 
@@ -9656,7 +5866,7 @@ VS Code \u7B49\u7F16\u8F91\u5668\u63D0\u4F9B\u8865\u5168\u548C\u6821\u9A8C\u3002
 | \`audio\` | \u5426 | \`{ "file": "song.mp3", "offset": 0 }\`\uFF1B\u6CA1\u6709\u97F3\u9891\u65F6\u9759\u97F3\u64AD\u653E\u753B\u9762\u3002\`offset\`\uFF08\xB130 \u79D2\uFF09\u8C03\u6574\u753B\u9762\u4E0E\u97F3\u9891\u7684\u540C\u6B65\u3002 |
 | \`lyrics\` | \u5426 | \`{ "file": "lyrics.lrc", "offset": 0 }\`\uFF1B\u53CC\u8BED LRC\uFF1A\u540C\u4E00\u65F6\u95F4\u6233\u5199\u4E24\u884C\uFF0C\u6216\u4E00\u884C\u5199 \`English / \u4E2D\u6587\`\u3002 |
 | \`spectrum\` | \u5426 | \`{ "file": "spectrum.json" }\`\uFF0C\u683C\u5F0F \`{ fps, frames }\`\uFF08\u6BCF\u5E27 48 \u4E2A\u9891\u6BB5\uFF09\uFF1B\u4E0D\u586B\u5219\u5B9E\u65F6\u5206\u6790\u97F3\u9891\u3002 |
-| \`canvas.renderer\` | \u5426 | \`generic\`\uFF08\u901A\u7528\uFF1A\u9891\u8C31 + \u6807\u9898 + \u6B4C\u8BCD\uFF0C\u4EFB\u4F55\u6B4C\u90FD\u80FD\u653E\uFF09\u3001\`world-execute-me\`\uFF08\u5185\u7F6E\u7684 world.execute(me) \u573A\u666F\uFF0C\u53EA\u9002\u5408\u8FD9\u9996\u6B4C\u7684\u65F6\u95F4\u8F74\uFF09\u3001\`dsh-pv\`\uFF08\u5185\u7F6E\u7684 dsh-pv PV\uFF0C\u540C\u6837\u53EA\u9002\u5408\u8FD9\u9996\u6B4C\uFF09\u6216 \`script\`\uFF08\u4F60\u81EA\u5DF1\u7684\u573A\u666F\u811A\u672C\uFF0C\u89C1\u4E0B\uFF09\u3002 |
+| \`canvas.renderer\` | \u5426 | \`generic\`\uFF08\u901A\u7528\uFF1A\u9891\u8C31 + \u6807\u9898 + \u6B4C\u8BCD\uFF0C\u4EFB\u4F55\u6B4C\u90FD\u80FD\u653E\uFF09\u3001\`script\`\uFF08\u4F60\u81EA\u5DF1\u7684\u573A\u666F\u811A\u672C\uFF0C\u89C1\u4E0B\uFF09\u6216 \`dsh-pv\`\uFF08dsh PV \u6E32\u67D3\u5668\uFF0C\u6570\u636E\u6765\u81EA \`canvas.assets\`\uFF0C\u53C2\u8003\u521B\u610F\u5DE5\u574A\u91CC\u7684 dsh PV \u5305\uFF09\u3002 |
 | \`canvas.script\` | \u5426 | \`scenes.js\`\uFF1A\`script\` \u6E32\u67D3\u5668\u7528\u7684\u573A\u666F\u811A\u672C\uFF08\u586B\u4E86\u5B83\u5C31\u9ED8\u8BA4 \`renderer: "script"\`\uFF09\u3002 |
 | \`canvas.fontSize\` | \u5426 | 8\u201332 \u50CF\u7D20\u3002 |
 | \`canvas.bpm\`\u3001\`canvas.beatOffset\` | \u5426 | \u6B4C\u66F2\u901F\u5EA6\uFF0820\u2013400\uFF09\u548C\u7B2C\u4E00\u62CD\u65F6\u95F4\uFF0C\u4F9B\u573A\u666F\u811A\u672C\u4F7F\u7528\uFF08\`ctx.beat\`\uFF09\u3002 |
@@ -9693,8 +5903,8 @@ MP4/MOV/WebM/MKV \u89C6\u9891\u91CC\u7684\u97F3\u8F68\u3001Ogg Vorbis/Opus\u3001
 \u811A\u672C\u62A5\u9519\u3001\u5361\u4F4F ${SCENE_LIMITS.hardTimeoutMs} \u6BEB\u79D2\u6216\u6301\u7EED\u592A\u6162\u65F6\u4F1A\u88AB\u505C\u6B62\uFF0C\u9762\u677F\u81EA\u52A8\u6362\u56DE \`generic\` \u901A\u7528\u753B\u9762\u3002
 \`examples/scenes.example.js\` \u662F\u4E00\u4E2A\u80FD\u76F4\u63A5\u8FD0\u884C\u7684\u793A\u4F8B\u3002
 
-\`examples/\` \u91CC\u662F\u7528 MV \u5305\u5199\u6CD5\u8868\u793A\u7684\u4E24\u4E2A\u5185\u7F6E world.execute(me) \u9884\u8BBE\uFF08\u653E\u8FDB\u5E26\u6709\u4F60\u81EA\u5DF1\u7684
-\`input/song.mp3\` \u548C \`input/lyrics.lrc\` \u7684\u6587\u4EF6\u5939\u5373\u53EF\uFF09\u3002
+\u4EE5\u524D\u5185\u7F6E\u7684\u4E24\u4E2A world.execute(me) \u9884\u8BBE\u73B0\u5728\u662F\u521B\u610F\u5DE5\u574A\u91CC\u7684\u5305\uFF08MV \u653E\u6620\u5BA4 \u2192 \u521B\u610F\u5DE5\u574A\uFF09\uFF1B
+\u5B89\u88C5\u540E\u6253\u5F00\u5B83\u7684\u6587\u4EF6\u5939\uFF0C\u5C31\u80FD\u770B\u5230\u5B8C\u6574\u7684\u573A\u666F\u811A\u672C\u5305\u548C\u4F7F\u7528 \`canvas.assets\` \u7684\u5305\u3002
 `;
 var LRC_EXAMPLE = `[ti:Song title]
 [ar:Artist]
@@ -9712,8 +5922,6 @@ function templateFiles() {
     { path: "README.md", text: README_EN },
     { path: "README.zh.md", text: README_ZH },
     { path: "lyrics.example.lrc", text: LRC_EXAMPLE },
-    { path: "examples/world-execute-me.mv.json", text: json(WORLD_EXECUTE_ME_EXAMPLE) },
-    { path: "examples/dsh-pv.mv.json", text: json(DSH_PV_EXAMPLE) },
     { path: "examples/scenes.example.js", text: EXAMPLE_SCENE },
     ...Object.entries(TEMPLATE_ASSETS).map(([path, text4]) => ({ path, text: text4 }))
   ];
@@ -9754,34 +5962,14 @@ function saveLibraryView(view, storage = globalThis.localStorage) {
   }
   return clean3;
 }
-var BUILTIN_ID = "builtin:world-execute-me";
-var BUILTIN_PACK = Object.freeze({
-  id: BUILTIN_ID,
-  builtin: true,
-  pack: Object.freeze({
-    title: "world.execute(me);",
-    artist: "Mili",
-    credits: ["Song and lyrics \xA9 Mili", "Scenes: yym8224961/world.execute-me-ascii (\u91CE\u751F\u5927K), ported with permission"],
-    canvas: Object.freeze({ renderer: "world-execute-me" })
-  })
-});
-var DSH_PV_ID = "builtin:dsh-pv";
-var DSH_PV_PACK = Object.freeze({
-  id: DSH_PV_ID,
-  builtin: true,
-  pack: Object.freeze({
-    title: "world.execute(me); dsh PV",
-    artist: "Mili",
-    credits: [
-      "Song and lyrics \xA9 Mili",
-      "PV: MisakaZentai / world-execute-me-dsh-pv (code MIT), ported to a real-time canvas renderer",
-      "Whale-girl artwork CC BY-NC-SA 4.0: \u6E9F\u6708 \xA9 \u4E0A\u5584\u65E0\u5F62 \u2192 maid design ZipZipPipe \u2192 sprite Small-tailqwq / dsh-deep-whale \u2192 expressions dsh-whale-galgame (adapted)"
-    ],
-    duration: 211.913,
-    canvas: Object.freeze({ renderer: "dsh-pv" })
-  })
-});
-var BUILTINS = Object.freeze({ [BUILTIN_ID]: BUILTIN_PACK, [DSH_PV_ID]: DSH_PV_PACK });
+var EMPTY_ID = "empty";
+var EMPTY_PACK = Object.freeze({ id: EMPTY_ID, empty: true, pack: Object.freeze({ title: "\u8FD8\u6CA1\u6709\u9009\u62E9 MV", artist: "", canvas: Object.freeze({ renderer: "generic" }) }) });
+function movedPreset(id) {
+  const preset = PRESET_PACKS.find((p) => p.legacyId === id);
+  if (!preset) return null;
+  return Object.freeze({ id, empty: true, moved: preset, pack: Object.freeze({ title: preset.title, artist: preset.artist, canvas: Object.freeze({ renderer: "generic" }) }) });
+}
+var placeholderPack = (id) => movedPreset(id) ?? EMPTY_PACK;
 function loadRecent(storage = globalThis.localStorage) {
   try {
     const list = JSON.parse(storage?.getItem(RECENT_KEY) ?? "[]");
@@ -9819,9 +6007,9 @@ function forgetPack(manifestPath, storage = globalThis.localStorage) {
 }
 function loadActive(storage = globalThis.localStorage) {
   try {
-    return storage?.getItem(ACTIVE_KEY) || BUILTIN_ID;
+    return storage?.getItem(ACTIVE_KEY) || EMPTY_ID;
   } catch {
-    return BUILTIN_ID;
+    return EMPTY_ID;
   }
 }
 function saveActive(id, storage = globalThis.localStorage) {
@@ -9950,245 +6138,22 @@ function zipFiles(files, { date = new Date(2026, 9, 3) } = {}) {
 var templateZip = () => zipFiles(templateFiles().map((file) => ({ path: `${TEMPLATE_FOLDER}/${file.path}`, text: file.text })));
 var TEMPLATE_ZIP_NAME = `${TEMPLATE_FOLDER}.zip`;
 
-// .dsh-plugin/shared/mv-workshop.mjs
-var WORKSHOP_REPO = "Alice-Marx/dsh-mv-workshop";
-var WORKSHOP_BRANCH = "main";
-var WORKSHOP_RAW = "https://raw.githubusercontent.com";
-var WORKSHOP_INDEX_URL = `${WORKSHOP_RAW}/${WORKSHOP_REPO}/${WORKSHOP_BRANCH}/index.json`;
-var WORKSHOP_DEFAULT_LICENSE = "CC-BY-NC-SA-4.0";
-var WORKSHOP_LIMITS = Object.freeze({
-  maxFiles: 40,
-  fileBytes: 512 * 1024,
-  coverBytes: 1024 * 1024,
-  scriptBytes: 256 * 1024,
-  packBytes: 4 * 1024 * 1024,
-  indexBytes: 8 * 1024 * 1024,
-  maxPacks: 5e3,
-  maxLongLine: 4e3
-});
-var WORKSHOP_ALLOWED_EXT = Object.freeze([".json", ".js", ".mjs", ".md", ".txt", ".png", ".webp", ".jpg", ".jpeg"]);
-var WORKSHOP_BANNED_EXT = Object.freeze([
-  ".mp3",
-  ".mp2",
-  ".m4a",
-  ".mp4",
-  ".aac",
-  ".webm",
-  ".mka",
-  ".mkv",
-  ".ogg",
-  ".oga",
-  ".opus",
-  ".flac",
-  ".wav",
-  ".wma",
-  ".aiff",
-  ".aif",
-  ".ape",
-  ".amr",
-  ".ac3",
-  ".mov",
-  ".avi",
-  ".mid",
-  ".midi",
-  ".lrc",
-  ".srt",
-  ".vtt",
-  ".ass",
-  ".ssa",
-  ".ttml",
-  ".krc",
-  ".qrc",
-  ".yrc",
-  ".lrcx"
-]);
-var COVER_NAMES = Object.freeze(["cover.webp", "cover.png", "cover.jpg", "cover.jpeg"]);
-var ID_PATTERN = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/;
-var VERSION_PATTERN = /^\d{1,4}\.\d{1,4}\.\d{1,4}$/;
-var isObject3 = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
-function workshopSlug(title, artist = "", random = () => Math.random().toString(36).slice(2, 8)) {
-  const base = `${artist ? `${artist}-` : ""}${title}`.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48).replace(/-+$/, "");
-  return ID_PATTERN.test(base) ? base : `mv-${base ? `${base.slice(0, 20).replace(/-+$/, "")}-` : ""}${random()}`.replace(/-+/g, "-");
-}
-function normalizeLyricLine(text4) {
-  return String(text4 ?? "").normalize("NFKC").toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, "");
-}
-function compareVersions(a, b) {
-  const pa = String(a).split(".").map(Number), pb = String(b).split(".").map(Number);
-  for (let i = 0; i < 3; i++) {
-    const d = (pa[i] || 0) - (pb[i] || 0);
-    if (d) return d > 0 ? 1 : -1;
-  }
-  return 0;
-}
-function filterWorkshop(packs, { query = "", license = "", renderer = "", installed = null, onlyInstalled = false } = {}) {
-  const q = normalizeLyricLine(query);
-  return packs.filter((p) => {
-    if (license && !p.license.toLowerCase().includes(license.toLowerCase())) return false;
-    if (renderer && p.renderer !== renderer) return false;
-    if (onlyInstalled && !installed?.[p.id]) return false;
-    if (!q) return true;
-    return [p.title, p.artist, p.author, p.description, ...p.tags ?? []].some((v) => normalizeLyricLine(v).includes(q));
-  });
-}
-function energyFingerprint(samples, sampleRate) {
-  const win = Math.max(1, Math.round(sampleRate / 2));
-  const count = Math.min(3e3, Math.floor(samples.length / win));
-  const out = new Uint8Array(count);
-  for (let i = 0; i < count; i++) {
-    let sum = 0;
-    for (let j = i * win, end = j + win; j < end; j += 4) sum += samples[j] * samples[j];
-    const rms = Math.sqrt(sum / (win / 4));
-    const db = 20 * Math.log10(rms + 1e-6);
-    out[i] = Math.max(0, Math.min(255, Math.round((db + 60) / 60 * 255)));
-  }
-  return out;
-}
-var encodeFingerprint = (bytes) => btoa(String.fromCharCode(...bytes));
-function decodeFingerprint(text4) {
-  try {
-    const s = atob(String(text4));
-    return Uint8Array.from(s, (c) => c.charCodeAt(0));
-  } catch {
-    return new Uint8Array(0);
-  }
-}
-function compareFingerprints(a, b, maxShift = 20) {
-  if (!a?.length || !b?.length) return { score: 0, shift: 0 };
-  let best = { score: -1, shift: 0 };
-  for (let shift = -maxShift; shift <= maxShift; shift++) {
-    let n = 0, sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0;
-    for (let i = Math.max(0, -shift); i < a.length && i + shift < b.length; i++) {
-      const x = a[i], y = b[i + shift];
-      n++;
-      sa += x;
-      sb += y;
-      saa += x * x;
-      sbb += y * y;
-      sab += x * y;
-    }
-    if (n < 20) continue;
-    const cov = sab - sa * sb / n, va = saa - sa * sa / n, vb = sbb - sb * sb / n;
-    const score = va > 0 && vb > 0 ? cov / Math.sqrt(va * vb) : 0;
-    if (score > best.score) best = { score, shift };
-  }
-  return { score: Math.round(Math.max(0, best.score) * 1e3) / 1e3, shift: best.shift / 2 };
-}
-function audioMatch(expected, actual) {
-  if (!expected?.duration) return { ok: true, level: "unknown", message: "\u8FD9\u4E2A\u5DE5\u574A\u5305\u6CA1\u6709\u8BB0\u5F55\u6B4C\u66F2\u65F6\u957F\uFF0C\u65E0\u6CD5\u68C0\u67E5\u97F3\u9891\u662F\u5426\u5339\u914D\u3002" };
-  const diff = Math.abs((actual?.duration ?? 0) - expected.duration);
-  const lines = [];
-  let ok = diff <= 2;
-  if (!ok) lines.push(`\u65F6\u957F\u4E0D\u4E00\u81F4\uFF1A\u5DE5\u574A\u5305\u6309 ${expected.duration.toFixed(1)} \u79D2\u5236\u4F5C\uFF0C\u4F60\u7684\u97F3\u9891 ${Number(actual?.duration ?? 0).toFixed(1)} \u79D2\uFF08\u53EF\u80FD\u662F\u4E0D\u540C\u7248\u672C / \u526A\u8F91\uFF09\uFF0C\u753B\u9762\u53EF\u80FD\u5BF9\u4E0D\u4E0A\u3002`);
-  if (expected.fingerprint && actual?.fingerprint) {
-    const r = compareFingerprints(decodeFingerprint(expected.fingerprint), actual.fingerprint);
-    if (r.score < 0.8) {
-      ok = false;
-      lines.push(`\u97F3\u9891\u6307\u7EB9\u76F8\u4F3C\u5EA6 ${Math.round(r.score * 100)}%\uFF08\u4F4E\u4E8E 80%\uFF09\uFF1A\u53EF\u80FD\u4E0D\u662F\u540C\u4E00\u4E2A\u5F55\u97F3\u7248\u672C\u3002`);
-    } else if (Math.abs(r.shift) >= 0.5) lines.push(`\u97F3\u9891\u6307\u7EB9\u5339\u914D\uFF08${Math.round(r.score * 100)}%\uFF09\uFF0C\u4F46\u6574\u4F53\u504F\u79FB\u7EA6 ${r.shift > 0 ? "+" : ""}${r.shift} \u79D2\uFF0C\u53EF\u4EE5\u7528\u97F3\u9891\u504F\u79FB\u952E\u8C03\u6574\u3002`);
-    else lines.push(`\u97F3\u9891\u6307\u7EB9\u5339\u914D\uFF08${Math.round(r.score * 100)}%\uFF09\u3002`);
-  }
-  return { ok, level: ok ? "ok" : "warn", message: lines.join("\n") || `\u65F6\u957F\u5339\u914D\uFF08\u76F8\u5DEE ${diff.toFixed(1)} \u79D2\uFF09\u3002` };
-}
-async function retimeCues(cues, timing, hashOf) {
-  const lines = Array.isArray(timing?.lines) ? timing.lines : [];
-  if (!lines.length || !cues.length) return { cues, matched: 0, total: lines.length };
-  const hashes = await Promise.all(cues.map((c) => hashOf(normalizeLyricLine(c.en || c.zh || ""))));
-  let from = 0, matched = 0;
-  const out = cues.map((c) => ({ ...c }));
-  for (let i = 0; i < out.length; i++) {
-    let found = -1;
-    for (let j = from; j < Math.min(lines.length, from + 40); j++) if (lines[j].h === hashes[i]) {
-      found = j;
-      break;
-    }
-    if (found < 0) continue;
-    const line = lines[found];
-    out[i].time = line.t;
-    if (Number.isFinite(line.e)) out[i].end = line.e;
-    if (Array.isArray(line.w) && line.w.length) {
-      const words = String(out[i].en || out[i].zh || "").split(/\s+/).filter(Boolean);
-      if (words.length === line.w.length) out[i].words = words.map((text4, k) => ({ text: text4, time: line.w[k] }));
-    }
-    from = found + 1;
-    matched++;
-  }
-  for (let i = 0; i < out.length; i++) if (!Number.isFinite(out[i].end) || out[i].end <= out[i].time) out[i].end = out[i + 1]?.time ?? out[i].time + 4;
-  return { cues: out, matched, total: lines.length };
-}
-var onlyKeys2 = (value, keys, subject) => {
-  if (!isObject3(value)) throw new TypeError(`${subject} must be an object`);
-  const extra = Object.keys(value).filter((k) => !keys.includes(k));
-  if (extra.length) throw new TypeError(`${subject} has unexpected fields: ${extra.join(", ")}`);
-  return value;
-};
-var packId = (v) => {
-  if (typeof v !== "string" || !ID_PATTERN.test(v)) throw new TypeError("\u5DE5\u574A\u5305 id \u65E0\u6548");
-  return v;
-};
-function parseWorkshopIndexRequest(value = {}) {
-  onlyKeys2(value ?? {}, ["refresh"], "workshop index request");
-  return { refresh: value?.refresh === true };
-}
-function parseWorkshopId(value) {
-  onlyKeys2(value, ["id"], "workshop request");
-  return { id: packId(value.id) };
-}
-function parseWorkshopInstalled(value = {}) {
-  onlyKeys2(value ?? {}, [], "workshop installed request");
-  return {};
-}
-function parseWorkshopPublish(value) {
-  onlyKeys2(value, ["manifestPath", "id", "version", "license", "author", "description", "tags", "homepage", "duration", "fingerprint", "coverPng"], "workshop publish request");
-  const str = (v, n, name, required = false) => {
-    if (v === void 0 || v === "") {
-      if (required) throw new TypeError(`${name} \u5FC5\u586B`);
-      return "";
-    }
-    if (typeof v !== "string" || v.length > n || /[\0\r]/.test(v)) throw new TypeError(`${name} \u65E0\u6548`);
-    return v.trim();
-  };
-  if (typeof value.manifestPath !== "string" || !value.manifestPath.trim() || value.manifestPath.length > 1e3) throw new TypeError("manifestPath \u65E0\u6548");
-  const version = str(value.version, 20, "version", true);
-  if (!VERSION_PATTERN.test(version)) throw new TypeError("version \u5E94\u4E3A x.y.z");
-  const tags = value.tags === void 0 ? [] : value.tags;
-  if (!Array.isArray(tags) || tags.length > 8 || !tags.every((t) => typeof t === "string" && t.length <= 24)) throw new TypeError("tags \u65E0\u6548\uFF08\u6700\u591A 8 \u4E2A\uFF0C\u6BCF\u4E2A\u4E0D\u8D85\u8FC7 24 \u5B57\u7B26\uFF09");
-  const homepage = str(value.homepage, 300, "homepage");
-  if (homepage && !/^https:\/\/[^\s]+$/.test(homepage)) throw new TypeError("homepage \u5FC5\u987B\u662F https:// \u94FE\u63A5");
-  if (value.duration !== void 0 && !(Number.isFinite(value.duration) && value.duration > 0 && value.duration <= 36e3)) throw new TypeError("duration \u65E0\u6548");
-  if (value.fingerprint !== void 0 && !(typeof value.fingerprint === "string" && /^[A-Za-z0-9+/=]{1,4096}$/.test(value.fingerprint))) throw new TypeError("fingerprint \u65E0\u6548");
-  if (value.coverPng !== void 0 && !(typeof value.coverPng === "string" && value.coverPng.length <= 14e5 && /^[A-Za-z0-9+/=]+$/.test(value.coverPng))) throw new TypeError("coverPng \u65E0\u6548\uFF08base64 PNG\uFF0C\u6700\u5927\u7EA6 1 MB\uFF09");
-  return {
-    manifestPath: value.manifestPath.trim(),
-    id: packId(value.id),
-    version,
-    license: str(value.license, 120, "license", true),
-    author: str(value.author, 120, "author", true),
-    description: str(value.description, 500, "description"),
-    tags: tags.map((t) => t.trim()).filter(Boolean),
-    homepage,
-    duration: value.duration,
-    fingerprint: value.fingerprint,
-    coverPng: value.coverPng
-  };
-}
-
 // .dsh-plugin/client/mv-workshop-state.mjs
 var loadWorkshop = async (api, refresh = false) => unwrapRemote(await api.workshopIndex({ refresh }), "\u65E0\u6CD5\u8BFB\u53D6\u521B\u610F\u5DE5\u574A\u3002");
 var installWorkshopPack = async (api, id) => unwrapRemote(await api.workshopInstall({ id }), "\u5B89\u88C5\u5931\u8D25\u3002");
 var uninstallWorkshopPack = async (api, id) => unwrapRemote(await api.workshopUninstall({ id }), "\u5378\u8F7D\u5931\u8D25\u3002");
 var workshopCover = async (api, id) => unwrapRemote(await api.workshopCover({ id }), "");
 var publishWorkshopPack = async (api, request2) => unwrapRemote(await api.workshopPublish(request2), "\u65E0\u6CD5\u51C6\u5907\u53D1\u5E03\u3002");
-function installedState(index2) {
-  const map = Object.fromEntries((index2?.installed ?? []).map((item) => [item.id, item]));
-  const updates = new Set((index2?.packs ?? []).filter((p) => map[p.id] && compareVersions(p.version, map[p.id].version) > 0).map((p) => p.id));
+function installedState(index) {
+  const map = Object.fromEntries((index?.installed ?? []).map((item) => [item.id, item]));
+  const updates = new Set((index?.packs ?? []).filter((p) => map[p.id] && compareVersions(p.version, map[p.id].version) > 0).map((p) => p.id));
   return { map, updates };
 }
 function mediaSlot(pack, kind) {
-  if (pack?.builtin) return kind;
   const id = pack?.pack?.workshop?.id;
   return id && !pack?.pack?.audio ? `workshop:${id}:${kind}` : null;
 }
+var legacyPresetSlot = (pack) => PRESET_PACKS.some((p) => p.id === pack?.pack?.workshop?.id);
 async function fingerprintAudio(bytes, decode2 = decodeToChannels) {
   const { channels, sampleRate, duration } = await decode2(bytes);
   const [a, b] = channels;
@@ -10228,10 +6193,14 @@ var storeFont = (v) => {
   }
 };
 var HINT = "SPACE \u64AD\u653E/\u6682\u505C  \u2190/\u2192 5s  [ ] \u5B57\u5E55  Alt+[ ] \u97F3\u9891\u540C\u6B65  1-5 \u7AE0\u8282  F \u5168\u5C4F  H \u5E2E\u52A9";
-var isGeneric = (pack) => !["world-execute-me", "dsh-pv"].includes(pack?.pack?.canvas?.renderer);
+var isGeneric = (pack) => pack?.pack?.canvas?.renderer !== "dsh-pv";
 var isDshPv = (pack) => pack?.pack?.canvas?.renderer === "dsh-pv";
 var isScript = (pack) => pack?.pack?.canvas?.renderer === "script";
-var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null, onState = () => {
+var chaptersOf = (pack, duration) => {
+  const sections = pack?.pack?.sections ?? [];
+  return sections.length ? sections.map((s) => [s.start, s.label || s.kind, ""]) : genericChapters(duration);
+};
+var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFontSize = 14, pack = EMPTY_PACK, api = null, onState = () => {
 }, dshpvReader = null }, ref) {
   const wrap3 = import_react3.default.useRef(null);
   const stage = import_react3.default.useRef(null);
@@ -10252,7 +6221,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   const dbRef = import_react3.default.useRef(null);
   const packRef = import_react3.default.useRef(pack);
   packRef.current = pack;
-  const [duration, setDuration] = import_react3.default.useState(DURATION);
+  const [duration, setDuration] = import_react3.default.useState(DEFAULT_DURATION);
   const [packStatus, setPackStatus] = import_react3.default.useState("");
   const [volume, setVolume] = import_react3.default.useState({ level: 1, muted: false });
   const [sceneNote, setSceneNote] = import_react3.default.useState("");
@@ -10266,7 +6235,6 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   import_react3.default.useEffect(() => {
     const live = new LiveSpectrum(audio.current);
     const state = {
-      wem: new Film({ energy: (t) => state.energy(t) }),
       generic: new GenericFilm({ energy: (t) => state.energy(t) }),
       script: new ScriptFilm({
         energy: (t) => state.energy(t),
@@ -10288,7 +6256,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       sha: ""
     };
     state.energy = () => live.energy();
-    state.film = state.wem;
+    state.film = state.generic;
     engine.current = state;
     let raf = 0, lastStatus = 0;
     const frame = (now) => {
@@ -10385,8 +6353,8 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     try {
       const state = engine.current;
       const dshpv = state.film === state.dshpv;
-      const generic2 = state.film !== state.wem && !dshpv;
-      const cues = parseLyrics(name, body, { duration: generic2 ? 1e9 : dshpv ? DSHPV_DURATION : DURATION });
+      const generic2 = !dshpv;
+      const cues = parseLyrics(name, body, { duration: dshpv ? DSHPV_DURATION : 1e9 });
       if (!cues.length) throw new Error("\u6587\u4EF6\u91CC\u6CA1\u6709\u5E26\u65F6\u95F4\u7684\u6B4C\u8BCD\u884C\u3002");
       if (shift) for (const cue of cues) {
         cue.time += shift;
@@ -10396,7 +6364,6 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
         const data = await state.dshpvLoad;
         const band = data ? await matchBand(data.band, cues) : { lines: [], matched: 0, total: 0 };
         state.dshpv.setLines(band.lines);
-        state.wem.setLyrics(cues);
         cuesRef.current = cues;
         setLyricsInfo({ name, count: cues.length, note: band.matched ? `\u9010\u8BCD\u65F6\u95F4\u5339\u914D ${band.matched}/${band.total} \u53E5` : "\u672A\u5339\u914D\u5230\u9010\u8BCD\u65F6\u95F4\uFF0C\u6309\u884C\u663E\u793A" });
       } else {
@@ -10406,11 +6373,11 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
           if (timed.matched) use = timed.cues;
           note = timed.matched ? `\u6309\u5DE5\u574A\u65F6\u95F4\u8F74\u5BF9\u9F50 ${timed.matched}/${timed.total} \u53E5` : "\u6CA1\u6709\u4E0E\u5DE5\u574A\u65F6\u95F4\u8F74\u5339\u914D\u7684\u884C\uFF0C\u4F7F\u7528\u6B4C\u8BCD\u6587\u4EF6\u81EA\u5DF1\u7684\u65F6\u95F4";
         }
-        for (const film of generic2 ? [state.generic, state.script] : [state.wem]) film.setLyrics(use);
+        for (const film of [state.generic, state.script]) film.setLyrics(use);
         cuesRef.current = use;
         setLyricsInfo({ name, count: use.length, ...note ? { note } : {} });
       }
-      if (!packRef.current?.builtin) setLyricsText(body);
+      setLyricsText(body);
       const slot = mediaSlot(packRef.current, "lyrics");
       if (remember && slot) await putMedia(dbRef.current, slot, { name, text: body });
     } catch (failure) {
@@ -10423,7 +6390,8 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       const fileEnergy = spectrumFromJson(body);
       engine.current.energy = (t) => fileEnergy(t);
       setSpectrumInfo({ name });
-      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, "spectrum", { name, text: body });
+      const slot = mediaSlot(packRef.current, "spectrum");
+      if (remember && slot) await putMedia(dbRef.current, slot, { name, text: body });
     } catch (failure) {
       setError(`\u65E0\u6CD5\u8BFB\u53D6\u9891\u8C31\uFF1A${failure?.message ?? failure}`);
     }
@@ -10438,7 +6406,6 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       state.clock.pause();
       state.started = false;
       state.help = false;
-      state.wem.setLyrics([]);
       state.generic.setLyrics([]);
       state.script.setLyrics([]);
       state.dshpv.setLines([]);
@@ -10456,39 +6423,42 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       timingRef.current = null;
       fpRef.current = null;
       const generic2 = isGeneric(pack);
-      state.film = generic2 ? state.generic : isDshPv(pack) ? state.dshpv : state.wem;
-      if (isDshPv(pack) && !state.dshpvLoad) {
-        const read = dshpvReader ?? (api?.dshpvAsset ? hostReader(api) : null);
+      state.film = generic2 ? state.generic : state.dshpv;
+      if (isDshPv(pack) && state.dshpvFor !== `${pack.id}@${pack.loadedAt ?? ""}`) {
+        const read = dshpvReader ?? (hasDshPvAssets(pack) && api?.packRead ? packAssetReader(api, pack.manifestPath, pack.pack) : null);
+        state.dshpvFor = `${pack.id}@${pack.loadedAt ?? ""}`;
+        state.dshpv.status = "loading";
         state.dshpvLoad = read ? loadDshPv(read).then((data) => {
           state.dshpv.setData(data);
-          if (data.missingArt.length) setSceneNote(`dsh-pv\uFF1A\u7F3A\u5C11 ${data.missingArt.length} \u5F20\u7ACB\u7ED8\uFF08assets/dsh-pv-art\uFF09\uFF0C\u6539\u7528\u5360\u4F4D\u526A\u5F71\u3002`);
+          if (data.missingArt.length) setSceneNote(`dsh-pv\uFF1A\u8FD9\u4E2A\u5305\u7F3A\u5C11 ${data.missingArt.length} \u5F20\u7ACB\u7ED8\uFF0C\u6539\u7528\u5360\u4F4D\u526A\u5F71\u3002`);
           return data;
         }).catch((failure) => {
           state.dshpv.status = "error";
-          state.dshpvLoad = null;
+          state.dshpvFor = "";
           setError(`\u65E0\u6CD5\u52A0\u8F7D dsh-pv \u8D44\u6E90\uFF1A${failure?.message ?? failure}`);
           return null;
         }) : Promise.resolve(null);
+        if (!read) {
+          state.dshpv.status = "error";
+          state.film = state.generic;
+          setSceneNote("\u8FD9\u4E2A MV \u5305\u4F7F\u7528 dsh-pv \u6E32\u67D3\u5668\uFF0C\u4F46\u6CA1\u6709\u9644\u5E26\u5B83\u7684\u6570\u636E\uFF08canvas.assets\uFF09\u30020.9.0 \u8D77\u63D2\u4EF6\u4E0D\u518D\u5185\u7F6E\u8FD9\u4E9B\u6570\u636E\uFF1A\u8BF7\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u300Cworld.execute(me); dsh PV\u300D\u5305\u3002\u73B0\u5728\u6539\u7528\u901A\u7528\u753B\u9762\u3002");
+        }
       }
       if (isDshPv(pack)) await state.dshpvLoad;
       if (cancelled) return;
-      const length = generic2 ? pack.pack.duration ?? 0 : pack.pack.duration ?? DURATION;
-      state.clock.duration = length || DURATION;
+      if (isDshPv(pack) && state.dshpv.status === "error") state.film = state.generic;
+      const dsh = state.film === state.dshpv;
+      const length = dsh ? pack.pack.duration ?? DSHPV_DURATION : pack.pack.duration ?? 0;
+      state.clock.duration = length || DEFAULT_DURATION;
       for (const film of [state.generic, state.script]) {
         film.duration = length;
         film.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? "" });
       }
       state.script.setStructure({ sections: pack.pack.sections ?? [], bpm: pack.pack.canvas?.bpm ?? 0, beatOffset: pack.pack.canvas?.beatOffset ?? 0 });
-      state.wem.duration = generic2 ? DURATION : pack.pack.duration ?? DURATION;
       setDuration(state.clock.duration);
       if (pack.pack.canvas?.fontSize) setFontSize(pack.pack.canvas.fontSize);
-      if (pack.builtin) {
-        const [a, l, s] = await Promise.all([getMedia(db, "audio"), getMedia(db, "lyrics"), getMedia(db, "spectrum")]);
-        if (cancelled) return;
-        if (a?.file) await useAudioFile(a.file, { remember: false });
-        else clearAudio();
-        if (l?.text) await useLyricsText(l.name, l.text, { remember: false });
-        if (s?.text) await useSpectrumText(s.name, s.text, { remember: false });
+      if (pack.empty) {
+        clearAudio();
         return;
       }
       if (isScript(pack)) {
@@ -10533,9 +6503,15 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       clearAudio();
       const audioSlot = mediaSlot(pack, "audio"), lyricsSlot = mediaSlot(pack, "lyrics");
       if (audioSlot) {
-        const [a, l] = await Promise.all([getMedia(db, audioSlot), getMedia(db, lyricsSlot)]);
+        const legacy = (kind) => legacyPresetSlot(pack) ? getMedia(db, kind) : Promise.resolve(null);
+        const [a, l, sp] = await Promise.all([
+          getMedia(db, audioSlot).then((v) => v ?? legacy("audio")),
+          getMedia(db, lyricsSlot).then((v) => v ?? legacy("lyrics")),
+          getMedia(db, mediaSlot(pack, "spectrum")).then((v) => v ?? legacy("spectrum"))
+        ]);
         if (cancelled) return;
         if (l?.text) await useLyricsText(l.name, l.text, { remember: false });
+        if (sp?.text) await useSpectrumText(sp.name, sp.text, { remember: false });
         if (a?.file) await useAudioFile(a.file, { remember: false });
         if (!a?.file) setMatchNote({ level: "info", message: "\u8FD9\u662F\u521B\u610F\u5DE5\u574A\u7684\u5305\uFF0C\u4E0D\u5E26\u97F3\u9891\uFF1A\u8BF7\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2\u6587\u4EF6\uFF08\u548C\u6B4C\u8BCD\uFF09\uFF0C\u63D2\u4EF6\u4F1A\u68C0\u67E5\u5B83\u662F\u5426\u4E0E\u8FD9\u4E2A\u5305\u5339\u914D\u3002" });
         return;
@@ -10579,7 +6555,8 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     const state = engine.current;
     state.energy = () => state.live.energy();
     setSpectrumInfo(null);
-    if (packRef.current?.builtin) await deleteMedia(dbRef.current, "spectrum");
+    const slot = mediaSlot(packRef.current, "spectrum");
+    if (slot) await deleteMedia(dbRef.current, slot);
   };
   const clearLyrics = async () => {
     engine.current.film.setLyrics([]);
@@ -10617,10 +6594,15 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
         state.clock.seek(0);
         void play();
         return true;
-      case "chapter":
-        state.clock.seek(state.film === state.dshpv ? DSHPV_CHAPTERS[Math.min(DSHPV_CHAPTERS.length - 1, action.index * 2)][0] : state.film !== state.wem ? genericChapters(state.clock.duration)[action.index][0] : action.at);
-        void play();
+      case "chapter": {
+        const list = state.film === state.dshpv ? DSHPV_CHAPTERS.filter((_, i) => i % 2 === 0) : chaptersOf(packRef.current, state.clock.duration);
+        const at = list[Math.min(list.length - 1, action.index)]?.[0];
+        if (at !== void 0) {
+          state.clock.seek(at);
+          void play();
+        }
         return true;
+      }
       case "cue": {
         const at = stepCue(state.film.times, t, action.direction);
         if (at !== null) {
@@ -10691,7 +6673,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   const onDecodeError = async () => {
     if (!audio.current?.src) return;
     const current = packRef.current;
-    const path = !current?.builtin ? current?.files?.audio?.path : "";
+    const path = current?.files?.audio?.path ?? "";
     const label = audioInfo?.label ?? "\u672A\u77E5\u683C\u5F0F";
     let ffmpeg = "";
     if (path && api?.ffmpegInfo) {
@@ -10739,7 +6721,8 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   }, []);
   const known = audioInfo?.known;
   const generic = isGeneric(pack);
-  const chapterList = generic ? genericChapters(duration) : isDshPv(pack) ? DSHPV_CHAPTERS : CHAPTERS;
+  const dshActive = isDshPv(pack) && Boolean(dshpvReader || hasDshPvAssets(pack));
+  const chapterList = dshActive ? DSHPV_CHAPTERS : chaptersOf(pack, duration);
   const chapter = chapterList.reduce((current, item) => item[0] <= Math.max(0, status.t) ? item : current, chapterList[0]);
   import_react3.default.useImperativeHandle(ref, () => ({
     toggle: () => act({ type: "toggle" }),
@@ -10754,7 +6737,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     fullscreen: () => toggleFullscreen(),
     /** PNG (base64, ≤ 960 px wide) of the current frame, for a workshop cover. */
     snapshotPng: () => {
-      const source = isDshPv(packRef.current) ? pixel.current : canvas.current;
+      const source = engine.current?.film === engine.current?.dshpv ? pixel.current : canvas.current;
       if (!source?.width) return "";
       const scale = Math.min(1, 960 / source.width);
       const out = document.createElement("canvas");
@@ -10788,7 +6771,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     resetOffsets(audioInfo.sha);
   };
   const syncLabel = known ? `\u5DF2\u8BC6\u522B\uFF1A${known.label}` : audioInfo ? "\u672A\u8BC6\u522B\u7684\u7248\u672C\uFF1A\u542C\u7740\u4E0D\u540C\u6B65\u5C31\u7528 Alt+[ / Alt+] \u6821\u51C6" : "";
-  return /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-canvas-tab" }, !audioInfo && !packStatus && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("h2", null, pack.builtin ? "\u7B2C\u4E00\u6B21\u4F7F\u7528\uFF1F\u5148\u9009\u4E00\u9996\u6B4C" : pack.pack.workshop ? "\u521B\u610F\u5DE5\u574A\u7684\u5305\u4E0D\u5E26\u97F3\u9891\uFF1A\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2" : "\u8FD9\u4E2A MV \u5305\u6CA1\u6709\u53EF\u7528\u7684\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("ol", null, /* @__PURE__ */ import_react3.default.createElement("li", null, "\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08MP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV \u89C6\u9891\u7684\u97F3\u8F68\u3001Opus/Ogg\u3001FLAC\u3001WAV \u90FD\u884C\uFF0C\u6309\u5185\u5BB9\u8BC6\u522B\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\uFF1B\u5728\u672C\u673A\u89E3\u7801\uFF0C\u4E0D\u4E0A\u4F20\uFF09\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u53EF\u9009\uFF1A\u9009\u62E9\u6B4C\u8BCD\uFF08LRC / SRT / lyrics.json\uFF09\uFF0C\u753B\u9762\u4F1A\u663E\u793A\u5B57\u5E55\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u70B9 ", /* @__PURE__ */ import_react3.default.createElement("b", null, "\u25B6 \u64AD\u653E"), "\u3002\u4E5F\u53EF\u4EE5\u4E0D\u9009\u97F3\u9891\uFF0C\u76F4\u63A5\u9759\u97F3\u89C2\u770B\u753B\u9762\u3002")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", onClick: pickAudio }, "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, "\u9009\u62E9\u6B4C\u8BCD\u2026")))), packStatus && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, packStatus)), matchNote && pack.pack.workshop && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: matchNote.level === "warn" ? "warn" : matchNote.level === "ok" ? "ok" : "info", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setMatchNote(null) }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, matchNote.level === "warn" ? "\u26A0 \u97F3\u9891\u53EF\u80FD\u4E0E\u8FD9\u4E2A\u5DE5\u574A\u5305\u4E0D\u5339\u914D\uFF1A\n" : "", matchNote.message)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-sources", "aria-label": "\u5A92\u4F53\u6587\u4EF6" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${audioInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u266A"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value", title: audioInfo ? `${audioInfo.name}
+  return /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-canvas-tab" }, !audioInfo && !packStatus && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("h2", null, pack.pack.workshop ? "\u521B\u610F\u5DE5\u574A\u7684\u5305\u4E0D\u5E26\u97F3\u9891\uFF1A\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2" : "\u8FD9\u4E2A MV \u5305\u6CA1\u6709\u53EF\u7528\u7684\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("ol", null, /* @__PURE__ */ import_react3.default.createElement("li", null, "\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08MP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV \u89C6\u9891\u7684\u97F3\u8F68\u3001Opus/Ogg\u3001FLAC\u3001WAV \u90FD\u884C\uFF0C\u6309\u5185\u5BB9\u8BC6\u522B\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\uFF1B\u5728\u672C\u673A\u89E3\u7801\uFF0C\u4E0D\u4E0A\u4F20\uFF09\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u53EF\u9009\uFF1A\u9009\u62E9\u6B4C\u8BCD\uFF08LRC / SRT / lyrics.json\uFF09\uFF0C\u753B\u9762\u4F1A\u663E\u793A\u5B57\u5E55\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u70B9 ", /* @__PURE__ */ import_react3.default.createElement("b", null, "\u25B6 \u64AD\u653E"), "\u3002\u4E5F\u53EF\u4EE5\u4E0D\u9009\u97F3\u9891\uFF0C\u76F4\u63A5\u9759\u97F3\u89C2\u770B\u753B\u9762\u3002")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", onClick: pickAudio }, "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, "\u9009\u62E9\u6B4C\u8BCD\u2026")))), packStatus && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, packStatus)), matchNote && pack.pack.workshop && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: matchNote.level === "warn" ? "warn" : matchNote.level === "ok" ? "ok" : "info", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setMatchNote(null) }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, matchNote.level === "warn" ? "\u26A0 \u97F3\u9891\u53EF\u80FD\u4E0E\u8FD9\u4E2A\u5DE5\u574A\u5305\u4E0D\u5339\u914D\uFF1A\n" : "", matchNote.message)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-sources", "aria-label": "\u5A92\u4F53\u6587\u4EF6" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${audioInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u266A"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value", title: audioInfo ? `${audioInfo.name}
 sha256 ${audioInfo.sha}` : "" }, audioInfo ? `${audioInfo.name}${audioInfo.label && audioInfo.label !== "\u672A\u77E5\u683C\u5F0F" ? ` \xB7 ${audioInfo.label}` : ""}` : "\u672A\u9009\u62E9 \xB7 \u9759\u97F3\u6A21\u5F0F")), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: pickAudio }, audioInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${lyricsInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u201C"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u6B4C\u8BCD"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, lyricsInfo ? `${lyricsInfo.name}\uFF08${lyricsInfo.count} \u53E5${lyricsInfo.note ? ` \xB7 ${lyricsInfo.note}` : ""}\uFF09` : "\u672A\u52A0\u8F7D \xB7 \u53EA\u663E\u793A [ \u95F4\u594F ]")), lyricsInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearLyrics() }, "\u79FB\u9664"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => pickText(".lrc,.srt,.vtt,.json,.txt", useLyricsText) }, lyricsInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u25AE\u25AE"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u9891\u8C31"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, spectrumInfo ? spectrumInfo.name : "\u5B9E\u65F6\u5206\u6790")), spectrumInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearSpectrum() }, "\u6539\u7528\u5B9E\u65F6"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "\u53EF\u9009\uFF1Aspectrum.json", onClick: () => pickText(".json", useSpectrumText) }, spectrumInfo ? "\u66F4\u6362" : "\u6587\u4EF6\u2026"))), error && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "error", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setError("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", null, error)), sceneNote && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSceneNote("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, sceneNote)), decodeFail && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: decodeFail.ffmpeg && !decodeFail.confirming ? /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: decodeFail.busy, onClick: () => setDecodeFail((value) => ({ ...value, confirming: true })) }, "\u7528 ffmpeg \u8F6C\u6362\u2026")) : null }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, "\u9762\u677F\u65E0\u6CD5\u89E3\u7801\u8FD9\u4E2A\u97F3\u9891\uFF08", decodeFail.label, "\uFF09\u3002", decodeFail.ffmpeg ? "\u627E\u5230\u4E86\u4F60\u672C\u673A\u7684 ffmpeg\uFF0C\u53EF\u4EE5\u628A\u5B83\u8F6C\u6362\u6210 WAV \u7F13\u5B58\u540E\u64AD\u653E\uFF08\u539F\u6587\u4EF6\u4E0D\u53D8\uFF09\u3002" : "\u5B89\u88C5 ffmpeg\uFF08\u653E\u8FDB PATH\uFF0C\u6216 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\uFF09\u540E\u53EF\u4EE5\u81EA\u52A8\u8F6C\u6362\uFF1B\u6216\u8005\u6362\u6210 MP3 / M4A / FLAC / WAV\u3002"), decodeFail.confirming && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u7528 ffmpeg \u8F6C\u6362" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, "\u7528\u4F60\u672C\u673A\u7684 ffmpeg \u8F6C\u6362\u8FD9\u4E2A\u6587\u4EF6\uFF1F"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "Host \u5C06\u8FD0\u884C\uFF08\u4E0D\u7ECF\u8FC7 shell\uFF0C\u6700\u591A 10 \u5206\u949F\uFF09\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, displayCommand(decodeFail.ffmpeg, ffmpegArgs(decodeFail.path, "<\u63D2\u4EF6\u7F13\u5B58>\\<sha256>.wav"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: decodeFail.busy, onClick: () => void convertWithFfmpeg() }, decodeFail.busy ? decodeFail.busy : "\u786E\u8BA4\u8F6C\u6362"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(decodeFail.busy), onClick: () => setDecodeFail((value) => ({ ...value, confirming: false })) }, "\u53D6\u6D88")))), /* @__PURE__ */ import_react3.default.createElement(
     "div",
     {
@@ -10799,8 +6782,8 @@ sha256 ${audioInfo.sha}` : "" }, audioInfo ? `${audioInfo.name}${audioInfo.label
       onDoubleClick: toggleFullscreen,
       "aria-label": "\u753B\u5E03 MV\uFF08\u70B9\u51FB\u540E\u53EF\u7528\u952E\u76D8\u63A7\u5236\uFF09"
     },
-    /* @__PURE__ */ import_react3.default.createElement("div", { ref: stage, className: "mv-stage", onClick: () => wrap3.current?.focus() }, /* @__PURE__ */ import_react3.default.createElement("canvas", { ref: canvas, style: isDshPv(pack) ? { display: "none" } : void 0 }), /* @__PURE__ */ import_react3.default.createElement("canvas", { ref: pixel, className: "mv-pixel", style: isDshPv(pack) ? void 0 : { display: "none" }, "aria-label": "dsh-pv \u753B\u5E03" }))
-  ), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-playerbar", "aria-label": "\u64AD\u653E\u63A7\u5236" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-round", "aria-label": status.playing ? "\u6682\u505C" : "\u64AD\u653E", title: status.playing ? "\u6682\u505C\uFF08\u7A7A\u683C\uFF09" : "\u64AD\u653E\uFF08\u7A7A\u683C\uFF09", onClick: () => act({ type: "toggle" }) }, status.playing ? /* @__PURE__ */ import_react3.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react3.default.createElement(Icon.play, null)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-seek-wrap" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-time" }, generic ? timeText(status.t) : clockText(Math.max(0, status.t)).split("/")[0].trim()), /* @__PURE__ */ import_react3.default.createElement(
+    /* @__PURE__ */ import_react3.default.createElement("div", { ref: stage, className: "mv-stage", onClick: () => wrap3.current?.focus() }, /* @__PURE__ */ import_react3.default.createElement("canvas", { ref: canvas, style: dshActive ? { display: "none" } : void 0 }), /* @__PURE__ */ import_react3.default.createElement("canvas", { ref: pixel, className: "mv-pixel", style: dshActive ? void 0 : { display: "none" }, "aria-label": "dsh-pv \u753B\u5E03" }))
+  ), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-playerbar", "aria-label": "\u64AD\u653E\u63A7\u5236" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-round", "aria-label": status.playing ? "\u6682\u505C" : "\u64AD\u653E", title: status.playing ? "\u6682\u505C\uFF08\u7A7A\u683C\uFF09" : "\u64AD\u653E\uFF08\u7A7A\u683C\uFF09", onClick: () => act({ type: "toggle" }) }, status.playing ? /* @__PURE__ */ import_react3.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react3.default.createElement(Icon.play, null)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-seek-wrap" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-time" }, timeText(status.t)), /* @__PURE__ */ import_react3.default.createElement(
     "input",
     {
       className: "mv-seek",
@@ -10816,7 +6799,7 @@ sha256 ${audioInfo.sha}` : "" }, audioInfo ? `${audioInfo.name}${audioInfo.label
       "aria-label": "\u8FDB\u5EA6"
     }
   ), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-time" }, timeText(Math.round(duration)))), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-chip", title: "\u5F53\u524D\u7AE0\u8282\uFF081\u20135 \u8DF3\u8F6C\uFF09" }, chapter[1], " ", chapter[2]), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-volume" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": volume.muted ? "\u53D6\u6D88\u9759\u97F3" : "\u9759\u97F3", title: "\u9759\u97F3\uFF08M\uFF09", onClick: () => act({ type: "mute" }) }, volume.muted || volume.level === 0 ? /* @__PURE__ */ import_react3.default.createElement(Icon.mute, null) : /* @__PURE__ */ import_react3.default.createElement(Icon.volume, null)), /* @__PURE__ */ import_react3.default.createElement("input", { type: "range", min: 0, max: 1, step: 0.05, value: volume.muted ? 0 : volume.level, "aria-label": "\u97F3\u91CF", onChange: (event) => setLevel(Number(event.target.value)) })), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-stepper", title: `\u97F3\u9891\u540C\u6B65\uFF08Alt+[ / Alt+]\uFF09${syncLabel ? `
-${syncLabel}` : ""}` }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", "aria-label": "\u97F3\u9891\u540C\u6B65 \u22120.1 \u79D2", onClick: () => act({ type: "audioOffset", delta: -0.1 }) }, "\u2212"), /* @__PURE__ */ import_react3.default.createElement("span", null, "\u540C\u6B65 ", formatOffset(offsets.audioOffset)), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", "aria-label": "\u97F3\u9891\u540C\u6B65 +0.1 \u79D2", onClick: () => act({ type: "audioOffset", delta: 0.1 }) }, "+")), /* @__PURE__ */ import_react3.default.createElement(Popover, { label: "\u952E\u76D8\u5FEB\u6377\u952E", icon: /* @__PURE__ */ import_react3.default.createElement(Icon.keyboard, null) }, /* @__PURE__ */ import_react3.default.createElement(KeyHelp, null)), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": fullscreen ? "\u9000\u51FA\u5168\u5C4F" : "\u5168\u5C4F", title: "\u5168\u5C4F\uFF08F\uFF09", onClick: toggleFullscreen }, /* @__PURE__ */ import_react3.default.createElement(Icon.fullscreen, null))), !pack.builtin && api?.packWriteText && /* @__PURE__ */ import_react3.default.createElement(CalibEditor, { api, pack, lyricsText, audioFile, duration, player, onPreview: previewCues }), /* @__PURE__ */ import_react3.default.createElement("details", { className: "mv-details" }, /* @__PURE__ */ import_react3.default.createElement("summary", null, "\u8BBE\u7F6E ", /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u5B57\u53F7 ", fontSize, " \xB7 \u5B57\u5E55\u504F\u79FB ", formatOffset(offsets.subtitleOffset), syncLabel ? ` \xB7 ${syncLabel}` : "")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-details-body" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u753B\u9762\u5B57\u53F7\uFF08\u50CF\u7D20\uFF09"), /* @__PURE__ */ import_react3.default.createElement("input", { type: "number", min: 8, max: 32, value: fontSize, onChange: (event) => setFontSize(Math.min(32, Math.max(8, Number(event.target.value) || 14))) })), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u5B57\u5E55\u504F\u79FB\uFF08[ / ]\uFF09"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-stepper", style: { alignSelf: "flex-start" } }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", "aria-label": "\u5B57\u5E55\u504F\u79FB \u22120.1 \u79D2", onClick: () => act({ type: "subtitleOffset", delta: -0.1 }) }, "\u2212"), /* @__PURE__ */ import_react3.default.createElement("span", null, formatOffset(offsets.subtitleOffset)), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", "aria-label": "\u5B57\u5E55\u504F\u79FB +0.1 \u79D2", onClick: () => act({ type: "subtitleOffset", delta: 0.1 }) }, "+"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u504F\u79FB"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: !audioInfo, onClick: resetSync, style: { alignSelf: "flex-start" } }, "\u6062\u590D\u9ED8\u8BA4\u504F\u79FB"))), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, "\u504F\u79FB\u6309\u97F3\u9891\u6587\u4EF6\u7684 sha256 \u8BB0\u5728\u672C\u673A\u3002", audioInfo && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, "\u5F53\u524D\u97F3\u9891 ", /* @__PURE__ */ import_react3.default.createElement("code", { title: audioInfo.sha }, audioInfo.sha.slice(0, 12), "\u2026"), "\u3002"), "\u7F51\u683C ", status.cols, "\xD7", status.rows, "\uFF08\u6700\u5C0F 64\xD724\uFF0C\u6700\u5927 240\xD785\uFF09\u3002"))), /* @__PURE__ */ import_react3.default.createElement(
+${syncLabel}` : ""}` }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", "aria-label": "\u97F3\u9891\u540C\u6B65 \u22120.1 \u79D2", onClick: () => act({ type: "audioOffset", delta: -0.1 }) }, "\u2212"), /* @__PURE__ */ import_react3.default.createElement("span", null, "\u540C\u6B65 ", formatOffset(offsets.audioOffset)), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", "aria-label": "\u97F3\u9891\u540C\u6B65 +0.1 \u79D2", onClick: () => act({ type: "audioOffset", delta: 0.1 }) }, "+")), /* @__PURE__ */ import_react3.default.createElement(Popover, { label: "\u952E\u76D8\u5FEB\u6377\u952E", icon: /* @__PURE__ */ import_react3.default.createElement(Icon.keyboard, null) }, /* @__PURE__ */ import_react3.default.createElement(KeyHelp, null)), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": fullscreen ? "\u9000\u51FA\u5168\u5C4F" : "\u5168\u5C4F", title: "\u5168\u5C4F\uFF08F\uFF09", onClick: toggleFullscreen }, /* @__PURE__ */ import_react3.default.createElement(Icon.fullscreen, null))), !pack.empty && api?.packWriteText && /* @__PURE__ */ import_react3.default.createElement(CalibEditor, { api, pack, lyricsText, audioFile, duration, player, onPreview: previewCues }), /* @__PURE__ */ import_react3.default.createElement("details", { className: "mv-details" }, /* @__PURE__ */ import_react3.default.createElement("summary", null, "\u8BBE\u7F6E ", /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "\u5B57\u53F7 ", fontSize, " \xB7 \u5B57\u5E55\u504F\u79FB ", formatOffset(offsets.subtitleOffset), syncLabel ? ` \xB7 ${syncLabel}` : "")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-details-body" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react3.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u753B\u9762\u5B57\u53F7\uFF08\u50CF\u7D20\uFF09"), /* @__PURE__ */ import_react3.default.createElement("input", { type: "number", min: 8, max: 32, value: fontSize, onChange: (event) => setFontSize(Math.min(32, Math.max(8, Number(event.target.value) || 14))) })), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u5B57\u5E55\u504F\u79FB\uFF08[ / ]\uFF09"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-stepper", style: { alignSelf: "flex-start" } }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", "aria-label": "\u5B57\u5E55\u504F\u79FB \u22120.1 \u79D2", onClick: () => act({ type: "subtitleOffset", delta: -0.1 }) }, "\u2212"), /* @__PURE__ */ import_react3.default.createElement("span", null, formatOffset(offsets.subtitleOffset)), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", "aria-label": "\u5B57\u5E55\u504F\u79FB +0.1 \u79D2", onClick: () => act({ type: "subtitleOffset", delta: 0.1 }) }, "+"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-field" }, /* @__PURE__ */ import_react3.default.createElement("span", null, "\u504F\u79FB"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: !audioInfo, onClick: resetSync, style: { alignSelf: "flex-start" } }, "\u6062\u590D\u9ED8\u8BA4\u504F\u79FB"))), /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, "\u504F\u79FB\u6309\u97F3\u9891\u6587\u4EF6\u7684 sha256 \u8BB0\u5728\u672C\u673A\u3002", audioInfo && /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, "\u5F53\u524D\u97F3\u9891 ", /* @__PURE__ */ import_react3.default.createElement("code", { title: audioInfo.sha }, audioInfo.sha.slice(0, 12), "\u2026"), "\u3002"), "\u7F51\u683C ", status.cols, "\xD7", status.rows, "\uFF08\u6700\u5C0F 64\xD724\uFF0C\u6700\u5927 240\xD785\uFF09\u3002"))), /* @__PURE__ */ import_react3.default.createElement(
     "audio",
     {
       ref: audio,
@@ -11008,7 +6991,7 @@ function AiPackDialog({ api, harness, info, onClose, onLoaded, onRecent }) {
   const [auto, setAuto] = import_react5.default.useState(null);
   const [autoOptions, setAutoOptions] = import_react5.default.useState({ useLrclib: info?.lrclib !== false, useEngine: true, model: "", language: "auto", separate: true, verifySynced: null });
   const stopRef = import_react5.default.useRef(null);
-  const pick2 = directoryPicker();
+  const pick = directoryPicker();
   const support = sessionSupport(harness);
   const toolsOn = info?.agentTools?.registered !== false;
   const chooseAudio = () => {
@@ -11047,7 +7030,7 @@ function AiPackDialog({ api, harness, info, onClose, onLoaded, onRecent }) {
   };
   const chooseDir = async () => {
     try {
-      const dir = await pick2?.();
+      const dir = await pick?.();
       if (dir) setParentDir(dir);
     } catch (failure) {
       setError(errorText(failure, "\u65E0\u6CD5\u6253\u5F00\u6587\u4EF6\u5939\u9009\u62E9\u5668\u3002"));
@@ -11135,7 +7118,7 @@ function AiPackDialog({ api, harness, info, onClose, onLoaded, onRecent }) {
   };
   const busy = Boolean(progress) || Boolean(auto?.running);
   const timed = looksTimed(lyrics);
-  return /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-dialog mv-ai", role: "dialog", "aria-label": "\u7528 AI \u5236\u4F5C\u65B0 MV" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-row", style: { justifyContent: "space-between" } }, /* @__PURE__ */ import_react5.default.createElement("h2", null, "\u7528 AI \u5236\u4F5C\u65B0 MV"), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u5173\u95ED", onClick: onClose }, /* @__PURE__ */ import_react5.default.createElement(Icon.close, null))), !result && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-caption" }, "\u9009\u4E00\u9996\u4F60\u81EA\u5DF1\u7684\u6B4C\uFF0C\u63D2\u4EF6\u5728\u672C\u673A\u5EFA\u597D MV \u5305\u6587\u4EF6\u5939\uFF08\u590D\u5236\u97F3\u9891\u3001\u7B97\u597D\u9891\u8C31\uFF09\uFF0C\u518D\u8BA9 Harness \u7684 Agent \u5199\u6B4C\u8BCD\u65F6\u95F4\u8F74\u3001mv.json \u548C ASCII \u573A\u666F\u811A\u672C\u3002\u97F3\u9891\u4E0D\u4F1A\u4E0A\u4F20\uFF0C\u539F\u6587\u4EF6\u4E0D\u4F1A\u88AB\u4FEE\u6539\u3002"), /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08\u5FC5\u9009\uFF1BMP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV\u3001Opus/Ogg\u3001FLAC\u3001WAV\u2026\uFF09"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-field-row" }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: busy, onClick: chooseAudio }, file ? "\u66F4\u6362\u2026" : "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-caption", style: { alignSelf: "center" } }, file ? `${file.name} \xB7 ${audioLabel} \xB7 ${(file.size / 1048576).toFixed(1)} MB` : audioLabel ? `\u4E0D\u652F\u6301\uFF1A${audioLabel}` : "\u672A\u9009\u62E9"))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u6B4C\u540D\uFF08\u5FC5\u586B\uFF09"), /* @__PURE__ */ import_react5.default.createElement("input", { value: title, disabled: busy, onChange: (event) => setTitle(event.target.value), placeholder: "\u6B4C\u540D" })), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u6B4C\u624B"), /* @__PURE__ */ import_react5.default.createElement("input", { value: artist, disabled: busy, onChange: (event) => setArtist(event.target.value), placeholder: "\u53EF\u9009\uFF08\u81EA\u52A8\u4ECE\u6807\u7B7E\u8BFB\u53D6\uFF09" })), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u6B4C\u8BCD\uFF08\u53EF\u9009\uFF1BLRC \u5E26\u65F6\u95F4\u8F74\u6700\u597D\uFF0C\u7EAF\u6587\u672C\u4E5F\u884C\uFF0CAI \u4F1A\u4F30\u8BA1\u65F6\u95F4\uFF09", lyrics.trim() ? ` \xB7 ${timed ? "\u5DF2\u8BC6\u522B\u4E3A LRC" : "\u7EAF\u6587\u672C"}` : ""), /* @__PURE__ */ import_react5.default.createElement("textarea", { style: AREA, value: lyrics, disabled: busy, spellCheck: false, onChange: (event) => setLyrics(event.target.value), placeholder: "[00:12.30]\u7B2C\u4E00\u53E5\n[00:17.80]\u7B2C\u4E8C\u53E5\n\u2026\u6216\u76F4\u63A5\u7C98\u8D34\u6B4C\u8BCD\u6587\u672C" }), /* @__PURE__ */ import_react5.default.createElement("span", null, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-link", disabled: busy, onClick: chooseLyrics }, "\u4ECE\u6587\u4EF6\u8BFB\u53D6\u2026"))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u98CE\u683C\u8BF4\u660E\uFF08\u53EF\u9009\uFF0C\u544A\u8BC9 AI \u4F60\u60F3\u8981\u7684\u753B\u9762\uFF09"), /* @__PURE__ */ import_react5.default.createElement("textarea", { style: { ...AREA, minHeight: 52 }, value: style, disabled: busy, onChange: (event) => setStyle(event.target.value), placeholder: "\u4F8B\u5982\uFF1A\u8D5B\u535A\u670B\u514B\u96E8\u591C\u3001\u526F\u6B4C\u65F6\u6EE1\u5C4F\u4EE3\u7801\u96E8\u3001\u7ED3\u5C3E\u6162\u6162\u7184\u706D" })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u4FDD\u5B58\u4F4D\u7F6E"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-field-row" }, /* @__PURE__ */ import_react5.default.createElement("input", { value: parentDir, disabled: busy, spellCheck: false, onChange: (event) => setParentDir(event.target.value), placeholder: info?.aiPacksDir ? `\u9ED8\u8BA4\uFF1A${info.aiPacksDir}` : "\u9ED8\u8BA4\uFF1A%LOCALAPPDATA%\\dsh-mv\\packs" }), pick2 && /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: busy, onClick: () => void chooseDir() }, "\u6D4F\u89C8\u2026")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-field-help" }, "\u4F1A\u5728\u8FD9\u91CC\u65B0\u5EFA\u4E00\u4E2A\u4EE5\u6B4C\u540D\u547D\u540D\u7684\u5B50\u6587\u4EF6\u5939\uFF0C\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\u3002"))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-auto", "aria-label": "\u81EA\u52A8\u5236\u4F5C" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, "\u81EA\u52A8\u5236\u4F5C\uFF08\u63A8\u8350\uFF09"), /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-caption" }, "\u53EA\u8981\u9009\u597D\u97F3\u9891\uFF1A\u81EA\u52A8\u67E5\u6B4C\u8BCD\u65F6\u95F4\u8F74 \u2192 \u6CA1\u6709\u5C31\u7528\u672C\u673A\u6B4C\u8BCD\u5F15\u64CE\u8BC6\u522B \u2192 \u5BF9\u9F50\u3001\u7B97\u7F6E\u4FE1\u5EA6 \u2192 \u8BC6\u522B\u4E3B\u6B4C / \u526F\u6B4C / \u95F4\u594F \u2192 \u4FDD\u5B58\u3002\u4E4B\u540E\u5728\u64AD\u653E\u5668\u4E0B\u9762\u7684\u300C\u6B4C\u8BCD\u6821\u51C6\u300D\u91CC\u4FEE\u6B63\u6807\u9EC4\u7684\u53E5\u5B50\u3002"), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "checkbox", checked: lrclibAllowed && autoOptions.useLrclib, disabled: busy || !lrclibAllowed, onChange: (event) => setAutoOptions((o) => ({ ...o, useLrclib: event.target.checked })) }), /* @__PURE__ */ import_react5.default.createElement("span", null, "\u5230 LRCLIB\uFF08lrclib.net\uFF09\u67E5\u73B0\u6210\u7684\u65F6\u95F4\u8F74 ", /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-caption" }, "\u2014 \u8054\u7F51\uFF0C\u53EA\u53D1\u9001 ", LRCLIB_FIELDS.map((f) => ({ title: "\u6B4C\u540D", artist: "\u6B4C\u624B", album: "\u4E13\u8F91", duration: "\u65F6\u957F" })[f]).join("\u3001"), title.trim() ? `\uFF08\u300C${title.trim()}\u300D${artist.trim() ? ` / ${artist.trim()}` : ""}${album ? ` / ${album}` : ""}\uFF09` : "", "\uFF0C\u4E0D\u4E0A\u4F20\u97F3\u9891", lrclibAllowed ? "" : "\uFF1B\u5DF2\u5728\u63D2\u4EF6\u8BBE\u7F6E\u91CC\u5173\u95ED"))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "checkbox", checked: engineOn, disabled: busy || !engineReady(engineInfo), onChange: (event) => setAutoOptions((o) => ({ ...o, useEngine: event.target.checked })) }), /* @__PURE__ */ import_react5.default.createElement("span", null, "\u6CA1\u6709\u65F6\u95F4\u8F74\u65F6\u7528\u672C\u673A\u6B4C\u8BCD\u5F15\u64CE\u8BC6\u522B ", /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-caption" }, "\u2014 \u4E0D\u8054\u7F51", engineReady(engineInfo) ? engineInfo.cuda ? "\uFF0CGPU" : "\uFF0C\u53EA\u6709 CPU\uFF0C\u4F1A\u6162\u4E00\u4E9B" : "\uFF0C\u9700\u8981\u5148\u5B89\u88C5\uFF08\u89C1\u4E0B\u65B9\uFF09"))), engineReady(engineInfo) && /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-row", style: { flexWrap: "wrap", gap: 8 } }, /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u6A21\u578B"), /* @__PURE__ */ import_react5.default.createElement("select", { value: model, disabled: busy, onChange: (event) => setAutoOptions((o) => ({ ...o, model: event.target.value })) }, models.map((m) => /* @__PURE__ */ import_react5.default.createElement("option", { key: m, value: m }, MODEL_LABELS[m] ?? m)))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u8BED\u8A00"), /* @__PURE__ */ import_react5.default.createElement("select", { value: autoOptions.language, disabled: busy, onChange: (event) => setAutoOptions((o) => ({ ...o, language: event.target.value })) }, Object.entries(LANGS).map(([k, v]) => /* @__PURE__ */ import_react5.default.createElement("option", { key: k, value: k }, v)))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "checkbox", checked: autoOptions.separate, disabled: busy, onChange: (event) => setAutoOptions((o) => ({ ...o, separate: event.target.checked })) }), /* @__PURE__ */ import_react5.default.createElement("span", null, "\u5148\u5206\u79BB\u4EBA\u58F0\uFF08Demucs\uFF0C\u66F4\u51C6\uFF09")), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "checkbox", checked: verifySynced, disabled: busy, onChange: (event) => setAutoOptions((o) => ({ ...o, verifySynced: event.target.checked })) }), /* @__PURE__ */ import_react5.default.createElement("span", null, "LRCLIB \u6709\u65F6\u95F4\u8F74\u65F6\u4E5F\u7528\u5F15\u64CE\u6838\u5BF9"))), !engineReady(engineInfo) && /* @__PURE__ */ import_react5.default.createElement(EngineCard, { api, info: engineInfo, refresh: refreshEngine, compact: true }), auto && /* @__PURE__ */ import_react5.default.createElement("ol", { className: "mv-steps", "aria-live": "polite" }, AUTO_STEPS.map((step) => {
+  return /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-dialog mv-ai", role: "dialog", "aria-label": "\u7528 AI \u5236\u4F5C\u65B0 MV" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-row", style: { justifyContent: "space-between" } }, /* @__PURE__ */ import_react5.default.createElement("h2", null, "\u7528 AI \u5236\u4F5C\u65B0 MV"), /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u5173\u95ED", onClick: onClose }, /* @__PURE__ */ import_react5.default.createElement(Icon.close, null))), !result && /* @__PURE__ */ import_react5.default.createElement(import_react5.default.Fragment, null, /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-caption" }, "\u9009\u4E00\u9996\u4F60\u81EA\u5DF1\u7684\u6B4C\uFF0C\u63D2\u4EF6\u5728\u672C\u673A\u5EFA\u597D MV \u5305\u6587\u4EF6\u5939\uFF08\u590D\u5236\u97F3\u9891\u3001\u7B97\u597D\u9891\u8C31\uFF09\uFF0C\u518D\u8BA9 Harness \u7684 Agent \u5199\u6B4C\u8BCD\u65F6\u95F4\u8F74\u3001mv.json \u548C ASCII \u573A\u666F\u811A\u672C\u3002\u97F3\u9891\u4E0D\u4F1A\u4E0A\u4F20\uFF0C\u539F\u6587\u4EF6\u4E0D\u4F1A\u88AB\u4FEE\u6539\u3002"), /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08\u5FC5\u9009\uFF1BMP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV\u3001Opus/Ogg\u3001FLAC\u3001WAV\u2026\uFF09"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-field-row" }, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: busy, onClick: chooseAudio }, file ? "\u66F4\u6362\u2026" : "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-caption", style: { alignSelf: "center" } }, file ? `${file.name} \xB7 ${audioLabel} \xB7 ${(file.size / 1048576).toFixed(1)} MB` : audioLabel ? `\u4E0D\u652F\u6301\uFF1A${audioLabel}` : "\u672A\u9009\u62E9"))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u6B4C\u540D\uFF08\u5FC5\u586B\uFF09"), /* @__PURE__ */ import_react5.default.createElement("input", { value: title, disabled: busy, onChange: (event) => setTitle(event.target.value), placeholder: "\u6B4C\u540D" })), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u6B4C\u624B"), /* @__PURE__ */ import_react5.default.createElement("input", { value: artist, disabled: busy, onChange: (event) => setArtist(event.target.value), placeholder: "\u53EF\u9009\uFF08\u81EA\u52A8\u4ECE\u6807\u7B7E\u8BFB\u53D6\uFF09" })), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u6B4C\u8BCD\uFF08\u53EF\u9009\uFF1BLRC \u5E26\u65F6\u95F4\u8F74\u6700\u597D\uFF0C\u7EAF\u6587\u672C\u4E5F\u884C\uFF0CAI \u4F1A\u4F30\u8BA1\u65F6\u95F4\uFF09", lyrics.trim() ? ` \xB7 ${timed ? "\u5DF2\u8BC6\u522B\u4E3A LRC" : "\u7EAF\u6587\u672C"}` : ""), /* @__PURE__ */ import_react5.default.createElement("textarea", { style: AREA, value: lyrics, disabled: busy, spellCheck: false, onChange: (event) => setLyrics(event.target.value), placeholder: "[00:12.30]\u7B2C\u4E00\u53E5\n[00:17.80]\u7B2C\u4E8C\u53E5\n\u2026\u6216\u76F4\u63A5\u7C98\u8D34\u6B4C\u8BCD\u6587\u672C" }), /* @__PURE__ */ import_react5.default.createElement("span", null, /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-link", disabled: busy, onClick: chooseLyrics }, "\u4ECE\u6587\u4EF6\u8BFB\u53D6\u2026"))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u98CE\u683C\u8BF4\u660E\uFF08\u53EF\u9009\uFF0C\u544A\u8BC9 AI \u4F60\u60F3\u8981\u7684\u753B\u9762\uFF09"), /* @__PURE__ */ import_react5.default.createElement("textarea", { style: { ...AREA, minHeight: 52 }, value: style, disabled: busy, onChange: (event) => setStyle(event.target.value), placeholder: "\u4F8B\u5982\uFF1A\u8D5B\u535A\u670B\u514B\u96E8\u591C\u3001\u526F\u6B4C\u65F6\u6EE1\u5C4F\u4EE3\u7801\u96E8\u3001\u7ED3\u5C3E\u6162\u6162\u7184\u706D" })), /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-field mv-wide" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u4FDD\u5B58\u4F4D\u7F6E"), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-field-row" }, /* @__PURE__ */ import_react5.default.createElement("input", { value: parentDir, disabled: busy, spellCheck: false, onChange: (event) => setParentDir(event.target.value), placeholder: info?.aiPacksDir ? `\u9ED8\u8BA4\uFF1A${info.aiPacksDir}` : "\u9ED8\u8BA4\uFF1A%LOCALAPPDATA%\\dsh-mv\\packs" }), pick && /* @__PURE__ */ import_react5.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: busy, onClick: () => void chooseDir() }, "\u6D4F\u89C8\u2026")), /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-field-help" }, "\u4F1A\u5728\u8FD9\u91CC\u65B0\u5EFA\u4E00\u4E2A\u4EE5\u6B4C\u540D\u547D\u540D\u7684\u5B50\u6587\u4EF6\u5939\uFF0C\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\u3002"))), /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-auto", "aria-label": "\u81EA\u52A8\u5236\u4F5C" }, /* @__PURE__ */ import_react5.default.createElement("strong", null, "\u81EA\u52A8\u5236\u4F5C\uFF08\u63A8\u8350\uFF09"), /* @__PURE__ */ import_react5.default.createElement("p", { className: "mv-caption" }, "\u53EA\u8981\u9009\u597D\u97F3\u9891\uFF1A\u81EA\u52A8\u67E5\u6B4C\u8BCD\u65F6\u95F4\u8F74 \u2192 \u6CA1\u6709\u5C31\u7528\u672C\u673A\u6B4C\u8BCD\u5F15\u64CE\u8BC6\u522B \u2192 \u5BF9\u9F50\u3001\u7B97\u7F6E\u4FE1\u5EA6 \u2192 \u8BC6\u522B\u4E3B\u6B4C / \u526F\u6B4C / \u95F4\u594F \u2192 \u4FDD\u5B58\u3002\u4E4B\u540E\u5728\u64AD\u653E\u5668\u4E0B\u9762\u7684\u300C\u6B4C\u8BCD\u6821\u51C6\u300D\u91CC\u4FEE\u6B63\u6807\u9EC4\u7684\u53E5\u5B50\u3002"), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "checkbox", checked: lrclibAllowed && autoOptions.useLrclib, disabled: busy || !lrclibAllowed, onChange: (event) => setAutoOptions((o) => ({ ...o, useLrclib: event.target.checked })) }), /* @__PURE__ */ import_react5.default.createElement("span", null, "\u5230 LRCLIB\uFF08lrclib.net\uFF09\u67E5\u73B0\u6210\u7684\u65F6\u95F4\u8F74 ", /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-caption" }, "\u2014 \u8054\u7F51\uFF0C\u53EA\u53D1\u9001 ", LRCLIB_FIELDS.map((f) => ({ title: "\u6B4C\u540D", artist: "\u6B4C\u624B", album: "\u4E13\u8F91", duration: "\u65F6\u957F" })[f]).join("\u3001"), title.trim() ? `\uFF08\u300C${title.trim()}\u300D${artist.trim() ? ` / ${artist.trim()}` : ""}${album ? ` / ${album}` : ""}\uFF09` : "", "\uFF0C\u4E0D\u4E0A\u4F20\u97F3\u9891", lrclibAllowed ? "" : "\uFF1B\u5DF2\u5728\u63D2\u4EF6\u8BBE\u7F6E\u91CC\u5173\u95ED"))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "checkbox", checked: engineOn, disabled: busy || !engineReady(engineInfo), onChange: (event) => setAutoOptions((o) => ({ ...o, useEngine: event.target.checked })) }), /* @__PURE__ */ import_react5.default.createElement("span", null, "\u6CA1\u6709\u65F6\u95F4\u8F74\u65F6\u7528\u672C\u673A\u6B4C\u8BCD\u5F15\u64CE\u8BC6\u522B ", /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-caption" }, "\u2014 \u4E0D\u8054\u7F51", engineReady(engineInfo) ? engineInfo.cuda ? "\uFF0CGPU" : "\uFF0C\u53EA\u6709 CPU\uFF0C\u4F1A\u6162\u4E00\u4E9B" : "\uFF0C\u9700\u8981\u5148\u5B89\u88C5\uFF08\u89C1\u4E0B\u65B9\uFF09"))), engineReady(engineInfo) && /* @__PURE__ */ import_react5.default.createElement("div", { className: "mv-row", style: { flexWrap: "wrap", gap: 8 } }, /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u6A21\u578B"), /* @__PURE__ */ import_react5.default.createElement("select", { value: model, disabled: busy, onChange: (event) => setAutoOptions((o) => ({ ...o, model: event.target.value })) }, models.map((m) => /* @__PURE__ */ import_react5.default.createElement("option", { key: m, value: m }, MODEL_LABELS[m] ?? m)))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react5.default.createElement("span", null, "\u8BED\u8A00"), /* @__PURE__ */ import_react5.default.createElement("select", { value: autoOptions.language, disabled: busy, onChange: (event) => setAutoOptions((o) => ({ ...o, language: event.target.value })) }, Object.entries(LANGS).map(([k, v]) => /* @__PURE__ */ import_react5.default.createElement("option", { key: k, value: k }, v)))), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "checkbox", checked: autoOptions.separate, disabled: busy, onChange: (event) => setAutoOptions((o) => ({ ...o, separate: event.target.checked })) }), /* @__PURE__ */ import_react5.default.createElement("span", null, "\u5148\u5206\u79BB\u4EBA\u58F0\uFF08Demucs\uFF0C\u66F4\u51C6\uFF09")), /* @__PURE__ */ import_react5.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react5.default.createElement("input", { type: "checkbox", checked: verifySynced, disabled: busy, onChange: (event) => setAutoOptions((o) => ({ ...o, verifySynced: event.target.checked })) }), /* @__PURE__ */ import_react5.default.createElement("span", null, "LRCLIB \u6709\u65F6\u95F4\u8F74\u65F6\u4E5F\u7528\u5F15\u64CE\u6838\u5BF9"))), !engineReady(engineInfo) && /* @__PURE__ */ import_react5.default.createElement(EngineCard, { api, info: engineInfo, refresh: refreshEngine, compact: true }), auto && /* @__PURE__ */ import_react5.default.createElement("ol", { className: "mv-steps", "aria-live": "polite" }, AUTO_STEPS.map((step) => {
     const s = auto.steps[step.id] ?? { state: "pending" };
     const p = auto.progress?.id === step.id && s.state === "running" ? auto.progress : null;
     return /* @__PURE__ */ import_react5.default.createElement("li", { key: step.id, className: `mv-step-${s.state}` }, /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-step-dot", "aria-hidden": "true" }, STEP_DOT[s.state]), /* @__PURE__ */ import_react5.default.createElement("span", null, step.label, p ? ` \xB7 ${Math.round((p.ratio ?? 0) * 100)}%${p.stage ? ` ${STAGES[p.stage] ?? p.stage}` : ""}` : "", s.detail ? /* @__PURE__ */ import_react5.default.createElement("span", { className: "mv-caption" }, " \u2014 ", stepText(step.id, s.detail)) : null));
@@ -11169,6 +7152,11 @@ function Cover({ api, pack, large = false, cache }) {
   const style = large ? { width: "100%", aspectRatio: "16 / 10" } : void 0;
   return src ? /* @__PURE__ */ import_react6.default.createElement("img", { className: "mv-ws-cover", src, alt: `${pack.title} \u5C01\u9762`, style }) : /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-ws-cover mv-ws-cover-empty", style, "aria-hidden": "true" }, ">_");
 }
+var sourceLabel = (url) => String(url ?? "").replace(/^https:\/\/(www\.)?(github\.com\/)?/, "").replace(/\/$/, "");
+function SourceLink({ url, compact = false }) {
+  if (!url) return null;
+  return /* @__PURE__ */ import_react6.default.createElement("span", { className: `mv-ws-source${compact ? " mv-ws-source-compact" : ""}` }, "\u539F\u4F5C ", /* @__PURE__ */ import_react6.default.createElement("a", { href: url, target: "_blank", rel: "noreferrer", title: url, onClick: (event) => event.stopPropagation() }, sourceLabel(url)));
+}
 var copy = async (text4) => {
   try {
     await globalThis.navigator?.clipboard?.writeText(text4);
@@ -11178,7 +7166,7 @@ var copy = async (text4) => {
   }
 };
 function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null, canvas = () => null, initialIndex = null }) {
-  const [index2, setIndex] = import_react6.default.useState(initialIndex);
+  const [index, setIndex] = import_react6.default.useState(initialIndex);
   const [loading, setLoading] = import_react6.default.useState(!initialIndex);
   const [error, setError] = import_react6.default.useState("");
   const [note, setNote] = import_react6.default.useState("");
@@ -11205,8 +7193,8 @@ function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null, canva
   import_react6.default.useEffect(() => {
     if (!initialIndex) void refresh(false);
   }, [refresh]);
-  const { map: installed, updates } = installedState(index2);
-  const packs = index2?.packs ?? [];
+  const { map: installed, updates } = installedState(index);
+  const packs = index?.packs ?? [];
   const shown = filterWorkshop(packs, { query, license, renderer, installed, onlyInstalled });
   const current = selected ? packs.find((p) => p.id === selected) : null;
   const open = async (manifestPath) => {
@@ -11245,8 +7233,30 @@ function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null, canva
       setBusy("");
     }
   };
-  const canPublish = active && !active.builtin && active.manifestPath;
-  return /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-dialog mv-ws", role: "dialog", "aria-label": "\u521B\u610F\u5DE5\u574A" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row", style: { justifyContent: "space-between" } }, /* @__PURE__ */ import_react6.default.createElement("h2", { style: { margin: 0 } }, "\u521B\u610F\u5DE5\u574A ", /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, "\u793E\u533A MV \u5305 \xB7 ", /* @__PURE__ */ import_react6.default.createElement("a", { href: REPO_URL, target: "_blank", rel: "noreferrer" }, WORKSHOP_REPO))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: loading, onClick: () => void refresh(true) }, loading ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5237\u65B0"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: !canPublish, title: canPublish ? `\u628A\u5F53\u524D\u7684 MV \u5305\u300C${active.pack.title}\u300D\u53D1\u5E03\u5230\u5DE5\u574A` : "\u5148\u5728\u66F2\u5E93\u91CC\u6253\u5F00\u4F60\u81EA\u5DF1\u7684 MV \u5305", onClick: () => setPublishing((value) => !value) }, "\u53D1\u5E03\u5230\u5DE5\u574A\u2026"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u5173\u95ED\u521B\u610F\u5DE5\u574A", onClick: onClose }, /* @__PURE__ */ import_react6.default.createElement(Icon.close, null)))), /* @__PURE__ */ import_react6.default.createElement(TrustNote, null), publishing && canPublish && /* @__PURE__ */ import_react6.default.createElement(PublishDialog, { api, pack: active, canvas, onClose: () => setPublishing(false) }), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row mv-ws-filters" }, /* @__PURE__ */ import_react6.default.createElement("input", { className: "mv-ws-search", value: query, placeholder: "\u641C\u7D22\u6B4C\u540D\u3001\u6B4C\u624B\u3001\u4F5C\u8005\u3001\u6807\u7B7E", "aria-label": "\u641C\u7D22\u5DE5\u574A", onChange: (event) => setQuery(event.target.value) }), /* @__PURE__ */ import_react6.default.createElement("select", { value: license, "aria-label": "\u6309\u8BB8\u53EF\u8BC1\u7B5B\u9009", onChange: (event) => setLicense(event.target.value) }, /* @__PURE__ */ import_react6.default.createElement("option", { value: "" }, "\u5168\u90E8\u8BB8\u53EF\u8BC1"), LICENSES.map((l) => /* @__PURE__ */ import_react6.default.createElement("option", { key: l, value: l }, l))), /* @__PURE__ */ import_react6.default.createElement("select", { value: renderer, "aria-label": "\u6309\u6E32\u67D3\u65B9\u5F0F\u7B5B\u9009", onChange: (event) => setRenderer(event.target.value) }, /* @__PURE__ */ import_react6.default.createElement("option", { value: "" }, "\u5168\u90E8\u7C7B\u578B"), Object.entries(RENDERERS).map(([k, v]) => /* @__PURE__ */ import_react6.default.createElement("option", { key: k, value: k }, v))), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-check", style: { height: "auto" } }, /* @__PURE__ */ import_react6.default.createElement("input", { type: "checkbox", checked: onlyInstalled, onChange: (event) => setOnlyInstalled(event.target.checked) }), /* @__PURE__ */ import_react6.default.createElement("span", null, "\u53EA\u770B\u5DF2\u5B89\u88C5")), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, index2 ? `${shown.length} / ${packs.length} \u4E2A\u5305${updates.size ? ` \xB7 ${updates.size} \u4E2A\u6709\u66F4\u65B0` : ""}` : "")), error && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error, /404/.test(error) ? "\n\u5DE5\u574A\u4ED3\u5E93\u53EF\u80FD\u8FD8\u6CA1\u6709\u53D1\u5E03\u5185\u5BB9\uFF08index.json \u4E0D\u5B58\u5728\uFF09\u3002" : /超时|ENOTFOUND|ECONN/.test(error) ? "\n\u8FDE\u4E0D\u4E0A raw.githubusercontent.com\uFF1A\u68C0\u67E5\u7F51\u7EDC\uFF0C\u6216\u5728\u7CFB\u7EDF\u73AF\u5883\u53D8\u91CF\u91CC\u8BBE\u7F6E HTTPS_PROXY\u3002" : "")), note && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "ok", actions: /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setNote("") }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, note)), current ? /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-detail" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-detail-art" }, /* @__PURE__ */ import_react6.default.createElement(Cover, { api, pack: current, large: true, cache: covers })), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-detail-body" }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSelected(null) }, "\u2190 \u8FD4\u56DE\u5217\u8868"), /* @__PURE__ */ import_react6.default.createElement("h3", { style: { margin: "6px 0 2px" } }, current.title), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption", style: { marginTop: 0 } }, current.artist || "\u672A\u77E5\u827A\u672F\u5BB6", " \xB7 \u4F5C\u8005 ", current.author || "\u2014", " \xB7 v", current.version), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, current.description || "\uFF08\u6CA1\u6709\u7B80\u4ECB\uFF09"), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, "\u8BB8\u53EF ", current.license), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, "\u65F6\u957F ", durationText(current.duration)), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, RENDERERS[current.renderer] ?? current.renderer), current.sections > 0 && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, current.sections, " \u4E2A\u6BB5\u843D"), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip", title: "\u5B89\u88C5\u540E\u7528\u4F60\u81EA\u5DF1\u7684\u6B4C\u8BCD\u6587\u4EF6\uFF1B\u6309\u54C8\u5E0C\u5339\u914D\u5305\u91CC\u7684\u9010\u53E5\u65F6\u95F4" }, current.timing ? "\u5E26\u6B4C\u8BCD\u65F6\u95F4\u8F74" : "\u65E0\u6B4C\u8BCD\u65F6\u95F4\u8F74"), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip", title: "\u7528\u6765\u68C0\u67E5\u4F60\u7684\u97F3\u9891\u662F\u5426\u662F\u540C\u4E00\u4E2A\u7248\u672C" }, current.fingerprint ? "\u5E26\u97F3\u9891\u6307\u7EB9" : "\u4EC5\u6309\u65F6\u957F\u5339\u914D"), current.tags.map((t) => /* @__PURE__ */ import_react6.default.createElement("span", { key: t, className: "mv-chip" }, "#", t))), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, current.files.length, " \u4E2A\u6587\u4EF6 \xB7 ", sizeText(current.size), current.updated ? ` \xB7 \u66F4\u65B0\u4E8E ${current.updated.slice(0, 10)}` : "", current.homepage ? /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, " \xB7 ", /* @__PURE__ */ import_react6.default.createElement("a", { href: current.homepage, target: "_blank", rel: "noreferrer" }, "\u4E3B\u9875")) : null, " \xB7 ", /* @__PURE__ */ import_react6.default.createElement("a", { href: `${REPO_URL}/tree/${index2?.commit ?? "main"}/packs/${current.id}`, target: "_blank", rel: "noreferrer" }, "\u5728 GitHub \u4E0A\u67E5\u770B\u6E90\u7801")), /* @__PURE__ */ import_react6.default.createElement("ul", { className: "mv-caption mv-ws-files" }, current.files.map((f) => /* @__PURE__ */ import_react6.default.createElement("li", { key: f.path }, /* @__PURE__ */ import_react6.default.createElement("code", { title: f.path }, f.path), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-ws-size" }, sizeText(f.size)), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-faint mv-ws-sha", title: `sha256 ${f.sha256}` }, "sha256 ", f.sha256.slice(0, 12), "\u2026")))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row" }, !installed[current.id] && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(busy), onClick: () => void install(current) }, busy === `install:${current.id}` ? "\u6B63\u5728\u4E0B\u8F7D\u5E76\u6821\u9A8C\u2026" : "\u5B89\u88C5\u5230\u66F2\u5E93"), installed[current.id] && updates.has(current.id) && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(busy), onClick: () => void install(current) }, busy === `install:${current.id}` ? "\u6B63\u5728\u66F4\u65B0\u2026" : `\u66F4\u65B0\u5230 v${current.version}\uFF08\u5DF2\u88C5 v${installed[current.id].version}\uFF09`), installed[current.id] && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void open(installed[current.id].manifestPath).then(() => setNote(`\u5DF2\u6253\u5F00\u300C${current.title}\u300D\u3002`)).catch((failure) => setError(errorText(failure, "\u65E0\u6CD5\u6253\u5F00\u3002"))) }, "\u6253\u5F00"), installed[current.id] && confirmUninstall !== current.id && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-danger", disabled: Boolean(busy), onClick: () => setConfirmUninstall(current.id) }, "\u5378\u8F7D"), confirmUninstall === current.id && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-row" }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, "\u786E\u5B9A\u5378\u8F7D\uFF1F\u4F1A\u5220\u9664\u63D2\u4EF6\u5DE5\u574A\u6587\u4EF6\u5939\u91CC\u7684\u8FD9\u4E2A\u5305\u3002"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-danger mv-button-small", onClick: () => void uninstall(current) }, "\u786E\u8BA4\u5378\u8F7D"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => setConfirmUninstall("") }, "\u53D6\u6D88"))))) : /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-grid", "aria-busy": loading }, shown.map((pack) => /* @__PURE__ */ import_react6.default.createElement("button", { key: pack.id, type: "button", className: "mv-ws-card", onClick: () => setSelected(pack.id), title: pack.description }, /* @__PURE__ */ import_react6.default.createElement(Cover, { api, pack, cache: covers }), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-title" }, pack.title), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-sub" }, pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", " \xB7 ", durationText(pack.duration)), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-sub" }, "by ", pack.author || "\u2014", " \xB7 ", pack.license), installed[pack.id] && /* @__PURE__ */ import_react6.default.createElement("span", { className: `mv-ws-badge${updates.has(pack.id) ? " mv-ws-badge-update" : ""}` }, updates.has(pack.id) ? "\u6709\u66F4\u65B0" : "\u5DF2\u5B89\u88C5"))), index2 && !shown.length && /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, packs.length ? "\u6CA1\u6709\u7B26\u5408\u6761\u4EF6\u7684\u5305\u3002" : "\u5DE5\u574A\u91CC\u8FD8\u6CA1\u6709\u5305\u3002")), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, "\u5B89\u88C5\u4F4D\u7F6E\uFF1A%LOCALAPPDATA%\\dsh-mv\\workshop\\<id>\u3002\u5DE5\u574A\u6CA1\u6709\u670D\u52A1\u5668\uFF1A\u76EE\u5F55\u6765\u81EA\u4ED3\u5E93\u91CC\u7531 GitHub Actions \u751F\u6210\u7684 index.json\u3002\u60F3\u6295\u7A3F\uFF1F\u6253\u5F00\u4F60\u7684 MV \u5305\u540E\u70B9\u300C\u53D1\u5E03\u5230\u5DE5\u574A\u2026\u300D\uFF0C\u6216\u770B ", /* @__PURE__ */ import_react6.default.createElement("a", { href: `${REPO_URL}/blob/main/CONTRIBUTING.zh.md`, target: "_blank", rel: "noreferrer" }, "\u6295\u7A3F\u8BF4\u660E"), "\u3002"));
+  const canPublish = active && !active.empty && active.manifestPath;
+  return /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-dialog mv-ws", role: "dialog", "aria-label": "\u521B\u610F\u5DE5\u574A" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row", style: { justifyContent: "space-between" } }, /* @__PURE__ */ import_react6.default.createElement("h2", { style: { margin: 0 } }, "\u521B\u610F\u5DE5\u574A ", /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, "\u793E\u533A MV \u5305 \xB7 ", /* @__PURE__ */ import_react6.default.createElement("a", { href: REPO_URL, target: "_blank", rel: "noreferrer" }, WORKSHOP_REPO))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: loading, onClick: () => void refresh(true) }, loading ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5237\u65B0"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: !canPublish, title: canPublish ? `\u628A\u5F53\u524D\u7684 MV \u5305\u300C${active.pack.title}\u300D\u53D1\u5E03\u5230\u5DE5\u574A` : "\u5148\u5728\u66F2\u5E93\u91CC\u6253\u5F00\u4F60\u81EA\u5DF1\u7684 MV \u5305", onClick: () => setPublishing((value) => !value) }, "\u53D1\u5E03\u5230\u5DE5\u574A\u2026"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u5173\u95ED\u521B\u610F\u5DE5\u574A", onClick: onClose }, /* @__PURE__ */ import_react6.default.createElement(Icon.close, null)))), /* @__PURE__ */ import_react6.default.createElement(TrustNote, null), publishing && canPublish && /* @__PURE__ */ import_react6.default.createElement(PublishDialog, { api, pack: active, canvas, onClose: () => setPublishing(false) }), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row mv-ws-filters" }, /* @__PURE__ */ import_react6.default.createElement("input", { className: "mv-ws-search", value: query, placeholder: "\u641C\u7D22\u6B4C\u540D\u3001\u6B4C\u624B\u3001\u4F5C\u8005\u3001\u6807\u7B7E", "aria-label": "\u641C\u7D22\u5DE5\u574A", onChange: (event) => setQuery(event.target.value) }), /* @__PURE__ */ import_react6.default.createElement("select", { value: license, "aria-label": "\u6309\u8BB8\u53EF\u8BC1\u7B5B\u9009", onChange: (event) => setLicense(event.target.value) }, /* @__PURE__ */ import_react6.default.createElement("option", { value: "" }, "\u5168\u90E8\u8BB8\u53EF\u8BC1"), LICENSES.map((l) => /* @__PURE__ */ import_react6.default.createElement("option", { key: l, value: l }, l))), /* @__PURE__ */ import_react6.default.createElement("select", { value: renderer, "aria-label": "\u6309\u6E32\u67D3\u65B9\u5F0F\u7B5B\u9009", onChange: (event) => setRenderer(event.target.value) }, /* @__PURE__ */ import_react6.default.createElement("option", { value: "" }, "\u5168\u90E8\u7C7B\u578B"), Object.entries(RENDERERS).map(([k, v]) => /* @__PURE__ */ import_react6.default.createElement("option", { key: k, value: k }, v))), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-check", style: { height: "auto" } }, /* @__PURE__ */ import_react6.default.createElement("input", { type: "checkbox", checked: onlyInstalled, onChange: (event) => setOnlyInstalled(event.target.checked) }), /* @__PURE__ */ import_react6.default.createElement("span", null, "\u53EA\u770B\u5DF2\u5B89\u88C5")), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, index ? `${shown.length} / ${packs.length} \u4E2A\u5305${updates.size ? ` \xB7 ${updates.size} \u4E2A\u6709\u66F4\u65B0` : ""}` : "")), error && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error, /404/.test(error) ? "\n\u5DE5\u574A\u4ED3\u5E93\u53EF\u80FD\u8FD8\u6CA1\u6709\u53D1\u5E03\u5185\u5BB9\uFF08index.json \u4E0D\u5B58\u5728\uFF09\u3002" : /超时|ENOTFOUND|ECONN/.test(error) ? "\n\u8FDE\u4E0D\u4E0A raw.githubusercontent.com\uFF1A\u68C0\u67E5\u7F51\u7EDC\uFF0C\u6216\u5728\u7CFB\u7EDF\u73AF\u5883\u53D8\u91CF\u91CC\u8BBE\u7F6E HTTPS_PROXY\u3002" : "")), note && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "ok", actions: /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setNote("") }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, note)), current ? /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-detail" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-detail-art" }, /* @__PURE__ */ import_react6.default.createElement(Cover, { api, pack: current, large: true, cache: covers })), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-detail-body" }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSelected(null) }, "\u2190 \u8FD4\u56DE\u5217\u8868"), /* @__PURE__ */ import_react6.default.createElement("h3", { style: { margin: "6px 0 2px" } }, current.title), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption", style: { marginTop: 0 } }, current.artist || "\u672A\u77E5\u827A\u672F\u5BB6", " \xB7 \u4F5C\u8005 ", current.author || "\u2014", " \xB7 v", current.version), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, current.description || "\uFF08\u6CA1\u6709\u7B80\u4ECB\uFF09"), current.source && /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react6.default.createElement(SourceLink, { url: current.source })), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, "\u8BB8\u53EF ", current.license), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, "\u65F6\u957F ", durationText(current.duration)), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, RENDERERS[current.renderer] ?? current.renderer), current.sections > 0 && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, current.sections, " \u4E2A\u6BB5\u843D"), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip", title: "\u5B89\u88C5\u540E\u7528\u4F60\u81EA\u5DF1\u7684\u6B4C\u8BCD\u6587\u4EF6\uFF1B\u6309\u54C8\u5E0C\u5339\u914D\u5305\u91CC\u7684\u9010\u53E5\u65F6\u95F4" }, current.timing ? "\u5E26\u6B4C\u8BCD\u65F6\u95F4\u8F74" : "\u65E0\u6B4C\u8BCD\u65F6\u95F4\u8F74"), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip", title: "\u7528\u6765\u68C0\u67E5\u4F60\u7684\u97F3\u9891\u662F\u5426\u662F\u540C\u4E00\u4E2A\u7248\u672C" }, current.fingerprint ? "\u5E26\u97F3\u9891\u6307\u7EB9" : "\u4EC5\u6309\u65F6\u957F\u5339\u914D"), current.tags.map((t) => /* @__PURE__ */ import_react6.default.createElement("span", { key: t, className: "mv-chip" }, "#", t))), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, current.files.length, " \u4E2A\u6587\u4EF6 \xB7 ", sizeText(current.size), current.updated ? ` \xB7 \u66F4\u65B0\u4E8E ${current.updated.slice(0, 10)}` : "", current.homepage ? /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, " \xB7 ", /* @__PURE__ */ import_react6.default.createElement("a", { href: current.homepage, target: "_blank", rel: "noreferrer" }, "\u4E3B\u9875")) : null, " \xB7 ", /* @__PURE__ */ import_react6.default.createElement("a", { href: `${REPO_URL}/tree/${index?.commit ?? "main"}/packs/${current.id}`, target: "_blank", rel: "noreferrer" }, "\u5728 GitHub \u4E0A\u67E5\u770B\u6E90\u7801")), /* @__PURE__ */ import_react6.default.createElement("ul", { className: "mv-caption mv-ws-files" }, current.files.map((f) => /* @__PURE__ */ import_react6.default.createElement("li", { key: f.path }, /* @__PURE__ */ import_react6.default.createElement("code", { title: f.path }, f.path), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-ws-size" }, sizeText(f.size)), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-faint mv-ws-sha", title: `sha256 ${f.sha256}` }, "sha256 ", f.sha256.slice(0, 12), "\u2026")))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row" }, !installed[current.id] && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(busy), onClick: () => void install(current) }, busy === `install:${current.id}` ? "\u6B63\u5728\u4E0B\u8F7D\u5E76\u6821\u9A8C\u2026" : "\u5B89\u88C5\u5230\u66F2\u5E93"), installed[current.id] && updates.has(current.id) && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(busy), onClick: () => void install(current) }, busy === `install:${current.id}` ? "\u6B63\u5728\u66F4\u65B0\u2026" : `\u66F4\u65B0\u5230 v${current.version}\uFF08\u5DF2\u88C5 v${installed[current.id].version}\uFF09`), installed[current.id] && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void open(installed[current.id].manifestPath).then(() => setNote(`\u5DF2\u6253\u5F00\u300C${current.title}\u300D\u3002`)).catch((failure) => setError(errorText(failure, "\u65E0\u6CD5\u6253\u5F00\u3002"))) }, "\u6253\u5F00"), installed[current.id] && confirmUninstall !== current.id && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-danger", disabled: Boolean(busy), onClick: () => setConfirmUninstall(current.id) }, "\u5378\u8F7D"), confirmUninstall === current.id && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-row" }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, "\u786E\u5B9A\u5378\u8F7D\uFF1F\u4F1A\u5220\u9664\u63D2\u4EF6\u5DE5\u574A\u6587\u4EF6\u5939\u91CC\u7684\u8FD9\u4E2A\u5305\u3002"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-danger mv-button-small", onClick: () => void uninstall(current) }, "\u786E\u8BA4\u5378\u8F7D"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => setConfirmUninstall("") }, "\u53D6\u6D88"))))) : /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-grid", "aria-busy": loading }, shown.map((pack) => /* @__PURE__ */ import_react6.default.createElement(
+    "div",
+    {
+      key: pack.id,
+      role: "button",
+      tabIndex: 0,
+      className: "mv-ws-card",
+      onClick: () => setSelected(pack.id),
+      title: pack.description,
+      onKeyDown: (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          setSelected(pack.id);
+        }
+      }
+    },
+    /* @__PURE__ */ import_react6.default.createElement(Cover, { api, pack, cache: covers }),
+    /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-title" }, pack.title),
+    /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-sub" }, pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", " \xB7 ", durationText(pack.duration)),
+    /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-sub" }, "by ", pack.author || "\u2014", " \xB7 ", pack.license),
+    pack.source && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-sub" }, /* @__PURE__ */ import_react6.default.createElement(SourceLink, { url: pack.source, compact: true })),
+    installed[pack.id] && /* @__PURE__ */ import_react6.default.createElement("span", { className: `mv-ws-badge${updates.has(pack.id) ? " mv-ws-badge-update" : ""}` }, updates.has(pack.id) ? "\u6709\u66F4\u65B0" : "\u5DF2\u5B89\u88C5")
+  )), index && !shown.length && /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, packs.length ? "\u6CA1\u6709\u7B26\u5408\u6761\u4EF6\u7684\u5305\u3002" : "\u5DE5\u574A\u91CC\u8FD8\u6CA1\u6709\u5305\u3002")), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, "\u5B89\u88C5\u4F4D\u7F6E\uFF1A%LOCALAPPDATA%\\dsh-mv\\workshop\\<id>\u3002\u5DE5\u574A\u6CA1\u6709\u670D\u52A1\u5668\uFF1A\u76EE\u5F55\u6765\u81EA\u4ED3\u5E93\u91CC\u7531 GitHub Actions \u751F\u6210\u7684 index.json\u3002\u60F3\u6295\u7A3F\uFF1F\u6253\u5F00\u4F60\u7684 MV \u5305\u540E\u70B9\u300C\u53D1\u5E03\u5230\u5DE5\u574A\u2026\u300D\uFF0C\u6216\u770B ", /* @__PURE__ */ import_react6.default.createElement("a", { href: `${REPO_URL}/blob/main/CONTRIBUTING.zh.md`, target: "_blank", rel: "noreferrer" }, "\u6295\u7A3F\u8BF4\u660E"), "\u3002"));
 }
 function PublishDialog({ api, pack, canvas = () => null, onClose }) {
   const ws = pack.pack.workshop ?? {};
@@ -11342,7 +7352,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
   const [busy, setBusy] = import_react7.default.useState("");
   const [note, setNote] = import_react7.default.useState("");
   const [error, setError] = import_react7.default.useState("");
-  const pick2 = directoryPicker();
+  const pick = directoryPicker();
   import_react7.default.useEffect(() => {
     if (!navRequest) return;
     if (!navRequest.view) setCollapsed(saveLibraryCollapsed(false));
@@ -11375,7 +7385,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
   const chooseFolder = async () => {
     setError("");
     try {
-      const dir = await pick2();
+      const dir = await pick();
       if (dir) {
         setPath(dir);
         await importPath(dir);
@@ -11385,7 +7395,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
     }
   };
   const writeTemplate = async () => {
-    if (!pick2) {
+    if (!pick) {
       downloadZip();
       setNote(`\u5DF2\u4E0B\u8F7D ${TEMPLATE_ZIP_NAME}\u3002\u89E3\u538B\u540E\u7F16\u8F91 mv.json\uFF0C\u653E\u5165\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u518D\u70B9\u300C\u5BFC\u5165\u300D\u3002`);
       return;
@@ -11394,7 +7404,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
     setError("");
     setNote("");
     try {
-      const dir = await pick2();
+      const dir = await pick();
       if (!dir) return;
       const written = unwrapRemote(await api.packTemplate({ dir }), "\u65E0\u6CD5\u5199\u5165\u6A21\u677F\u3002");
       setNote(`\u6A21\u677F\u5DF2\u4FDD\u5B58\u5230 ${written.path}\uFF08${written.files.length} \u4E2A\u6587\u4EF6\uFF09\u3002\u7F16\u8F91\u5176\u4E2D\u7684 mv.json\uFF0C\u653E\u5165\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u518D\u70B9\u300C\u5BFC\u5165\u300D\u9009\u62E9\u8BE5\u6587\u4EF6\u5939\u3002`);
@@ -11404,6 +7414,33 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       setBusy("");
     }
   };
+  const installPreset = async (preset) => {
+    const have = recent.find((item) => item.workshop === preset.id);
+    if (have) {
+      onSelect(`pack:${have.manifestPath}`);
+      return;
+    }
+    setBusy(`preset:${preset.id}`);
+    setError("");
+    setNote("");
+    try {
+      const done = await installWorkshopPack(api, preset.id);
+      const loaded = await loadPackFromHost(api, done.manifestPath);
+      onRecent(rememberPack(loaded));
+      onLoaded(loaded);
+      setNote(`\u5DF2\u4ECE\u521B\u610F\u5DE5\u574A\u5B89\u88C5\u300C${preset.title}\u300Dv${done.version}\uFF08${done.files} \u4E2A\u6587\u4EF6\uFF0Csha256 \u6821\u9A8C\u901A\u8FC7\uFF09\u3002\u5305\u91CC\u6CA1\u6709\u97F3\u9891\uFF1A\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2\u6587\u4EF6\uFF08\u53EF\u9009\u6B4C\u8BCD\uFF09\u540E\u70B9 \u25B6 \u64AD\u653E\u3002`);
+    } catch (failure) {
+      setError(errorText(failure, `\u65E0\u6CD5\u5B89\u88C5\u300C${preset.title}\u300D\u3002\u53EF\u4EE5\u6253\u5F00\u300C\u521B\u610F\u5DE5\u574A\u300D\u91CD\u8BD5\u3002`));
+    } finally {
+      setBusy("");
+    }
+  };
+  const presetRow = (preset) => {
+    const have = recent.some((item) => item.workshop === preset.id);
+    return /* @__PURE__ */ import_react7.default.createElement("div", { key: preset.id, className: "mv-preset", role: "listitem" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-thumb mv-track-art", style: { "--mv-hue": preset.hue }, "aria-hidden": "true" }, preset.cover), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-preset-main" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-title" }, preset.title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-artist" }, preset.artist, " \xB7 ", preset.kind, " \xB7 \u539F\u4F5C ", /* @__PURE__ */ import_react7.default.createElement("a", { href: preset.source, target: "_blank", rel: "noreferrer" }, preset.sourceLabel))), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: Boolean(busy) || !api?.workshopInstall, onClick: () => void installPreset(preset) }, busy === `preset:${preset.id}` ? "\u6B63\u5728\u5B89\u88C5\u2026" : have ? "\u6253\u5F00" : "\u4E00\u952E\u5B89\u88C5"));
+  };
+  const moved = active.moved ?? null;
+  const empty = recent.length === 0;
   const toggleWorkshop = () => {
     setWorkshopOpen((value) => !value);
     setAiOpen(false);
@@ -11426,12 +7463,10 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
     { key: "ws", label: "\u521B\u610F\u5DE5\u574A", Icon: Icon.shop, expanded: workshopOpen, onClick: toggleWorkshop, title: "\u6D4F\u89C8\u793E\u533A\u6295\u7A3F\u7684 MV \u5305\uFF0C\u4E00\u952E\u5B89\u88C5\u5230\u66F2\u5E93\uFF1B\u4E5F\u53EF\u4EE5\u628A\u4F60\u7684 MV \u5305\u53D1\u5E03\u5230\u5DE5\u574A" },
     { key: "ai", label: "\u7528 AI \u5236\u4F5C\u65B0 MV", Icon: Icon.spark, expanded: aiOpen, onClick: toggleAi, title: "\u9009\u4E00\u9996\u4F60\u7684\u6B4C\uFF0C\u8BA9 Harness \u7684 Agent \u5199\u6B4C\u8BCD\u65F6\u95F4\u8F74\u3001mv.json \u548C ASCII \u573A\u666F\u811A\u672C" },
     { key: "import", label: "\u5BFC\u5165 MV \u5305", Icon: Icon.plus, expanded: importing, onClick: toggleImport, title: "\u9009\u62E9\u542B mv.json \u7684\u6587\u4EF6\u5939" },
-    { key: "template", label: busy === "template" ? "\u6B63\u5728\u5199\u5165\u2026" : "\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09", Icon: Icon.folder, disabled: busy === "template", onClick: () => void writeTemplate(), title: pick2 ? "\u9009\u62E9\u4E00\u4E2A\u6587\u4EF6\u5939\uFF0C\u5728\u5176\u4E2D\u65B0\u5EFA dsh-mv-pack-template\uFF08\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\uFF09" : `\u4E0B\u8F7D ${TEMPLATE_ZIP_NAME}` }
+    { key: "template", label: busy === "template" ? "\u6B63\u5728\u5199\u5165\u2026" : "\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09", Icon: Icon.folder, disabled: busy === "template", onClick: () => void writeTemplate(), title: pick ? "\u9009\u62E9\u4E00\u4E2A\u6587\u4EF6\u5939\uFF0C\u5728\u5176\u4E2D\u65B0\u5EFA dsh-mv-pack-template\uFF08\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\uFF09" : `\u4E0B\u8F7D ${TEMPLATE_ZIP_NAME}` }
   ];
   const activeDuration = Number(active.pack?.duration) || 0;
   const rows = [
-    { id: BUILTIN_ID, title: "world.execute(me);", artist: "Mili", type: "\u5185\u7F6E\u9884\u8BBE", kind: "builtin", cover: ">_", hue: 18, duration: DURATION, tip: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" },
-    { id: DSH_PV_ID, title: "world.execute(me); dsh PV", artist: "MisakaZentai", type: "\u753B\u5E03\u9884\u8BBE", kind: "canvas", cover: "dsh", hue: 222, duration: 211.913, tip: "\u5185\u7F6E\u753B\u5E03\u9884\u8BBE\uFF1AMisakaZentai \u7684 world-execute-me-dsh-pv\uFF08\u4EE3\u7801 MIT\uFF09\u5B9E\u65F6\u79FB\u690D\uFF0C\u9CB8\u9C7C\u5A18\u7ACB\u7ED8 CC BY-NC-SA 4.0\u3002\n\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6\u3002" },
     ...recent.map((item) => {
       const id = `pack:${item.manifestPath}`;
       return { id, manifestPath: item.manifestPath, title: item.title || item.manifestPath, artist: item.artist, type: item.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305", kind: item.workshop ? "workshop" : "pack", cover: initials(item.title), hue: coverHue(item.title), duration: item.duration || (active.id === id ? activeDuration : 0), tip: item.manifestPath };
@@ -11464,13 +7499,13 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
         title: "\u4ECE\u66F2\u5E93\u79FB\u9664\uFF08\u4E0D\u5220\u9664\u6587\u4EF6\uFF09",
         onClick: () => {
           onRecent(forgetPack(row.manifestPath));
-          if (current) onSelect(BUILTIN_ID);
+          if (current) onSelect(EMPTY_ID);
         }
       },
       /* @__PURE__ */ import_react7.default.createElement(Icon.close, null)
     )));
   };
-  const activeRow = rows.find((row) => row.id === active.id) ?? { id: active.id, manifestPath: "", title: active.pack?.title ?? "", artist: active.pack?.artist ?? "", type: active.builtin ? "\u5185\u7F6E\u9884\u8BBE" : "MV \u5305", kind: active.builtin ? "builtin" : "pack", cover: initials(active.pack?.title), hue: coverHue(active.pack?.title), duration: activeDuration, tip: active.manifestPath ?? "" };
+  const activeRow = rows.find((row) => row.id === active.id) ?? { id: active.id, manifestPath: "", title: active.pack?.title ?? "", artist: active.pack?.artist ?? "", type: active.empty ? "\u2014" : "MV \u5305", kind: "pack", cover: initials(active.pack?.title), hue: coverHue(active.pack?.title), duration: activeDuration, tip: active.manifestPath ?? "" };
   const warnings = active.warnings ?? [];
   return /* @__PURE__ */ import_react7.default.createElement("section", { className: "mv-library-section", "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-head" }, /* @__PURE__ */ import_react7.default.createElement(
     "button",
@@ -11484,7 +7519,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       onClick: () => setCollapsed(saveLibraryCollapsed(!collapsed))
     },
     /* @__PURE__ */ import_react7.default.createElement(Icon.chevron, null)
-  ), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93 ", /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-lib-count" }, 2 + recent.length, " \u9996", collapsed ? " \xB7 \u5DF2\u6536\u8D77" : "")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-spacer" }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-segmented mv-segmented-small mv-lib-layout", role: "radiogroup", "aria-label": "\u66F2\u5E93\u663E\u793A\u65B9\u5F0F" }, [["list", "\u5217\u8868", Icon.list], ["grid", "\u7F51\u683C", Icon.grid]].map(([value, label, Ico]) => /* @__PURE__ */ import_react7.default.createElement(
+  ), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93 ", /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-lib-count" }, recent.length, " \u9996", collapsed ? " \xB7 \u5DF2\u6536\u8D77" : "")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-spacer" }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-segmented mv-segmented-small mv-lib-layout", role: "radiogroup", "aria-label": "\u66F2\u5E93\u663E\u793A\u65B9\u5F0F" }, [["list", "\u5217\u8868", Icon.list], ["grid", "\u7F51\u683C", Icon.grid]].map(([value, label, Ico]) => /* @__PURE__ */ import_react7.default.createElement(
     "button",
     {
       key: value,
@@ -11497,19 +7532,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
     },
     /* @__PURE__ */ import_react7.default.createElement(Ico, null),
     /* @__PURE__ */ import_react7.default.createElement("span", null, label)
-  )))), collapsed ? /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-tracks mv-tracks-mini", role: "list", "aria-label": "\u6B63\u5728\u64AD\u653E" }, trackRow(activeRow, "\u25B8")) : layout === "list" ? /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-lib-body" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-tools", role: "toolbar", "aria-label": "\u66F2\u5E93\u64CD\u4F5C" }, tools.map((tool) => /* @__PURE__ */ import_react7.default.createElement("button", { key: tool.key, type: "button", className: `mv-lib-tool mv-lib-tool-${tool.key}`, "aria-expanded": tool.expanded, disabled: tool.disabled, title: tool.title, onClick: tool.onClick }, /* @__PURE__ */ import_react7.default.createElement(tool.Icon, null), /* @__PURE__ */ import_react7.default.createElement("span", null, tool.label)))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-tracks", role: "list", "aria-label": "\u66F2\u76EE" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-track mv-track-head", "aria-hidden": "true" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-n" }, "#"), /* @__PURE__ */ import_react7.default.createElement("span", null), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6807\u9898"), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7C7B\u578B"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-len" }, "\u65F6\u957F"), /* @__PURE__ */ import_react7.default.createElement("span", null)), rows.map((row, index2) => trackRow(row, index2 + 1)))) : /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-library" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-card", "aria-pressed": active.id === BUILTIN_ID, onClick: () => onSelect(BUILTIN_ID), title: "\u5185\u7F6E\u9884\u8BBE\uFF1A\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art", style: { "--mv-hue": 18 } }, ">_"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-title" }, "world.execute(me);"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, "Mili \xB7 \u5185\u7F6E\u9884\u8BBE")), /* @__PURE__ */ import_react7.default.createElement(
-    "button",
-    {
-      type: "button",
-      className: "mv-card",
-      "aria-pressed": active.id === DSH_PV_ID,
-      onClick: () => onSelect(DSH_PV_ID),
-      title: "\u5185\u7F6E\u753B\u5E03\u9884\u8BBE\uFF1AMisakaZentai \u7684 world-execute-me-dsh-pv\uFF08\u4EE3\u7801 MIT\uFF09\u5B9E\u65F6\u79FB\u690D\uFF0C\u9CB8\u9C7C\u5A18\u7ACB\u7ED8 CC BY-NC-SA 4.0\u3002\n\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u6587\u4EF6\u3002"
-    },
-    /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art mv-card-art-dshpv", style: { "--mv-hue": 222 } }, "dsh"),
-    /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-title" }, "world.execute(me); dsh PV"),
-    /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, "MisakaZentai \xB7 \u753B\u5E03\u9884\u8BBE")
-  ), recent.map((item) => {
+  )))), moved && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "info", actions: /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: Boolean(busy) || !api?.workshopInstall, onClick: () => void installPreset(moved) }, busy === `preset:${moved.id}` ? "\u6B63\u5728\u5B89\u88C5\u2026" : "\u4ECE\u521B\u610F\u5DE5\u574A\u5B89\u88C5") }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, "\u300C", moved.title, "\u300D\u5728 0.9.0 \u8D77\u4E0D\u518D\u5185\u7F6E\uFF0C\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A\uFF08\u539F\u4F5C ", /* @__PURE__ */ import_react7.default.createElement("a", { href: moved.source, target: "_blank", rel: "noreferrer" }, moved.sourceLabel), "\uFF09\u3002\u5B89\u88C5\u540E\u4F1A\u6CBF\u7528\u4F60\u4E4B\u524D\u4E3A\u5B83\u9009\u62E9\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u3002")), collapsed ? /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-tracks mv-tracks-mini", role: "list", "aria-label": "\u6B63\u5728\u64AD\u653E" }, active.empty ? /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u66F2\u5E93\u662F\u7A7A\u7684\uFF1A\u5C55\u5F00\u540E\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5 MV\u3002") : trackRow(activeRow, "\u25B8")) : layout === "list" ? /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-lib-body" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-tools", role: "toolbar", "aria-label": "\u66F2\u5E93\u64CD\u4F5C" }, tools.map((tool) => /* @__PURE__ */ import_react7.default.createElement("button", { key: tool.key, type: "button", className: `mv-lib-tool mv-lib-tool-${tool.key}`, "aria-expanded": tool.expanded, disabled: tool.disabled, title: tool.title, onClick: tool.onClick }, /* @__PURE__ */ import_react7.default.createElement(tool.Icon, null), /* @__PURE__ */ import_react7.default.createElement("span", null, tool.label)))), !empty && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-tracks", role: "list", "aria-label": "\u66F2\u76EE" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-track mv-track-head", "aria-hidden": "true" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-n" }, "#"), /* @__PURE__ */ import_react7.default.createElement("span", null), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6807\u9898"), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7C7B\u578B"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-len" }, "\u65F6\u957F"), /* @__PURE__ */ import_react7.default.createElement("span", null)), rows.map((row, index) => trackRow(row, index + 1)))) : /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-library" }, recent.map((item) => {
     const id = `pack:${item.manifestPath}`;
     return /* @__PURE__ */ import_react7.default.createElement(
       "div",
@@ -11538,7 +7561,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
           onClick: (event) => {
             event.stopPropagation();
             onRecent(forgetPack(item.manifestPath));
-            if (active.id === id) onSelect(BUILTIN_ID);
+            if (active.id === id) onSelect(EMPTY_ID);
           }
         },
         /* @__PURE__ */ import_react7.default.createElement(Icon.close, null)
@@ -11591,11 +7614,11 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       className: "mv-card mv-card-ghost",
       disabled: busy === "template",
       onClick: () => void writeTemplate(),
-      title: pick2 ? "\u9009\u62E9\u4E00\u4E2A\u6587\u4EF6\u5939\uFF0C\u5728\u5176\u4E2D\u65B0\u5EFA dsh-mv-pack-template\uFF08\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\uFF09" : `\u4E0B\u8F7D ${TEMPLATE_ZIP_NAME}`
+      title: pick ? "\u9009\u62E9\u4E00\u4E2A\u6587\u4EF6\u5939\uFF0C\u5728\u5176\u4E2D\u65B0\u5EFA dsh-mv-pack-template\uFF08\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\uFF09" : `\u4E0B\u8F7D ${TEMPLATE_ZIP_NAME}`
     },
     /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react7.default.createElement(Icon.folder, null)),
     /* @__PURE__ */ import_react7.default.createElement("span", null, busy === "template" ? "\u6B63\u5728\u5199\u5165\u2026" : "\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09")
-  )), recent.length === 0 && !collapsed && !importing && !aiOpen && !workshopOpen && /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u60F3\u653E\u522B\u7684\u6B4C\uFF1F\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u522B\u4EBA\u505A\u597D\u7684 MV \u5305\uFF0C\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u5F97\u5230\u5E26\u8BF4\u660E\u7684 mv.json \u548C\u793A\u4F8B\u573A\u666F\uFF0C\u653E\u5165\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u540E\u300C\u5BFC\u5165\u300D\u3002"), workshopOpen && /* @__PURE__ */ import_react7.default.createElement(WorkshopDialog, { api, active, canvas, initialIndex: workshopIndex, onClose: () => setWorkshopOpen(false), onLoaded, onRecent }), aiOpen && /* @__PURE__ */ import_react7.default.createElement(AiPackDialog, { api, harness, info, onClose: () => setAiOpen(false), onLoaded, onRecent }), importing && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-dialog", role: "dialog", "aria-label": "\u5BFC\u5165 MV \u5305" }, /* @__PURE__ */ import_react7.default.createElement("h2", null, "\u5BFC\u5165 MV \u5305"), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u9009\u62E9\u542B mv.json \u7684\u6587\u4EF6\u5939\uFF0C\u6216\u7C98\u8D34 mv.json / \u6587\u4EF6\u5939\u7684\u7EDD\u5BF9\u8DEF\u5F84\u3002\u53EA\u8BFB\u53D6\u6E05\u5355\uFF0C\u4E0D\u8FD0\u884C\u4EFB\u4F55\u7A0B\u5E8F\u3002"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-field-row" }, /* @__PURE__ */ import_react7.default.createElement(
+  )), empty && !collapsed && !workshopOpen && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-empty-lib", role: "region", "aria-label": "\u66F2\u5E93\u662F\u7A7A\u7684" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-empty-head" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-empty-icon", "aria-hidden": "true" }, /* @__PURE__ */ import_react7.default.createElement(Icon.shop, null)), /* @__PURE__ */ import_react7.default.createElement("div", null, /* @__PURE__ */ import_react7.default.createElement("h3", null, "\u66F2\u5E93\u8FD8\u662F\u7A7A\u7684"), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u63D2\u4EF6\u672C\u8EAB\u4E0D\u5E26\u4EFB\u4F55 MV\uFF1A\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u793E\u533A\u505A\u597D\u7684 MV \u5305\uFF08\u4E0D\u542B\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u7528\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2\u6587\u4EF6\u64AD\u653E\uFF09\u3002\u4E0B\u9762\u4E24\u4E2A\u662F\u4EE5\u524D\u5185\u7F6E\u7684 world.execute(me) MV\uFF0C\u70B9\u4E00\u4E0B\u5C31\u80FD\u88C5\u597D\u3002")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button", onClick: toggleWorkshop }, "\u6253\u5F00\u521B\u610F\u5DE5\u574A")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-presets", role: "list", "aria-label": "\u63A8\u8350" }, PRESET_PACKS.map(presetRow)), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u4E5F\u53EF\u4EE5\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u5199\u4E00\u4E2A\u81EA\u5DF1\u7684 MV \u5305\u518D\u300C\u5BFC\u5165\u300D\u3002")), workshopOpen && /* @__PURE__ */ import_react7.default.createElement(WorkshopDialog, { api, active, canvas, initialIndex: workshopIndex, onClose: () => setWorkshopOpen(false), onLoaded, onRecent }), aiOpen && /* @__PURE__ */ import_react7.default.createElement(AiPackDialog, { api, harness, info, onClose: () => setAiOpen(false), onLoaded, onRecent }), importing && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-dialog", role: "dialog", "aria-label": "\u5BFC\u5165 MV \u5305" }, /* @__PURE__ */ import_react7.default.createElement("h2", null, "\u5BFC\u5165 MV \u5305"), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u9009\u62E9\u542B mv.json \u7684\u6587\u4EF6\u5939\uFF0C\u6216\u7C98\u8D34 mv.json / \u6587\u4EF6\u5939\u7684\u7EDD\u5BF9\u8DEF\u5F84\u3002\u53EA\u8BFB\u53D6\u6E05\u5355\uFF0C\u4E0D\u8FD0\u884C\u4EFB\u4F55\u7A0B\u5E8F\u3002"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-field-row" }, /* @__PURE__ */ import_react7.default.createElement(
     "input",
     {
       value: path,
@@ -11608,11 +7631,11 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
         if (event.key === "Enter" && path.trim()) void importPath(path);
       }
     }
-  ), pick2 && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void chooseFolder() }, "\u9009\u62E9\u6587\u4EF6\u5939\u2026"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button", disabled: !path.trim() || Boolean(busy), onClick: () => void importPath(path) }, busy === "import" ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5BFC\u5165"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => setImporting(false) }, "\u53D6\u6D88")), pick2 && /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u6CA1\u6709\u73B0\u6210\u7684\u5305\uFF1F", /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: downloadZip }, "\u4E0B\u8F7D\u6A21\u677F zip"))), warnings.length > 0 && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, warnings.join("\n"))), error && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error)), note && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "ok", actions: /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setNote("") }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, note)));
+  ), pick && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void chooseFolder() }, "\u9009\u62E9\u6587\u4EF6\u5939\u2026"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button", disabled: !path.trim() || Boolean(busy), onClick: () => void importPath(path) }, busy === "import" ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5BFC\u5165"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => setImporting(false) }, "\u53D6\u6D88")), pick && /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u6CA1\u6709\u73B0\u6210\u7684\u5305\uFF1F", /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: downloadZip }, "\u4E0B\u8F7D\u6A21\u677F zip"))), warnings.length > 0 && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, warnings.join("\n"))), error && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error)), note && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "ok", actions: /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setNote("") }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, note)));
 }
 
 // .dsh-plugin/client/mv.css
-var mv_default = '/* MV \u653E\u6620\u5BA4 \u2014 opaque surface that follows Harness light/dark (body[data-ds-dark-theme]). */\n.mv-root {\n  --mv-fb-bg: #ffffff; --mv-fb-text: #14151a; --mv-fb-muted: #4b4e59; --mv-fb-faint: #6b6e79; --mv-fb-border: rgba(20, 21, 26, .12);\n  --mv-fb-danger: #d92d20; --mv-fb-ok: #15803d;\n  --mv-accent: #e8890c; --mv-accent-strong: #c96f00; --mv-accent-ink: #1b1204;\n  --mv-bg: var(--dsw-alias-bg-base, var(--mv-fb-bg));\n  --mv-text: var(--dsw-alias-label-primary, var(--mv-fb-text));\n  --mv-muted: var(--dsw-alias-label-secondary, var(--mv-fb-muted));\n  --mv-faint: var(--dsw-alias-label-tertiary, var(--mv-fb-faint));\n  --mv-border: var(--dsw-alias-border-l2, var(--mv-fb-border));\n  --mv-danger: var(--dsw-alias-state-error-primary, var(--mv-fb-danger));\n  --mv-ok: var(--dsw-alias-state-success-primary, var(--mv-fb-ok));\n  --mv-surface: color-mix(in srgb, var(--mv-text) 4%, var(--mv-bg));\n  --mv-surface-2: color-mix(in srgb, var(--mv-text) 8%, var(--mv-bg));\n  --mv-hover: color-mix(in srgb, var(--mv-text) 10%, var(--mv-bg));\n  --mv-accent-soft: color-mix(in srgb, var(--mv-accent) 16%, var(--mv-bg));\n  --mv-danger-soft: color-mix(in srgb, var(--mv-danger) 10%, var(--mv-bg));\n  --mv-warn-soft: color-mix(in srgb, #f59e0b 16%, var(--mv-bg));\n  --mv-radius: 12px;\n  color-scheme: light;\n  position: relative; isolation: isolate;\n  /* The Harness centre column is `display:flex; flex-direction:column; overflow:hidden`: the panel must be\n     its own scroll container (it fills the column and scrolls; mv-panel.jsx pins the height elsewhere). */\n  flex: 1 1 auto; min-height: 0; height: 100%; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;\n  box-sizing: border-box; padding: 18px 22px 28px;\n  background: var(--mv-bg); color: var(--mv-text);\n  font-size: 13px; line-height: 20px;\n  font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif;\n}\n@media (prefers-color-scheme: dark) {\n  .mv-root { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; color-scheme: dark; }\n}\nbody[data-ds-dark-theme] .mv-root, .mv-root.mv-dark { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; --mv-accent: #ffaf5f; --mv-accent-strong: #ffc285; color-scheme: dark; }\n.mv-root *, .mv-root *::before, .mv-root *::after { box-sizing: border-box; }\n.mv-root :where(button, input, select, textarea) { font: inherit; color: inherit; }\n.mv-root code { font-family: "Cascadia Mono", Consolas, Menlo, monospace; font-size: 12px; }\n.mv-root :focus-visible { outline: 2px solid var(--mv-accent); outline-offset: 2px; }\n\n/* ---- header ---- */\n.mv-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }\n.mv-title { margin: 0; font-size: 20px; line-height: 28px; font-weight: 650; letter-spacing: .2px; }\n.mv-title small { font-size: 12px; font-weight: 400; color: var(--mv-faint); margin-left: 8px; }\n.mv-spacer { flex: 1; }\n.mv-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px; line-height: 20px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-pill-warn { background: var(--mv-warn-soft); color: var(--mv-text); border: 1px solid color-mix(in srgb, #f59e0b 45%, transparent); }\n.mv-pill-ok { color: var(--mv-ok); }\n.mv-icon-button { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--mv-border); background: var(--mv-bg); cursor: pointer; padding: 0; color: var(--mv-muted); }\n.mv-icon-button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-icon-button[aria-pressed="true"] { background: var(--mv-accent-soft); color: var(--mv-text); border-color: var(--mv-accent); }\n\n/* ---- popover ---- */\n.mv-pop-anchor { position: relative; display: inline-flex; }\n.mv-popover { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: min(440px, 86vw); padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-bg); border: 1px solid var(--mv-border); box-shadow: 0 12px 32px rgba(0, 0, 0, .22); font-size: 12.5px; line-height: 19px; }\n.mv-popover h3 { margin: 0 0 6px; font-size: 13px; }\n.mv-popover p { margin: 6px 0; color: var(--mv-muted); }\n.mv-popover ul { margin: 4px 0 8px; padding-left: 18px; color: var(--mv-muted); }\n.mv-keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 6px 0; }\n.mv-keys kbd { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--mv-border); background: var(--mv-surface); white-space: nowrap; justify-self: start; }\n\n/* ---- library ---- */\n.mv-section-label { font-size: 12px; font-weight: 600; color: var(--mv-faint); margin: 0 0 8px; letter-spacing: .3px; }\n.mv-library { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; margin: 0 -2px 6px; scrollbar-width: thin; }\n.mv-card { flex: 0 0 196px; min-height: 84px; text-align: left; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; position: relative; }\n.mv-card:hover { background: var(--mv-hover); }\n.mv-card[aria-pressed="true"] { border-color: var(--mv-accent); box-shadow: inset 0 0 0 1px var(--mv-accent); background: var(--mv-accent-soft); }\n.mv-card-art { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-size: 13px; font-weight: 700; background: #111; color: #ffaf5f; margin-bottom: 4px; }\n.mv-card-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-sub { font-size: 12px; color: var(--mv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-ghost { background: transparent; border-style: dashed; color: var(--mv-muted); align-items: center; justify-content: center; text-align: center; flex-basis: 132px; }\n.mv-card-ghost .mv-card-art { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-card-remove { position: absolute; right: 6px; top: 6px; width: 22px; height: 22px; border-radius: 999px; border: 0; background: transparent; color: var(--mv-faint); cursor: pointer; display: none; }\n.mv-card:hover .mv-card-remove, .mv-card:focus-within .mv-card-remove { display: grid; place-items: center; }\n.mv-card-remove:hover { background: var(--mv-surface-2); color: var(--mv-text); }\n\n/* ---- now playing hero ---- */\n.mv-hero { display: grid; grid-template-columns: 1fr auto; gap: 12px 16px; align-items: center; padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin-bottom: 14px; }\n.mv-hero-title { font-size: 18px; line-height: 26px; font-weight: 650; margin: 0; }\n.mv-hero-sub { color: var(--mv-muted); margin: 2px 0 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }\n.mv-hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }\n.mv-segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--mv-surface-2); gap: 2px; }\n.mv-segmented button { border: 0; background: transparent; padding: 5px 12px; border-radius: 8px; cursor: pointer; color: var(--mv-muted); white-space: nowrap; }\n.mv-segmented button:hover:not(:disabled) { color: var(--mv-text); }\n.mv-segmented button[aria-checked="true"] { background: var(--mv-bg); color: var(--mv-text); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }\n.mv-segmented button:disabled { opacity: .45; cursor: not-allowed; }\n.mv-segmented-small button { padding: 3px 10px; font-size: 12px; }\n.mv-play-big { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 20px 0 16px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); font-weight: 650; font-size: 14px; cursor: pointer; box-shadow: 0 2px 8px color-mix(in srgb, var(--mv-accent) 40%, transparent); }\n.mv-play-big:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-play-big:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }\n.mv-play-big svg { width: 18px; height: 18px; }\n.mv-hero-hint { grid-column: 1 / -1; margin: 0; font-size: 12px; color: var(--mv-muted); }\n\n/* ---- generic pieces ---- */\n.mv-caption { color: var(--mv-muted); font-size: 12px; margin: 4px 0; }\n.mv-faint { color: var(--mv-faint); }\n.mv-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 18px; padding: 1px 8px; border-radius: 999px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-button { display: inline-flex; align-items: center; gap: 6px; height: 30px; border: 1px solid transparent; background: var(--mv-accent); color: var(--mv-accent-ink); border-radius: 8px; padding: 0 12px; cursor: pointer; font-weight: 600; white-space: nowrap; }\n.mv-button:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-button:disabled { opacity: .5; cursor: not-allowed; }\n.mv-button-secondary { background: var(--mv-bg); color: var(--mv-text); border-color: var(--mv-border); font-weight: 500; }\n.mv-button-secondary:hover:not(:disabled) { background: var(--mv-hover); }\n.mv-button-danger { background: var(--mv-bg); color: var(--mv-danger); border-color: color-mix(in srgb, var(--mv-danger) 45%, transparent); font-weight: 500; }\n.mv-button-danger:hover:not(:disabled) { background: var(--mv-danger-soft); }\n.mv-button-small { height: 26px; padding: 0 10px; font-size: 12px; }\n.mv-link { border: 0; background: none; color: var(--mv-accent-strong); cursor: pointer; padding: 0 2px; text-decoration: underline; text-underline-offset: 2px; }\n.mv-link:disabled { opacity: .5; cursor: default; }\n.mv-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }\n.mv-card-box { padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin: 0 0 12px; }\n.mv-card-box h2 { margin: 0 0 8px; font-size: 14px; line-height: 20px; }\n\n/* Inline status / problems */\n.mv-alert { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--mv-border); background: var(--mv-bg); }\n.mv-alert-icon { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; font-size: 12px; font-weight: 700; margin-top: 1px; }\n.mv-alert-body { flex: 1; min-width: 0; }\n.mv-alert-body p { margin: 0; }\n.mv-alert-body .mv-row { margin-top: 6px; }\n.mv-alert-error { border-color: color-mix(in srgb, var(--mv-danger) 40%, transparent); background: var(--mv-danger-soft); }\n.mv-alert-error .mv-alert-icon { background: var(--mv-danger); color: #fff; }\n.mv-alert-warn { border-color: color-mix(in srgb, #f59e0b 50%, transparent); background: var(--mv-warn-soft); }\n.mv-alert-warn .mv-alert-icon { background: #f59e0b; color: #1b1204; }\n.mv-alert-ok .mv-alert-icon { background: var(--mv-ok); color: #fff; }\n.mv-alert-info .mv-alert-icon { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-error { color: var(--mv-danger); white-space: pre-wrap; margin: 6px 0; }\n.mv-wrap { word-break: break-all; }\n\n/* Media source rows (canvas) */\n.mv-sources { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin: 0 0 12px; }\n.mv-source { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); min-width: 0; }\n.mv-source-icon { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--mv-surface-2); font-size: 14px; }\n.mv-source-main { flex: 1; min-width: 0; }\n.mv-source-label { font-size: 11.5px; color: var(--mv-faint); line-height: 16px; }\n.mv-source-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-source-empty .mv-source-value { color: var(--mv-muted); }\n\n/* Onboarding */\n.mv-onboard { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 16px; border-radius: var(--mv-radius); border: 1px solid color-mix(in srgb, var(--mv-accent) 45%, transparent); background: var(--mv-accent-soft); margin: 0 0 12px; }\n.mv-onboard h2 { margin: 0 0 4px; font-size: 15px; }\n.mv-onboard ol { margin: 6px 0 10px; padding-left: 18px; color: var(--mv-muted); }\n.mv-onboard-badge { width: 40px; height: 40px; border-radius: 10px; background: #111; color: #ffaf5f; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; }\n\n/* Stage + player bar */\n.mv-stage-wrap { background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; outline: none; padding: 6px; position: relative; }\n.mv-stage-wrap:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); }\n.mv-stage { height: min(62vh, 720px); min-height: 340px; resize: vertical; overflow: hidden; display: flex; align-items: center; justify-content: center; }\n.mv-stage canvas { display: block; }\n.mv-fullscreen { border-radius: 0; padding: 0; width: 100vw; height: 100vh; }\n.mv-fullscreen .mv-stage { height: 100vh; resize: none; }\n.mv-playerbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); margin-bottom: 12px; }\n.mv-round { width: 38px; height: 38px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); display: grid; place-items: center; cursor: pointer; flex: 0 0 auto; }\n.mv-round:hover { background: var(--mv-accent-strong); }\n.mv-round svg { width: 18px; height: 18px; }\n.mv-seek-wrap { flex: 1 1 260px; display: flex; align-items: center; gap: 10px; min-width: 200px; }\n.mv-seek { flex: 1; accent-color: var(--mv-accent); }\n.mv-time { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--mv-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }\n.mv-volume { display: inline-flex; align-items: center; gap: 6px; }\n.mv-volume input { width: 84px; accent-color: var(--mv-accent); }\n.mv-stepper { display: inline-flex; align-items: center; border: 1px solid var(--mv-border); border-radius: 8px; overflow: hidden; background: var(--mv-bg); height: 28px; }\n.mv-stepper button { border: 0; background: transparent; width: 26px; height: 100%; cursor: pointer; color: var(--mv-muted); }\n.mv-stepper button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-stepper span { padding: 0 8px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; border-left: 1px solid var(--mv-border); border-right: 1px solid var(--mv-border); line-height: 26px; }\n\n/* Collapsible settings */\n.mv-details { border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); margin: 0 0 12px; }\n.mv-details > summary { cursor: pointer; padding: 10px 14px; list-style: none; display: flex; align-items: center; gap: 8px; font-weight: 600; user-select: none; }\n.mv-details > summary::-webkit-details-marker { display: none; }\n.mv-details > summary::before { content: "\u25B8"; color: var(--mv-faint); transition: transform .15s; display: inline-block; }\n.mv-details[open] > summary::before { transform: rotate(90deg); }\n.mv-details > summary .mv-caption { font-weight: 400; margin: 0; }\n.mv-details-body { padding: 4px 14px 14px; }\n.mv-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px 14px; margin: 6px 0; }\n.mv-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; min-width: 0; }\n.mv-field > span:first-child { color: var(--mv-muted); }\n.mv-field input, .mv-field select { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); min-width: 0; width: 100%; }\n.mv-field input:disabled { opacity: .55; }\n.mv-field-help { font-size: 11.5px; color: var(--mv-faint); }\n.mv-field-row { display: flex; gap: 6px; }\n.mv-field-row input { flex: 1; }\n.mv-wide { grid-column: 1 / -1; }\n.mv-check { display: inline-flex; gap: 8px; align-items: center; font-size: 12.5px; align-self: end; height: 30px; }\n.mv-check input { accent-color: var(--mv-accent); width: 15px; height: 15px; }\n\n/* Confirmation */\n.mv-confirm { margin: 0 0 12px; padding: 14px 16px; border: 1px solid var(--mv-accent); border-radius: var(--mv-radius); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-confirm > strong { display: block; font-size: 14px; margin-bottom: 6px; }\n.mv-confirm ul { margin: 8px 0; padding-left: 20px; color: var(--mv-muted); }\n.mv-confirm code { word-break: break-all; }\n.mv-cmd { display: block; margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: var(--mv-surface-2); white-space: pre-wrap; word-break: break-all; }\n.mv-argv { margin: 4px 0 6px; padding-left: 24px; font-size: 12px; }\n\n/* Terminal */\n.mv-term-pane { margin: 0 0 12px; }\n.mv-term-screen { height: min(66vh, 740px); min-height: 300px; resize: vertical; overflow: hidden; padding: 6px; background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; }\n.mv-term-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); }\n.mv-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mv-ok); display: inline-block; }\n.mv-dot-off { background: var(--mv-faint); }\n.mv-console-list { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }\n.mv-console-item { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); font-size: 12.5px; }\n.mv-placeholder { display: grid; place-items: center; text-align: center; min-height: 140px; border-radius: var(--mv-radius); border: 1px dashed var(--mv-border); color: var(--mv-muted); background: var(--mv-surface); padding: 24px; margin: 0 0 12px; }\n.mv-placeholder b { color: var(--mv-text); font-size: 14px; }\n\n/* Import dialog */\n.mv-dialog { margin: 0 0 12px; padding: 14px 16px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-dialog h2 { margin: 0 0 6px; font-size: 14px; }\n.mv-hidden { display: none !important; }\n.mv-card-ai { border-color: var(--mv-accent); color: var(--mv-text); flex-basis: 150px; }\n.mv-card-ai .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent); }\n.mv-card-ai[aria-expanded="true"] { background: var(--mv-accent-soft); border-style: solid; }\n.mv-ai .mv-form { margin: 8px 0 10px; }\n.mv-ai textarea:disabled { opacity: .6; }\n\n/* 0.5.0 calibration editor + auto stepper + engine card */\n.mv-calib .mv-details-body { outline: none; }\n.mv-calib .mv-details-body:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); border-radius: 8px; }\n.mv-calib-tools { flex-wrap: wrap; gap: 6px; align-items: center; }\n.mv-calib-offset { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }\n.mv-calib-offset input { width: 120px; }\n.mv-calib-wave { width: 100%; height: 120px; display: block; border: 1px solid var(--mv-border); border-radius: 8px; margin-top: 8px; touch-action: none; cursor: pointer; }\n.mv-calib-hint { margin: 4px 0 6px; }\n.mv-calib-lines { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; border: 1px solid var(--mv-border); border-radius: 8px; }\n.mv-calib-lines li { display: flex; gap: 10px; align-items: center; padding: 3px 8px; font-size: 12.5px; cursor: pointer; border-left: 3px solid transparent; }\n.mv-calib-lines li:hover { background: var(--mv-hover); }\n.mv-calib-lines li.mv-uncertain { background: rgba(230, 180, 34, 0.16); border-left-color: #e6b422; }\n.mv-calib-lines li.mv-selected { border-left-color: var(--mv-accent); background: var(--mv-hover); }\n.mv-calib-lines li.mv-active .mv-calib-text { font-weight: 600; }\n.mv-calib-time { font-variant-numeric: tabular-nums; color: var(--mv-muted); min-width: 58px; }\n.mv-calib-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.mv-calib-edit { flex: 1; display: flex; gap: 6px; }\n.mv-calib-edit input { flex: 1; min-width: 0; }\n.mv-calib-flag { color: #b88a00; font-weight: 700; }\n.mv-steps { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; }\n.mv-steps li { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; }\n.mv-step-dot { width: 18px; text-align: center; flex: none; }\n.mv-steps li.mv-step-running { font-weight: 600; }\n.mv-steps li.mv-step-failed { color: var(--mv-danger, #d33); }\n.mv-steps li.mv-step-skipped, .mv-steps li.mv-step-pending { color: var(--mv-muted); }\n.mv-engine-card { border: 1px solid var(--mv-border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }\n.mv-progress { height: 6px; border-radius: 3px; background: var(--mv-border); overflow: hidden; }\n.mv-progress > span { display: block; height: 100%; background: var(--mv-accent); }\n.mv-log { max-height: 110px; overflow: auto; font: 11px/1.4 "Cascadia Mono", Consolas, monospace; white-space: pre-wrap; color: var(--mv-muted); margin: 0; }\n.mv-auto { border: 1px solid var(--mv-border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; margin: 10px 0; }\n.mv-auto .mv-check { height: auto; align-items: flex-start; align-self: auto; }\n.mv-auto .mv-check input { margin-top: 2px; flex: none; }\n.mv-auto .mv-field { min-width: 150px; }\n.mv-stage canvas.mv-pixel { width: 100%; height: 100%; }\n.mv-card-art-dshpv { font-family: var(--mv-mono, monospace); font-size: 13px; letter-spacing: .02em; background: linear-gradient(135deg, #0d1528, #1a2a6c); color: #c4d4ff; }\n\n/* 0.7.0 MV \u521B\u610F\u5DE5\u574A */\n.mv-card-ws .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent-strong); }\n.mv-ws { display: flex; flex-direction: column; gap: 10px; }\n.mv-ws-filters { gap: 8px; }\n.mv-ws-filters select, .mv-ws-search { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); color: var(--mv-text); }\n.mv-ws-search { flex: 1 1 220px; min-width: 160px; }\n.mv-ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }\n.mv-ws-card { position: relative; text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); cursor: pointer; color: var(--mv-text); min-width: 0; }\n.mv-ws-card:hover { background: var(--mv-hover); }\n.mv-ws-cover { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: #0a0c10; margin-bottom: 6px; }\n.mv-ws-cover-empty { display: grid; place-items: center; color: #ffaf5f; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; font-size: 20px; }\n.mv-ws-badge { position: absolute; top: 14px; right: 14px; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: rgba(10, 12, 16, .78); color: #4ade80; }\n.mv-ws-badge-update { color: #ffaf5f; }\n.mv-ws-detail { display: grid; grid-template-columns: minmax(220px, 380px) 1fr; gap: 16px; align-items: start; }\n@media (max-width: 720px) { .mv-ws-detail { grid-template-columns: 1fr; } }\n.mv-ws-detail-body { min-width: 0; }\n.mv-ws-files { margin: 6px 0; padding-left: 18px; max-height: 140px; overflow: auto; }\n.mv-ws-files code { font-size: 11.5px; }\n.mv-ws-steps { padding-left: 18px; }\n.mv-ws-steps li { margin: 3px 0; }\n.mv-ws-publish { margin-top: 8px; }\na.mv-button { text-decoration: none; }\n';
+var mv_default = '/* MV \u653E\u6620\u5BA4 \u2014 opaque surface that follows Harness light/dark (body[data-ds-dark-theme]). */\n.mv-root {\n  --mv-fb-bg: #ffffff; --mv-fb-text: #14151a; --mv-fb-muted: #4b4e59; --mv-fb-faint: #6b6e79; --mv-fb-border: rgba(20, 21, 26, .12);\n  --mv-fb-danger: #d92d20; --mv-fb-ok: #15803d;\n  --mv-accent: #e8890c; --mv-accent-strong: #c96f00; --mv-accent-ink: #1b1204;\n  --mv-bg: var(--dsw-alias-bg-base, var(--mv-fb-bg));\n  --mv-text: var(--dsw-alias-label-primary, var(--mv-fb-text));\n  --mv-muted: var(--dsw-alias-label-secondary, var(--mv-fb-muted));\n  --mv-faint: var(--dsw-alias-label-tertiary, var(--mv-fb-faint));\n  --mv-border: var(--dsw-alias-border-l2, var(--mv-fb-border));\n  --mv-danger: var(--dsw-alias-state-error-primary, var(--mv-fb-danger));\n  --mv-ok: var(--dsw-alias-state-success-primary, var(--mv-fb-ok));\n  --mv-surface: color-mix(in srgb, var(--mv-text) 4%, var(--mv-bg));\n  --mv-surface-2: color-mix(in srgb, var(--mv-text) 8%, var(--mv-bg));\n  --mv-hover: color-mix(in srgb, var(--mv-text) 10%, var(--mv-bg));\n  --mv-accent-soft: color-mix(in srgb, var(--mv-accent) 16%, var(--mv-bg));\n  --mv-danger-soft: color-mix(in srgb, var(--mv-danger) 10%, var(--mv-bg));\n  --mv-warn-soft: color-mix(in srgb, #f59e0b 16%, var(--mv-bg));\n  --mv-radius: 12px;\n  color-scheme: light;\n  position: relative; isolation: isolate;\n  /* The Harness centre column is `display:flex; flex-direction:column; overflow:hidden`: the panel must be\n     its own scroll container (it fills the column and scrolls; mv-panel.jsx pins the height elsewhere). */\n  flex: 1 1 auto; min-height: 0; height: 100%; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;\n  box-sizing: border-box; padding: 18px 22px 28px;\n  background: var(--mv-bg); color: var(--mv-text);\n  font-size: 13px; line-height: 20px;\n  font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif;\n}\n@media (prefers-color-scheme: dark) {\n  .mv-root { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; color-scheme: dark; }\n}\nbody[data-ds-dark-theme] .mv-root, .mv-root.mv-dark { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; --mv-accent: #ffaf5f; --mv-accent-strong: #ffc285; color-scheme: dark; }\n.mv-root *, .mv-root *::before, .mv-root *::after { box-sizing: border-box; }\n.mv-root :where(button, input, select, textarea) { font: inherit; color: inherit; }\n.mv-root code { font-family: "Cascadia Mono", Consolas, Menlo, monospace; font-size: 12px; }\n.mv-root :focus-visible { outline: 2px solid var(--mv-accent); outline-offset: 2px; }\n\n/* ---- header ---- */\n.mv-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }\n.mv-title { margin: 0; font-size: 20px; line-height: 28px; font-weight: 650; letter-spacing: .2px; }\n.mv-title small { font-size: 12px; font-weight: 400; color: var(--mv-faint); margin-left: 8px; }\n.mv-spacer { flex: 1; }\n.mv-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px; line-height: 20px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-pill-warn { background: var(--mv-warn-soft); color: var(--mv-text); border: 1px solid color-mix(in srgb, #f59e0b 45%, transparent); }\n.mv-pill-ok { color: var(--mv-ok); }\n.mv-icon-button { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--mv-border); background: var(--mv-bg); cursor: pointer; padding: 0; color: var(--mv-muted); }\n.mv-icon-button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-icon-button[aria-pressed="true"] { background: var(--mv-accent-soft); color: var(--mv-text); border-color: var(--mv-accent); }\n\n/* ---- popover ---- */\n.mv-pop-anchor { position: relative; display: inline-flex; }\n.mv-popover { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: min(440px, 86vw); padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-bg); border: 1px solid var(--mv-border); box-shadow: 0 12px 32px rgba(0, 0, 0, .22); font-size: 12.5px; line-height: 19px; }\n.mv-popover h3 { margin: 0 0 6px; font-size: 13px; }\n.mv-popover p { margin: 6px 0; color: var(--mv-muted); }\n.mv-popover ul { margin: 4px 0 8px; padding-left: 18px; color: var(--mv-muted); }\n.mv-keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 6px 0; }\n.mv-keys kbd { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--mv-border); background: var(--mv-surface); white-space: nowrap; justify-self: start; }\n\n/* ---- library ---- */\n.mv-section-label { font-size: 12px; font-weight: 600; color: var(--mv-faint); margin: 0 0 8px; letter-spacing: .3px; }\n.mv-library { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; margin: 0 -2px 6px; scrollbar-width: thin; }\n.mv-card { flex: 0 0 196px; min-height: 84px; text-align: left; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; position: relative; }\n.mv-card:hover { background: var(--mv-hover); }\n.mv-card[aria-pressed="true"] { border-color: var(--mv-accent); box-shadow: inset 0 0 0 1px var(--mv-accent); background: var(--mv-accent-soft); }\n.mv-card-art { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-size: 13px; font-weight: 700; background: #111; color: #ffaf5f; margin-bottom: 4px; }\n.mv-card-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-sub { font-size: 12px; color: var(--mv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-ghost { background: transparent; border-style: dashed; color: var(--mv-muted); align-items: center; justify-content: center; text-align: center; flex-basis: 132px; }\n.mv-card-ghost .mv-card-art { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-card-remove { position: absolute; right: 6px; top: 6px; width: 22px; height: 22px; border-radius: 999px; border: 0; background: transparent; color: var(--mv-faint); cursor: pointer; display: none; }\n.mv-card:hover .mv-card-remove, .mv-card:focus-within .mv-card-remove { display: grid; place-items: center; }\n.mv-card-remove:hover { background: var(--mv-surface-2); color: var(--mv-text); }\n\n/* ---- now playing hero ---- */\n.mv-hero { display: grid; grid-template-columns: 1fr auto; gap: 12px 16px; align-items: center; padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin-bottom: 14px; }\n.mv-hero-title { font-size: 18px; line-height: 26px; font-weight: 650; margin: 0; }\n.mv-hero-sub { color: var(--mv-muted); margin: 2px 0 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }\n.mv-hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }\n.mv-segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--mv-surface-2); gap: 2px; }\n.mv-segmented button { border: 0; background: transparent; padding: 5px 12px; border-radius: 8px; cursor: pointer; color: var(--mv-muted); white-space: nowrap; }\n.mv-segmented button:hover:not(:disabled) { color: var(--mv-text); }\n.mv-segmented button[aria-checked="true"] { background: var(--mv-bg); color: var(--mv-text); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }\n.mv-segmented button:disabled { opacity: .45; cursor: not-allowed; }\n.mv-segmented-small button { padding: 3px 10px; font-size: 12px; }\n.mv-play-big { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 20px 0 16px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); font-weight: 650; font-size: 14px; cursor: pointer; box-shadow: 0 2px 8px color-mix(in srgb, var(--mv-accent) 40%, transparent); }\n.mv-play-big:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-play-big:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }\n.mv-play-big svg { width: 18px; height: 18px; }\n.mv-hero-hint { grid-column: 1 / -1; margin: 0; font-size: 12px; color: var(--mv-muted); }\n\n/* ---- generic pieces ---- */\n.mv-caption { color: var(--mv-muted); font-size: 12px; margin: 4px 0; }\n.mv-faint { color: var(--mv-faint); }\n.mv-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 18px; padding: 1px 8px; border-radius: 999px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-button { display: inline-flex; align-items: center; gap: 6px; height: 30px; border: 1px solid transparent; background: var(--mv-accent); color: var(--mv-accent-ink); border-radius: 8px; padding: 0 12px; cursor: pointer; font-weight: 600; white-space: nowrap; }\n.mv-button:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-button:disabled { opacity: .5; cursor: not-allowed; }\n.mv-button-secondary { background: var(--mv-bg); color: var(--mv-text); border-color: var(--mv-border); font-weight: 500; }\n.mv-button-secondary:hover:not(:disabled) { background: var(--mv-hover); }\n.mv-button-danger { background: var(--mv-bg); color: var(--mv-danger); border-color: color-mix(in srgb, var(--mv-danger) 45%, transparent); font-weight: 500; }\n.mv-button-danger:hover:not(:disabled) { background: var(--mv-danger-soft); }\n.mv-button-small { height: 26px; padding: 0 10px; font-size: 12px; }\n.mv-link { border: 0; background: none; color: var(--mv-accent-strong); cursor: pointer; padding: 0 2px; text-decoration: underline; text-underline-offset: 2px; }\n.mv-link:disabled { opacity: .5; cursor: default; }\n.mv-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }\n.mv-card-box { padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin: 0 0 12px; }\n.mv-card-box h2 { margin: 0 0 8px; font-size: 14px; line-height: 20px; }\n\n/* Inline status / problems */\n.mv-alert { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--mv-border); background: var(--mv-bg); }\n.mv-alert-icon { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; font-size: 12px; font-weight: 700; margin-top: 1px; }\n.mv-alert-body { flex: 1; min-width: 0; }\n.mv-alert-body p { margin: 0; }\n.mv-alert-body .mv-row { margin-top: 6px; }\n.mv-alert-error { border-color: color-mix(in srgb, var(--mv-danger) 40%, transparent); background: var(--mv-danger-soft); }\n.mv-alert-error .mv-alert-icon { background: var(--mv-danger); color: #fff; }\n.mv-alert-warn { border-color: color-mix(in srgb, #f59e0b 50%, transparent); background: var(--mv-warn-soft); }\n.mv-alert-warn .mv-alert-icon { background: #f59e0b; color: #1b1204; }\n.mv-alert-ok .mv-alert-icon { background: var(--mv-ok); color: #fff; }\n.mv-alert-info .mv-alert-icon { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-error { color: var(--mv-danger); white-space: pre-wrap; margin: 6px 0; }\n.mv-wrap { word-break: break-all; }\n\n/* Media source rows (canvas) */\n.mv-sources { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin: 0 0 12px; }\n.mv-source { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); min-width: 0; }\n.mv-source-icon { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--mv-surface-2); font-size: 14px; }\n.mv-source-main { flex: 1; min-width: 0; }\n.mv-source-label { font-size: 11.5px; color: var(--mv-faint); line-height: 16px; }\n.mv-source-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-source-empty .mv-source-value { color: var(--mv-muted); }\n\n/* Onboarding */\n.mv-onboard { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 16px; border-radius: var(--mv-radius); border: 1px solid color-mix(in srgb, var(--mv-accent) 45%, transparent); background: var(--mv-accent-soft); margin: 0 0 12px; }\n.mv-onboard h2 { margin: 0 0 4px; font-size: 15px; }\n.mv-onboard ol { margin: 6px 0 10px; padding-left: 18px; color: var(--mv-muted); }\n.mv-onboard-badge { width: 40px; height: 40px; border-radius: 10px; background: #111; color: #ffaf5f; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; }\n\n/* Stage + player bar */\n.mv-stage-wrap { background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; outline: none; padding: 6px; position: relative; }\n.mv-stage-wrap:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); }\n.mv-stage { height: min(62vh, 720px); min-height: 340px; resize: vertical; overflow: hidden; display: flex; align-items: center; justify-content: center; }\n.mv-stage canvas { display: block; }\n.mv-fullscreen { border-radius: 0; padding: 0; width: 100vw; height: 100vh; }\n.mv-fullscreen .mv-stage { height: 100vh; resize: none; }\n.mv-playerbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); margin-bottom: 12px; }\n.mv-round { width: 38px; height: 38px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); display: grid; place-items: center; cursor: pointer; flex: 0 0 auto; }\n.mv-round:hover { background: var(--mv-accent-strong); }\n.mv-round svg { width: 18px; height: 18px; }\n.mv-seek-wrap { flex: 1 1 260px; display: flex; align-items: center; gap: 10px; min-width: 200px; }\n.mv-seek { flex: 1; accent-color: var(--mv-accent); }\n.mv-time { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--mv-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }\n.mv-volume { display: inline-flex; align-items: center; gap: 6px; }\n.mv-volume input { width: 84px; accent-color: var(--mv-accent); }\n.mv-stepper { display: inline-flex; align-items: center; border: 1px solid var(--mv-border); border-radius: 8px; overflow: hidden; background: var(--mv-bg); height: 28px; }\n.mv-stepper button { border: 0; background: transparent; width: 26px; height: 100%; cursor: pointer; color: var(--mv-muted); }\n.mv-stepper button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-stepper span { padding: 0 8px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; border-left: 1px solid var(--mv-border); border-right: 1px solid var(--mv-border); line-height: 26px; }\n\n/* Collapsible settings */\n.mv-details { border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); margin: 0 0 12px; }\n.mv-details > summary { cursor: pointer; padding: 10px 14px; list-style: none; display: flex; align-items: center; gap: 8px; font-weight: 600; user-select: none; }\n.mv-details > summary::-webkit-details-marker { display: none; }\n.mv-details > summary::before { content: "\u25B8"; color: var(--mv-faint); transition: transform .15s; display: inline-block; }\n.mv-details[open] > summary::before { transform: rotate(90deg); }\n.mv-details > summary .mv-caption { font-weight: 400; margin: 0; }\n.mv-details-body { padding: 4px 14px 14px; }\n.mv-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px 14px; margin: 6px 0; }\n.mv-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; min-width: 0; }\n.mv-field > span:first-child { color: var(--mv-muted); }\n.mv-field input, .mv-field select { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); min-width: 0; width: 100%; }\n.mv-field input:disabled { opacity: .55; }\n.mv-field-help { font-size: 11.5px; color: var(--mv-faint); }\n.mv-field-row { display: flex; gap: 6px; }\n.mv-field-row input { flex: 1; }\n.mv-wide { grid-column: 1 / -1; }\n.mv-check { display: inline-flex; gap: 8px; align-items: center; font-size: 12.5px; align-self: end; height: 30px; }\n.mv-check input { accent-color: var(--mv-accent); width: 15px; height: 15px; }\n\n/* Confirmation */\n.mv-confirm { margin: 0 0 12px; padding: 14px 16px; border: 1px solid var(--mv-accent); border-radius: var(--mv-radius); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-confirm > strong { display: block; font-size: 14px; margin-bottom: 6px; }\n.mv-confirm ul { margin: 8px 0; padding-left: 20px; color: var(--mv-muted); }\n.mv-confirm code { word-break: break-all; }\n.mv-cmd { display: block; margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: var(--mv-surface-2); white-space: pre-wrap; word-break: break-all; }\n.mv-argv { margin: 4px 0 6px; padding-left: 24px; font-size: 12px; }\n\n/* Terminal */\n.mv-term-pane { margin: 0 0 12px; }\n.mv-term-screen { height: min(66vh, 740px); min-height: 300px; resize: vertical; overflow: hidden; padding: 6px; background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; }\n.mv-term-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); }\n.mv-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mv-ok); display: inline-block; }\n.mv-dot-off { background: var(--mv-faint); }\n.mv-console-list { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }\n.mv-console-item { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); font-size: 12.5px; }\n.mv-placeholder { display: grid; place-items: center; text-align: center; min-height: 140px; border-radius: var(--mv-radius); border: 1px dashed var(--mv-border); color: var(--mv-muted); background: var(--mv-surface); padding: 24px; margin: 0 0 12px; }\n.mv-placeholder b { color: var(--mv-text); font-size: 14px; }\n\n/* Import dialog */\n.mv-dialog { margin: 0 0 12px; padding: 14px 16px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-dialog h2 { margin: 0 0 6px; font-size: 14px; }\n.mv-hidden { display: none !important; }\n.mv-card-ai { border-color: var(--mv-accent); color: var(--mv-text); flex-basis: 150px; }\n.mv-card-ai .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent); }\n.mv-card-ai[aria-expanded="true"] { background: var(--mv-accent-soft); border-style: solid; }\n.mv-ai .mv-form { margin: 8px 0 10px; }\n.mv-ai textarea:disabled { opacity: .6; }\n\n/* 0.5.0 calibration editor + auto stepper + engine card */\n.mv-calib .mv-details-body { outline: none; }\n.mv-calib .mv-details-body:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); border-radius: 8px; }\n.mv-calib-tools { flex-wrap: wrap; gap: 6px; align-items: center; }\n.mv-calib-offset { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }\n.mv-calib-offset input { width: 120px; }\n.mv-calib-wave { width: 100%; height: 120px; display: block; border: 1px solid var(--mv-border); border-radius: 8px; margin-top: 8px; touch-action: none; cursor: pointer; }\n.mv-calib-hint { margin: 4px 0 6px; }\n.mv-calib-lines { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; border: 1px solid var(--mv-border); border-radius: 8px; }\n.mv-calib-lines li { display: flex; gap: 10px; align-items: center; padding: 3px 8px; font-size: 12.5px; cursor: pointer; border-left: 3px solid transparent; }\n.mv-calib-lines li:hover { background: var(--mv-hover); }\n.mv-calib-lines li.mv-uncertain { background: rgba(230, 180, 34, 0.16); border-left-color: #e6b422; }\n.mv-calib-lines li.mv-selected { border-left-color: var(--mv-accent); background: var(--mv-hover); }\n.mv-calib-lines li.mv-active .mv-calib-text { font-weight: 600; }\n.mv-calib-time { font-variant-numeric: tabular-nums; color: var(--mv-muted); min-width: 58px; }\n.mv-calib-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.mv-calib-edit { flex: 1; display: flex; gap: 6px; }\n.mv-calib-edit input { flex: 1; min-width: 0; }\n.mv-calib-flag { color: #b88a00; font-weight: 700; }\n.mv-steps { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; }\n.mv-steps li { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; }\n.mv-step-dot { width: 18px; text-align: center; flex: none; }\n.mv-steps li.mv-step-running { font-weight: 600; }\n.mv-steps li.mv-step-failed { color: var(--mv-danger, #d33); }\n.mv-steps li.mv-step-skipped, .mv-steps li.mv-step-pending { color: var(--mv-muted); }\n.mv-engine-card { border: 1px solid var(--mv-border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }\n.mv-progress { height: 6px; border-radius: 3px; background: var(--mv-border); overflow: hidden; }\n.mv-progress > span { display: block; height: 100%; background: var(--mv-accent); }\n.mv-log { max-height: 110px; overflow: auto; font: 11px/1.4 "Cascadia Mono", Consolas, monospace; white-space: pre-wrap; color: var(--mv-muted); margin: 0; }\n.mv-auto { border: 1px solid var(--mv-border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; margin: 10px 0; }\n.mv-auto .mv-check { height: auto; align-items: flex-start; align-self: auto; }\n.mv-auto .mv-check input { margin-top: 2px; flex: none; }\n.mv-auto .mv-field { min-width: 150px; }\n.mv-stage canvas.mv-pixel { width: 100%; height: 100%; }\n.mv-card-art-dshpv { font-family: var(--mv-mono, monospace); font-size: 13px; letter-spacing: .02em; background: linear-gradient(135deg, #0d1528, #1a2a6c); color: #c4d4ff; }\n\n/* 0.7.0 MV \u521B\u610F\u5DE5\u574A */\n.mv-card-ws .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent-strong); }\n.mv-ws { display: flex; flex-direction: column; gap: 10px; }\n.mv-ws-filters { gap: 8px; }\n.mv-ws-filters select, .mv-ws-search { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); color: var(--mv-text); }\n.mv-ws-search { flex: 1 1 220px; min-width: 160px; }\n.mv-ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }\n.mv-ws-card { position: relative; text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); cursor: pointer; color: var(--mv-text); min-width: 0; }\n.mv-ws-card:hover { background: var(--mv-hover); }\n.mv-ws-cover { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: #0a0c10; margin-bottom: 6px; }\n.mv-ws-cover-empty { display: grid; place-items: center; color: #ffaf5f; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; font-size: 20px; }\n.mv-ws-badge { position: absolute; top: 14px; right: 14px; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: rgba(10, 12, 16, .78); color: #4ade80; }\n.mv-ws-badge-update { color: #ffaf5f; }\n.mv-ws-detail { display: grid; grid-template-columns: minmax(220px, 380px) 1fr; gap: 16px; align-items: start; }\n@media (max-width: 720px) { .mv-ws-detail { grid-template-columns: 1fr; } }\n.mv-ws-detail-body { min-width: 0; }\n.mv-ws-files { margin: 6px 0; padding-left: 18px; max-height: 140px; overflow: auto; }\n.mv-ws-files code { font-size: 11.5px; }\n.mv-ws-steps { padding-left: 18px; }\n.mv-ws-steps li { margin: 3px 0; }\n.mv-ws-publish { margin-top: 8px; }\na.mv-button { text-decoration: none; }\n\n/* 0.9.0: empty library \u2192 \u521B\u610F\u5DE5\u574A, one-click installs of the former presets, original-work links */\n.mv-empty-lib { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px dashed var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); }\n.mv-empty-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }\n.mv-empty-head > div { flex: 1 1 260px; min-width: 0; }\n.mv-empty-head h3 { margin: 0 0 2px; font-size: 15px; }\n.mv-empty-icon { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--mv-surface-2, var(--mv-hover)); }\n.mv-empty-icon svg { width: 22px; height: 22px; }\n.mv-presets { display: flex; flex-direction: column; gap: 6px; }\n.mv-preset { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-bg); min-width: 0; }\n.mv-preset .mv-track-art { flex: none; width: 36px; height: 36px; }\n.mv-preset-main { display: flex; flex-direction: column; min-width: 0; flex: 1; }\n.mv-preset-main .mv-track-artist { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-ws-source a, .mv-preset a { color: var(--mv-accent, inherit); text-decoration: underline; text-underline-offset: 2px; }\n.mv-ws-source-compact { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-canvas-host[hidden] { display: none !important; }\n';
 
 // .dsh-plugin/client/mv-skins.css
 var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-light / .mv-dark (resolved in mv-skin.mjs) and
@@ -12260,8 +8283,7 @@ function StatusLine({ title, artist, transport, canvas, active }) {
 }
 
 // .dsh-plugin/client/mv-panel.jsx
-var builtinCover = (pack) => pack.pack.canvas?.renderer === "dsh-pv" ? { hue: 222, text: "dsh" } : { hue: 18, text: ">_" };
-var coverOf = (pack) => pack.builtin ? builtinCover(pack) : { hue: coverHue(pack.pack.title), text: coverInitials(pack.pack.title) };
+var coverOf = (pack) => pack.moved ? { hue: pack.moved.hue, text: pack.moved.cover } : pack.empty ? { hue: 210, text: "\u266A" } : { hue: coverHue(pack.pack.title), text: coverInitials(pack.pack.title) };
 var LEGACY_KEYS = Object.freeze(["dsh-mv.panel.destination", "dsh-mv.panel.tab", "dsh-mv.terminal.form.v1"]);
 function clearLegacy(storage = globalThis.localStorage) {
   try {
@@ -12271,7 +8293,7 @@ function clearLegacy(storage = globalThis.localStorage) {
 }
 function About({ pack }) {
   const credits = [...pack.pack.credits ?? [], pack.pack.notice].filter(Boolean);
-  return /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("h3", null, "\u5173\u4E8E MV \u653E\u6620\u5BA4 ", /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-faint" }, "v", CLIENT_VERSION || "?")), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u975E\u5B98\u65B9\u540C\u4EBA\u5DE5\u5177\u3002\u63D2\u4EF6", /* @__PURE__ */ import_react10.default.createElement("b", null, "\u4E0D\u9644\u5E26"), "\u4EFB\u4F55\u97F3\u9891\u3001\u89C6\u9891\u6216\u6B4C\u8BCD\uFF0C\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\uFF1B\u97F3\u9891\u548C\u6B4C\u8BCD\u53EA\u5728\u672C\u673A\u8BFB\u53D6\uFF0C\u4E0D\u4F1A\u4E0A\u4F20\u3002"), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u5185\u7F6E world.execute(me) \u9884\u8BBE\uFF1A\u6B4C\u66F2\u4E0E\u6B4C\u8BCD\u7248\u6743\u5F52 Mili\uFF1B\u753B\u9762\u573A\u666F\u79FB\u690D\u81EA yym8224961/world.execute-me-ascii\uFF08\u91CE\u751F\u5927K\uFF09\uFF0C\u7ECF\u539F\u4F5C\u8005\u8BB8\u53EF\u3002"), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u5185\u7F6E dsh-pv \u9884\u8BBE\uFF1A\u79FB\u690D\u81EA MisakaZentai/world-execute-me-dsh-pv\uFF08\u4EE3\u7801 MIT\uFF09\u3002\u5176\u4E2D\u7684\u9CB8\u9C7C\u5A18\u7F8E\u672F\u6309 ", /* @__PURE__ */ import_react10.default.createElement("a", { href: "https://creativecommons.org/licenses/by-nc-sa/4.0/", target: "_blank", rel: "noreferrer" }, "CC BY-NC-SA 4.0"), " \u968F\u63D2\u4EF6\u5206\u53D1\uFF08\u5DF2\u7F29\u653E\u3001\u50CF\u7D20\u5316\u3001\u8C03\u8272\uFF09\uFF1A\u6E9F\u6708 \xA9 \u4E0A\u5584\u65E0\u5F62 \u2192 \u5973\u4EC6\u7248 ZipZipPipe \u2192 \u7ACB\u7ED8 Small-tailqwq / dsh-deep-whale \u2192 \u8868\u60C5 dsh-whale-galgame\u3002\u4EC5\u9650\u975E\u5546\u4E1A\u4F7F\u7528\uFF0C\u6539\u7F16\u987B\u540C\u534F\u8BAE\u5206\u4EAB\u3002"), !pack.builtin && /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("h3", null, "\u5F53\u524D MV \u5305\uFF1A", pack.pack.title), credits.length > 0 ? /* @__PURE__ */ import_react10.default.createElement("ul", null, credits.map((item) => /* @__PURE__ */ import_react10.default.createElement("li", { key: item }, item))) : /* @__PURE__ */ import_react10.default.createElement("p", null, "\u6E05\u5355\u91CC\u6CA1\u6709\u7F72\u540D\u4FE1\u606F\u3002"), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react10.default.createElement("code", null, pack.manifestPath))), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u5176\u4ED6\u6B4C\u66F2\uFF1A\u5728\u66F2\u5E93\u91CC\u6253\u5F00\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u793E\u533A\u6295\u7A3F\u7684 MV \u5305\uFF08\u4E0D\u542B\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\u64AD\u653E\uFF1B\u811A\u672C\u5728\u6C99\u7BB1\u91CC\u8FD0\u884C\uFF09\uFF0C\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Harness \u7684 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u624B\u5199\u4E00\u4E2A MV \u5305\u518D\u300C\u5BFC\u5165\u300D\u3002"));
+  return /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("h3", null, "\u5173\u4E8E MV \u653E\u6620\u5BA4 ", /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-faint" }, "v", CLIENT_VERSION || "?")), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u975E\u5B98\u65B9\u540C\u4EBA\u5DE5\u5177\u3002\u63D2\u4EF6", /* @__PURE__ */ import_react10.default.createElement("b", null, "\u4E0D\u9644\u5E26"), "\u4EFB\u4F55\u97F3\u9891\u3001\u89C6\u9891\u6216\u6B4C\u8BCD\uFF0C\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\uFF1B\u97F3\u9891\u548C\u6B4C\u8BCD\u53EA\u5728\u672C\u673A\u8BFB\u53D6\uFF0C\u4E0D\u4F1A\u4E0A\u4F20\u3002"), /* @__PURE__ */ import_react10.default.createElement("p", null, "0.9.0 \u8D77\u63D2\u4EF6\u4E0D\u518D\u5185\u7F6E\u4EFB\u4F55 MV\uFF1A\u4EE5\u524D\u7684\u4E24\u4E2A world.execute(me) \u9884\u8BBE\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A\uFF0C\u5206\u522B\u6309\u5404\u81EA\u7684\u8BB8\u53EF\u53D1\u5E03\u2014\u2014\u573A\u666F\u79FB\u690D\u81EA ", /* @__PURE__ */ import_react10.default.createElement("a", { href: "https://github.com/yym8224961/world.execute-me-ascii", target: "_blank", rel: "noreferrer" }, "yym8224961/world.execute-me-ascii"), "\uFF08\u91CE\u751F\u5927K\uFF0C\u7ECF\u539F\u4F5C\u8005\u8BB8\u53EF\uFF09\uFF0Cdsh PV \u79FB\u690D\u81EA ", /* @__PURE__ */ import_react10.default.createElement("a", { href: "https://github.com/MisakaZentai/world-execute-me-dsh-pv", target: "_blank", rel: "noreferrer" }, "MisakaZentai/world-execute-me-dsh-pv"), "\uFF08\u4EE3\u7801 MIT\uFF0C\u9CB8\u9C7C\u5A18\u7ACB\u7ED8 CC BY-NC-SA 4.0\uFF09\u3002\u6B4C\u66F2\u4E0E\u6B4C\u8BCD\u7248\u6743\u5F52 Mili\u3002"), /* @__PURE__ */ import_react10.default.createElement("p", null, "dsh-pv \u6E32\u67D3\u5668\uFF08\u4EE3\u7801 MIT\uFF0C\xA9 MisakaZentai \u7684\u79FB\u690D\uFF09\u4ECD\u5728\u63D2\u4EF6\u91CC\uFF0C\u5B83\u7684\u6570\u636E\u548C\u7ACB\u7ED8\u968F\u5DE5\u574A\u5305\u4E0B\u8F7D\u3002"), !pack.empty && /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("h3", null, "\u5F53\u524D MV \u5305\uFF1A", pack.pack.title), credits.length > 0 ? /* @__PURE__ */ import_react10.default.createElement("ul", null, credits.map((item) => /* @__PURE__ */ import_react10.default.createElement("li", { key: item }, item))) : /* @__PURE__ */ import_react10.default.createElement("p", null, "\u6E05\u5355\u91CC\u6CA1\u6709\u7F72\u540D\u4FE1\u606F\u3002"), pack.pack.workshop?.source && /* @__PURE__ */ import_react10.default.createElement("p", null, "\u539F\u4F5C\uFF1A", /* @__PURE__ */ import_react10.default.createElement("a", { href: pack.pack.workshop.source, target: "_blank", rel: "noreferrer" }, pack.pack.workshop.source.replace(/^https:\/\/(github\.com\/)?/, ""))), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react10.default.createElement("code", null, pack.manifestPath))), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u5176\u4ED6\u6B4C\u66F2\uFF1A\u5728\u66F2\u5E93\u91CC\u6253\u5F00\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u793E\u533A\u6295\u7A3F\u7684 MV \u5305\uFF08\u4E0D\u542B\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\u64AD\u653E\uFF1B\u811A\u672C\u5728\u6C99\u7BB1\u91CC\u8FD0\u884C\uFF09\uFF0C\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Harness \u7684 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u624B\u5199\u4E00\u4E2A MV \u5305\u518D\u300C\u5BFC\u5165\u300D\u3002"));
 }
 function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = false, workshopIndex = null }) {
   const [info, setInfo] = import_react10.default.useState({ status: "loading", value: null, error: "" });
@@ -12292,19 +8314,13 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
   import_react10.default.useEffect(() => {
     void reloadInfo();
   }, [reloadInfo]);
-  const [pack, setPack] = import_react10.default.useState(() => BUILTINS[loadActive()] ?? BUILTIN_PACK);
+  const [pack, setPack] = import_react10.default.useState(() => placeholderPack(loadActive()));
   const [recent, setRecent] = import_react10.default.useState(loadRecent);
   const [packError, setPackError] = import_react10.default.useState("");
   const selectPack = import_react10.default.useCallback(async (id) => {
     setPackError("");
-    if (BUILTINS[id]) {
-      setPack(BUILTINS[id]);
-      saveActive(id);
-      return;
-    }
     if (!id.startsWith("pack:")) {
-      setPack(BUILTIN_PACK);
-      saveActive(BUILTIN_ID);
+      setPack(placeholderPack(id));
       return;
     }
     try {
@@ -12314,13 +8330,13 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
       setRecent(noteDuration(id.slice(5), loaded.pack.duration));
     } catch (error) {
       setPackError(`\u65E0\u6CD5\u8BFB\u53D6 MV \u5305 ${id.slice(5)}\uFF1A${errorText(error, "")}`);
-      setPack(BUILTIN_PACK);
-      saveActive(BUILTIN_ID);
+      setPack(EMPTY_PACK);
+      saveActive(EMPTY_ID);
     }
   }, [api]);
   import_react10.default.useEffect(() => {
     const id = loadActive();
-    if (!BUILTINS[id]) void selectPack(id);
+    if (id.startsWith("pack:")) void selectPack(id);
   }, [selectPack]);
   const onLoaded = (loaded) => {
     setPack(loaded);
@@ -12333,7 +8349,7 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
   const [navRequest, setNavRequest] = import_react10.default.useState(null);
   const [nav, setNav] = import_react10.default.useState("library");
   import_react10.default.useLayoutEffect(() => fitToHost(rootRef.current), []);
-  const calibOk = Boolean(!pack.builtin && api?.packWriteText);
+  const calibOk = Boolean(!pack.empty && api?.packWriteText);
   const scrollTo = (selector) => requestAnimationFrame(() => rootRef.current?.querySelector(selector)?.scrollIntoView?.({ block: "start", behavior: "smooth" }));
   const go = (id) => {
     setNav(id);
@@ -12365,15 +8381,13 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
   };
   const cover = coverOf(pack);
   const recentItems = [
-    { id: BUILTIN_ID, title: "world.execute(me);", sub: "Mili \xB7 \u5185\u7F6E\u9884\u8BBE", cover: { hue: 18, text: ">_" } },
-    { id: DSH_PV_ID, title: "world.execute(me); dsh PV", sub: "MisakaZentai \xB7 \u753B\u5E03\u9884\u8BBE", cover: { hue: 222, text: "dsh" } },
     ...recent.map((item) => ({ id: `pack:${item.manifestPath}`, title: item.title || item.manifestPath, sub: item.artist || (item.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305"), cover: { hue: coverHue(item.title), text: coverInitials(item.title) } }))
   ].slice(0, 6);
   const notice = info.status === "ready" ? versionNotice({ hostVersion: info.value?.hostVersion }) : "";
   const label = canvasState.playing ? "\u6682\u505C" : "\u64AD\u653E";
-  const hint = canvasState.hasAudio ? "\u753B\u9762\u4EE5\u97F3\u9891\u4E3A\u65F6\u949F\u9010\u5E27\u6E32\u67D3\uFF1B\u70B9\u4E00\u4E0B\u753B\u9762\u540E\u53EF\u7528\u952E\u76D8\u63A7\u5236\u3002" : "\u8FD8\u6CA1\u6709\u9009\u62E9\u97F3\u9891\uFF1A\u53EF\u4EE5\u5148\u9759\u97F3\u89C2\u770B\uFF0C\u6216\u5728\u4E0B\u65B9\u9009\u62E9\u4F60\u7684\u6B4C\u66F2\u3002";
+  const hint = pack.empty ? pack.moved ? `\u300C${pack.moved.title}\u300D\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A\uFF1A\u5728\u4E0A\u9762\u7684\u66F2\u5E93\u91CC\u4E00\u952E\u5B89\u88C5\u3002` : "\u66F2\u5E93\u662F\u7A7A\u7684\uFF1A\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u4E00\u4E2A MV\uFF0C\u6216\u5BFC\u5165\u4F60\u81EA\u5DF1\u7684 MV \u5305\u3002" : canvasState.hasAudio ? "\u753B\u9762\u4EE5\u97F3\u9891\u4E3A\u65F6\u949F\u9010\u5E27\u6E32\u67D3\uFF1B\u70B9\u4E00\u4E0B\u753B\u9762\u540E\u53EF\u7528\u952E\u76D8\u63A7\u5236\u3002" : "\u8FD8\u6CA1\u6709\u9009\u62E9\u97F3\u9891\uFF1A\u53EF\u4EE5\u5148\u9759\u97F3\u89C2\u770B\uFF0C\u6216\u5728\u4E0B\u65B9\u9009\u62E9\u4F60\u7684\u6B4C\u66F2\u3002";
   const renderer = { "world-execute-me": "world.execute(me) \u573A\u666F", "dsh-pv": "dsh-pv\uFF08\u5927\u80A5\u9C7C\u773C\u4E2D\u7684 world.execute(me)\uFF09", script: "\u573A\u666F\u811A\u672C\uFF08scenes.js\uFF09" }[pack.pack.canvas?.renderer] ?? "\u901A\u7528\u753B\u9762\uFF08\u9891\u8C31 + \u6B4C\u8BCD\uFF09";
-  return /* @__PURE__ */ import_react10.default.createElement("div", { ref: rootRef, className: `mv-root ${skin.className}`, "data-mv-skin": skinId }, /* @__PURE__ */ import_react10.default.createElement("style", null, mv_default + mv_skins_default), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-shell" }, skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(SideNav, { active: nav, go, calibOk, items: recentItems, activeId: pack.id, onSelect: (id) => void selectPack(id), playing: canvasState.playing }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(TmuxTabs, { active: nav, go, calibOk }) : null, /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-main" }, /* @__PURE__ */ import_react10.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react10.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react10.default.createElement(SkinPicker, { skin }), /* @__PURE__ */ import_react10.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react10.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react10.default.createElement(About, { pack }))), /* @__PURE__ */ import_react10.default.createElement(Library, { playing: canvasState.playing, onPlay: () => canvasRef.current?.toggle(), onShowPlayer: () => go("now"), navRequest, onView: onLibraryView, api, harness, info: info.value, initialAi, initialWorkshop, workshopIndex, canvas: () => canvasRef.current, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, packError)), info.status === "error" && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, info.error, "\uFF08\u753B\u5E03\u64AD\u653E\u4E0D\u53D7\u5F71\u54CD\uFF1BMV \u5305\u3001AI \u5236\u4F5C\u548C\u6B4C\u8BCD\u5F15\u64CE\u9700\u8981\u540E\u53F0\u3002\uFF09")), /* @__PURE__ */ import_react10.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E", style: { "--mv-hue": cover.hue }, "data-cover": cover.text }, /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-hero-art", "aria-hidden": "true" }, cover.text), /* @__PURE__ */ import_react10.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react10.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react10.default.createElement("span", null, pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, pack.builtin ? "\u5185\u7F6E\u9884\u8BBE" : "MV \u5305"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, renderer))), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-play-big", onClick: () => canvasRef.current?.toggle(), "aria-label": label }, canvasState.playing ? /* @__PURE__ */ import_react10.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react10.default.createElement(Icon.play, null), label)), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react10.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState })), skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(PlayerBar, { title: pack.pack.title, artist: pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", cover, transport, canvas: () => canvasRef.current, onShow: () => go("now") }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(StatusLine, { title: pack.pack.title, artist: pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", transport, canvas: () => canvasRef.current, active: nav }) : null));
+  return /* @__PURE__ */ import_react10.default.createElement("div", { ref: rootRef, className: `mv-root ${skin.className}`, "data-mv-skin": skinId }, /* @__PURE__ */ import_react10.default.createElement("style", null, mv_default + mv_skins_default), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-shell" }, skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(SideNav, { active: nav, go, calibOk, items: recentItems, activeId: pack.id, onSelect: (id) => void selectPack(id), playing: canvasState.playing }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(TmuxTabs, { active: nav, go, calibOk }) : null, /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-main" }, /* @__PURE__ */ import_react10.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react10.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react10.default.createElement(SkinPicker, { skin }), /* @__PURE__ */ import_react10.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react10.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react10.default.createElement(About, { pack }))), /* @__PURE__ */ import_react10.default.createElement(Library, { playing: canvasState.playing, onPlay: () => canvasRef.current?.toggle(), onShowPlayer: () => go("now"), navRequest, onView: onLibraryView, api, harness, info: info.value, initialAi, initialWorkshop, workshopIndex, canvas: () => canvasRef.current, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, packError)), info.status === "error" && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, info.error, "\uFF08\u753B\u5E03\u64AD\u653E\u4E0D\u53D7\u5F71\u54CD\uFF1BMV \u5305\u3001AI \u5236\u4F5C\u548C\u6B4C\u8BCD\u5F15\u64CE\u9700\u8981\u540E\u53F0\u3002\uFF09")), /* @__PURE__ */ import_react10.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E", style: { "--mv-hue": cover.hue }, "data-cover": cover.text }, /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-hero-art", "aria-hidden": "true" }, cover.text), /* @__PURE__ */ import_react10.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react10.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react10.default.createElement("span", null, pack.empty ? pack.moved ? "\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A" : "\u66F2\u5E93\u4E3A\u7A7A" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), !pack.empty && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, pack.pack.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305"), !pack.empty && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, renderer))), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-play-big", disabled: pack.empty, onClick: () => canvasRef.current?.toggle(), "aria-label": label }, canvasState.playing ? /* @__PURE__ */ import_react10.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react10.default.createElement(Icon.play, null), label)), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react10.default.createElement("div", { hidden: pack.empty, className: "mv-canvas-host" }, /* @__PURE__ */ import_react10.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState }))), skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(PlayerBar, { title: pack.pack.title, artist: pack.empty ? "" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", cover, transport, canvas: () => canvasRef.current, onShow: () => go("now") }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(StatusLine, { title: pack.pack.title, artist: pack.empty ? "" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", transport, canvas: () => canvasRef.current, active: nav }) : null));
 }
 
 // .dsh-plugin/shared/mv-ai-upload.mjs
@@ -12404,29 +8418,6 @@ function parsePackUploadFinish(value) {
   return { uploadId: value.uploadId };
 }
 
-// .dsh-plugin/shared/mv-dshpv-protocol.mjs
-var DSHPV_EXPRESSIONS = Object.freeze(["cheerful", "starry", "shy", "serious", "confused", "frightened", "angry", "exasperated"]);
-var DSHPV_ASSETS = Object.freeze({
-  timeline: "dsh-pv/timeline.json",
-  chat: "dsh-pv/chat.json",
-  band: "dsh-pv/band.json",
-  "maid-left": "dsh-pv-art/maid-left.webp",
-  ...Object.fromEntries(DSHPV_EXPRESSIONS.map((name) => [`whale-${name}`, `dsh-pv-art/whale-${name}.webp`]))
-});
-var DSHPV_CHUNK = 1024 * 1024;
-var fail2 = (message) => {
-  throw new TypeError(message);
-};
-function parseDshPvAsset(value) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) fail2("dshpvAsset must be an object");
-  const extra = Object.keys(value).filter((k) => !["name", "offset"].includes(k));
-  if (extra.length) fail2(`dshpvAsset: unexpected fields: ${extra.join(", ")}`);
-  if (typeof value.name !== "string" || !Object.hasOwn(DSHPV_ASSETS, value.name)) fail2(`name must be one of ${Object.keys(DSHPV_ASSETS).join(", ")}`);
-  const offset = value.offset ?? 0;
-  if (!Number.isInteger(offset) || offset < 0) fail2("offset must be a non-negative integer");
-  return { name: value.name, offset };
-}
-
 // .dsh-plugin/shared/mv-engine-protocol.mjs
 var ENGINE_TORCH = Object.freeze({
   cuda: Object.freeze({ packages: ["torch==2.8.0"], index: "https://download.pytorch.org/whl/cu126", downloadMB: 2780, diskMB: 5860, label: "NVIDIA GPU\uFF08CUDA 12.6\uFF09" }),
@@ -12441,18 +8432,18 @@ var ENGINE_MODELS = Object.freeze({
 });
 var ENGINE_LANGUAGES = Object.freeze(["auto", "zh", "ja", "en", "ko", "yue"]);
 var ENGINE_LIMITS = Object.freeze({ promptChars: 600, jobEvents: 4e3, installTimeoutMs: 3 * 36e5, runTimeoutMs: 36e5, readWaitMs: 1500 });
-var fail3 = (message) => {
+var fail2 = (message) => {
   throw new TypeError(message);
 };
-var obj = (value, subject) => value && typeof value === "object" && !Array.isArray(value) ? value : fail3(`${subject} must be an object`);
+var obj = (value, subject) => value && typeof value === "object" && !Array.isArray(value) ? value : fail2(`${subject} must be an object`);
 var only = (value, keys, subject) => {
   const extra = Object.keys(value).filter((k) => !keys.includes(k));
-  if (extra.length) fail3(`${subject}: unexpected fields: ${extra.join(", ")}`);
+  if (extra.length) fail2(`${subject}: unexpected fields: ${extra.join(", ")}`);
 };
-var oneOf = (value, list, subject, fallback) => value === void 0 ? fallback : list.includes(value) ? value : fail3(`${subject} must be one of ${list.join(", ")}`);
-var bool = (value, subject, fallback) => value === void 0 ? fallback : typeof value === "boolean" ? value : fail3(`${subject} must be a boolean`);
-var absPath = (value, subject) => typeof value === "string" && isAbsolutePackPath(value) && value.length < 1e3 ? value : fail3(`${subject} must be an absolute path`);
-var jobIdOf = (value) => typeof value === "string" && /^mvjob-[a-f0-9]{12,32}$/.test(value) ? value : fail3("jobId is invalid");
+var oneOf = (value, list, subject, fallback) => value === void 0 ? fallback : list.includes(value) ? value : fail2(`${subject} must be one of ${list.join(", ")}`);
+var bool = (value, subject, fallback) => value === void 0 ? fallback : typeof value === "boolean" ? value : fail2(`${subject} must be a boolean`);
+var absPath = (value, subject) => typeof value === "string" && isAbsolutePackPath(value) && value.length < 1e3 ? value : fail2(`${subject} must be an absolute path`);
+var jobIdOf = (value) => typeof value === "string" && /^mvjob-[a-f0-9]{12,32}$/.test(value) ? value : fail2("jobId is invalid");
 function parseEngineInfo(value = {}) {
   only(obj(value, "engineInfo"), ["refresh"], "engineInfo");
   return { refresh: bool(value.refresh, "refresh", false) };
@@ -12460,19 +8451,19 @@ function parseEngineInfo(value = {}) {
 function parseEngineInstall(value) {
   const v = obj(value, "engineInstall");
   only(v, ["confirmed", "profile", "model"], "engineInstall");
-  if (v.confirmed !== true) fail3("engineInstall needs confirmed: true");
+  if (v.confirmed !== true) fail2("engineInstall needs confirmed: true");
   return { confirmed: true, profile: oneOf(v.profile, Object.keys(ENGINE_TORCH), "profile", "cuda"), model: oneOf(v.model, Object.keys(ENGINE_MODELS), "model", "large-v3") };
 }
 function parseEngineModel(value) {
   const v = obj(value, "engineModel");
   only(v, ["confirmed", "model"], "engineModel");
-  if (v.confirmed !== true) fail3("engineModel needs confirmed: true");
+  if (v.confirmed !== true) fail2("engineModel needs confirmed: true");
   return { confirmed: true, model: oneOf(v.model, Object.keys(ENGINE_MODELS), "model", "small") };
 }
 function parseEngineTranscribe(value) {
   const v = obj(value, "engineTranscribe");
   only(v, ["manifestPath", "model", "language", "separate", "prompt", "device"], "engineTranscribe");
-  const prompt = v.prompt === void 0 ? "" : typeof v.prompt === "string" ? v.prompt.slice(0, ENGINE_LIMITS.promptChars) : fail3("prompt must be a string");
+  const prompt = v.prompt === void 0 ? "" : typeof v.prompt === "string" ? v.prompt.slice(0, ENGINE_LIMITS.promptChars) : fail2("prompt must be a string");
   return {
     manifestPath: absPath(v.manifestPath, "manifestPath"),
     model: oneOf(v.model, Object.keys(ENGINE_MODELS), "model", "large-v3"),
@@ -12486,9 +8477,9 @@ function parseJobRead(value) {
   const v = obj(value, "jobRead");
   only(v, ["jobId", "cursor", "waitMs"], "jobRead");
   const cursor = v.cursor ?? 0;
-  if (!Number.isInteger(cursor) || cursor < 0) fail3("cursor must be a non-negative integer");
+  if (!Number.isInteger(cursor) || cursor < 0) fail2("cursor must be a non-negative integer");
   const waitMs = v.waitMs ?? 0;
-  if (!Number.isInteger(waitMs) || waitMs < 0 || waitMs > ENGINE_LIMITS.readWaitMs) fail3("waitMs out of range");
+  if (!Number.isInteger(waitMs) || waitMs < 0 || waitMs > ENGINE_LIMITS.readWaitMs) fail2("waitMs out of range");
   return { jobId: jobIdOf(v.jobId), cursor, waitMs };
 }
 function parseJobCancel(value) {
@@ -12548,7 +8539,6 @@ var MV_REMOTE_DESCRIPTORS = Object.freeze([
   descriptor("jobCancel", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvJobCancel`, parseJobCancel))], anyObjectCodec("MvJobCancelResult")),
   descriptor("packWriteText", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvPackWriteText`, parsePackWriteText))], anyObjectCodec("MvPackWriteTextResult")),
   descriptor("analysisRead", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvAnalysisRead`, parseAnalysisRead))], anyObjectCodec("MvAnalysisReadResult")),
-  descriptor("dshpvAsset", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvDshPvAsset`, parseDshPvAsset))], anyObjectCodec("MvDshPvAssetChunk")),
   // 0.7.0 MV 创意工坊 (GitHub repository catalogue; downloads checked by sha256; publishing happens on github.com).
   descriptor("workshopIndex", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopIndex`, parseWorkshopIndexRequest))], anyObjectCodec("MvWorkshopIndexResult")),
   descriptor("workshopCover", [jsonParameter("request", requestCodec(`${MV_REMOTE_PACKAGE}#MvWorkshopCover`, parseWorkshopId))], anyObjectCodec("MvWorkshopCoverResult")),
@@ -12597,7 +8587,6 @@ function panelApi(remote) {
     jobCancel: (request2) => service.jobCancel(request2),
     packWriteText: (request2) => service.packWriteText(request2),
     analysisRead: (request2) => service.analysisRead(request2),
-    dshpvAsset: (request2) => service.dshpvAsset(request2),
     workshopIndex: (request2) => service.workshopIndex(request2),
     workshopCover: (request2) => service.workshopCover(request2),
     workshopInstall: (request2) => service.workshopInstall(request2),

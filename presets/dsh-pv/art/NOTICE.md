@@ -36,10 +36,9 @@ DeepSeek girl follows 上善's CC BY-NC-SA 4.0 (checked by upstream on 2026-09-3
 - Keep the full attribution chain above when you use or adapt these files. 使用、改编时保留完整署名链。
 - **Non-commercial only.** 不得商用。
 - Adaptations of the artwork must be shared under CC BY-NC-SA 4.0. 改编作品按同一许可分享。
-- Because the npm package of dsh-mv-cli contains this folder, the package as a whole is **not purely MIT**:
-  its licence is `(MIT AND CC-BY-NC-SA-4.0)`. Remove this folder if you need an MIT-only build; the preset then
-  draws a placeholder silhouette instead of the art.
-  dsh-mv-cli 的 npm 包含有本目录，因此整个包**不是纯 MIT**（`MIT AND CC-BY-NC-SA-4.0`）。需要纯 MIT 的构建可删掉本目录，
-  预设会改用占位剪影。
+- Since dsh-mv-cli 0.9.0 this folder is **not** in the npm package (which is MIT only). It is distributed in the
+  **workshop pack** `world-execute-me-dsh-pv` (https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-dsh-pv),
+  licensed CC BY-NC-SA 4.0 as a whole; without it the dsh-pv renderer draws a placeholder silhouette.
+  自 0.9.0 起本目录**不再**随 npm 包分发（插件包为纯 MIT），改由创意工坊包 `world-execute-me-dsh-pv` 分发（整体 CC BY-NC-SA 4.0）。
 - No trademark rights are granted (DeepSeek's name and logo belong to their owners). This is an unofficial fan work,
   not affiliated with or endorsed by DeepSeek, Mili, or any author above. 非官方同人，与上述各方无从属关系。

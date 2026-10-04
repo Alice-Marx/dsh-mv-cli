@@ -21,7 +21,6 @@ import { createEngineManager, createJobManager } from './shared/mv-engine.mjs'
 import { parseEngineInfo, parseEngineInstall, parseEngineModel, parseEngineTranscribe, parseJobCancel, parseJobRead } from './shared/mv-engine-protocol.mjs'
 import { createLrclibClient, parseLyricsLookup } from './shared/mv-lrclib.mjs'
 import { parseAnalysisRead, parsePackWriteText, readAnalysis, writePackText } from './shared/mv-pack-edit.mjs'
-import { parseDshPvAsset, readDshPvAsset } from './shared/mv-dshpv-assets.mjs'
 import { parseWorkshopId, parseWorkshopIndexRequest, parseWorkshopInstalled, parseWorkshopPublish } from './shared/mv-workshop.mjs'
 import { createWorkshopManager } from './shared/mv-workshop-host.mjs'
 
@@ -84,7 +83,6 @@ export function mvRemoteServices(config = {}, packs = defaultPackOps, extras = {
     jobCancel: async request => (engine ?? noEngine()).cancel(parseJobCancel(request)),
     packWriteText: async request => packEdit.write(parsePackWriteText(request)),
     analysisRead: async request => packEdit.read(parseAnalysisRead(request)),
-    dshpvAsset: async request => readDshPvAsset(parseDshPvAsset(request)),
     workshopIndex: async request => (workshop ?? noWorkshop()).index(parseWorkshopIndexRequest(request)),
     workshopCover: async request => (workshop ?? noWorkshop()).cover(parseWorkshopId(request)),
     workshopInstall: async request => (workshop ?? noWorkshop()).install(parseWorkshopId(request)),

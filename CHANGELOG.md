@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.9.0 — 2026-10-04
+
+**Breaking: the plugin no longer bundles any MV. 插件不再内置任何 MV。**
+
+- **Presets moved to 创意工坊 / 预设移到创意工坊**: the two built-in world.execute(me) presets are now workshop packs in [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop), each under its own licence and each linking its original work:
+  - [`world-execute-me`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me) — the ASCII scenes, original [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (used with the author's permission, not open source). The port now runs as a sandboxed scene script (`renderer: "script"`, `scenes.js` bundled by `presets/build-workshop-packs.mjs`; frames identical to the former built-in), with the 5 chapters as sections (keys 1–5).
+  - [`world-execute-me-dsh-pv`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-dsh-pv) — the dsh PV, original [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv): recorded data (MIT, sharded into ≤ 512 KB files) and whale-girl art (CC BY-NC-SA 4.0) → pack licence `CC-BY-NC-SA-4.0`. The dsh-pv renderer itself (MIT) stays in the plugin.
+  Neither pack contains audio or lyric text; both ask you to bring your own audio (lyrics optional).
+  以前内置的 world.execute(me) ASCII 场景和 dsh PV 改为创意工坊包，各自标明原作仓库和许可，都不含音频和歌词。
+- **Empty library → 创意工坊**: with no packs the library shows an 打开创意工坊 call-to-action and one-click 一键安装 for both packs (download, sha256 check, open). The workshop shows each pack's original-work link (**原作**, from the new `x-dsh-mv-workshop.source` field, also in `index.json`) on the card and in the details, in all skins; the About popover links both originals.
+  曲库为空时显示「打开创意工坊」和两个包的一键安装；工坊卡片和详情里显示「原作」链接。
+- **Migration from 0.8.x / 迁移**: if a former preset (`builtin:world-execute-me`, `builtin:dsh-pv`) was selected, the panel shows "已移到创意工坊" with an install button; once installed, the audio, lyrics and spectrum you picked for the built-in preset are reused automatically. Other packs and settings are unchanged.
+  如果之前选的是内置预设，面板提示它已移到创意工坊并给出安装按钮；安装后自动沿用之前选过的音频和歌词。
+- **MV packs: `canvas.assets`** — renderer data files declared in `mv.json` (name → relative `.json` / `.webp` / `.png` path, or a list of JSON shards merged in order; up to 32 assets, 16 parts, 8 MB each), read through `packRead` with the new role `asset` (only files the manifest names). Used by `renderer: "dsh-pv"`. The `renderer: "world-execute-me"` value still parses but is no longer built in: such packs fall back to the generic renderer with a warning, and the workshop rejects it.
+- **Workshop limits**: a pack may now be up to 8 MB (was 4 MB; single files stay ≤ 512 KB). Clients older than 0.9.0 cannot install the dsh PV pack (too large for them) — they still have the built-in preset.
+- **Licence / 许可**: the npm package is now **MIT** only (was `(MIT AND CC-BY-NC-SA-4.0)`): no artwork, no recorded PV data and no ported world.execute-me-ascii code are in it. Those sources live in the repository under `presets/` (excluded from the MIT licence, see LICENSE and NOTICE.md) and are published only through the workshop packs.
+  npm 包现在是纯 MIT：不含立绘、PV 数据和 world.execute-me-ascii 的移植代码。
+- **Removed**: the `dshpvAsset` Host call (27 Host calls now), `.dsh-plugin/assets/`, the built-in Film / Canvas port and the template's preset examples (`examples/world-execute-me.mv.json`, `examples/dsh-pv.mv.json`). The generic and script renderers draw on a new MIT grid (`client/mv/grid.mjs`); the generic ready screen uses a letter-spaced title. `client.js` 625 KB.
+- Tests: the bundled `scenes.js` passes the workshop safety checks and the host sandbox and draws exactly what the original Film draws; `canvas.assets` parsing and `packRead` asset reads through the gateway (sharded, chunked); JSON sharding round-trips the dsh PV data; the build output passes workshop validation with the source links; preset migration helpers; the npm `files` list contains no assets.
+
 ## 0.8.3 — 2026-10-04
 
 - **曲库可收起 / collapsible library**: a chevron on the 曲库 header collapses the library to the header, the song count and the current song's row (playing indicator, play / pause, remove), in list and grid view and in every skin. The state is stored locally (`dsh-mv.library.collapsed.v1`); the sidebar / tab 曲库 entry expands it again.

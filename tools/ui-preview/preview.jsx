@@ -3,9 +3,14 @@
  * A mock Host answers the remote calls; ?scene= picks the state:
  *   first    – first run, nothing configured
  *   canvas   – canvas with a (synthetic) audio file, ready to play
- *   dshpv    – the built-in "world.execute(me); dsh PV" canvas preset; its data and art are
- *              served over HTTP by shoot.mjs, and the lyrics come from /local/lyrics.lrc when the
- *              screenshot machine has a local copy (never committed, never shipped)
+ *   empty    – 0.9.0 empty library (no packs): 创意工坊 call-to-action + one-click installs of the former presets
+ *   moved    – an 0.8.x preset id still selected → "moved to the workshop" hint
+ *   wem      – the "world-execute-me" workshop pack (scene script) installed and playing; audio / lyrics from
+ *              the 0.8.x legacy slots (migration)
+ *   dshpv    – the "world-execute-me-dsh-pv" workshop pack installed and playing (canvas.assets)
+ *              The two packs are served from a local dsh-mv-workshop checkout under /assets/ (shoot.mjs
+ *              DSH_MV_ASSETS=<workshop repo>/); lyrics come from /local/lyrics.lrc when the screenshot
+ *              machine has a local copy (never committed, never shipped)
  *   ai       – 曲库 with the 用 AI 制作新 MV dialog open (mock Host creates the pack)
  *   script   – an AI-made pack with canvas.renderer "script" (example scene)
  *   workshop – 曲库 with the 创意工坊 open (mock catalogue; covers from /covers/<id>.png made by shoot.mjs)
@@ -19,8 +24,6 @@ import { createRoot } from 'react-dom/client'
 import { MvPanel } from '../../.dsh-plugin/client/mv-panel.jsx'
 import { openMediaStore, putMedia } from '../../.dsh-plugin/client/mv/media-store.mjs'
 import { encodeWav } from '../../.dsh-plugin/client/mv-wav.mjs'
-import { DSHPV_ASSETS, DSHPV_CHUNK } from '../../.dsh-plugin/shared/mv-dshpv-protocol.mjs'
-import { DSH_PV_ID } from '../../.dsh-plugin/client/mv-pack-state.mjs'
 import { EXAMPLE_SCENE } from '../../.dsh-plugin/shared/mv-scene.mjs'
 import { TEMPLATE_ASSETS } from '../../.dsh-plugin/shared/mv-template-assets.gen.mjs'
 import { parseMvPack } from '../../.dsh-plugin/shared/mv-pack.mjs'
@@ -67,11 +70,23 @@ const jobEvents = () => {
   return { ratio, stage, done: ratio >= 1 }
 }
 
-const assetCache = new Map()
-const assetBytes = name => {
-  if (!assetCache.has(name)) assetCache.set(name, fetch(`/assets/${DSHPV_ASSETS[name]}`).then(r => (r.ok ? r.arrayBuffer().then(b => new Uint8Array(b)) : null)))
-  return assetCache.get(name)
+// 0.9.0: the two former presets, served from a local dsh-mv-workshop checkout (real index entries, manifests and files).
+const PRESET_IDS = ['world-execute-me', 'world-execute-me-dsh-pv']
+const real = { index: null, manifests: {}, scenes: {} }
+const fileCache = new Map()
+const packFile = (id, file) => {
+  const key = `${id}/${file}`
+  if (!fileCache.has(key)) fileCache.set(key, fetch(`/assets/packs/${key}`).then(r => (r.ok ? r.arrayBuffer().then(b => new Uint8Array(b)) : null)))
+  return fileCache.get(key)
 }
+async function loadReal() {
+  real.index = await fetch('/assets/index.json').then(r => (r.ok ? r.json() : null)).catch(() => null)
+  for (const id of PRESET_IDS) {
+    real.manifests[id] = await fetch(`/assets/packs/${id}/mv.json`).then(r => (r.ok ? r.json() : null)).catch(() => null)
+    if (real.manifests[id]?.canvas?.script) real.scenes[id] = await fetch(`/assets/packs/${id}/${real.manifests[id].canvas.script}`).then(r => r.text())
+  }
+}
+const realEntry = id => { const p = real.index?.packs?.find(x => x.id === id); return p ? { ...p, size: p.files.reduce((n, f) => n + f.size, 0) } : null }
 // 0.7.0 MV 创意工坊 mocks (fictional packs; scenes are the template examples).
 const WS_DIR = 'C:\\Users\\Alice\\AppData\\Local\\dsh-mv\\workshop'
 const RICH = TEMPLATE_ASSETS['examples/rich-pack/mv.json']
@@ -84,14 +99,17 @@ const WS_PACKS = [
   { id: 'execute-split', title: 'EXECUTE//SPLIT', artist: 'Glitch Atelier', author: 'mono-k', license: 'CC-BY-NC-4.0', version: '1.0.0', duration: 212.0, scene: 'examples/execution-split.scene.js', tags: ['glitch', 'red'], description: '分屏大字 + 斜向胶带，拍点时整行错位。', fingerprint: false, timing: true, sections: 9 },
   { id: 'ops-ticker-blues', title: 'Ops Ticker Blues', artist: 'Server Room Band', author: 'oncall', license: 'MIT', version: '0.9.1', duration: 163.7, scene: 'examples/ops-ticker.scene.js', tags: ['log', 'retro'], description: '运维日志随段落换词，底部跑马灯。', fingerprint: false, timing: false, sections: 5 },
 ]
-const wsInstalled = new Map(scene === 'workshop' || scene === 'wsplay' ? [['neon-terminal-example', { version: '1.0.0' }], ['token-rain', { version: '1.3.0' }]] : [])
+const wsInstalled = new Map(scene === 'workshop' || scene === 'wsplay' ? [['neon-terminal-example', { version: '1.0.0' }], ['token-rain', { version: '1.3.0' }]]
+  : scene === 'wem' ? [['world-execute-me', { version: '1.0.0' }]] : scene === 'dshpv' ? [['world-execute-me-dsh-pv', { version: '1.0.0' }]] : [])
+const allPacks = () => [...PRESET_IDS.map(realEntry).filter(Boolean), ...WS_PACKS]
 const wsIndex = () => ({
-  commit: '6655401'.padEnd(40, '0'), generated: '2026-10-03T16:00:00Z', repo: 'Alice-Marx/dsh-mv-workshop', source: 'https://raw.githubusercontent.com/Alice-Marx/dsh-mv-workshop/main/index.json',
-  packs: WS_PACKS.map(p => ({ ...p, renderer: 'script', homepage: '', cover: 'cover.png', updated: '2026-10-0' + (1 + (p.id.length % 3)) + 'T10:00:00Z', size: 30_000 + p.id.length * 900,
-    files: ['mv.json', 'scenes.js', 'README.md', 'cover.png', ...(p.timing ? ['lyrics.timing.json'] : [])].map((path, i) => ({ path, size: [1900, 12500, 1020, 17074, 3008][i], sha256: (p.id + path).split('').map(c => c.charCodeAt(0).toString(16)).join('').padEnd(64, '0').slice(0, 64) })) })),
-  installed: [...wsInstalled].map(([id, v]) => ({ id, version: v.version, title: WS_PACKS.find(p => p.id === id).title, manifestPath: `${WS_DIR}\\${id}\\mv.json`, installedAt: '2026-10-03T12:00:00Z' })),
+  commit: (real.index?.commit ?? '6655401').padEnd(40, '0'), generated: '2026-10-04T10:00:00Z', repo: 'Alice-Marx/dsh-mv-workshop', source: 'https://raw.githubusercontent.com/Alice-Marx/dsh-mv-workshop/main/index.json',
+  packs: [...PRESET_IDS.map(realEntry).filter(Boolean), ...WS_PACKS.map(p => ({ ...p, renderer: 'script', homepage: '', cover: 'cover.png', updated: '2026-10-0' + (1 + (p.id.length % 3)) + 'T10:00:00Z', size: 30_000 + p.id.length * 900,
+    files: ['mv.json', 'scenes.js', 'README.md', 'cover.png', ...(p.timing ? ['lyrics.timing.json'] : [])].map((path, i) => ({ path, size: [1900, 12500, 1020, 17074, 3008][i], sha256: (p.id + path).split('').map(c => c.charCodeAt(0).toString(16)).join('').padEnd(64, '0').slice(0, 64) })) }))],
+  installed: [...wsInstalled].map(([id, v]) => ({ id, version: v.version, title: allPacks().find(p => p.id === id)?.title ?? id, manifestPath: `${WS_DIR}\\${id}\\mv.json`, installedAt: '2026-10-03T12:00:00Z' })),
 })
 const wsManifest = id => {
+  if (real.manifests[id]) return real.manifests[id]
   const p = WS_PACKS.find(x => x.id === id) ?? WS_PACKS[0]
   const data = JSON.parse(RICH)
   delete data.lyrics; delete data.$schema
@@ -108,14 +126,16 @@ async function buildTiming() {
 const EXAMPLE = query.get('example') || 'rich-pack'
 const exampleScene = () => TEMPLATE_ASSETS[EXAMPLE === 'rich-pack' ? 'examples/rich-pack/scenes.js' : `examples/${EXAMPLE}.scene.js`]
 const sceneFor = path => {
-  if (/workshop/.test(path)) { const id = path.split('\\').at(-2); return TEMPLATE_ASSETS[(WS_PACKS.find(p => p.id === id) ?? WS_PACKS[0]).scene] }
+  if (/workshop/.test(path)) { const id = path.split('\\').at(-2); return real.scenes[id] ?? TEMPLATE_ASSETS[(WS_PACKS.find(p => p.id === id) ?? WS_PACKS[0]).scene] }
   if (/Examples/.test(path)) return exampleScene()
   return EXAMPLE_SCENE
 }
 const loadedFor = path => {
   if (/workshop/.test(path)) {
     const id = path.split('\\').at(-2)
-    return { manifestPath: path, packDir: path.replace(/\\mv\.json$/, ''), pack: parseMvPack(JSON.stringify(wsManifest(id))), files: { scene: { exists: true, size: 12000 }, timing: { exists: true, size: 3000 } }, warnings: [] }
+    const manifest = wsManifest(id)
+    const assets = Object.fromEntries(Object.entries(manifest.canvas?.assets ?? {}).map(([k, v]) => [k, { parts: Array.isArray(v) ? v.length : 1, exists: true }]))
+    return { manifestPath: path, packDir: path.replace(/\\mv\.json$/, ''), pack: parseMvPack(JSON.stringify(manifest)), files: { ...(manifest.canvas?.script ? { scene: { exists: true, size: 12000 } } : {}), ...(manifest['x-dsh-mv-workshop']?.lyricsTiming ? { timing: { exists: true, size: 3000 } } : {}), ...(Object.keys(assets).length ? { assets } : {}) }, warnings: [] }
   }
   if (/Examples/.test(path)) {
     const data = JSON.parse(RICH); delete data.lyrics; delete data.$schema
@@ -129,11 +149,11 @@ const wsMocks = {
   workshopIndex: async () => { await new Promise(r => setTimeout(r, 250)); return ok(wsIndex()) },
   workshopInstalled: () => ok({ installed: wsIndex().installed }),
   workshopCover: async ({ id }) => {
-    const r = await fetch(`/covers/${id}.png`)
+    const r = PRESET_IDS.includes(id) ? await fetch(`/assets/packs/${id}/cover.png`) : await fetch(`/covers/${id}.png`)
     if (!r.ok) return ok({ id, found: false })
     return ok({ id, found: true, mime: 'image/png', base64: b64(new Uint8Array(await r.arrayBuffer())) })
   },
-  workshopInstall: async ({ id }) => { await new Promise(r => setTimeout(r, 900)); const p = WS_PACKS.find(x => x.id === id); wsInstalled.set(id, { version: p.version }); return ok({ id, version: p.version, manifestPath: `${WS_DIR}\\${id}\\mv.json`, files: p.timing ? 5 : 4, warnings: [] }) },
+  workshopInstall: async ({ id }) => { await new Promise(r => setTimeout(r, 900)); const p = allPacks().find(x => x.id === id); wsInstalled.set(id, { version: p.version }); return ok({ id, version: p.version, manifestPath: `${WS_DIR}\\${id}\\mv.json`, files: p.timing ? 5 : 4, warnings: [] }) },
   workshopUninstall: ({ id }) => { wsInstalled.delete(id); return ok({ id, removed: true }) },
   workshopPublish: async request => {
     await new Promise(r => setTimeout(r, 700))
@@ -165,16 +185,18 @@ const api = {
   },
   packWriteText: ({ file, text }) => { files.set({ 'mv.json': 'manifest', 'timing.json': 'timing', 'sections.json': 'sections', 'lyrics.lrc': 'lyrics' }[file], text); return ok({ path: `${PACK_DIR}\\${file}`, backup: `${PACK_DIR}\\.dsh-mv-backup\\${file}.20261003-120000`, bytes: text.length }) },
   info: () => ok({ hostVersion: query.get('stale') ? '0.2.0' : __DSH_MV_CLIENT_VERSION__, platform: 'win32', canvasFontSize: 14, aiPacksDir: 'C:\\Users\\Alice\\AppData\\Local\\dsh-mv\\packs', agentTools: { registered: true }, lrclib: true }),
-  dshpvAsset: async ({ name, offset = 0 }) => {
-    const bytes = await assetBytes(name)
-    if (!bytes) return ok({ exists: false, name, size: 0, offset, bytes: 0, done: true, base64: '' })
-    const part = bytes.subarray(offset, offset + DSHPV_CHUNK)
-    return ok({ exists: true, name, size: bytes.length, offset, bytes: part.length, done: offset + part.length >= bytes.length, base64: b64(part) })
-  },
   packLoad: ({ path }) => ok(loadedFor(path) ?? (/Starlight/.test(path)
     ? { manifestPath: path, pack: { title: 'Starlight Run', artist: 'Alice', credits: ['由 AI 制作的示例 MV 包（仅用于界面预览）'], audio: { file: 'audio.wav' }, lyrics: { file: 'lyrics.lrc' }, canvas: { renderer: scene === 'ai' || scene === 'auto' ? 'generic' : 'script', script: 'scenes.js' } }, files: { audio: { exists: true, size: 960044 }, lyrics: { exists: true, size: 200 }, scene: { exists: true, size: EXAMPLE_SCENE.length } }, warnings: [] }
     : { manifestPath: path, pack: { title: 'Ghost Rule', artist: 'DECO*27', credits: ['示例 MV 包（仅用于界面预览）'], canvas: { renderer: 'generic' } }, files: {}, warnings: [] })),
-  packRead: ({ manifestPath, role, offset, length }) => {
+  packRead: async ({ manifestPath, role, offset, length, asset, part: index = 0 }) => {
+    if (role === 'asset') {
+      const id = manifestPath.split('\\').at(-2)
+      const ref = [wsManifest(id).canvas?.assets?.[asset]].flat()[index]
+      const bytes = ref ? await packFile(id, ref) : null
+      if (!bytes) return fail(`这个 MV 包的 canvas.assets 里没有 ${asset}[${index}]。`)
+      const chunk = bytes.subarray(offset, offset + length)
+      return ok({ name: ref.split('/').pop(), size: bytes.length, offset, bytes: chunk.length, done: offset + chunk.length >= bytes.length, base64: b64(chunk) })
+    }
     const special = /workshop|Examples/.test(manifestPath)
     const text = role === 'scene' ? sceneFor(manifestPath) : role === 'timing' ? timingJson : role === 'lyrics' ? (special ? PLACEHOLDER_LRC : SCRIPT_LRC()) : ''
     const bytes = role === 'audio' ? scriptAudioBytes() : enc.encode(text)
@@ -203,6 +225,7 @@ async function setup() {
   if (query.get('skin')) localStorage.setItem('dsh-mv.skin.v1', JSON.stringify({ skin: query.get('skin'), modes: { [query.get('skin')]: query.get('mode') || 'auto' } }))
   const db = await openMediaStore()
   await buildTiming()
+  await loadReal()
   if (scene === 'workshop' || scene === 'wsplay') {
     localStorage.setItem('dsh-mv.packs.recent.v1', JSON.stringify([
       { manifestPath: `${WS_DIR}\\neon-terminal-example\\mv.json`, title: 'Neon Terminal (example)', artist: 'dsh-mv', workshop: 'neon-terminal-example' },
@@ -234,7 +257,7 @@ async function setup() {
   } else if (scene === 'script' || scene === 'calib') {
     localStorage.setItem('dsh-mv.packs.recent.v1', JSON.stringify([{ manifestPath: `${PACK_DIR}\\mv.json`, title: 'Starlight Run', artist: 'Alice' }, { manifestPath: 'D:\\MV\\Ghost Rule\\mv.json', title: 'Ghost Rule', artist: 'DECO*27' }]))
     localStorage.setItem('dsh-mv.packs.active.v1', `pack:${PACK_DIR}\\mv.json`)
-  } else if (scene !== 'first') {
+  } else if (!['first', 'empty', 'moved', 'wem', 'dshpv'].includes(scene)) {
     if (scene === 'auto') files.delete('timing')
     localStorage.setItem('dsh-mv.packs.recent.v1', JSON.stringify([
       { manifestPath: 'D:\\MV\\Ghost Rule\\mv.json', title: 'Ghost Rule', artist: 'DECO*27' },
@@ -248,8 +271,16 @@ async function setup() {
     await putMedia(db, 'audio', { file, name: file.name, sha: 'f98eaa58d0c2d5'.padEnd(64, '0') })
     await putMedia(db, 'lyrics', { name: 'lyrics.lrc', text: '[00:00.00](示例歌词，仅用于预览)\n[01:05.00]（示例）第一句\n[01:09.50]（示例）第二句\n[01:14.00]（示例）第三句\n' })
   }
-  if (scene === 'dshpv') {
-    localStorage.setItem('dsh-mv.packs.active.v1', DSH_PV_ID)
+  if (scene === 'empty' || scene === 'moved') files.delete('timing')
+  if (scene === 'moved') {
+    localStorage.setItem('dsh-mv.packs.active.v1', query.get('legacy') || 'builtin:dsh-pv')
+  }
+  if (scene === 'wem' || scene === 'dshpv') {
+    files.delete('timing') // no calibration mock data on the preset packs
+    const id = scene === 'wem' ? 'world-execute-me' : 'world-execute-me-dsh-pv'
+    const m = real.manifests[id]
+    localStorage.setItem('dsh-mv.packs.recent.v1', JSON.stringify([{ manifestPath: `${WS_DIR}\\${id}\\mv.json`, title: m?.title ?? id, artist: m?.artist ?? '', duration: m?.duration, workshop: id }]))
+    localStorage.setItem('dsh-mv.packs.active.v1', `pack:${WS_DIR}\\${id}\\mv.json`)
     const rate = 8000, seconds = 212, samples = new Float32Array(rate * seconds)
     for (let i = 0; i < samples.length; i++) { const t = i / rate, beat = (t * 2.1) % 1; samples[i] = 0.25 * Math.sin(i * 2 * Math.PI * 110 / rate) * Math.exp(-beat * 6) + 0.05 * Math.sin(i * 2 * Math.PI * 440 / rate) }
     const file = new File([encodeWav([samples], rate)], 'world.execute(me).m4a', { type: 'audio/wav' })

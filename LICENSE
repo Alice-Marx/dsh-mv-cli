@@ -22,14 +22,16 @@ SOFTWARE.
 
 -------------------------------------------------------------------------------
 SCOPE: this MIT licence covers the code written for this plugin (Host plugin,
-client UI, renderers, Python-semantics runtime, build and test tooling). The scene and timing logic in .dsh-plugin/client/mv/scenes.gen.mjs,
-film.mjs and canvas.mjs is a port of world.execute-me-ascii by yym8224961 and
-is used with that author's permission, which is NOT an open-source licence —
-see NOTICE.md before redistributing or reusing those parts.
-
-The dsh PV preset (.dsh-plugin/client/mv/dshpv/ and .dsh-plugin/assets/dsh-pv/)
+client UI, renderers, build and test tooling). Since 0.9.0 the npm package
+contains only MIT-licensed code: the dsh-pv renderer in .dsh-plugin/client/mv/dshpv/
 is ported from MisakaZentai/world-execute-me-dsh-pv under the MIT licence,
-Copyright (c) 2026 MisakaZentai (full notice in .dsh-plugin/assets/dsh-pv/NOTICE.md).
-The images in .dsh-plugin/assets/dsh-pv-art/ are NOT covered by MIT: they are
-licensed CC BY-NC-SA 4.0 (licence text and attribution in that folder). The
-package as a whole is therefore licensed (MIT AND CC-BY-NC-SA-4.0).
+Copyright (c) 2026 MisakaZentai (see NOTICE.md).
+
+NOT covered by this licence (repository only, not in the npm package):
+- presets/world-execute-me/src/ (scenes.gen.mjs, film.mjs, canvas.mjs, pyrt.mjs):
+  a port of world.execute-me-ascii by yym8224961, used and redistributed with
+  that author's permission, which is NOT an open-source licence. It is published
+  as the "world-execute-me" workshop pack. See NOTICE.md before reusing it.
+- presets/dsh-pv/art/: whale-girl images licensed CC BY-NC-SA 4.0 (licence text
+  and attribution chain in that folder). presets/dsh-pv/data/ is MIT
+  (MisakaZentai). Both are published as the "world-execute-me-dsh-pv" workshop pack.

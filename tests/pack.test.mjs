@@ -5,9 +5,9 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { MvPackError, parseMvPack, parsePackRead, parsePackLoad } from '../.dsh-plugin/shared/mv-pack.mjs'
+import { MvPackError, assetParts, parseMvPack, parsePackRead, parsePackLoad } from '../.dsh-plugin/shared/mv-pack.mjs'
 import { loadPack, readPackFile, writeTemplate, TERMINAL_IGNORED } from '../.dsh-plugin/shared/mv-pack-host.mjs'
-import { templateFiles, TEMPLATE_MANIFEST, WORLD_EXECUTE_ME_EXAMPLE, DSH_PV_EXAMPLE, MV_PACK_JSON_SCHEMA } from '../.dsh-plugin/shared/mv-pack-template.mjs'
+import { templateFiles, TEMPLATE_MANIFEST, MV_PACK_JSON_SCHEMA } from '../.dsh-plugin/shared/mv-pack-template.mjs'
 import { MvRemoteService } from '../.dsh-plugin/remote-service.mjs'
 import { MV_REMOTE_DESCRIPTORS, MV_REMOTE_NAMESPACE } from '../.dsh-plugin/shared/mv-remote.mjs'
 import { defaultPackOps, mvRemoteServices } from '../.dsh-plugin/index.mjs'
@@ -20,7 +20,9 @@ const base = { format: 'dsh-mv-pack', version: 1, title: 'Song' }
 const problemsOf = input => { try { parseMvPack(input); return [] } catch (error) { assert.ok(error instanceof MvPackError); return error.problems } }
 
 test('pack: template manifests are valid and minimal packs normalise', () => {
-  for (const manifest of [TEMPLATE_MANIFEST, WORLD_EXECUTE_ME_EXAMPLE, DSH_PV_EXAMPLE]) parseMvPack(JSON.stringify(manifest))
+  parseMvPack(JSON.stringify(TEMPLATE_MANIFEST))
+  assert.ok(!templateFiles().some(f => /world-execute-me|dsh-pv\.mv/.test(f.path)), 'no preset examples in the template since 0.9.0')
+  assert.ok(!MV_PACK_JSON_SCHEMA.properties.canvas.properties.renderer.enum.includes('world-execute-me'))
   const pack = parseMvPack({ ...base, audio: 'music/song.mp3', 'x-mine': 1 })
   assert.deepEqual(pack.audio, { file: 'music/song.mp3', offset: 0 })
   assert.equal(pack.canvas.renderer, 'generic')
@@ -28,6 +30,20 @@ test('pack: template manifests are valid and minimal packs normalise', () => {
   assert.equal(parseMvPack({ ...base, audio: { file: '.\\a\\\\b.mp3' } }).audio.file, 'a/b.mp3')
   assert.equal(parseMvPack({ ...base, audio: { file: 'D:\\Music\\x (live).mp3' } }).audio.file, 'D:\\Music\\x (live).mp3')
   assert.equal(parseMvPack('\uFEFF' + JSON.stringify(base)).title, 'Song', 'BOM tolerated')
+})
+
+test('pack: canvas.assets (0.9.0) — relative .json/.webp/.png paths or JSON shard lists', () => {
+  const pack = parseMvPack({ ...base, canvas: { renderer: 'dsh-pv', assets: { timeline: ['data/t-1.json', 'data/t-2.json'], band: 'data/band.json', 'whale-shy': 'art/whale-shy.webp' } } })
+  assert.deepEqual(assetParts(pack, 'timeline'), ['data/t-1.json', 'data/t-2.json'])
+  assert.deepEqual(assetParts(pack, 'band'), ['data/band.json'])
+  assert.deepEqual(assetParts(pack, 'nope'), [])
+  for (const assets of [{ x: '../up.json' }, { x: 'C:\\abs.json' }, { x: 'a.exe' }, { 'bad name!': 'a.json' }, { x: [] }, { x: Array.from({ length: 20 }, (_, i) => `p${i}.json`) }]) {
+    assert.ok(problemsOf({ ...base, canvas: { renderer: 'dsh-pv', assets } }).some(p => /canvas\.assets/.test(p)), JSON.stringify(assets))
+  }
+  // the old built-in renderer still parses (so 0.8.x packs load and get a "moved" warning), but is not offered any more
+  assert.equal(parseMvPack({ ...base, canvas: { renderer: 'world-execute-me' } }).canvas.renderer, 'world-execute-me')
+  assert.deepEqual(parsePackRead({ manifestPath: 'C:\\p\\mv.json', role: 'asset', asset: 'timeline', part: 1, offset: 0, length: 10 }).part, 1)
+  assert.throws(() => parsePackRead({ manifestPath: 'C:\\p\\mv.json', role: 'asset', offset: 0, length: 10 }), /asset/)
 })
 
 test('pack: every problem is reported', () => {
@@ -132,7 +148,7 @@ test('pack template: written into a new folder, never overwriting, and every man
     assert.match(readFileSync(join(first.path, 'examples', 'scenes.example.js'), 'utf8'), /function render\(t, cols, rows, ctx\)/)
     assert.equal(JSON.parse(readFileSync(join(first.path, 'mv.schema.json'), 'utf8')).$id, MV_PACK_JSON_SCHEMA.$id)
     const readme = readFileSync(join(first.path, 'README.zh.md'), 'utf8')
-    for (const word of ['renderer', 'dsh-pv', 'x-', 'terminal']) assert.ok(readme.includes(word), word)
+    for (const word of ['renderer', 'dsh-pv', 'x-', 'terminal', '创意工坊', 'canvas.assets']) assert.ok(readme.includes(word), word)
     await assert.rejects(writeTemplate({ dir: join(dir, 'nope') }), /不是已存在的文件夹/)
     const loaded = await loadPack(first.path)
     assert.match(loaded.warnings.join(), /audio 文件不存在/, 'the template expects your own song.mp3')

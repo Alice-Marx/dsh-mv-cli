@@ -1,4 +1,5 @@
-// The canvas MV's film is a port of world.execute-me-ascii; these goldens were
+// The world.execute(me) film is a port of world.execute-me-ascii (presets/world-execute-me, repo only since 0.9.0;
+// it ships as the "world-execute-me" workshop pack's scenes.js). These goldens were
 // rendered by the ORIGINAL player.Film (tools/make-goldens.py) with synthetic
 // lyrics and a synthetic spectrum, and store only frame digests.
 import test from 'node:test'
@@ -6,9 +7,15 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { Film, CHAPTERS, DURATION, MIN_COLS, MIN_ROWS, ORIGINAL_HINT, ORIGINAL_HELP_LINES, HELP_LINES, clockText } from '../.dsh-plugin/client/mv/film.mjs'
-import { $round, $mod, $fmt } from '../.dsh-plugin/client/mv/pyrt.mjs'
-import { cw, width, wrap, crop } from '../.dsh-plugin/client/mv/canvas.mjs'
+import vm from 'node:vm'
+import { Film, CHAPTERS, DURATION, MIN_COLS, MIN_ROWS, ORIGINAL_HINT, ORIGINAL_HELP_LINES, HELP_LINES, clockText } from '../presets/world-execute-me/src/film.mjs'
+import { $round, $mod, $fmt } from '../presets/world-execute-me/src/pyrt.mjs'
+import * as port from '../presets/world-execute-me/src/canvas.mjs'
+import { cw, width, wrap, crop, Grid } from '../.dsh-plugin/client/mv/grid.mjs'
+import { sceneScript } from '../presets/build-workshop-packs.mjs'
+import { checkScriptSafety } from '../.dsh-plugin/shared/mv-workshop.mjs'
+import { checkScene } from '../.dsh-plugin/shared/mv-scene-host.mjs'
+import { sceneContext, stripModuleSyntax } from '../.dsh-plugin/shared/mv-scene.mjs'
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/film-goldens.json', import.meta.url), 'utf8'))
 
@@ -74,6 +81,40 @@ test('pyrt / canvas: Python semantics', () => {
   assert.equal(cw('a'), 1)
   assert.equal(cw('\u0301'), 0)
   assert.equal(width('中文ab'), 6)
-  assert.deepEqual(wrap('hello world again', 11), ['hello', 'world again'], 'same as player.py wrap')
+  assert.deepEqual(port.wrap('hello world again', 11), ['hello', 'world again'], 'same as player.py wrap')
   assert.equal(width(crop('中文中文中文', 5)) <= 5, true)
+})
+
+test('grid.mjs (MIT, the plugin\'s own) measures text exactly like the ported canvas', () => {
+  for (const text of ['hello', '中文ab', 'e\u0301', '♪ world.execute(me); ♪', '한국어 カタカナ']) {
+    assert.equal(width(text), port.width(text), text)
+    assert.equal(crop(text, 5), port.crop(text, 5), text)
+  }
+  assert.deepEqual(wrap('hello world again', 11), ['hello world', 'again'], 'greedy wrap')
+  for (const line of wrap('中文字幕很长很长的一句话 mixed text', 8)) assert.ok(width(line) <= 8, line)
+  const g = new Grid(10, 2)
+  g.put(0, 0, '中a', 2)
+  assert.equal(g.cells[0][0][0], '中'); assert.equal(g.cells[0][1][0], ''); assert.equal(g.cells[0][2][0], 'a')
+})
+
+test('workshop pack scenes.js: the bundled port is a safe scene script and draws what Film draws', async () => {
+  const source = await sceneScript()
+  assert.deepEqual(checkScriptSafety(source).errors, [])
+  assert.ok(Buffer.byteLength(source) < 256 * 1024)
+  assert.match(source, /yym8224961\/world\.execute-me-ascii/)
+  const sections = CHAPTERS.map((c, i) => ({ kind: 'chapter', label: c[1], start: c[0], end: CHAPTERS[i + 1]?.[0] ?? DURATION }))
+  const cue = { time: 40, end: 44, en: 'PLACEHOLDER LINE', zh: '测试字幕' }
+  const check = checkScene(source, { times: [0, 16.5, 40, 120, 190], cols: 100, rows: 32, info: { duration: DURATION, sections }, cues: [cue] })
+  assert.equal(check.ok, true, check.problems.join('\n'))
+  // frame parity with Film (same lyric cue, silent spectrum)
+  const sandbox = vm.createContext({})
+  vm.runInContext(stripModuleSyntax(source), sandbox)
+  const film = new Film({ lyrics: [cue] })
+  for (const [t, ready] of [[1, true], [17, false], [41, false], [150, false]]) {
+    const ctx = JSON.parse(JSON.stringify(sceneContext({ t, duration: DURATION, cue: t >= 40 && t < 44 ? cue : null, ready })))
+    const out = JSON.parse(JSON.stringify(sandbox.render(t, 100, 32, ctx)))
+    const expected = film.render(t, 100, 32, { ready, hint: true }).cells.map(row => row.map(c => c[0]).join(''))
+    assert.deepEqual(out.lines, expected, `t=${t}`)
+    assert.equal(out.styles[0].length, [...out.lines[0]].length)
+  }
 })

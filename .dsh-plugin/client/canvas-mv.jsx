@@ -4,25 +4,24 @@
  * lyrics and the optional spectrum come from the user's own files.
  */
 import React from 'react'
-import { Film, DURATION, CHAPTERS, clockText } from './mv/film.mjs'
 import { GridRenderer } from './mv/renderer.mjs'
 import { parseLyrics } from './mv/lyrics.mjs'
 import { LiveSpectrum, spectrumFromJson, silentEnergy } from './mv/spectrum.mjs'
 import { KNOWN_AUDIO, formatOffset, loadOffsets, saveOffsets, resetOffsets, sha256Hex, roundOffset } from './mv/sync.mjs'
 import { openMediaStore, getMedia, putMedia, deleteMedia } from './mv/media-store.mjs'
-import { FilmClock, frameTime, keyAction, stepCue, stepOffset } from './mv/player-state.mjs'
+import { DEFAULT_DURATION, FilmClock, frameTime, keyAction, stepCue, stepOffset } from './mv/player-state.mjs'
 import { GenericFilm, genericChapters, timeText } from './mv/generic-film.mjs'
 import { ScriptFilm } from './mv/script-film.mjs'
 import { DshPvFilm, DSHPV_CHAPTERS, DSHPV_DURATION } from './mv/dshpv/film.mjs'
-import { hostReader, loadDshPv } from './mv/dshpv/assets.mjs'
+import { hasDshPvAssets, loadDshPv, packAssetReader } from './mv/dshpv/assets.mjs'
 import { matchBand } from './mv/dshpv/band.mjs'
 import { CalibEditor } from './mv-calib.jsx'
-import { BUILTIN_PACK, fetchPackAudio, fetchPackText } from './mv-pack-state.mjs'
+import { EMPTY_PACK, fetchPackAudio, fetchPackText } from './mv-pack-state.mjs'
 import { readHostAudio } from './mv-wav.mjs'
 import { unwrapRemote } from './remote-state.mjs'
 import { audioMimeOf, displayCommand, ffmpegArgs, sniffAudio } from '../shared/mv-audio-protocol.mjs'
 import { Alert, Icon, KeyHelp, Popover } from './mv-ui.jsx'
-import { checkAudioForPack, fingerprintAudio, mediaSlot, retimeWithPack } from './mv-workshop-state.mjs'
+import { checkAudioForPack, fingerprintAudio, legacyPresetSlot, mediaSlot, retimeWithPack } from './mv-workshop-state.mjs'
 
 /** Everything the panel's Chromium can decode; the content decides, not the extension. */
 export const AUDIO_ACCEPT = 'audio/*,video/*,.mp3,.mp2,.m4a,.m4b,.mp4,.m4v,.mov,.aac,.webm,.mkv,.mka,.ogg,.oga,.opus,.flac,.wav'
@@ -33,11 +32,16 @@ const storeFont = v => { try { globalThis.localStorage?.setItem(FONT_KEY, String
 
 const HINT = 'SPACE 播放/暂停  ←/→ 5s  [ ] 字幕  Alt+[ ] 音频同步  1-5 章节  F 全屏  H 帮助'
 
-const isGeneric = pack => !['world-execute-me', 'dsh-pv'].includes(pack?.pack?.canvas?.renderer)
+const isGeneric = pack => pack?.pack?.canvas?.renderer !== 'dsh-pv'
 const isDshPv = pack => pack?.pack?.canvas?.renderer === 'dsh-pv'
 const isScript = pack => pack?.pack?.canvas?.renderer === 'script'
+/** Chapters for the 1–5 keys and the chip: the pack's sections when it has some, else five even parts. */
+const chaptersOf = (pack, duration) => {
+  const sections = pack?.pack?.sections ?? []
+  return sections.length ? sections.map(s => [s.start, s.label || s.kind, '']) : genericChapters(duration)
+}
 
-export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 14, pack = BUILTIN_PACK, api = null, onState = () => {}, dshpvReader = null }, ref) {
+export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 14, pack = EMPTY_PACK, api = null, onState = () => {}, dshpvReader = null }, ref) {
   const wrap = React.useRef(null)
   const stage = React.useRef(null)
   const canvas = React.useRef(null)
@@ -57,7 +61,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const dbRef = React.useRef(null)
   const packRef = React.useRef(pack)
   packRef.current = pack
-  const [duration, setDuration] = React.useState(DURATION)
+  const [duration, setDuration] = React.useState(DEFAULT_DURATION)
   const [packStatus, setPackStatus] = React.useState('')
   const [volume, setVolume] = React.useState({ level: 1, muted: false })
   const [sceneNote, setSceneNote] = React.useState('')
@@ -73,7 +77,6 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   React.useEffect(() => {
     const live = new LiveSpectrum(audio.current)
     const state = {
-      wem: new Film({ energy: t => state.energy(t) }),
       generic: new GenericFilm({ energy: t => state.energy(t) }),
       script: new ScriptFilm({
         energy: t => state.energy(t),
@@ -90,7 +93,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       live, energy: silentEnergy, fileEnergy: null, started: false, help: false, sha: '',
     }
     state.energy = () => live.energy()
-    state.film = state.wem
+    state.film = state.generic
     engine.current = state
     let raf = 0, lastStatus = 0
     const frame = now => {
@@ -174,15 +177,14 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     try {
       const state = engine.current
       const dshpv = state.film === state.dshpv
-      const generic = state.film !== state.wem && !dshpv
-      const cues = parseLyrics(name, body, { duration: generic ? 1e9 : dshpv ? DSHPV_DURATION : DURATION })
+      const generic = !dshpv
+      const cues = parseLyrics(name, body, { duration: dshpv ? DSHPV_DURATION : 1e9 })
       if (!cues.length) throw new Error('文件里没有带时间的歌词行。')
       if (shift) for (const cue of cues) { cue.time += shift; cue.end += shift }
       if (dshpv) {
         const data = await state.dshpvLoad
         const band = data ? await matchBand(data.band, cues) : { lines: [], matched: 0, total: 0 }
         state.dshpv.setLines(band.lines)
-        state.wem.setLyrics(cues)
         cuesRef.current = cues
         setLyricsInfo({ name, count: cues.length, note: band.matched ? `逐词时间匹配 ${band.matched}/${band.total} 句` : '未匹配到逐词时间，按行显示' })
       } else {
@@ -193,11 +195,11 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         if (timed.matched) use = timed.cues
         note = timed.matched ? `按工坊时间轴对齐 ${timed.matched}/${timed.total} 句` : '没有与工坊时间轴匹配的行，使用歌词文件自己的时间'
       }
-      for (const film of generic ? [state.generic, state.script] : [state.wem]) film.setLyrics(use)
+      for (const film of [state.generic, state.script]) film.setLyrics(use)
       cuesRef.current = use
       setLyricsInfo({ name, count: use.length, ...(note ? { note } : {}) })
       }
-      if (!packRef.current?.builtin) setLyricsText(body)
+      setLyricsText(body)
       const slot = mediaSlot(packRef.current, 'lyrics')
       if (remember && slot) await putMedia(dbRef.current, slot, { name, text: body })
     } catch (failure) { setError(`无法解析歌词：${failure?.message ?? failure}`) }
@@ -209,12 +211,13 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       const fileEnergy = spectrumFromJson(body)
       engine.current.energy = t => fileEnergy(t)
       setSpectrumInfo({ name })
-      if (remember && packRef.current?.builtin) await putMedia(dbRef.current, 'spectrum', { name, text: body })
+      const slot = mediaSlot(packRef.current, 'spectrum')
+      if (remember && slot) await putMedia(dbRef.current, slot, { name, text: body })
     } catch (failure) { setError(`无法读取频谱：${failure?.message ?? failure}`) }
   }, [])
 
   // Switch renderer and media whenever the active MV pack changes. The
-  // built-in preset restores the last files from IndexedDB; a pack brings its own.
+  // workshop pack restores the files you chose for it from IndexedDB; a local pack brings its own.
   React.useEffect(() => {
     let cancelled = false
     const state = engine.current
@@ -225,41 +228,38 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       state.clock.pause()
       state.started = false
       state.help = false
-      state.wem.setLyrics([]); state.generic.setLyrics([]); state.script.setLyrics([]); state.dshpv.setLines([])
+      state.generic.setLyrics([]); state.script.setLyrics([]); state.dshpv.setLines([])
       state.script.stop()
       state.energy = () => state.live.energy()
       setLyricsInfo(null); setSpectrumInfo(null); setError(''); setPackStatus(''); setSceneNote(''); setDecodeFail(null); setLyricsText(''); cuesRef.current = []
       setMatchNote(null); timingRef.current = null; fpRef.current = null
       const generic = isGeneric(pack)
-      state.film = generic ? state.generic : isDshPv(pack) ? state.dshpv : state.wem
-      if (isDshPv(pack) && !state.dshpvLoad) {
-        const read = dshpvReader ?? (api?.dshpvAsset ? hostReader(api) : null)
+      state.film = generic ? state.generic : state.dshpv
+      if (isDshPv(pack) && state.dshpvFor !== `${pack.id}@${pack.loadedAt ?? ''}`) {
+        // 0.9.0: the dsh-pv data and art come from the pack (canvas.assets), not from the plugin.
+        const read = dshpvReader ?? (hasDshPvAssets(pack) && api?.packRead ? packAssetReader(api, pack.manifestPath, pack.pack) : null)
+        state.dshpvFor = `${pack.id}@${pack.loadedAt ?? ''}`
+        state.dshpv.status = 'loading'
         state.dshpvLoad = read
           ? loadDshPv(read).then(data => {
             state.dshpv.setData(data)
-            if (data.missingArt.length) setSceneNote(`dsh-pv：缺少 ${data.missingArt.length} 张立绘（assets/dsh-pv-art），改用占位剪影。`)
+            if (data.missingArt.length) setSceneNote(`dsh-pv：这个包缺少 ${data.missingArt.length} 张立绘，改用占位剪影。`)
             return data
-          }).catch(failure => { state.dshpv.status = 'error'; state.dshpvLoad = null; setError(`无法加载 dsh-pv 资源：${failure?.message ?? failure}`); return null })
+          }).catch(failure => { state.dshpv.status = 'error'; state.dshpvFor = ''; setError(`无法加载 dsh-pv 资源：${failure?.message ?? failure}`); return null })
           : Promise.resolve(null)
+        if (!read) { state.dshpv.status = 'error'; state.film = state.generic; setSceneNote('这个 MV 包使用 dsh-pv 渲染器，但没有附带它的数据（canvas.assets）。0.9.0 起插件不再内置这些数据：请到「创意工坊」安装「world.execute(me); dsh PV」包。现在改用通用画面。') }
       }
       if (isDshPv(pack)) await state.dshpvLoad
       if (cancelled) return
-      const length = generic ? (pack.pack.duration ?? 0) : (pack.pack.duration ?? DURATION)
-      state.clock.duration = length || DURATION
+      if (isDshPv(pack) && state.dshpv.status === 'error') state.film = state.generic
+      const dsh = state.film === state.dshpv
+      const length = dsh ? (pack.pack.duration ?? DSHPV_DURATION) : (pack.pack.duration ?? 0)
+      state.clock.duration = length || DEFAULT_DURATION
       for (const film of [state.generic, state.script]) { film.duration = length; film.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? '' }) }
       state.script.setStructure({ sections: pack.pack.sections ?? [], bpm: pack.pack.canvas?.bpm ?? 0, beatOffset: pack.pack.canvas?.beatOffset ?? 0 })
-      state.wem.duration = generic ? DURATION : (pack.pack.duration ?? DURATION)
       setDuration(state.clock.duration)
       if (pack.pack.canvas?.fontSize) setFontSize(pack.pack.canvas.fontSize)
-      if (pack.builtin) {
-        const [a, l, s] = await Promise.all([getMedia(db, 'audio'), getMedia(db, 'lyrics'), getMedia(db, 'spectrum')])
-        if (cancelled) return
-        if (a?.file) await useAudioFile(a.file, { remember: false })
-        else clearAudio()
-        if (l?.text) await useLyricsText(l.name, l.text, { remember: false })
-        if (s?.text) await useSpectrumText(s.name, s.text, { remember: false })
-        return
-      }
+      if (pack.empty) { clearAudio(); return }
       if (isScript(pack)) {
         if (!pack.files?.scene?.exists || pack.files.scene.tooLarge || !api) setSceneNote(`找不到可用的场景脚本（${pack.pack.canvas.script}），改用通用画面。`)
         else {
@@ -296,9 +296,16 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       const audioSlot = mediaSlot(pack, 'audio'), lyricsSlot = mediaSlot(pack, 'lyrics')
       if (audioSlot) {
         // A workshop pack has no audio of its own: bring back the files you chose for it last time.
-        const [a, l] = await Promise.all([getMedia(db, audioSlot), getMedia(db, lyricsSlot)])
+        // Packs that replaced the 0.8.x built-in presets fall back to the files you picked for those presets.
+        const legacy = kind => (legacyPresetSlot(pack) ? getMedia(db, kind) : Promise.resolve(null))
+        const [a, l, sp] = await Promise.all([
+          getMedia(db, audioSlot).then(v => v ?? legacy('audio')),
+          getMedia(db, lyricsSlot).then(v => v ?? legacy('lyrics')),
+          getMedia(db, mediaSlot(pack, 'spectrum')).then(v => v ?? legacy('spectrum')),
+        ])
         if (cancelled) return
         if (l?.text) await useLyricsText(l.name, l.text, { remember: false })
+        if (sp?.text) await useSpectrumText(sp.name, sp.text, { remember: false })
         if (a?.file) await useAudioFile(a.file, { remember: false })
         if (!a?.file) setMatchNote({ level: 'info', message: '这是创意工坊的包，不带音频：请选择你自己的歌曲文件（和歌词），插件会检查它是否与这个包匹配。' })
         return
@@ -336,7 +343,8 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     const state = engine.current
     state.energy = () => state.live.energy()
     setSpectrumInfo(null)
-    if (packRef.current?.builtin) await deleteMedia(dbRef.current, 'spectrum')
+    const slot = mediaSlot(packRef.current, 'spectrum')
+    if (slot) await deleteMedia(dbRef.current, slot)
   }
   const clearLyrics = async () => {
     engine.current.film.setLyrics([])
@@ -361,7 +369,12 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       case 'toggle': if (!state.started || !state.clock.playing) void play(); else state.clock.pause(); return true
       case 'seekBy': state.clock.seek(Math.max(-60, t + action.delta)); return true
       case 'restart': state.clock.seek(0); void play(); return true
-      case 'chapter': state.clock.seek(state.film === state.dshpv ? DSHPV_CHAPTERS[Math.min(DSHPV_CHAPTERS.length - 1, action.index * 2)][0] : state.film !== state.wem ? genericChapters(state.clock.duration)[action.index][0] : action.at); void play(); return true
+      case 'chapter': {
+        const list = state.film === state.dshpv ? DSHPV_CHAPTERS.filter((_, i) => i % 2 === 0) : chaptersOf(packRef.current, state.clock.duration)
+        const at = list[Math.min(list.length - 1, action.index)]?.[0]
+        if (at !== undefined) { state.clock.seek(at); void play() }
+        return true
+      }
       case 'cue': { const at = stepCue(state.film.times, t, action.direction); if (at !== null) { state.clock.seek(at); state.started = true } return true }
       case 'subtitleOffset': applyOffsets({ ...offsetsRef.current, subtitleOffset: stepOffset(offsetsRef.current.subtitleOffset, action.delta) }); return true
       case 'audioOffset': applyOffsets({ ...offsetsRef.current, audioOffset: stepOffset(offsetsRef.current.audioOffset, action.delta) }); return true
@@ -401,7 +414,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const onDecodeError = async () => {
     if (!audio.current?.src) return
     const current = packRef.current
-    const path = !current?.builtin ? current?.files?.audio?.path : ''
+    const path = current?.files?.audio?.path ?? ''
     const label = audioInfo?.label ?? '未知格式'
     let ffmpeg = ''
     if (path && api?.ffmpegInfo) { try { const found = unwrapRemote(await api.ffmpegInfo({}), ''); if (found?.available) ffmpeg = found.path } catch { /* no ffmpeg */ } }
@@ -435,7 +448,8 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
 
   const known = audioInfo?.known
   const generic = isGeneric(pack)
-  const chapterList = generic ? genericChapters(duration) : isDshPv(pack) ? DSHPV_CHAPTERS : CHAPTERS
+  const dshActive = isDshPv(pack) && Boolean(dshpvReader || hasDshPvAssets(pack))
+  const chapterList = dshActive ? DSHPV_CHAPTERS : chaptersOf(pack, duration)
   const chapter = chapterList.reduce((current, item) => (item[0] <= Math.max(0, status.t) ? item : current), chapterList[0])
 
   React.useImperativeHandle(ref, () => ({
@@ -449,7 +463,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     fullscreen: () => toggleFullscreen(),
     /** PNG (base64, ≤ 960 px wide) of the current frame, for a workshop cover. */
     snapshotPng: () => {
-      const source = isDshPv(packRef.current) ? pixel.current : canvas.current
+      const source = engine.current?.film === engine.current?.dshpv ? pixel.current : canvas.current
       if (!source?.width) return ''
       const scale = Math.min(1, 960 / source.width)
       const out = document.createElement('canvas')
@@ -477,7 +491,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       {!audioInfo && !packStatus && <div className="mv-onboard">
         <span className="mv-onboard-badge">&gt;_</span>
         <div>
-          <h2>{pack.builtin ? '第一次使用？先选一首歌' : pack.pack.workshop ? '创意工坊的包不带音频：选择你自己的歌曲' : '这个 MV 包没有可用的音频'}</h2>
+          <h2>{pack.pack.workshop ? '创意工坊的包不带音频：选择你自己的歌曲' : '这个 MV 包没有可用的音频'}</h2>
           <ol>
             <li>选择你自己的音频或视频文件（MP3、M4A/AAC、MP4/MOV/WebM/MKV 视频的音轨、Opus/Ogg、FLAC、WAV 都行，按内容识别，不看扩展名；在本机解码，不上传）。</li>
             <li>可选：选择歌词（LRC / SRT / lyrics.json），画面会显示字幕。</li>
@@ -540,8 +554,8 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       <div ref={wrap} className={`mv-stage-wrap${fullscreen ? ' mv-fullscreen' : ''}`} tabIndex={0} onKeyDown={onKeyDown}
         onDoubleClick={toggleFullscreen} aria-label="画布 MV（点击后可用键盘控制）">
         <div ref={stage} className="mv-stage" onClick={() => wrap.current?.focus()}>
-          <canvas ref={canvas} style={isDshPv(pack) ? { display: 'none' } : undefined} />
-          <canvas ref={pixel} className="mv-pixel" style={isDshPv(pack) ? undefined : { display: 'none' }} aria-label="dsh-pv 画布" />
+          <canvas ref={canvas} style={dshActive ? { display: 'none' } : undefined} />
+          <canvas ref={pixel} className="mv-pixel" style={dshActive ? undefined : { display: 'none' }} aria-label="dsh-pv 画布" />
         </div>
       </div>
       <div className="mv-playerbar" aria-label="播放控制">
@@ -549,7 +563,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
           {status.playing ? <Icon.pause /> : <Icon.play />}
         </button>
         <div className="mv-seek-wrap">
-          <span className="mv-time">{generic ? timeText(status.t) : clockText(Math.max(0, status.t)).split('/')[0].trim()}</span>
+          <span className="mv-time">{timeText(status.t)}</span>
           <input className="mv-seek" type="range" min={0} max={Math.max(1, duration)} step={0.1} value={Math.max(0, Math.min(duration, status.t))}
             onChange={event => { engine.current.clock.seek(Number(event.target.value)); engine.current.started = true }} aria-label="进度" />
           <span className="mv-time">{timeText(Math.round(duration))}</span>
@@ -567,7 +581,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         <Popover label="键盘快捷键" icon={<Icon.keyboard />}><KeyHelp /></Popover>
         <button type="button" className="mv-icon-button" aria-label={fullscreen ? '退出全屏' : '全屏'} title="全屏（F）" onClick={toggleFullscreen}><Icon.fullscreen /></button>
       </div>
-      {!pack.builtin && api?.packWriteText && <CalibEditor api={api} pack={pack} lyricsText={lyricsText} audioFile={audioFile} duration={duration} player={player} onPreview={previewCues} />}
+      {!pack.empty && api?.packWriteText && <CalibEditor api={api} pack={pack} lyricsText={lyricsText} audioFile={audioFile} duration={duration} player={player} onPreview={previewCues} />}
       <details className="mv-details">
         <summary>设置 <span className="mv-caption">字号 {fontSize} · 字幕偏移 {formatOffset(offsets.subtitleOffset)}{syncLabel ? ` · ${syncLabel}` : ''}</span></summary>
         <div className="mv-details-body">
