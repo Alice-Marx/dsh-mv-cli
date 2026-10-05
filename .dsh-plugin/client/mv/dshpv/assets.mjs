@@ -76,13 +76,13 @@ export async function loadDshPv(read) {
 
 /**
  * canvas.assets for a scene script (0.9.1): JSON files parsed (shards merged),
- * images decoded to ImageBitmap when the script paints pixels (otherwise left out).
+ * images decoded to ImageBitmap for bitmap outputs (pixels / webgl).
  * -> { assets: { name: value }, transfer: [ImageBitmap…] }
  */
 export async function loadSceneAssets(read, pack, { images = false } = {}) {
   const dec = new TextDecoder()
   const assets = {}, transfer = []
-  for (const [name, value] of Object.entries(pack?.canvas?.assets ?? {})) {
+  try { for (const [name, value] of Object.entries(pack?.canvas?.assets ?? {})) {
     const paths = asList(value) ?? []
     const isJson = paths.every(p => /\.json$/i.test(p))
     if (!isJson && !images) continue
@@ -94,7 +94,12 @@ export async function loadSceneAssets(read, pack, { images = false } = {}) {
       const bitmap = await createImageBitmap(new Blob([files[0]], { type }))
       assets[name] = bitmap; transfer.push(bitmap)
     }
-  }
+  } } catch (error) { disposeSceneAssets({ transfer }); throw error }
   return { assets, transfer }
+}
+
+/** Dispose decoded assets if loading is cancelled before they reach the worker. */
+export function disposeSceneAssets({ transfer = [] } = {}) {
+  for (const bitmap of transfer) { try { bitmap?.close?.() } catch { /* transferred or already closed */ } }
 }
 

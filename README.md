@@ -4,7 +4,7 @@ English · [简体中文](README.zh.md)
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊 / workshop](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.1**) that plays ASCII / terminal-styled **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.2**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
 
 > **Unofficial fan work.** The plugin ships **no** audio, video, lyric text or fonts; you bring your own files and they never leave your computer. The song and lyrics belong to Mili. Since **0.9.0** the plugin itself contains no MV at all and is **MIT** licensed: the two world.execute(me) MVs are one-click installs from 创意工坊, each with its own licence and a link to its original — the ASCII scenes from [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (Bilibili: 野生大K, **used with the author's permission**) and the dsh PV from [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (MIT data + **CC BY-NC-SA 4.0** whale-girl art). See [License and credits](#license-and-credits).
 
@@ -78,7 +78,10 @@ An **MV pack** is a folder with an `mv.json` manifest. It names your audio, lyri
 - with the built-in **generic** canvas renderer (spectrum bars, title, current and next lyric, progress), which works for any song;
 - with the **dsh-pv** renderer (`canvas.renderer: "dsh-pv"`), which replays the dsh PV from data files named in `canvas.assets` (used by the dsh PV workshop pack; only meaningful for that song);
 - with a **scene script** (`canvas.renderer: "script"`, `canvas.script: "scenes.js"`): your own `render(t, cols, rows, ctx)` in plain JavaScript, run sandboxed in a Web Worker with a time limit per frame (falls back to generic on errors). The template README documents the API;
-  - **Pixel scenes (0.9.1)**: add `"output": "pixels"` (and optionally `"size": [1920, 1080]`, 160×90 – 1920×1080, default 1280×720) to `canvas` and define `paint(g, t, w, h, ctx)` instead of `render`: `g` is a 2D context of an `OffscreenCanvas` in the same sandbox (no WebGL, fonts, network or DOM), 100 ms per frame. Files named in `canvas.assets` arrive in `setup(info)` as `info.assets` (JSON parsed, shards merged; PNG / WebP as ImageBitmap). Such packs need plugin 0.9.1 (`requires` in the workshop index);
+  - **Pixel scenes (0.9.1) / WebGL 2D and 3D scenes (0.9.2)**: add `"output": "pixels"` or `"output": "webgl"` (optionally `"size": [1920, 1080]`, 160×90 – 1920×1080, default 1280×720) to `canvas` and define `paint(g|gl, t, w, h, ctx)` instead of `render`:
+    - `pixels`: `g` is a 2D context of an `OffscreenCanvas` in the same sandbox (no WebGL, fonts, network or DOM), 100 ms per frame. Needs plugin 0.9.1+.
+    - `webgl`: `setup(info, gl)` and `paint(gl, t, w, h, ctx)` receive the sandbox-owned WebGL2 context. Bundled Three.js uses `new THREE.WebGLRenderer({ canvas: info.canvas, context: gl })`; `info.canvas` is a minimal canvas facade, not a DOM element. Network, storage, DOM, timers, nested workers and WASM remain blocked. Use absolute `t` for seeking, not an independent animation loop. Scene cap: 2 MiB (text/pixels: 256 KiB); bitmap frame budget: 100 ms. Needs plugin 0.9.2+ and Chromium with Worker OffscreenCanvas/WebGL2; otherwise playback falls back to generic with a reason.
+    Files named in `canvas.assets` arrive in `setup(info)` as `info.assets` (JSON parsed, shards merged; PNG / WebP as ImageBitmap, usable by pixels or WebGL textures). Pixel scene packs need plugin 0.9.1; webgl packs need 0.9.2 (recorded as `requires` in the workshop index). Node/CI checks use a recording context, not a real GPU; validate shaders and images separately in a browser.
 
 In the panel's **曲库** (library):
 
@@ -252,10 +255,16 @@ The format is always detected from the file's **content**, not its extension (a 
 
 ## More community packs (0.9.1)
 
-Two packs ported from MIT-licensed projects; both are **pixel scenes** (plugin 0.9.1+), contain no audio and no lyric text, and link their originals:
+Packs ported from MIT-licensed projects, with no audio or lyric text and links to their originals. Wallpaper remains a Canvas2D pixel scene (0.9.1+); Polytech Tree now uses GPU 3D (0.9.2+):
 
 - **world.execute(me); · Wallpaper MV** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper), original [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper), MIT © 2026 seasnakes): the wallpaper MV's canvas scenes (orbs, apple, heart, EXECUTE countdown …) at 1920×1080, driven by the original BPM grid and 14 sections; the lyric card shows your own lyrics. Bring your own copy of Mili's song (music and lyrics © Mili). The Wallpaper Engine glue, the lyrics file and the original's UI are not included.
-- **Polytech Tree · 人类科技树漫游** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree), original [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree), code MIT © 2026 secwind, data CC BY 4.0): the tour animation — 3862 technologies in 11 eras, coloured by field, appearing year by year while the camera rises along the tower, with prerequisite links crawling in. The original is Three.js 3D; here the layout and camera path are precomputed and drawn in 2D. Only the CC BY 4.0 structured data is used (not the CC BY-SA descriptions). Not a song: play silently or with any music (about 3 minutes).
+- **Polytech Tree · 人类科技树漫游** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree), original [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree), code MIT © 2026 secwind, data CC BY 4.0): the tour animation — 3862 technologies in 11 eras, coloured by field, appearing year by year while the camera rises along the tower, with prerequisite links crawling in. The original is Three.js 3D; here the layout and camera path are precomputed and **drawn as a WebGL2 GPU-instanced scene** (not 2D as the README here used to say). Only the CC BY 4.0 structured data is used (not the CC BY-SA descriptions). Not a song: play silently or with any music (about 3 minutes).
+
+### 0.9.2+ WebGL / 3D packs
+
+`canvas.output: "webgl"` supports real GPU 3D and explicitly adapted, bundled Three.js scenes. It does not run arbitrary HTML projects or DOM-dependent libraries. The sandbox stays restricted; scripts may be up to 2 MiB.
+
+- **world.execute(me); · Original Three.js MV** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-three), adapter in `presets/ports/wiers-jack-three/`, original [wiers-jack/world-execute-me-mv](https://gitee.com/wiers-jack/world-execute-me-mv)): the original 12 sections, camera paths and bloom post-processing adapted to the Worker; own audio/lyrics required. Distributed under MIT with the author's direct permission, confirmed by the maintainer on 2026-10-05; the source revision still declares ISC without a standalone LICENSE. The pack's LICENSE/NOTICE records that distinction and preserves Three.js attribution.
 
 ![Pixel scene packs](docs/screenshots/ports.png)
 
@@ -266,6 +275,7 @@ Two packs ported from MIT-licensed projects; both are **pixel scenes** (plugin 0
 - `node presets/build-workshop-packs.mjs [<workshop>/packs]` builds the two workshop packs from `presets/` (bundles `scenes.js`, shards the dsh PV data, writes `mv.json` / README / NOTICE with the source links; covers from `presets/covers/`). Validate with the workshop repository's `scripts/validate.mjs`.
 - `tools/dsh-pv/` regenerates the dsh PV data (`presets/dsh-pv/data/`) from the upstream repository (local only; needs the upstream checkout, its Python environment and your own lyrics; not in the npm package). See its README.
 - `tools/ui-preview/` takes the panel screenshots (`node tools/ui-preview/build-preview.mjs && node tools/ui-preview/shoot.mjs <outDir>`).
+- `node tools/webgl-smoke.mjs <pack-dir> [...] --out dist/webgl-smoke` tests production ScriptFilm/Worker/ImageBitmap in real Chromium: section frames, seek, letterbox resize, 2D/text compatibility, context loss, isolation and cleanup. Requires Playwright; set `DSH_MV_PLAYWRIGHT` / `DSH_MV_CHROME` for existing installs. It uses no server or external network.
 - `tools/py2js.py` transpiles a local `scenes.py` into `presets/world-execute-me/src/scenes.gen.mjs`.
 - `tools/make-goldens.py` renders reference frames with the **original** `player.Film` and stores only frame digests. It uses placeholder lyrics and a synthetic spectrum.
 - Set `REF_ASCII_DIR` to run an extra test against your local copy.

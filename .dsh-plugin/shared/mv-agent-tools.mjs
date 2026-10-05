@@ -5,8 +5,8 @@
  * network; scene scripts run in a node:vm context with timeouts.
  */
 import { readFile } from 'node:fs/promises'
-import { loadPack, packFilePath, readPack } from './mv-pack-host.mjs'
-import { MV_PACK_LIMITS, MvPackError } from './mv-pack.mjs'
+import { loadPack, packFilePath, packSceneBytes, readPack } from './mv-pack-host.mjs'
+import { assetParts, MvPackError } from './mv-pack.mjs'
 import { checkScene } from './mv-scene-host.mjs'
 import { AI_TOOL_NAMES } from './mv-ai-prompt.mjs'
 import { parseLyrics } from './mv-lyrics.mjs'
@@ -31,23 +31,41 @@ async function packAndScene(path) {
   if (pack.canvas?.renderer === 'script') {
     const state = loaded.files.scene
     if (!state?.exists) problems.push(`找不到场景脚本：${state?.path ?? pack.canvas.script}`)
-    else if (state.tooLarge) problems.push(`场景脚本超过 ${MV_PACK_LIMITS.sceneBytes / 1024} KB`)
+    else if (state.tooLarge) problems.push(`场景脚本超过 ${packSceneBytes(pack) / 1024} KB`)
     else source = await readFile(state.path, 'utf8')
   }
   if (loaded.warnings.length) for (const w of loaded.warnings) if (/不存在/.test(w)) problems.push(w)
-  return { loaded, cues, source, problems, warnings: warnings.filter(w => !problems.includes(w)) }
+  const assets = {}
+  for (const name of Object.keys(pack.canvas?.assets ?? {})) {
+    if (!loaded.files.assets?.[name]?.exists) { problems.push(`canvas.assets.${name} 的文件缺失或太大`); continue }
+    const refs = assetParts(pack, name)
+    if (!refs.every(ref => /\.json$/i.test(ref))) { warnings.push(`Host 预览不能解码 canvas.assets.${name} 的图片；请在面板验证。`); continue }
+    try {
+      const shards = await Promise.all(refs.map(ref => readFile(packFilePath(packDir, ref), 'utf8').then(JSON.parse)))
+      if (shards.length === 1) assets[name] = shards[0]
+      else {
+        const merged = {}
+        for (const shard of shards) for (const [key, value] of Object.entries(shard)) {
+          if (Array.isArray(value) && Array.isArray(merged[key])) merged[key] = merged[key].concat(value)
+          else if (!(key in merged)) merged[key] = value
+        }
+        assets[name] = merged
+      }
+    } catch (error) { problems.push(`无法解析 canvas.assets.${name}：${error.message}`) }
+  }
+  return { loaded, cues, source, assets, problems, warnings: warnings.filter(w => !problems.includes(w)) }
 }
 
 export async function validatePackForAgent({ path }) {
   let state
   try { state = await packAndScene(path) } catch (error) { return { ok: false, problems: errorText(error) } }
-  const { loaded, cues, source } = state
+  const { loaded, cues, source, assets } = state
   const problems = [...state.problems], warnings = [...state.warnings]
   const pack = loaded.pack
   let frames = []
   if (source !== null) {
     const d = pack.duration ?? 180
-    const result = checkScene(source, { times: [0, d * 0.25, d * 0.5, d * 0.75, Math.max(0, d - 1)].map(t => Math.round(t * 10) / 10), cols: 100, rows: 32, cues, info: { title: pack.title, artist: pack.artist ?? '', duration: d, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0 }, output: pack.canvas?.output ?? 'text', size: pack.canvas?.size ?? [1280, 720] })
+    const result = checkScene(source, { times: [0, d * 0.25, d * 0.5, d * 0.75, Math.max(0, d - 1)].map(t => Math.round(t * 10) / 10), cols: 100, rows: 32, cues, info: { title: pack.title, artist: pack.artist ?? '', duration: d, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0, assets }, output: pack.canvas?.output ?? 'text', size: pack.canvas?.size ?? [1280, 720] })
     problems.push(...result.problems.filter(p => /出错|超时|无法|没有定义|不能|超过 \d+ KB|空的/.test(p)))
     warnings.push(...result.problems.filter(p => !/出错|超时|无法|没有定义|不能|超过 \d+ KB|空的/.test(p)))
     frames = result.frames.map(frame => ({ t: frame.t, ms: frame.ms }))
@@ -57,7 +75,7 @@ export async function validatePackForAgent({ path }) {
   return {
     ok: problems.length === 0,
     manifestPath: loaded.manifestPath,
-    title: pack.title, renderer: pack.canvas?.renderer ?? 'generic',
+    title: pack.title, renderer: pack.canvas?.renderer ?? 'generic', output: pack.canvas?.output ?? 'text', ...(pack.canvas?.output === 'webgl' ? { gpuValidated: false, validation: 'webgl-call-recording' } : {}),
     lyrics: cues.length ? { cues: cues.length, first: cues[0].time, last: cues[cues.length - 1].time } : null,
     frames, problems, warnings,
   }
@@ -68,9 +86,9 @@ export async function previewFrameForAgent({ path, t = 0, cols = 100, rows = 32 
   try { state = await packAndScene(path) } catch (error) { return { ok: false, problems: errorText(error) } }
   if (state.source === null) return { ok: false, problems: [...state.problems, 'canvas.renderer 不是 script，没有可预览的场景脚本。'] }
   const pack = state.loaded.pack
-  const result = checkScene(state.source, { times: [Number(t) || 0], cols, rows, cues: state.cues, info: { title: pack.title, artist: pack.artist ?? '', duration: pack.duration ?? 180, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0 }, output: pack.canvas?.output ?? 'text', size: pack.canvas?.size ?? [1280, 720] })
+  const result = checkScene(state.source, { times: [Number(t) || 0], cols, rows, cues: state.cues, info: { title: pack.title, artist: pack.artist ?? '', duration: pack.duration ?? 180, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0, assets: state.assets }, output: pack.canvas?.output ?? 'text', size: pack.canvas?.size ?? [1280, 720] })
   const frame = result.frames[0]
-  return { ok: Boolean(frame) && result.ok, t: Number(t) || 0, cols: result.cols, rows: result.rows, ms: frame?.ms, problems: result.problems, frame: frame?.text ?? '' }
+  return { ok: Boolean(frame) && result.ok && !state.problems.length, t: Number(t) || 0, cols: result.cols, rows: result.rows, ms: frame?.ms, problems: [...state.problems, ...result.problems], frame: frame?.text ?? '', ...(pack.canvas?.output === 'webgl' ? { gpuValidated: false, validation: 'webgl-call-recording', drawCalls: frame?.drawCalls } : {}) }
 }
 
 const pathParam = { type: 'string', description: 'Absolute path of the MV pack folder or its mv.json.' }

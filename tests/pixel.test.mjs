@@ -18,8 +18,21 @@ test('pack: canvas.output / canvas.size (pixel scenes)', () => {
   const ok = parseMvPack(manifest({ output: 'pixels', size: [1920, 1080] }))
   assert.equal(ok.canvas.output, 'pixels'); assert.deepEqual(ok.canvas.size, [1920, 1080])
   assert.deepEqual(parseMvPack(manifest({ output: 'pixels' })).canvas.size, MV_PIXEL_LIMITS.defaultSize)
-  for (const bad of [{ output: 'webgl' }, { output: 'pixels', size: [4000, 1000] }, { output: 'pixels', size: [100, 50] }, { size: [1280, 720] }]) assert.throws(() => parseMvPack(manifest(bad)), undefined, JSON.stringify(bad))
+  // 0.9.2: 'webgl' is now a valid output (Three.js etc.); sizes are validated in the pixels / webgl branches.
+  for (const bad of [{ output: 'pixels', size: [4000, 1000] }, { output: 'pixels', size: [100, 50] }, { size: [1280, 720] }, { output: 'pixels', size: [1280, 720] /* still ok */ }]) {
+    if (bad.output === 'pixels' && bad.size && bad.size[0] === 1280) continue
+    assert.throws(() => parseMvPack(manifest(bad)), undefined, JSON.stringify(bad))
+  }
   assert.throws(() => parseMvPack({ ...manifest({}), canvas: { renderer: 'generic', output: 'pixels' } }))
+})
+
+test('pack: canvas.output "webgl" (0.9.2) — Three.js / Babylon.js / hand-written WebGL2', () => {
+  const webgl = parseMvPack(manifest({ output: 'webgl', size: [1920, 1080] }))
+  assert.equal(webgl.canvas.output, 'webgl'); assert.deepEqual(webgl.canvas.size, [1920, 1080])
+  assert.deepEqual(parseMvPack(manifest({ output: 'webgl' })).canvas.size, MV_PIXEL_LIMITS.defaultSize)
+  // size is still validated for webgl:
+  for (const bad of [{ output: 'webgl', size: [4000, 1000] }, { output: 'webgl', size: [100, 50] }]) assert.throws(() => parseMvPack(manifest(bad)), undefined, JSON.stringify(bad))
+  assert.throws(() => parseMvPack({ ...manifest({}), canvas: { renderer: 'generic', output: 'webgl' } }))
 })
 
 test('pixel worker: 2D only, paint() gets a reused canvas, blocked font loading', () => {
@@ -80,8 +93,9 @@ for (const [id, dir, script] of [['world-execute-me-wallpaper', 'world.execute-m
     const result = await validateWorkshopPack({ id, files, readText: read })
     assert.deepEqual(result.errors, [])
     const pack = result.pack
-    assert.equal(pack.canvas.output, 'pixels')
-    assert.equal(packRequires(pack, result.meta.requires), '0.9.1')
+    const output = id === 'polytech-tree' ? 'webgl' : 'pixels'
+    assert.equal(pack.canvas.output, output)
+    assert.equal(packRequires(pack, result.meta.requires), output === 'webgl' ? '0.9.2' : '0.9.1')
     assert.ok(result.meta.source?.includes('github.com'))
     for (const f of files) assert.ok(!/\.(mp3|flac|wav|ogg|m4a|lrc)$/i.test(f.path), f.path)
     const assets = {}
@@ -90,8 +104,9 @@ for (const [id, dir, script] of [['world-execute-me-wallpaper', 'world.execute-m
       if (shards.length) assets[name] = shards.length === 1 ? shards[0] : mergeShards(shards)
     }
     const duration = pack.duration ?? result.meta.duration
-    const check = checkScene(await read(pack.canvas.script), { times: [1, duration / 2, duration - 1], output: 'pixels', size: pack.canvas.size, info: { duration, title: pack.title, sections: pack.sections ?? [], bpm: pack.canvas.bpm ?? 0, beatOffset: pack.canvas.beatOffset ?? 0, assets } })
+    const check = checkScene(await read(pack.canvas.script), { times: [1, duration / 2, duration - 1], output, size: pack.canvas.size, info: { duration, title: pack.title, sections: pack.sections ?? [], bpm: pack.canvas.bpm ?? 0, beatOffset: pack.canvas.beatOffset ?? 0, assets } })
     assert.equal(check.ok, true, check.problems.join('; '))
-    assert.ok(check.frames.every(f => f.calls > 50), JSON.stringify(check.frames.map(f => f.calls)))
+    assert.ok(check.frames.every(f => output === 'webgl' ? f.drawCalls >= 3 : f.calls > 50), JSON.stringify(check.frames))
+    if (output === 'webgl') assert.equal(check.gpuValidated, false)
   })
 }

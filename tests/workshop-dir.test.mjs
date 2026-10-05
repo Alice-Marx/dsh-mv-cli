@@ -40,7 +40,7 @@ test('writable check creates the folder and reports a readable error', async () 
   assert.ok(existsSync(join(base, 'a', 'b')))
   writeFileSync(join(base, 'file'), 'x')
   await assert.rejects(ensureWritableDir(join(base, 'file', 'x')), /无法使用这个文件夹/)
-  if (process.getuid?.() !== 0) {
+  if (typeof process.getuid === 'function' && process.getuid() !== 0) {
     const ro = join(base, 'ro'); mkdirSync(ro); chmodSync(ro, 0o500)
     await assert.rejects(ensureWritableDir(ro), /没有写入权限/)
   }
@@ -71,7 +71,7 @@ test('change the install folder: keep (still listed), move (copy + verify + dele
   const base = tmp(), defaultRoot = join(base, 'default'), other = join(base, 'F-drive', 'MV')
   const file = join(base, 'settings.json')
   const opened = []
-  const make = (configDir = '') => createWorkshopManager({ defaultRoot, settings: createSettingsStore({ file }), platform: 'linux', get: repo(['pack-a', 'pack-b', 'pack-c']), configDir: () => configDir, open: d => opened.push(d) })
+  const make = (configDir = '') => createWorkshopManager({ defaultRoot, settings: createSettingsStore({ file }), platform: process.platform, get: repo(['pack-a', 'pack-b', 'pack-c']), configDir: () => configDir, open: d => opened.push(d) })
   let ws = make()
   assert.equal((await ws.dirInfo()).source, 'default')
   await ws.install({ id: 'pack-a' }); await ws.install({ id: 'pack-b' })
@@ -123,7 +123,7 @@ test('change the install folder: keep (still listed), move (copy + verify + dele
 
 test('a move that cannot be verified keeps the original; bad targets are refused', async () => {
   const base = tmp(), defaultRoot = join(base, 'default')
-  const ws = createWorkshopManager({ defaultRoot, settings: createSettingsStore({ file: join(base, 's.json') }), platform: 'linux', get: repo(['pack-a']) })
+  const ws = createWorkshopManager({ defaultRoot, settings: createSettingsStore({ file: join(base, 's.json') }), platform: process.platform, get: repo(['pack-a']) })
   await ws.install({ id: 'pack-a' })
   // Tamper with the installed copy: the copy no longer matches the install record.
   writeFileSync(join(defaultRoot, 'pack-a', 'scenes.js'), 'changed')
@@ -137,7 +137,7 @@ test('a move that cannot be verified keeps the original; bad targets are refused
   await assert.rejects(ws.moveToCurrent({ id: 'pack-a' }), /已经有/)
   writeFileSync(join(base, 'blocker'), 'x')
   await assert.rejects(ws.setDir({ dir: join(base, 'blocker', 'sub') }), /无法使用这个文件夹/)
-  await assert.rejects(ws.setDir({ dir: 'relative/dir' }), /绝对路径/)
+  await assert.rejects(ws.setDir({ dir: 'relative/dir' }), /绝对路径|完整路径/)
   await assert.rejects(createWorkshopManager({ root: base }).setDir({ dir: '/x' }), /固定/)
 })
 

@@ -11,9 +11,9 @@ import { KNOWN_AUDIO, formatOffset, loadOffsets, saveOffsets, resetOffsets, sha2
 import { openMediaStore, getMedia, putMedia, deleteMedia } from './mv/media-store.mjs'
 import { DEFAULT_DURATION, FilmClock, frameTime, keyAction, stepCue, stepOffset } from './mv/player-state.mjs'
 import { GenericFilm, genericChapters, timeText } from './mv/generic-film.mjs'
-import { ScriptFilm } from './mv/script-film.mjs'
+import { ScriptFilm, isBitmapSceneOutput } from './mv/script-film.mjs'
 import { DshPvFilm, DSHPV_CHAPTERS, DSHPV_DURATION } from './mv/dshpv/film.mjs'
-import { hasDshPvAssets, loadDshPv, loadSceneAssets, packAssetReader } from './mv/dshpv/assets.mjs'
+import { hasDshPvAssets, loadDshPv, loadSceneAssets, disposeSceneAssets, packAssetReader } from './mv/dshpv/assets.mjs'
 import { matchBand } from './mv/dshpv/band.mjs'
 import { CalibEditor } from './mv-calib.jsx'
 import { EMPTY_PACK, fetchPackAudio, fetchPackText } from './mv-pack-state.mjs'
@@ -72,7 +72,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const [matchNote, setMatchNote] = React.useState(null) // workshop packs: { level, message }
   const timingRef = React.useRef(null) // workshop packs: lyrics.timing.json
   const fpRef = React.useRef(null) // { sha, duration, fingerprint, base64 } of the current audio
-  const [pixelScene, setPixelScene] = React.useState(false) // a canvas.output "pixels" scene script is running
+  const [pixelScene, setPixelScene] = React.useState(false) // a pixels / webgl scene script is running
 
   // Engine setup and the render loop.
   React.useEffect(() => {
@@ -106,8 +106,8 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       const { t, ready } = frameTime(raw, state.started, state.clock.duration)
       const playing = state.clock.playing
       let cols = 0, rows = 0
-      if (state.film === state.script && state.script.output === 'pixels') {
-        // pixel scene script (0.9.1): the worker paints canvas.size, letterboxed here
+      if (state.film === state.script && isBitmapSceneOutput(state.script.output)) {
+        // pixel / webgl scene script (0.9.1 / 0.9.2): the worker paints canvas.size, letterboxed here
         const el = pixel.current
         const dpr = Math.min(2, globalThis.devicePixelRatio || 1)
         const w = Math.max(64, Math.round(box.clientWidth * dpr)), h = Math.max(36, Math.round(box.clientHeight * dpr))
@@ -276,12 +276,14 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
             const { text } = await fetchPackText(api, pack.manifestPath, 'scene', { isCancelled: () => cancelled })
             if (cancelled) return
             // 0.9.1: scene scripts get the pack's canvas.assets in setup(info.assets).
-            const output = pack.pack.canvas?.output === 'pixels' ? 'pixels' : 'text'
+            // 0.9.2: 'webgl' output is also a bitmap mode (ImageBitmap → letterboxed on stage).
+            const requested = pack.pack.canvas?.output
+            const output = isBitmapSceneOutput(requested) ? requested : 'text'
             const names = Object.keys(pack.pack.canvas?.assets ?? {})
-            const { assets, transfer } = names.length ? await loadSceneAssets(packAssetReader(api, pack.manifestPath, pack.pack), pack.pack, { images: output === 'pixels' }) : { assets: {}, transfer: [] }
-            if (cancelled) return
+            const { assets, transfer } = names.length ? await loadSceneAssets(packAssetReader(api, pack.manifestPath, pack.pack), pack.pack, { images: isBitmapSceneOutput(output) }) : { assets: {}, transfer: [] }
+            if (cancelled) { disposeSceneAssets({ transfer }); return }
             state.film = state.script
-            if (output === 'pixels') setPixelScene(true)
+            if (isBitmapSceneOutput(output)) setPixelScene(true)
             await state.script.load(text, { output, size: pack.pack.canvas?.size ?? [1280, 720], assets, transfer })
             if (cancelled) { state.script.stop(); return }
           } catch (failure) {
@@ -480,7 +482,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     fullscreen: () => toggleFullscreen(),
     /** PNG (base64, ≤ 960 px wide) of the current frame, for a workshop cover. */
     snapshotPng: () => {
-      const source = engine.current?.film === engine.current?.dshpv || (engine.current?.film === engine.current?.script && engine.current?.script.output === 'pixels') ? pixel.current : canvas.current
+      const source = engine.current?.film === engine.current?.dshpv || (engine.current?.film === engine.current?.script && isBitmapSceneOutput(engine.current?.script.output)) ? pixel.current : canvas.current
       if (!source?.width) return ''
       const scale = Math.min(1, 960 / source.width)
       const out = document.createElement('canvas')

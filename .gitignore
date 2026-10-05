@@ -9,6 +9,7 @@ dist/
 *.flac
 *.wav
 *.lrc
+!template/examples/rich-pack/lyrics.placeholder.lrc
 *.srt
 lyrics.json
 spectrum.json

@@ -1,12 +1,13 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { mkdtempSync, readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs'
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { TEMPLATE_ASSETS } from '../.dsh-plugin/shared/mv-template-assets.gen.mjs'
 import {
-  WORKSHOP_INDEX_FORMAT, audioMatch, checkScriptSafety, checkTiming, compareFingerprints, compareVersions, encodeFingerprint, energyFingerprint,
+  WORKSHOP_INDEX_FORMAT, WORKSHOP_LIMITS, audioMatch, checkScriptSafety, checkTiming, compareFingerprints, compareVersions, encodeFingerprint, energyFingerprint,
   filterWorkshop, parseWorkshopIndex, parseWorkshopPublish, retimeCues, validateWorkshopPack, workshopFileUrl, workshopSlug, normalizeLyricLine,
 } from '../.dsh-plugin/shared/mv-workshop.mjs'
 import { createWorkshopManager, preparePublish } from '../.dsh-plugin/shared/mv-workshop-host.mjs'
@@ -145,6 +146,79 @@ test('index parsing drops malformed entries and unsafe paths', () => {
   assert.equal(compareVersions('1.10.0', '1.9.9'), 1)
 })
 
+test('WebGL workshop packs retain their renderer, require 0.9.2, and can ship readable library code', async () => {
+  const source = '// readable bundled library\n'.repeat(12_000) + 'function unusedLoader(){ return fetch("unused") }\nfunction paint(gl){ gl.clear(gl.COLOR_BUFFER_BIT) }'
+  assert.ok(Buffer.byteLength(source) > WORKSHOP_LIMITS.scriptBytes)
+  const manifest = { format: 'dsh-mv-pack', version: 1, title: '3D', duration: 10, canvas: { renderer: 'script', script: 'scenes.js', output: 'webgl', size: [640, 360] }, 'x-dsh-mv-workshop': { id: 'webgl-example', version: '1.0.0', license: 'MIT', author: 'me', requires: '0.9.0' } }
+  const contents = { 'mv.json': JSON.stringify(manifest), 'scenes.js': source }
+  const result = await validateWorkshopPack({ id: 'webgl-example', files: Object.entries(contents).map(([path, text]) => ({ path, size: Buffer.byteLength(text) })), readText: p => contents[p] })
+  assert.deepEqual(result.errors, [])
+  assert.equal(result.meta.renderer, 'webgl')
+  assert.equal(result.meta.requires, '0.9.2')
+  assert.ok(result.warnings.some(w => /沙箱禁用/.test(w)))
+  assert.ok(checkScriptSafety(source).errors.some(e => /network|超过/.test(e)))
+  assert.ok(checkScriptSafety('function paint(){ eval("x") }', 'scenes.js', { mode: 'webgl' }).errors.some(e => /eval/.test(e)))
+  for (const call of ['import/* gap */("https://example.com/x.js")', 'import\n("https://example.com/x.js")', '`a ${import/* gap */("https://example.com/x.js")}`']) assert.ok(checkScriptSafety(`function paint(){ ${call} }`, 'scenes.js', { mode: 'webgl' }).errors.some(e => /import/.test(e)))
+  const files = Object.entries(contents).map(([path, text]) => ({ path, size: Buffer.byteLength(text), sha256: sha(text) }))
+  const index = parseWorkshopIndex({ format: WORKSHOP_INDEX_FORMAT, version: 1, packs: [{ ...result.meta, requires: undefined, files }] })
+  assert.equal(index.packs[0].requires, '0.9.2')
+  assert.equal(filterWorkshop(index.packs, { renderer: 'webgl' }).length, 1)
+  files[1].size = WORKSHOP_LIMITS.webglScriptBytes + 1
+  assert.equal(parseWorkshopIndex({ format: WORKSHOP_INDEX_FORMAT, version: 1, packs: [{ ...result.meta, files }] }).packs.length, 0)
+})
+
+test('publish copies binary assets, nested files, and JSON shards with normalized references and source metadata', async () => {
+  const src = tmp(), out = tmp()
+  mkdirSync(join(src, 'scene')); mkdirSync(join(src, 'art')); mkdirSync(join(src, 'data'))
+  const image = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 255, 128])
+  writeFileSync(join(src, 'art', 'texture.png'), image)
+  writeFileSync(join(src, 'data', 'one.json'), '{"positions":[1,2]}')
+  writeFileSync(join(src, 'data', 'two.json'), '{"positions":[3,4]}')
+  const source = 'function paint(gl){ gl.clear(gl.COLOR_BUFFER_BIT) }'
+  writeFileSync(join(src, 'scene', 'main.js'), source)
+  writeFileSync(join(src, 'LICENSE.txt'), 'Example library license and copyright notice')
+  writeFileSync(join(src, 'NOTICE.md'), 'Original author attribution and changes')
+  writeFileSync(join(src, 'README.md'), 'Original rendering and rights documentation')
+  writeFileSync(join(src, 'source-provenance.json'), '{"revision":"123abc"}')
+  writeFileSync(join(src, 'mv.json'), JSON.stringify({ format: 'dsh-mv-pack', version: 1, title: '3D assets', duration: 10, canvas: { renderer: 'script', output: 'webgl', size: [640, 360], script: '.\\scene\\main.js', assets: { texture: '.\\art\\texture.png', mesh: ['./data/one.json', 'data\\two.json'], duplicate: 'art/texture.png' } }, 'x-dsh-mv-workshop': { id: 'webgl-assets', version: '1.0.0', license: 'MIT', author: 'me', source: 'https://github.com/example/original', requires: '0.9.5' } }))
+  const request = parseWorkshopPublish({ manifestPath: join(src, 'mv.json'), id: 'webgl-assets', version: '1.0.0', license: 'MIT', author: 'me' })
+  const result = await preparePublish(request, { publishRoot: out })
+  assert.equal(result.ok, true, result.errors.join('\n'))
+  assert.deepEqual(readFileSync(join(result.dir, 'art', 'texture.png')), image)
+  assert.equal(readFileSync(join(result.dir, 'scene', 'main.js'), 'utf8'), source)
+  assert.equal(readFileSync(join(result.dir, 'LICENSE.txt'), 'utf8'), 'Example library license and copyright notice')
+  assert.equal(readFileSync(join(result.dir, 'NOTICE.md'), 'utf8'), 'Original author attribution and changes')
+  assert.match(readFileSync(join(result.dir, 'README.md'), 'utf8'), /Original rendering and rights documentation/)
+  assert.deepEqual(JSON.parse(readFileSync(join(result.dir, 'source-provenance.json'), 'utf8')), { revision: '123abc' })
+  const published = JSON.parse(readFileSync(join(result.dir, 'mv.json'), 'utf8'))
+  assert.equal(published.canvas.script, 'scene/main.js')
+  assert.equal(published.canvas.assets.texture, 'art/texture.png')
+  assert.deepEqual(published.canvas.assets.mesh, ['data/one.json', 'data/two.json'])
+  assert.equal(published['x-dsh-mv-workshop'].source, 'https://github.com/example/original')
+  assert.equal(published['x-dsh-mv-workshop'].requires, '0.9.5')
+  assert.equal(result.files.filter(f => f.path === 'art/texture.png').length, 1)
+  assert.match(result.prBody, /\[ \] I have the right/)
+})
+
+test('readable WebGL shader strings are not confused with minified or escaped executable code', () => {
+  const source = 'const shader = "' + 'uniform float t;\\n'.repeat(500) + '"; function paint(gl){gl.clear(gl.COLOR_BUFFER_BIT)}'
+  assert.deepEqual(checkScriptSafety(source, 'scene.js', { mode: 'webgl' }).errors, [])
+  assert.ok(checkScriptSafety('function paint(){' + 'a++;'.repeat(1200) + '}', 'scene.js', { mode: 'webgl' }).errors.some(e => /4000/.test(e)))
+  assert.ok(checkScriptSafety(String.raw`var \u0061\u0062\u0063=1; function paint(){}`, 'scene.js', { mode: 'webgl' }).errors.some(e => /escaped/.test(e)))
+})
+
+test('workshop never supplies a sharing license for unknown or pending rights', async () => {
+  const base = { format: 'dsh-mv-pack', version: 1, title: 'Rights pending', canvas: { renderer: 'generic' }, 'x-dsh-mv-workshop': { id: 'pending-pack', version: '1.0.0', license: 'UNLICENSED', author: 'me' } }
+  for (const license of ['UNLICENSED', 'Unknown', 'LicenseRef-Pending-Permission', 'All rights reserved', '']) {
+    base['x-dsh-mv-workshop'].license = license
+    const text = JSON.stringify(base)
+    const result = await validateWorkshopPack({ id: 'pending-pack', files: [{ path: 'mv.json', size: Buffer.byteLength(text) }], readText: () => text })
+    assert.ok(result.errors.some(e => /license 必填/.test(e)), license)
+    const index = parseWorkshopIndex({ format: WORKSHOP_INDEX_FORMAT, version: 1, packs: [{ id: 'pending-pack', license, files: [{ path: 'mv.json', size: text.length, sha256: sha(text) }] }] })
+    assert.equal(index.packs.length, 0, license)
+  }
+})
+
 test('fingerprints: same recording matches (with shift), different audio and wrong duration warn', () => {
   const rate = 8000
   const song = new Float32Array(rate * 60)
@@ -213,7 +287,7 @@ test('0.9.0: the former presets are workshop packs with their original-work link
 test('0.9.0: presets/build-workshop-packs.mjs output passes workshop validation (no audio, no lyrics, source set)', async () => {
   const { execFileSync } = await import('node:child_process')
   const out = tmp()
-  execFileSync(process.execPath, [new URL('../presets/build-workshop-packs.mjs', import.meta.url).pathname, out, '--cover-dir', join(out, 'none')], { stdio: 'pipe' })
+  execFileSync(process.execPath, [fileURLToPath(new URL('../presets/build-workshop-packs.mjs', import.meta.url)), out, '--cover-dir', join(out, 'none')], { stdio: 'pipe' })
   const { statSync } = await import('node:fs')
   const list = (dir, base = '') => readdirSync(join(dir, base), { withFileTypes: true }).flatMap(e => e.isDirectory() ? list(dir, join(base, e.name)) : [{ path: join(base, e.name).replaceAll('\\', '/'), size: statSync(join(dir, base, e.name)).size }])
   const expect = { 'world-execute-me': ['script', 'https://github.com/yym8224961/world.execute-me-ascii'], 'world-execute-me-dsh-pv': ['dsh-pv', 'https://github.com/MisakaZentai/world-execute-me-dsh-pv'] }

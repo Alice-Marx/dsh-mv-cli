@@ -24,7 +24,14 @@ function render(t, cols, rows, ctx) {    // called every frame, about 30–60 ti
 ## Sandbox limits (breaking them stops the script; the panel falls back to the generic picture)
 
 - No import / require; no DOM, network (fetch…), storage, timers, Workers, WebAssembly; no eval / new Function.
-- 40 ms per frame (aim for < 10 ms); too many slow frames, a 1.5 s hang or an exception stops the script. 256 KB max.
+- Text: 40 ms per frame (aim for < 10 ms); pixels/WebGL: 100 ms. Too many slow frames, a 1.5 s hang or an exception stops the script. Text/pixels: 256 KiB max; WebGL: 2 MiB.
+
+## 3D (plugin 0.9.2+)
+
+Set canvas.output to "webgl" and size to [1280, 720]. Define setup(info, gl) and paint(gl, t, w, h, ctx).
+Bundle Three.js before import and pass `{ canvas: info.canvas, context: gl }` to WebGLRenderer.
+Keep DOM, fetch/CDN loaders and animation loops out of the runtime; textures must come from canvas.assets.
+Use absolute t for deterministic seeking. Host/CI stand-ins cannot verify GPU shaders: test in a real browser.
 - A frame must be a **pure function** of `t` and `ctx`: no state from earlier frames, no Math.random (seeking and the
   preview tool must give the same picture). Use the deterministic `hash(i, seed)` from the example helpers. For
   "history" effects (trails, ECG traces) recompute earlier times `t - dt`.

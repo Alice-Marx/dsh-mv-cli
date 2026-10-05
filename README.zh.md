@@ -4,7 +4,7 @@
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.1**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.2**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
 
 > **非官方同人作品。** 插件**不附带**任何音频、视频、歌词文本或字体；文件由你自己提供，只在本机读取，不会上传。歌曲与歌词的权利归 Mili。自 **0.9.0** 起插件本身不再内置任何 MV，许可为纯 **MIT**：两个 world.execute(me) MV 改为在创意工坊一键安装，各自按自己的许可分发并标明原作——ASCII 场景来自 [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii)（Bilibili「野生大K」，**经原作者许可**），dsh PV 来自 [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv)（数据 MIT + **CC BY-NC-SA 4.0** 鲸鱼娘立绘）。见 [许可与致谢](#许可与致谢)。
 
@@ -80,7 +80,10 @@
 - 用内置的 **通用（generic）** 画布渲染（频谱条、标题、当前与下一句歌词、进度条），任何歌都能放；
 - 用 **dsh-pv** 渲染器（`canvas.renderer: "dsh-pv"`），按 `canvas.assets` 里列出的数据文件回放 dsh PV（dsh PV 工坊包使用，只适合这首歌）；
 - 用 **场景脚本**（`canvas.renderer: "script"`、`canvas.script: "scenes.js"`）：用普通 JavaScript 写自己的 `render(t, cols, rows, ctx)`，在 Web Worker 沙箱里运行并限制每帧耗时（出错时自动换回通用画面）。接口见模板里的 README；
-  - **像素场景（0.9.1）**：在 `canvas` 里加 `"output": "pixels"`（可选 `"size": [1920, 1080]`，160×90 – 1920×1080，默认 1280×720），并定义 `paint(g, t, w, h, ctx)` 代替 `render`：`g` 是同一沙箱里 `OffscreenCanvas` 的 2D 上下文（没有 WebGL、字体、网络和 DOM），每帧 100 ms。`canvas.assets` 里列出的文件会在 `setup(info)` 的 `info.assets` 里给出（JSON 已解析、分片已合并；PNG / WebP 为 ImageBitmap）。这类包需要插件 0.9.1（工坊索引里的 `requires`）；
+  - **像素场景（0.9.1）/ WebGL 3D 场景（0.9.2）**：在 `canvas` 里加 `"output": "pixels"` 或 `"output": "webgl"`（可选 `"size": [1920, 1080]`，160×90 – 1920×1080，默认 1280×720），并定义 `paint(g|gl, t, w, h, ctx)` 代替 `render`：
+    - `pixels`：`g` 是同一沙箱里 `OffscreenCanvas` 的 2D 上下文（没有 WebGL、字体、网络和 DOM），每帧 100 ms。需要插件 0.9.1+。
+    - `webgl`：`setup(info, gl)` 和 `paint(gl, t, w, h, ctx)` 接收沙箱持有的 WebGL2 上下文。离线打包的 Three.js 使用 `new THREE.WebGLRenderer({ canvas: info.canvas, context: gl })`；`info.canvas` 是最小画布接口，不是 DOM。网络、存储、DOM、定时器、嵌套 Worker、WASM 仍禁用。按绝对时间 `t` 支持拖动进度，不运行独立动画循环。WebGL 脚本上限 2 MiB，文本/2D 保持 256 KiB；位图帧预算 100 ms。需要插件 0.9.2+ 与 Chromium 的 Worker OffscreenCanvas/WebGL2，不可用时会提示原因并降级通用画面。
+    `canvas.assets` 文件在 `setup(info)` 的 `info.assets` 里提供（JSON 已解析、分片已合并；PNG/WebP 为 ImageBitmap，可用于 pixels 或 WebGL 纹理）。工坊索引 `requires` 记录 0.9.1/0.9.2 兼容版本。Node/CI 只用调用记录替身，不能验证真实 GPU 着色器与像素，仍须浏览器验画面。
 
 在面板顶部的 **曲库** 里：
 
@@ -268,10 +271,16 @@
 
 ## 更多社区包（0.9.1）
 
-两个从 MIT 许可项目移植的包，都是**像素场景**（需要插件 0.9.1+），不含音频和歌词文本，并链接原作：
+从 MIT 项目移植的包，不含音频和歌词文本并链接原作。Wallpaper 保持 Canvas2D 像素场景（0.9.1+），Polytech Tree 升级为 GPU 3D（0.9.2+）：
 
 - **world.execute(me); · Wallpaper MV**（[工坊包](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper)，原作 [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper)，MIT © 2026 seasnakes）：壁纸 MV 的画布场景（双球、苹果、爱心、EXECUTE 倒计时……），1920×1080，按原作的 BPM 网格和 14 个段落同步；歌词卡显示你自己的歌词。请使用你自己的 Mili 歌曲文件（音乐和歌词版权归 Mili）。不包含 Wallpaper Engine 适配、歌词文件和原作的界面。
-- **Polytech Tree · 人类科技树漫游**（[工坊包](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree)，原作 [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree)，代码 MIT © 2026 secwind，数据 CC BY 4.0）：漫游动画——3862 项科技分 11 个时代、按领域着色，镜头沿塔轴上升，科技按年代逐个出现，前置连线爬向它。原作是 Three.js 3D，这里预先算好布局和镜头路径后用 2D 绘制。只使用 CC BY 4.0 的结构化数据（不含 CC BY-SA 的中文简介）。不是歌曲：可以静音播放或配任意音乐（约 3 分钟）。
+- **Polytech Tree · 人类科技树漫游**（[工坊包](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree)，原作 [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree)，代码 MIT © 2026 secwind，数据 CC BY 4.0）：漫游动画——3862 项科技分 11 个时代、按领域着色，镜头沿塔轴上升，科技按年代逐个出现，前置连线爬向它。原作是 Three.js 3D，这里用裸 WebGL2 shader 重画：按相机路径把布局好的多面体在 GPU 上实例化绘制，前置连线逐根爬到目标节点。只使用 CC BY 4.0 的结构化数据（不含 CC BY-SA 的中文简介）。不是歌曲：可以静音播放或配任意音乐（约 3 分钟）。
+
+### 0.9.2 起的 3D WebGL 工坊包
+
+`canvas.output: "webgl"` 支持真正的 GPU 3D 与经过适配、离线打包的 Three.js 场景，并不是任意 HTML 网页或 DOM 库播放器。保留受限沙箱，WebGL 脚本上限 2 MiB。
+
+- **world.execute(me); · Original Three.js MV**（[工坊包](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-three)，适配源码 `presets/ports/wiers-jack-three/`，原作 [wiers-jack/world-execute-me-mv](https://gitee.com/wiers-jack/world-execute-me-mv)）：将原作 12 段场景、镜头路径与 bloom 后处理适配到 Worker，音频和歌词自备。维护者于 2026-10-05 确认已取得作者直接授权，按 MIT 公开此包；构建所用上游版本仍声明 ISC 且无独立 LICENSE。包内 LICENSE/NOTICE 明确区分直接授权与原仓库声明，并保留 Three.js 署名。
 
 ![像素场景包](docs/screenshots/ports.png)
 

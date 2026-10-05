@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import { TEMPLATE_ASSETS } from '../.dsh-plugin/shared/mv-template-assets.gen.mjs'
 import { templateFiles, MV_PACK_JSON_SCHEMA } from '../.dsh-plugin/shared/mv-pack-template.mjs'
 import { checkScene } from '../.dsh-plugin/shared/mv-scene-host.mjs'
@@ -9,7 +10,7 @@ import { parseMvPack } from '../.dsh-plugin/shared/mv-pack.mjs'
 import { agentGuide, agentPrompt } from '../.dsh-plugin/shared/mv-ai-prompt.mjs'
 import { sceneContext, cueWords } from '../.dsh-plugin/shared/mv-scene.mjs'
 
-const root = new URL('..', import.meta.url).pathname
+const root = fileURLToPath(new URL('..', import.meta.url))
 
 test('generated template assets are up to date with template/**', () => {
   execFileSync(process.execPath, ['scripts/gen-template.mjs', '--check'], { cwd: root, stdio: 'pipe' })

@@ -35,6 +35,9 @@ export async function locateManifest(path, { statPath = stat } = {}) {
 /** Absolute path of a manifest file reference. */
 export const packFilePath = (packDir, ref) => isAbsolutePackPath(ref) || isAbsolute(ref) ? ref : resolve(packDir, ...ref.split('/'))
 
+/** Bundled 3D libraries need a larger scene, but other modes keep their existing cap. */
+export const packSceneBytes = pack => pack.canvas?.renderer === 'script' && pack.canvas.output === 'webgl' ? MV_PACK_LIMITS.webglSceneBytes : MV_PACK_LIMITS.sceneBytes
+
 /** Read and validate a manifest; returns { manifestPath, packDir, pack }. */
 export async function readPack(path, { statPath = stat, readText = p => readFile(p, 'utf8') } = {}) {
   const { manifestPath, size } = await locateManifest(path, { statPath })
@@ -58,7 +61,7 @@ export async function loadPack(path, { statPath = stat, readText = p => readFile
   const { manifestPath, packDir, pack } = await readPack(path, { statPath, readText })
   const warnings = []
   const files = {}
-  const media = { audio: MV_PACK_LIMITS.audioBytes, lyrics: MV_PACK_LIMITS.textFileBytes, spectrum: MV_PACK_LIMITS.textFileBytes, scene: MV_PACK_LIMITS.sceneBytes, timing: MV_PACK_LIMITS.textFileBytes }
+  const media = { audio: MV_PACK_LIMITS.audioBytes, lyrics: MV_PACK_LIMITS.textFileBytes, spectrum: MV_PACK_LIMITS.textFileBytes, scene: packSceneBytes(pack), timing: MV_PACK_LIMITS.textFileBytes }
   for (const [role, max] of Object.entries(media)) {
     const ref = roleFile(pack, role)
     if (!ref) continue
@@ -93,7 +96,7 @@ export async function readPackFile({ manifestPath, role, offset, length, asset, 
   const ref = role === 'asset' ? assetParts(pack, asset)[part] : roleFile(pack, role)
   if (!ref) throw new Error(role === 'asset' ? `这个 MV 包的 canvas.assets 里没有 ${asset}[${part}]。` : `这个 MV 包没有配置 ${role}。`)
   const path = packFilePath(packDir, ref)
-  const max = role === 'audio' ? MV_PACK_LIMITS.audioBytes : role === 'scene' ? MV_PACK_LIMITS.sceneBytes : role === 'asset' ? MV_PACK_LIMITS.assetBytes : MV_PACK_LIMITS.textFileBytes
+  const max = role === 'audio' ? MV_PACK_LIMITS.audioBytes : role === 'scene' ? packSceneBytes(pack) : role === 'asset' ? MV_PACK_LIMITS.assetBytes : MV_PACK_LIMITS.textFileBytes
   const state = await fileState(statPath, path, max)
   if (!state.exists) throw new Error(`${role} 文件不存在：${path}`)
   if (state.tooLarge) throw new Error(`${role} 文件超过 ${max / 1048576} MB`)

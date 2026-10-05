@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.2 — 2026-10-05
+
+- **Real 3D / 实时 3D**: `canvas.output: "webgl"` runs `setup(info, gl)` / `paint(gl, t, w, h, ctx)` on a sandbox-owned Worker WebGL2 context; ImageBitmap frames use the existing letterboxed panel and audio clock. Adapted, bundled Three.js renderers use `{ canvas: info.canvas, context: gl }`.
+- Network, DOM, storage, timers, nested workers and WASM stay blocked in every mode. The supervisor is outside the scene's compiled scope; validate frame IDs, bitmap dimensions and context-loss failures, release old bitmaps and terminate the Worker on switching/unmount.
+- WebGL scene cap **2 MiB**, text/pixels **256 KiB**, bitmap frame budget 100 ms; Host file reads, workshop install/publish, schema and prompts use the same limits. WebGL index cards require plugin 0.9.2 and show 3D WebGL.
+- Publication keeps normalized nested JSON/image assets and provenance. Node preview/CI explicitly reports `gpuValidated: false`: a recording stand-in cannot validate GPU shaders or pixels.
+- **Polytech Tree**: upgraded from Canvas2D to GPU-instanced 3D octahedra, perspective/depth-tested tour and animated prerequisite edges, keeping the original MIT layout/schedule and CC BY 4.0 structured data.
+- **wiers-jack Three.js adaptation**: build from the original 12-section scene modules and post-processing, strip bundled audio and copyrighted lyric text. Published as `world-execute-me-three` under MIT with direct author permission confirmed by the maintainer on 2026-10-05; preserve the original source's ISC declaration separately in provenance. The earlier cube demo is not the original MV.
+- Unsupported Chromium WebGL2/OffscreenCanvas or failed scenes fall back to generic with a reason; arbitrary HTML/DOM apps and CDN loaders are not supported.
+
 ## 0.9.1 — 2026-10-04
 
 - **工坊安装位置可以更改 / choose where workshop packs are installed**: the 创意工坊 page now shows the install folder with **打开文件夹**, **更改…** and **恢复默认**. Type any full path, including other drives (`F:\MV\workshop`, `D:\dsh-mv`) or a UNC share; the Host normalises it (forward slashes, quotes and a bare `F:` are fine), refuses relative paths, `..`, reserved names (CON, NUL…) and invalid characters, creates the folder and writes a test file before switching, with a readable reason when it cannot (no such drive, no write permission, read-only disk, a file in the way). After a change you choose **移动到新位置** (each pack is copied, every file checked against the sha256 recorded at install, then the old copy is deleted; progress per pack, failures listed and their originals kept) or **留在原处** (old packs stay in the library and keep working; the page offers to move them later). Library entries and the open pack follow moved packs. The choice is stored by the Host in `%LOCALAPPDATA%\dsh-mv\settings.json` (not in the browser), so it survives panel reloads, skins and devices sharing the Host; the new plugin config field **`workshopDir`** sets the default folder (the panel setting wins). New Host calls `workshopDirInfo`, `workshopDirSet`, `workshopDirMove`, `workshopDirOpen` (31 in total); 打开文件夹 runs `explorer.exe <folder>` without a shell.

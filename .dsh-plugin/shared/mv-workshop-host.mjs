@@ -14,11 +14,12 @@ import { join, dirname } from 'node:path'
 import { spawn } from 'node:child_process'
 import { cp, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { proxyFromEnv, tunnel } from './mv-lrclib.mjs'
+import { assetParts, isAbsolutePackPath } from './mv-pack.mjs'
 import { loadPack, packFilePath } from './mv-pack-host.mjs'
 import { parseLyrics } from './mv-lyrics.mjs'
 import {
   COVER_NAMES, FINGERPRINT_KIND, WORKSHOP_INDEX_URL, WORKSHOP_LIMITS, WORKSHOP_REPO, WORKSHOP_TIMING_FILE, WORKSHOP_TIMING_FORMAT,
-  checkScriptSafety, insideDir, normalizeLyricLine, normalizeWorkshopDir, parseWorkshopIndex, publishLinks, sameDir, validateWorkshopPack, workshopFileUrl,
+  insideDir, normalizeLyricLine, normalizeWorkshopDir, packRequires, parseWorkshopIndex, publishLinks, sameDir, validateWorkshopPack, workshopFileUrl,
 } from './mv-workshop.mjs'
 
 export function workshopDir(env = process.env, platform = process.platform) {
@@ -296,7 +297,7 @@ export function lyricsTiming(cues) {
 function packReadme({ title, artist, author, license, description, credits, hasTiming, duration }) {
   return `# ${title}${artist ? ` — ${artist}` : ''}
 
-${description || 'An ASCII MV for DeepSeek Harness · MV 放映室 (dsh-mv).'}
+${description || 'A canvas MV for DeepSeek Harness · MV 放映室 (dsh-mv).'}
 
 - Author / 作者: ${author}
 - License / 许可: ${license}
@@ -314,10 +315,26 @@ Song rights belong to their owners. 歌曲版权归原作者所有。
 }
 
 /** Build the publish folder for a local pack: stripped mv.json, scene, cover, README, timings. */
-export async function preparePublish(request, { publishRoot, now = () => new Date(), load = loadPack, readText = p => readFile(p, 'utf8') }) {
+export async function preparePublish(request, { publishRoot, now = () => new Date(), load = loadPack, readText = p => readFile(p, 'utf8'), readBytes = p => readFile(p) }) {
   const { manifestPath, packDir, pack } = await load(request.manifestPath)
   const raw = JSON.parse(await readText(manifestPath))
   const files = new Map()
+  const assetEntries = []
+  const assetErrors = []
+  const copiedAssets = new Set()
+  // Carry the notices required by bundled libraries/adapted code. Do not crawl
+  // arbitrary user files; only this explicit root-level provenance allow-list.
+  for (const name of ['LICENSE', 'LICENSE.txt', 'LICENSE.md', 'NOTICE.md', 'source-provenance.json']) {
+    try {
+      const path = join(packDir, name), entry = await stat(path)
+      if (!entry.isFile()) continue
+      if (entry.size > WORKSHOP_LIMITS.fileBytes) { assetErrors.push(`${name} 太大（上限 512 KiB）`); continue }
+      // Workshop accepts .txt/.md, not extensionless LICENSE.
+      const target = name === 'LICENSE' ? 'LICENSE.original.txt' : name
+      files.set(target, await readText(path))
+    } catch (error) { if (error.code !== 'ENOENT') assetErrors.push(`无法保留 ${name}：${error.message}`) }
+  }
+  const scriptPath = pack.canvas?.renderer === 'script' ? (isAbsolutePackPath(pack.canvas.script) ? 'scenes.js' : pack.canvas.script) : null
   const stripped = []
   if (raw.audio !== undefined) stripped.push('audio（音频不会上传）')
   if (raw.spectrum !== undefined) stripped.push('spectrum（由用户音频实时分析）')
@@ -333,26 +350,50 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
   }
   if (pack.canvas?.renderer === 'script') {
     const source = await readText(packFilePath(packDir, pack.canvas.script))
-    files.set('scenes.js', source)
+    files.set(scriptPath, source)
+  }
+  for (const name of Object.keys(pack.canvas?.assets ?? {})) {
+    for (const ref of assetParts(pack, name)) {
+      if (isAbsolutePackPath(ref)) {
+        assetErrors.push(`canvas.assets.${name} 只能用包内的相对路径：${ref}`)
+        continue
+      }
+      if (copiedAssets.has(ref)) continue
+      copiedAssets.add(ref)
+      try {
+        assetEntries.push({ path: ref, bytes: Buffer.from(await readBytes(packFilePath(packDir, ref))) })
+      } catch (error) {
+        assetErrors.push(`canvas.assets.${name} 无法读取 ${ref}：${error?.message ?? String(error)}`)
+      }
+    }
   }
   const duration = request.duration ?? pack.duration ?? null
   const manifest = { ...raw }
   delete manifest.audio; delete manifest.lyrics; delete manifest.spectrum; delete manifest.$schema; delete manifest.terminal
-  if (pack.canvas?.renderer === 'script') manifest.canvas = { ...raw.canvas, renderer: 'script', script: 'scenes.js' }
+  if (pack.canvas) manifest.canvas = { ...raw.canvas, ...(scriptPath ? { renderer: 'script', script: scriptPath } : {}), ...(pack.canvas.assets ? { assets: pack.canvas.assets } : {}) }
   if (duration) manifest.duration = Math.round(duration * 1000) / 1000
   const ai = raw['x-dsh-mv-ai']
   if (ai) { delete manifest['x-dsh-mv-ai']; if (Array.isArray(ai.sections) && ai.sections.length) manifest['x-dsh-mv-ai'] = { sections: ai.sections } }
-  manifest.notice = 'Workshop pack: no audio or lyric text included. Play it with your own copy of the song. 工坊包不含音频和歌词文本，请使用你自己的歌曲文件。'
+  manifest.notice = [raw.notice, 'Workshop pack: no audio or lyric text included. Play it with your own copy of the song. 工坊包不含音频和歌词文本，请使用你自己的歌曲文件。'].filter(Boolean).join('\n')
   manifest['x-dsh-mv-workshop'] = {
     id: request.id, version: request.version, license: request.license, author: request.author,
     ...(request.description ? { description: request.description } : {}), ...(request.tags.length ? { tags: request.tags } : {}), ...(request.homepage ? { homepage: request.homepage } : {}),
     audio: { ...(duration ? { duration: Math.round(duration * 1000) / 1000 } : {}), ...(request.fingerprint ? { fingerprint: { kind: FINGERPRINT_KIND, values: request.fingerprint } } : {}) },
     ...(timing ? { lyricsTiming: WORKSHOP_TIMING_FILE } : {}),
+    ...(raw['x-dsh-mv-workshop']?.source ? { source: raw['x-dsh-mv-workshop'].source } : {}),
+    ...(packRequires(pack, raw['x-dsh-mv-workshop']?.requires) ? { requires: packRequires(pack, raw['x-dsh-mv-workshop']?.requires) } : {}),
     publishedAt: now().toISOString().slice(0, 10),
   }
   files.set('mv.json', json(manifest))
   if (timing) files.set(WORKSHOP_TIMING_FILE, json(timing))
   files.set('README.md', packReadme({ title: pack.title, artist: pack.artist, author: request.author, license: request.license, description: request.description, credits: pack.credits, hasTiming: Boolean(timing), duration }))
+  try {
+    const path = join(packDir, 'README.md'), entry = await stat(path)
+    if (entry.isFile()) {
+      if (entry.size > WORKSHOP_LIMITS.fileBytes) assetErrors.push('原 README.md 太大（上限 512 KiB）')
+      else files.set('README.md', `${files.get('README.md')}\n## Original pack documentation / 原包说明\n\n${await readText(path)}`)
+    }
+  } catch (error) { if (error.code !== 'ENOENT') assetErrors.push(`无法保留 README.md：${error.message}`) }
   let cover = null
   if (request.coverPng) cover = { name: 'cover.png', bytes: Buffer.from(request.coverPng, 'base64') }
   else {
@@ -362,19 +403,36 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
   }
   if (cover && cover.name === 'cover.png' && !cover.bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) cover = null
   const entries = [...files].map(([path, text]) => ({ path, bytes: Buffer.from(text, 'utf8') }))
-  if (cover) entries.push({ path: cover.name, bytes: cover.bytes })
+  const entryPaths = new Set(entries.map(entry => entry.path))
+  for (const entry of assetEntries) {
+    if (entryPaths.has(entry.path)) {
+      // An asset may name the scene itself. It is already copied, byte for byte.
+      if (entry.path === scriptPath && entries.find(e => e.path === scriptPath)?.bytes.equals(entry.bytes)) continue
+      assetErrors.push(`canvas.assets 的文件路径与发布文件冲突：${entry.path}`)
+      continue
+    }
+    entries.push(entry)
+    entryPaths.add(entry.path)
+  }
+  // A source cover may also be a canvas asset. Keep the asset bytes in that case
+  // so the published manifest still refers to exactly the file it was authored with.
+  if (cover && !entryPaths.has(cover.name)) entries.push({ path: cover.name, bytes: cover.bytes })
   const result = await validateWorkshopPack({ id: request.id, files: entries.map(e => ({ path: e.path, size: e.bytes.length })), readText: async path => entries.find(e => e.path === path).bytes.toString('utf8') })
-  const scriptCheck = files.has('scenes.js') ? checkScriptSafety(files.get('scenes.js')) : { errors: [], warnings: [] }
   const dir = join(publishRoot, request.id, 'packs', request.id)
-  if (!result.errors.length) {
+  const errors = [...assetErrors, ...result.errors]
+  if (!errors.length) {
     await rm(join(publishRoot, request.id), { recursive: true, force: true })
     await mkdir(dir, { recursive: true })
-    for (const entry of entries) await writeFile(join(dir, entry.path), entry.bytes)
+    for (const entry of entries) {
+      const target = join(dir, ...entry.path.split('/'))
+      await mkdir(dirname(target), { recursive: true })
+      await writeFile(target, entry.bytes)
+    }
   }
   return {
-    ok: result.errors.length === 0, id: request.id, dir: result.errors.length ? null : dir,
+    ok: errors.length === 0, id: request.id, dir: errors.length ? null : dir,
     files: entries.map(e => ({ path: e.path, size: e.bytes.length, sha256: sha256(e.bytes) })),
-    errors: result.errors, warnings: [...new Set([...result.warnings, ...scriptCheck.warnings])], stripped,
+    errors, warnings: [...new Set(result.warnings)], stripped,
     timingLines: timing?.lines.length ?? 0, links: publishLinks(request.id),
     prTitle: `Add pack: ${pack.title}${pack.artist ? ` — ${pack.artist}` : ''} (${request.id})`,
     prBody: [
@@ -382,7 +440,7 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
       '',
       '- [x] No audio, no lyric text (prepared by dsh-mv 发布到工坊; lyrics are timings + hashes only)',
       '- [x] Scene script passes the static sandbox checks',
-      `- [x] I have the right to share this pack under ${request.license}`,
+      `- [ ] I have the right to share this pack under ${request.license} (confirm before submitting)`,
     ].join('\n'),
   }
 }

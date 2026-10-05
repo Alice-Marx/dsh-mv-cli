@@ -27,6 +27,18 @@ async function made(t) {
   return { root, packs: createAiPackManager({ root, version: '0.4.0' }) }
 }
 
+test('agent preview merges asset shards exactly as playback (first metadata, concatenated arrays)', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'mvai-assets-'))
+  t.after(() => rm(root, { recursive: true, force: true }))
+  await writeFile(join(root, 'one.json'), '{"label":"first","values":[1]}')
+  await writeFile(join(root, 'two.json'), '{"label":"last","values":[2]}')
+  await writeFile(join(root, 'scene.js'), 'let data;function setup(info){data=info.assets.mesh}function render(t,c,r){return [data.label+":"+data.values.join(",")]}')
+  await writeFile(join(root, 'mv.json'), JSON.stringify({format:'dsh-mv-pack',version:1,title:'assets',canvas:{renderer:'script',script:'scene.js',assets:{mesh:['one.json','two.json']}}}))
+  const preview = await previewFrameForAgent({ path: root })
+  assert.equal(preview.ok, true, preview.problems.join('\n'))
+  assert.equal(preview.frame.split('\n')[0], 'first:1,2')
+})
+
 test('ai pack: request parsing and slugs', () => {
   assert.throws(() => parseAiPackCreate({ title: '', audioExt: '.mp3' }), /歌名|title/)
   assert.throws(() => parseAiPackCreate({ title: 'x', audioExt: '.exe' }))
@@ -105,12 +117,14 @@ test('scene sandbox (Host preview): no escape, no require, time limits', () => {
 test('scene worker source: blocked globals are gone before the scene runs', async () => {
   const posted = []
   let listener = null
-  class Scope { postMessage(msg) { posted.push(msg) } addEventListener(type, fn) { if (type === 'message') listener = fn } }
-  for (const name of SCENE_BLOCKED_GLOBALS) Scope.prototype[name] = () => 'leak'
-  const self = new Scope()
-  const context = vm.createContext({ self, performance: { now: () => 0 } })
-  const probe = `var seen = ${JSON.stringify(SCENE_BLOCKED_GLOBALS)}.filter(n => typeof self[n] === 'function');
-function render(t, cols, rows, ctx) { return { lines: ['leaks:' + seen.join(','), 'post:' + typeof self.postMessage, ctx.title], styles: [] } }`
+  const scope = { performance: { now: () => 0 } }
+  for (const name of SCENE_BLOCKED_GLOBALS) if (!['Function', 'eval', 'globalThis'].includes(name)) scope[name] = () => 'leak'
+  scope.postMessage = msg => posted.push(msg)
+  scope.addEventListener = (type, fn) => { if (type === 'message') listener = fn }
+  scope.self = scope
+  const context = vm.createContext(scope)
+  const probe = `var seen = [${SCENE_BLOCKED_GLOBALS.map(name => `[${JSON.stringify(name)}, typeof ${name}]`).join(',')}].filter(pair => pair[1] !== 'undefined').map(pair => pair[0]);
+function render(t, cols, rows, ctx) { return { lines: ['leaks:' + seen.join(','), 'post:' + typeof postMessage, ctx.title], styles: [] } }`
   vm.runInContext(sceneWorkerSource(probe), context)
   listener({ data: { type: 'init', info: {} } })
   assert.deepEqual({ ...posted[0] }, { type: 'ready', error: '' })

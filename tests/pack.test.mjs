@@ -86,6 +86,23 @@ function fixture(manifest, files = {}) {
   return dir
 }
 
+test('pack host: WebGL scenes use 2 MiB cap end-to-end; 2D stays 256 KiB', async () => {
+  for (const output of ['text', 'pixels', 'webgl']) {
+    const dir = fixture({ ...base, canvas: { renderer: 'script', script: 'scene.js', output } }, { 'scene.js': ' '.repeat(300 * 1024) })
+    try {
+      const loaded = await loadPack(dir)
+      assert.equal(loaded.files.scene.tooLarge, output !== 'webgl')
+      const request = { manifestPath: loaded.manifestPath, role: 'scene', offset: 0, length: 1024 }
+      if (output === 'webgl') {
+        assert.equal((await readPackFile(request)).bytes, 1024)
+        writeFileSync(join(dir, 'scene.js'), ' '.repeat(2 * 1024 * 1024 + 1))
+        assert.equal((await loadPack(dir)).files.scene.tooLarge, true)
+        await assert.rejects(readPackFile(request), /超过/)
+      } else await assert.rejects(readPackFile(request), /超过/)
+    } finally { rmSync(dir, { recursive: true, force: true }) }
+  }
+})
+
 const PLAYER_PACK = { ...base, artist: 'A', audio: { file: 'song.mp3', offset: 0.5 }, lyrics: { file: 'lyrics.lrc' } }
 const PLAYER_FILES = { 'song.mp3': Buffer.alloc(1_300_000, 7), 'lyrics.lrc': '[00:01.00]Hello\n[00:01.00]你好\n' }
 

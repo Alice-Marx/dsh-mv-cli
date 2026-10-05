@@ -9,14 +9,14 @@ import { errorText } from './mv-info.mjs'
 import { Alert, Icon } from './mv-ui.jsx'
 import { loadPackFromHost, relocatePacks, rememberPack } from './mv-pack-state.mjs'
 import { durationText, tooOld, installWorkshopPack, installedState, loadWorkshop, moveWorkshopPacks, openWorkshopDir, publishWorkshopPack, setWorkshopDir, sizeText, uninstallWorkshopPack, workshopCover, workshopDirInfo } from './mv-workshop-state.mjs'
-import { WORKSHOP_DEFAULT_LICENSE, WORKSHOP_REPO, compareVersions, filterWorkshop, workshopSlug } from '../shared/mv-workshop.mjs'
+import { WORKSHOP_REPO, compareVersions, filterWorkshop, workshopSlug } from '../shared/mv-workshop.mjs'
 import { CLIENT_VERSION } from './remote-state.mjs'
 
 export { tooOld }
 
 const REPO_URL = `https://github.com/${WORKSHOP_REPO}`
 const LICENSES = ['CC-BY-NC-SA-4.0', 'CC-BY-NC-4.0', 'CC-BY-SA-4.0', 'CC-BY-4.0', 'CC0-1.0', 'MIT']
-const RENDERERS = { script: '场景脚本', generic: '通用画面', 'dsh-pv': 'dsh-pv', 'world-execute-me': 'world.execute(me)' }
+const RENDERERS = { webgl: '3D WebGL', script: '场景脚本', generic: '通用画面', 'dsh-pv': 'dsh-pv', 'world-execute-me': 'world.execute(me)' }
 
 export function TrustNote() {
   return (
@@ -283,7 +283,7 @@ export function WorkshopDirSettings({ api, active = null, onRecent = () => {}, o
 export function PublishDialog({ api, pack, canvas = () => null, onClose }) {
   const ws = pack.pack.workshop ?? {}
   const [form, setForm] = React.useState(() => ({
-    id: ws.id ?? workshopSlug(pack.pack.title, pack.pack.artist), version: ws.version ?? '1.0.0', license: ws.license ?? WORKSHOP_DEFAULT_LICENSE,
+    id: ws.id ?? workshopSlug(pack.pack.title, pack.pack.artist), version: ws.version ?? '1.0.0', license: ws.license ?? '',
     author: ws.author ?? '', description: '', tags: '', fingerprint: true, cover: true,
   }))
   const [busy, setBusy] = React.useState('')

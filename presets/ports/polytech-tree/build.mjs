@@ -4,8 +4,8 @@
 //   node presets/ports/polytech-tree/build.mjs <checkout> <out-dir> [--cover file.png]
 // The tower layout (src/layout.ts) and the tour schedule (src/tour.ts) are ported to JS below and run
 // once at build time; the pack carries the result (positions, reveal times, edges) as canvas.assets and
-// a pixel scene script (scenes.js) that draws the top-down tour the original renders with Three.js.
-import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+// a WebGL2 scene (scenes.js) with real perspective, depth and GPU instancing.
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -107,7 +107,8 @@ placed.forEach((p, to) => { for (const id of p.node.prereqs) { const from = idx.
 function r3(v) { return Math.round(v * 1000) / 1000 }
 const r2 = v => Math.round(v * 100) / 100
 
-rmSync(out, { recursive: true, force: true })
+// Never erase a previous build or a user-selected folder.
+if (existsSync(out)) throw new Error(`Output already exists; choose a new folder: ${out}`)
 mkdirSync(join(out, 'data'), { recursive: true })
 const nodesOut = placed.map(p => [r2(p.x), r2(p.y), r2(p.z), p.node.category, p.node.importance, 0, r2(p.spin), r2(p.phase)])
 // faster revealAt lookup
@@ -139,16 +140,16 @@ const sections = eras.map((e, i) => ({ kind: 'era', label: e.name, start: r3(Mat
 const manifest = {
   $schema: './mv.schema.json', format: 'dsh-mv-pack', version: 1,
   title: 'Polytech Tree · 人类科技树漫游', artist: 'secwind7',
-  credits: ['Polytech Tree — secwind (secwind7), code MIT, data CC BY 4.0: https://github.com/secwind7/polytech-tree', 'dsh-mv adaptation (tour as a pixel scene): Alice-Marx'],
+  credits: ['Polytech Tree — secwind (secwind7), code MIT, data CC BY 4.0: https://github.com/secwind7/polytech-tree', 'dsh-mv adaptation (GPU-instanced WebGL2 tour): Alice-Marx'],
   notice: 'No music: play it silently or with any song you like (about 3 minutes). The tour follows the original\'s schedule; music only adds a little glow.',
   duration,
-  canvas: { renderer: 'script', script: 'scenes.js', output: 'pixels', size: [1280, 720], assets: { tower: 'data/tower.json', nodes: ['data/nodes-1.json', 'data/nodes-2.json'], edges: 'data/edges.json' } },
+  canvas: { renderer: 'script', script: 'scenes.js', output: 'webgl', size: [1280, 720], assets: { tower: 'data/tower.json', nodes: ['data/nodes-1.json', 'data/nodes-2.json'], edges: 'data/edges.json' } },
   'x-dsh-mv-ai': { sections },
   'x-dsh-mv-workshop': {
-    id: ID, version: '1.0.0', license: 'MIT AND CC-BY-4.0', author: 'Alice-Marx',
-    description: `Polytech Tree 的「漫游动画」：${placed.length} 项人类科技按时代分层、按领域着色，镜头沿塔轴俯视上升，科技按年代逐个显现、前置连线爬向它。原作是 Three.js 3D，这里移植为像素场景。没有配乐，可以静音播放或配任意音乐。需要插件 0.9.1+。`,
-    tags: ['tech-tree', 'visualization', 'history', 'pixels'],
-    source: REPO, homepage: `https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/${ID}`, requires: '0.9.1',
+    id: ID, version: '1.1.0', license: 'MIT AND CC-BY-4.0', author: 'Alice-Marx',
+    description: `Polytech Tree 的实时 3D 漫游：${placed.length} 项科技分层呈现，GPU 实例化多面体、透视镜头、深度遮挡与前置关系连线。按原作布局和漫游时序适配，不是原网页的完整交互。无配乐，可静音或配任意音乐。需要插件 0.9.2+。`,
+    tags: ['tech-tree', 'visualization', 'history', 'webgl', '3d'],
+    source: REPO, homepage: `https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/${ID}`, requires: '0.9.2',
   },
 }
 writeFileSync(join(out, 'mv.json'), `${JSON.stringify(manifest, null, 2)}\n`)
@@ -158,8 +159,8 @@ writeFileSync(join(out, 'NOTICE.md'), `# NOTICE — Polytech Tree · 人类科�
 
 - **Original / 原作:** [secwind7/polytech-tree](${REPO})${COMMIT ? ` (commit \`${COMMIT.slice(0, 12)}\`)` : ''} — 人类科技树 3D 可视化, by secwind.
 - **Code** (scenes.js, the ported layout / tour algorithms): MIT, © 2026 secwind (polytech-tree) — see [LICENSE.txt](LICENSE.txt).
-  Adapted by Alice-Marx (2026-10): the Three.js tour re-drawn with a 2D canvas (top-down perspective projection,
-  polygons for the polyhedra), layout and schedule precomputed at build time.
+  Adapted by Alice-Marx (2026-10): a WebGL2 GPU-instanced tour with perspective and depth-tested octahedra;
+  layout and schedule precomputed at build time. This is not the original interactive Three.js application.
 - **Data** (data/): *Polytech Tree (github.com/secwind7/polytech-tree), CC BY 4.0* — https://creativecommons.org/licenses/by/4.0/ .
   Changed: reduced to structured fields and precomputed positions / timings (see data/NOTICE.md). The \`desc\`
   summaries (CC BY-SA 4.0, partly derived from English Wikipedia) are not included.
@@ -169,13 +170,13 @@ writeFileSync(join(out, 'README.md'), `# Polytech Tree · 人类科技树漫游
 
 **Original / 原作:** [secwind7/polytech-tree](${REPO}) · code MIT · data CC BY 4.0
 
-把 Polytech Tree 的「▶ 漫游动画」做成 dsh-mv 的像素场景（\`canvas.output: "pixels"\`，需要 dsh-mv-cli **0.9.1** 或更新）：
+把 Polytech Tree 的「▶ 漫游动画」适配为实时 GPU 3D（\`canvas.output: "webgl"\`，需要 dsh-mv-cli **0.9.2** 或更新）：
 ${placed.length} 项科技、${edges.length} 条前置关系、${ERA_COUNT} 个时代；镜头沿塔轴俯视上升，每个时代按科技数分配 10–30 秒，
-科技按年份逐个弹出闪亮，名字停留 2 秒，前置连线在目标显现前 1.6 秒内爬到。全片约 ${Math.round(duration)} 秒。
+科技按年份逐个显现，前置连线在目标显现前 1.6 秒内爬到。全片约 ${Math.round(duration)} 秒。
 
 - 没有配乐：可以不选音频直接播放（静音时钟），也可以配任何你喜欢的歌；有音乐时画面会随响度微微发光。
-- 与原作的差别：原作用 Three.js（WebGL）实时渲染 3D 多面体；这里在 2D 画布上做同样的俯视透视投影，多面体画成对应面数的多边形；
-  收尾的斜向全景改为拉远俯视；没有悬停、筛选等交互。
+- 与原作的差别：这里用裸 WebGL2 实例化八面体、深度遮挡与透视镜头，而非加载完整 Three.js 网页；
+  保留原布局与漫游时序，简化形状、后处理和标签；没有悬停、筛选等交互。
 
 See [NOTICE.md](NOTICE.md) for attribution, licences and changes.
 `)

@@ -41,7 +41,7 @@ test('probeAudioFile reads only the header and size', async () => {
 
 test('wavCacheDir is plugin-owned', () => {
   assert.equal(wavCacheDir({ LOCALAPPDATA: 'C:\\Users\\u\\AppData\\Local' }, 'win32').replace(/\//g, '\\'), 'C:\\Users\\u\\AppData\\Local\\dsh-mv\\audio-cache')
-  assert.match(wavCacheDir({ XDG_CACHE_HOME: '/c' }, 'linux'), /\/c\/dsh-mv\/audio-cache$/)
+  assert.match(wavCacheDir({ XDG_CACHE_HOME: '/c' }, 'linux').replace(/\\/g, '/'), /\/c\/dsh-mv\/audio-cache$/)
 })
 
 test('encodeWav writes a 16-bit PCM WAV that the ffmpeg cache check accepts', () => {

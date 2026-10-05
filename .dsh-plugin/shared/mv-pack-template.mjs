@@ -61,8 +61,8 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
       properties: {
         renderer: { enum: MV_RENDERERS_BUILTIN, default: 'generic', description: 'generic | script (needs canvas.script) | dsh-pv (needs canvas.assets; used by the dsh PV workshop pack).' },
         assets: { type: 'object', description: 'Data files a renderer reads (name → relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv; since 0.9.1 scene scripts get them in setup(info).assets.', additionalProperties: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] } },
-        output: { enum: ['text', 'pixels'], default: 'text', description: 'Scene scripts (0.9.1): text = render(t, cols, rows, ctx) returns characters; pixels = paint(g, t, width, height, ctx) draws on a sandboxed 2D canvas.' },
-        size: { type: 'array', items: { type: 'integer' }, minItems: 2, maxItems: 2, default: [1280, 720], description: 'Pixel scenes: canvas size [width, height] (160–1920 × 90–1080), letterboxed in the panel.' },
+        output: { enum: ['text', 'pixels', 'webgl'], default: 'text', description: 'text: render(t, cols, rows, ctx); pixels (0.9.1+): paint(g, t, width, height, ctx) on Canvas2D; webgl (0.9.2+): setup(info, gl), paint(gl, t, width, height, ctx) on sandbox-owned WebGL2. Bundle dependencies before importing.' },
+        size: { type: 'array', items: { type: 'integer' }, minItems: 2, maxItems: 2, default: [1280, 720], description: 'Bitmap scenes: canvas size [width, height] (160–1920 × 90–1080), letterboxed in the panel.' },
         script: { type: 'string', pattern: '\\.m?js$', description: 'Scene script (.js) for renderer "script": defines render(t, cols, rows, ctx). Runs sandboxed in the panel.' },
         fontSize: { type: 'number', minimum: 8, maximum: 32 },
         bpm: { type: 'number', minimum: 20, maximum: 400, description: 'Song tempo for scene scripts: ctx.beat = { bpm, index, bar, phase, pulse }.' },
@@ -104,7 +104,7 @@ VS Code completion and checks.
 | \`canvas.script\` | no | \`scenes.js\`: the scene script for \`script\` (setting it implies \`renderer: "script"\`). |
 | \`canvas.fontSize\` | no | 8–32 px. |
 | \`canvas.bpm\`, \`canvas.beatOffset\` | no | Tempo (20–400) and first-beat time for scene scripts (\`ctx.beat\`). |
-| \`canvas.output\`, \`canvas.size\` | no | 0.9.1: \`"pixels"\` makes the scene script paint pixels — \`paint(g, t, width, height, ctx)\` on a sandboxed 2D canvas of \`size\` (default \`[1280, 720]\`; only \`"2d"\` contexts, no fonts from URLs). \`setup(info)\` gets \`info.assets\` (JSON from \`canvas.assets\`, images as ImageBitmap). |
+| \`canvas.output\`, \`canvas.size\` | no | \`"pixels"\` (0.9.1+) draws Canvas2D with \`paint(g, t, width, height, ctx)\`; \`"webgl"\` (0.9.2+) draws WebGL2 with \`paint(gl, t, width, height, ctx)\`. Size defaults to \`[1280, 720]\`. \`setup(info, gl)\` receives JSON/ImageBitmap assets; WebGL also gets \`info.canvas\`, a minimal facade for an explicitly supplied Three.js context. |
 | \`x-dsh-mv-ai.sections\` | no | Song sections \`[{ kind, label, start, end }]\` for scene scripts (\`ctx.section\`). |
 | \`x-dsh-mv-workshop\` | no | Workshop data (id, version, license, author, audio duration / fingerprint); written by 发布到工坊. |
 
@@ -145,6 +145,17 @@ should take under ${SCENE_LIMITS.frameBudgetMs} ms; a script that throws, hangs 
 ${SCENE_LIMITS.hardTimeoutMs} ms or is too slow is stopped and the panel falls back to the
 \`generic\` renderer. \`examples/scenes.example.js\` is a working example.
 
+### Real 3D (0.9.2+)
+
+Use \`"canvas": { "renderer": "script", "script": "scenes.js", "output": "webgl", "size": [1280, 720] }\`.
+WebGL scenes must define \`paint(gl, t, w, h, ctx)\`; initialize GPU resources in
+\`setup(info, gl)\`. A bundled Three.js renderer must use
+\`new THREE.WebGLRenderer({ canvas: info.canvas, context: gl })\`, never DOM or its own animation loop.
+Scene time comes from \`t\`, not accumulated frame deltas: seeking must reconstruct the same frame.
+Text/pixels scenes remain limited to 256 KiB; WebGL scenes to 2 MiB, with a 100 ms bitmap frame budget.
+The Node preview records calls only; verify shader compilation, textures and output in a real browser.
+HTML, remote/CDN imports, fetch, timers and DOM-dependent libraries are not supported.
+
 The former built-in world.execute(me) presets are now workshop packs (MV 放映室 → 创意工坊);
 install one and open its folder to see a complete script pack and a \`canvas.assets\` pack.
 `
@@ -178,7 +189,7 @@ VS Code 等编辑器提供补全和校验。
 | \`canvas.script\` | 否 | \`scenes.js\`：\`script\` 渲染器用的场景脚本（填了它就默认 \`renderer: "script"\`）。 |
 | \`canvas.fontSize\` | 否 | 8–32 像素。 |
 | \`canvas.bpm\`、\`canvas.beatOffset\` | 否 | 歌曲速度（20–400）和第一拍时间，供场景脚本使用（\`ctx.beat\`）。 |
-| \`canvas.output\`、\`canvas.size\` | 否 | 0.9.1：设为 \`"pixels"\` 时场景脚本画像素——\`paint(g, t, width, height, ctx)\`，在沙箱里大小为 \`size\` 的 2D 画布上作画（默认 \`[1280, 720]\`；只能用 \`"2d"\`，不能从网址加载字体）。\`setup(info)\` 会收到 \`info.assets\`（\`canvas.assets\` 里的 JSON；图片为 ImageBitmap）。 |
+| \`canvas.output\`、\`canvas.size\` | 否 | \`"pixels"\`（0.9.1+）用 \`paint(g, t, width, height, ctx)\` 画 Canvas2D；\`"webgl"\`（0.9.2+）用 \`paint(gl, t, width, height, ctx)\` 画 WebGL2。默认大小 \`[1280, 720]\`。\`setup(info, gl)\` 接收 JSON/ImageBitmap 素材；WebGL 还收到供 Three.js 显式上下文使用的最小 \`info.canvas\` 接口。 |
 | \`x-dsh-mv-ai.sections\` | 否 | 歌曲段落 \`[{ kind, label, start, end }]\`，供场景脚本使用（\`ctx.section\`）。 |
 | \`x-dsh-mv-workshop\` | 否 | 创意工坊信息（id、版本、许可、作者、音频时长 / 指纹），由「发布到工坊」写入。 |
 
@@ -211,6 +222,15 @@ MP4/MOV/WebM/MKV 视频里的音轨、Ogg Vorbis/Opus、FLAC、WAV（PCM / 浮�
 脚本在 Web Worker 沙箱里运行：没有网络、存储、DOM，不能 import。每帧应在 ${SCENE_LIMITS.frameBudgetMs} 毫秒内完成；
 脚本报错、卡住 ${SCENE_LIMITS.hardTimeoutMs} 毫秒或持续太慢时会被停止，面板自动换回 \`generic\` 通用画面。
 \`examples/scenes.example.js\` 是一个能直接运行的示例。
+
+### 真正 3D（0.9.2+）
+
+设置 \`"canvas": { "renderer": "script", "script": "scenes.js", "output": "webgl", "size": [1280, 720] }\`。
+定义 \`paint(gl, t, w, h, ctx)\`，在 \`setup(info, gl)\` 初始化 GPU 资源；已打包的 Three.js 使用
+\`new THREE.WebGLRenderer({ canvas: info.canvas, context: gl })\`，不能依赖 DOM 或自己的动画循环。
+从绝对时间 \`t\` 重建画面，不累积帧 delta；拖动进度后同一时间应得到同一帧。
+文本/2D 脚本上限 256 KiB，WebGL 2 MiB；位图帧预算 100 ms。Node 预览只记录调用，
+着色器、纹理和实际画面必须另用真实浏览器验证。不支持 HTML、CDN/import、fetch、定时器或依赖 DOM 的库。
 
 以前内置的两个 world.execute(me) 预设现在是创意工坊里的包（MV 放映室 → 创意工坊）；
 安装后打开它的文件夹，就能看到完整的场景脚本包和使用 \`canvas.assets\` 的包。

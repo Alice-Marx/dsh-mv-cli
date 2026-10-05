@@ -17,7 +17,7 @@ const [src, out] = process.argv.slice(2)
 const coverAt = process.argv.indexOf('--cover')
 const cover = coverAt > 0 ? process.argv[coverAt + 1] : null
 if (!src || !out) { console.error('usage: build.mjs <checkout> <out-dir> [--cover png]'); process.exit(2) }
-const read = f => readFileSync(join(src, f), 'utf8')
+const read = f => readFileSync(join(src, f), 'utf8').replace(/\r\n/g, '\n')
 const load = (file, name) => { const box = { window: {} }; vm.runInNewContext(read(file), box); return box.window[name] }
 
 const ID = 'world-execute-me-wallpaper'

@@ -69,7 +69,7 @@ test('skin structure CSS: A sidebar + bar, B tmux + status, CRT kept off the can
   assert.match(css, /\.mv-tmux \{[^}]*top: 0/)
   assert.match(css, /\.mv-status \{[^}]*bottom: 0/)
   assert.match(css, /\.mv-skin-b \.mv-stage-wrap \{ z-index: 21; \}/)
-  const panel = readFileSync(new URL('../.dsh-plugin/client/mv-panel.jsx', import.meta.url), 'utf8')
+  const panel = readFileSync(new URL('../.dsh-plugin/client/mv-panel.jsx', import.meta.url), 'utf8').replace(/\r\n/g, '\n')
   // fixed child slots so switching skins never remounts the canvas
   assert.match(panel, /skinId === 'a' \? <SideNav[^\n]*: null\}\n\s*\{skinId === 'b' \? <TmuxTabs[^\n]*: null\}\n\s*<div className="mv-main">/)
 })

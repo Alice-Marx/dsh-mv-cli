@@ -72,7 +72,7 @@ test('client apply mounts the remote and registers panel, sidebar and open actio
 test('package metadata', () => {
   assert.equal(pkg.name, '@ljwei-stak/dsh-mv-cli')
   const patch = readFileSync(new URL('../cordis.patch.yml', import.meta.url), 'utf8')
-  assert.match(patch, /id: dsh-mv\n\s+name: '@ljwei-stak\/dsh-mv-cli'/)
+  assert.match(patch.replace(/\r\n/g, '\n'), /id: dsh-mv\n\s+name: '@ljwei-stak\/dsh-mv-cli'/)
   for (const file of ['NOTICE.md', 'LICENSE', 'README.md', 'README.zh.md']) assert.ok(pkg.files.includes(file))
   assert.ok(!pkg.files.some(f => /client\/mv|ref|spectrum|\.mp3/.test(f) || (/lyrics/.test(f) && f !== '.dsh-plugin/shared/mv-lyrics.mjs')), 'only the built bundle ships client code')
 })

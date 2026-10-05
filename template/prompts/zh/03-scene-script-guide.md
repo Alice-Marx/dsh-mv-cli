@@ -22,7 +22,14 @@ function render(t, cols, rows, ctx) {    // 每帧调用，约 30–60 次/秒
 ## 沙箱限制（违反会被停止并退回通用画面）
 
 - 不能 import / require；没有 DOM、网络（fetch 等）、存储、定时器、Worker、WebAssembly；不要用 eval / new Function。
-- 每帧预算 40 ms（目标 < 10 ms）；连续太慢、卡住 1.5 秒或抛异常会被停止。文件不超过 256 KB。
+- 文本帧预算 40 ms（目标 < 10 ms），pixels/WebGL 位图帧预算 100 ms；连续太慢、卡住 1.5 秒或抛异常会被停止。文本/2D 上限 256 KiB，WebGL 上限 2 MiB。
+
+## 3D（插件 0.9.2+）
+
+canvas.output 设为 "webgl"，size 为 [1280, 720]；定义 setup(info, gl) 和 paint(gl, t, w, h, ctx)。
+Three.js 依赖先离线打包，WebGLRenderer 显式传 `{ canvas: info.canvas, context: gl }`。
+不能依赖 DOM、fetch/CDN 加载器或自己的动画循环；纹理通过 canvas.assets 提供。
+按绝对时间 t 重建画面以支持拖动进度。Host/CI 的替身不能验证 GPU 着色器，必须在真实浏览器验画面。
 - 画面必须是 `t` 和 `ctx` 的**纯函数**：不要依赖上一帧的状态或 Math.random（拖动进度、预览工具都要得到同样的画面）。
   需要随机就用确定性的 `hash(i, seed)`（见 examples/_grid 部分）。“历史”效果（拖影、心电轨迹）就重新计算更早时刻 `t - dt`。
 
