@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.3 — 2026-10-06
+
+- **lyrics.js compatibility / 歌词兼容**: safely read a literal `LYRICS` array from the user's local wiers-jack-style JS module; map absolute-second `t` and Chinese `cn` to canonical `time`/`zh`. Comments, single quotes, trailing commas, escapes and unrelated imports/helpers are supported without executing code.
+- Recognize JS lyric content even if renamed `.json`; JSON cues also accept `t`/`cn`. Both player file selectors and local manifests accept `.js`/`.mjs`.
+- Preserve the original `t`-cue subtitle expiry: 80 ms before the next cue, capped at 6.5 seconds, so lyrics do not linger across instrumental gaps.
+- Optional `canvas.subtitles: true` paints the user's bilingual cues over bitmap scenes, respecting the subtitle offset and letterbox; default off prevents duplicate text. Original Three.js workshop pack 1.0.2 enables it and requires 0.9.3.
+- Calibration and automatic alignment use the same cues. The AI file picker converts supported timed files to LRC before creating a pack. Expressions, calls, interpolation, computed properties, spreads and prototype fields are rejected; reads are bounded.
+- Workshop continues to exclude lyric text, including named `lyrics.js`/`.mjs`; no song lyrics are bundled or uploaded.
+
 ## 0.9.2 — 2026-10-05
 
 - **Real 3D / 实时 3D**: `canvas.output: "webgl"` runs `setup(info, gl)` / `paint(gl, t, w, h, ctx)` on a sandbox-owned Worker WebGL2 context; ImageBitmap frames use the existing letterboxed panel and audio clock. Adapted, bundled Three.js renderers use `{ canvas: info.canvas, context: gl }`.

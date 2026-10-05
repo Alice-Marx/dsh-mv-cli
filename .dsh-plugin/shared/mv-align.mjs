@@ -4,7 +4,7 @@
  * transcript, and LRC output. A "line" is
  * { start, end, text, alt, confidence (0..1), source }.
  */
-import { parseLyrics } from './mv-lyrics.mjs'
+import { parseLyrics, looksLikeLyricsJs } from './mv-lyrics.mjs'
 
 export const LOW_CONFIDENCE = 0.5
 const CJK = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uac00-\ud7af]/
@@ -185,8 +185,8 @@ export function linesFromWords(words, { maxTokens = 12, gap = 0.7 } = {}) {
 /** Lyric text (LRC / SRT / lyrics.json / plain) → lines; timed when the text has stamps. */
 export function linesFromText(text, { name = 'lyrics.lrc' } = {}) {
   const body = String(text ?? '')
-  if (/\[\d{1,3}:\d{1,2}([.:]\d{1,3})?\]/.test(body) || /-->/.test(body) || /^\s*\[\s*\{/.test(body)) {
-    const ext = /-->/.test(body) ? 'x.srt' : /^\s*\[\s*\{/.test(body) ? 'x.json' : name.endsWith('.lrc') ? name : 'x.lrc'
+  if (looksLikeLyricsJs(body) || /\.(?:m?js)$/i.test(name) || /\[\d{1,3}:\d{1,2}([.:]\d{1,3})?\]/.test(body) || /-->/.test(body) || /^\s*\[\s*\{/.test(body)) {
+    const ext = looksLikeLyricsJs(body) ? 'x.js' : /-->/.test(body) ? 'x.srt' : /^\s*\[\s*\{/.test(body) ? 'x.json' : name
     const cues = parseLyrics(ext, body)
     if (cues.length) return { timed: true, lines: cues.map(cue => ({ start: cue.time, end: cue.end, text: cue.en || cue.zh, alt: cue.en && cue.zh ? cue.zh : '', confidence: 0.6, source: 'lyrics' })) }
   }

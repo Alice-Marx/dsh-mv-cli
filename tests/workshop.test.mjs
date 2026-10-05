@@ -59,6 +59,8 @@ test('workshop rules reject audio, lyric files, lyric text, missing license and 
     [{ ...good, 'song.flac': 'x' }, /音频/],
     [{ ...good, 'lyrics.lrc': '[00:01.00]x' }, /歌词/],
     [{ ...good, 'lyrics.json': '[]' }, /歌词/],
+    [{ ...good, 'lyrics.js': 'export const LYRICS = [{t:1,en:"Demo"}];' }, /歌词文件/],
+    [{ ...good, 'data/lyrics.MJS': 'const LYRICS = [{t:1,en:"Demo"}];' }, /歌词文件/],
     [{ ...good, 'data.json': JSON.stringify([1, 2, 3, 4].map(i => ({ time: i, text: `line ${i}` }))) }, /歌词文本/],
     [{ ...good, 'notes.md': '[00:01.00]a\n[00:02.00]b\n[00:03.00]c' }, /歌词/],
     [{ ...good, 'mv.json': good['mv.json'].replace('"license":"MIT",', '') }, /license 必填/],

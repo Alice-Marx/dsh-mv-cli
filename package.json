@@ -1,6 +1,6 @@
 {
   "name": "@ljwei-stak/dsh-mv-cli",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "type": "module",
   "description": "Music video player for DeepSeek Harness Desktop: text, Canvas2D and WebGL2 3D scenes synced to your own audio, sandboxed MV packs and a GitHub-hosted workshop. Supports adapted, bundled Three.js scenes through an explicit Worker WebGL2 context. Unofficial fan work; no audio, video or lyrics bundled.",
   "keywords": [

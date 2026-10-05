@@ -21,6 +21,40 @@ export const isBitmapSceneOutput = output => output === 'pixels' || output === '
 const closeBitmap = bitmap => { try { bitmap?.close?.() } catch { /* already closed */ } }
 const invalidWorkerMessage = detail => `场景脚本返回了无效消息：${detail}`
 
+/** Opt-in panel subtitles: independent from a worker's own scene/text drawing. */
+function bitmapSubtitles(g, cue, x, y, w, h) {
+  if (!cue || !(cue.en || cue.zh)) return
+  const lines = [cue.en, cue.zh].filter(Boolean).map(text => String(text).slice(0, 512))
+  const fontSize = Math.max(12, Math.min(40, Math.round(h / 22)))
+  const lineHeight = fontSize * 1.35, pad = Math.max(5, h * 0.025)
+  const top = y + h - pad - lines.length * lineHeight
+  const maxWidth = w * 0.9
+  g.save()
+  try {
+    g.beginPath(); g.rect(x, y, w, h); g.clip()
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none'
+    g.shadowBlur = 0; g.textAlign = 'center'; g.textBaseline = 'middle'
+    g.fillStyle = 'rgba(0,0,0,0.65)'
+    g.fillRect(x + w * 0.025, top - pad * 0.5, w * 0.95, lines.length * lineHeight + pad)
+    lines.forEach((text, i) => {
+      let size = fontSize
+      const setFont = () => { g.font = `600 ${size}px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif` }
+      setFont()
+      const measured = g.measureText(text).width
+      if (measured > maxWidth) { size = Math.max(10, fontSize * maxWidth / measured); setFont() }
+      if (g.measureText(text).width > maxWidth) {
+        let lo = 0, hi = text.length
+        while (lo < hi) { const mid = Math.ceil((lo + hi) / 2); if (g.measureText(text.slice(0, mid) + '…').width <= maxWidth) lo = mid; else hi = mid - 1 }
+        text = text.slice(0, lo) + '…'
+      }
+      g.lineWidth = Math.max(2, size / 8); g.strokeStyle = '#000'
+      g.strokeText(text, x + w / 2, top + (i + 0.5) * lineHeight, maxWidth)
+      g.fillStyle = i === 0 ? '#fff' : '#c4deff'
+      g.fillText(text, x + w / 2, top + (i + 0.5) * lineHeight, maxWidth)
+    })
+  } finally { g.restore() }
+}
+
 /** Default worker factory (Blob URL). Returns null when workers are unavailable. */
 export function blobWorkerFactory(source, { WorkerClass = globalThis.Worker, BlobClass = globalThis.Blob, url = globalThis.URL } = {}) {
   if (typeof WorkerClass !== 'function' || typeof BlobClass !== 'function' || typeof url?.createObjectURL !== 'function') return null
@@ -233,6 +267,7 @@ export class ScriptFilm extends GenericFilm {
       g.imageSmoothingEnabled = true
       g.imageSmoothingQuality = 'high'
       g.drawImage(this.bitmap, Math.round((cw - dw) / 2), Math.round((ch - dh) / 2), dw, dh)
+      if (opts.subtitles === true) bitmapSubtitles(g, this.cue(t - (opts.offset ?? 0)), Math.round((cw - dw) / 2), Math.round((ch - dh) / 2), dw, dh)
     } else if (this.state === 'loading' || this.state === 'ready') {
       g.fillStyle = '#556'
       g.font = `${Math.max(12, Math.round(ch / 30))}px monospace`

@@ -20,11 +20,13 @@ import { EMPTY_PACK, fetchPackAudio, fetchPackText } from './mv-pack-state.mjs'
 import { readHostAudio } from './mv-wav.mjs'
 import { unwrapRemote } from './remote-state.mjs'
 import { audioMimeOf, displayCommand, ffmpegArgs, sniffAudio } from '../shared/mv-audio-protocol.mjs'
+import { MV_LYRICS_EXTENSIONS } from '../shared/mv-pack.mjs'
 import { Alert, Icon, KeyHelp, Popover } from './mv-ui.jsx'
 import { checkAudioForPack, fingerprintAudio, legacyPresetSlot, mediaSlot, retimeWithPack } from './mv-workshop-state.mjs'
 
 /** Everything the panel's Chromium can decode; the content decides, not the extension. */
 export const AUDIO_ACCEPT = 'audio/*,video/*,.mp3,.mp2,.m4a,.m4b,.mp4,.m4v,.mov,.aac,.webm,.mkv,.mka,.ogg,.oga,.opus,.flac,.wav'
+export const LYRICS_ACCEPT = MV_LYRICS_EXTENSIONS.join(',')
 
 const FONT_KEY = 'dsh-mv.canvas.fontSize'
 const readFont = fallback => { try { const v = Number(globalThis.localStorage?.getItem(FONT_KEY)); return v >= 8 && v <= 32 ? v : fallback } catch { return fallback } }
@@ -112,7 +114,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         const dpr = Math.min(2, globalThis.devicePixelRatio || 1)
         const w = Math.max(64, Math.round(box.clientWidth * dpr)), h = Math.max(36, Math.round(box.clientHeight * dpr))
         if (el.width !== w || el.height !== h) { el.width = w; el.height = h }
-        state.script.draw(el.getContext('2d'), Math.max(0, t), { paused: !playing && state.started, ready, offset: offsetsRef.current.subtitleOffset })
+        state.script.draw(el.getContext('2d'), Math.max(0, t), { paused: !playing && state.started, ready, offset: offsetsRef.current.subtitleOffset, subtitles: packRef.current?.pack?.canvas?.subtitles === true })
       } else if (state.film === state.dshpv) {
         // dsh-pv draws pixels (1280x720, letterboxed), not the character grid
         const el = pixel.current
@@ -513,12 +515,12 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
           <h2>{pack.pack.workshop ? '创意工坊的包不带音频：选择你自己的歌曲' : '这个 MV 包没有可用的音频'}</h2>
           <ol>
             <li>选择你自己的音频或视频文件（MP3、M4A/AAC、MP4/MOV/WebM/MKV 视频的音轨、Opus/Ogg、FLAC、WAV 都行，按内容识别，不看扩展名；在本机解码，不上传）。</li>
-            <li>可选：选择歌词（LRC / SRT / lyrics.json），画面会显示字幕。</li>
+            <li>可选：选择歌词（LRC / SRT / VTT / JSON / lyrics.js），画面会显示字幕。JS 只读取静态 LYRICS 数据，不执行代码。</li>
             <li>点 <b>▶ 播放</b>。也可以不选音频，直接静音观看画面。</li>
           </ol>
           <div className="mv-row">
             <button type="button" className="mv-button" onClick={pickAudio}>选择音频…</button>
-            <button type="button" className="mv-button mv-button-secondary" onClick={() => pickText('.lrc,.srt,.vtt,.json,.txt', useLyricsText)}>选择歌词…</button>
+            <button type="button" className="mv-button mv-button-secondary" onClick={() => pickText(LYRICS_ACCEPT, useLyricsText)}>选择歌词…</button>
           </div>
         </div>
       </div>}
@@ -542,7 +544,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
             <div className="mv-source-value">{lyricsInfo ? `${lyricsInfo.name}（${lyricsInfo.count} 句${lyricsInfo.note ? ` · ${lyricsInfo.note}` : ''}）` : '未加载 · 只显示 [ 间奏 ]'}</div>
           </div>
           {lyricsInfo && <button type="button" className="mv-link" onClick={() => void clearLyrics()}>移除</button>}
-          <button type="button" className="mv-button mv-button-secondary mv-button-small" onClick={() => pickText('.lrc,.srt,.vtt,.json,.txt', useLyricsText)}>{lyricsInfo ? '更换' : '选择…'}</button>
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" title="LRC / SRT / VTT / JSON / lyrics.js（只读取静态 LYRICS 数据，不执行代码）" onClick={() => pickText(LYRICS_ACCEPT, useLyricsText)}>{lyricsInfo ? '更换' : '选择…'}</button>
         </div>
         <div className="mv-source">
           <span className="mv-source-icon" aria-hidden="true">▮▮</span>

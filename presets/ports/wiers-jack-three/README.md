@@ -22,7 +22,9 @@ The builder validates the 12-section registry, Three revision and bundle seams,
 refuses an existing output directory and records source/app.js hashes in
 source-provenance.json. It produces readable scenes.js under the 2 MiB limit.
 
-Import the resulting mv.json in plugin 0.9.2+. For actual GPU validation:
+Import the resulting mv.json in plugin 0.9.3+. Pack 1.0.2 enables the panel's
+opt-in bilingual subtitles; select your own local lyrics.js or LRC file.
+For actual GPU validation:
 
 ```sh
 node tools/webgl-smoke.mjs <output-dir> --out dist/webgl-smoke

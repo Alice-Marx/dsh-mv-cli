@@ -59,7 +59,7 @@ export async function generate({ check = false } = {}) {
     metafile: true,
   })
   // Guard: the bundle must never carry user media or lyric/spectrum data.
-  const forbidden = Object.keys(result.metafile.inputs).filter(path => /(?:lyrics\.json|spectrum\.json|\.(?:mp3|m4a|aac|mp4|wav|flac|ogg|lrc|srt))$/i.test(path))
+  const forbidden = Object.keys(result.metafile.inputs).filter(path => /(?:lyrics\.json|spectrum\.json|\.(?:mp3|m4a|aac|mp4|wav|flac|ogg|lrc|srt))$/i.test(path) || (/^\.dsh-plugin\/client\/mv\/lyrics\.mjs$/.test(path) ? false : /(?:^|[\\/])lyrics\.(?:js|mjs)$/i.test(path)))
   if (forbidden.length) throw new Error(`client bundle must not contain media or lyric data: ${forbidden.join(', ')}`)
   const output = result.outputFiles.find(file => file.path.endsWith('.js'))
   if (output === undefined) throw new Error('esbuild did not return a JavaScript bundle')

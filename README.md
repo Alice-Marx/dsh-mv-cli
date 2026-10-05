@@ -4,7 +4,7 @@ English · [简体中文](README.zh.md)
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊 / workshop](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.2**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.3**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
 
 > **Unofficial fan work.** The plugin ships **no** audio, video, lyric text or fonts; you bring your own files and they never leave your computer. The song and lyrics belong to Mili. Since **0.9.0** the plugin itself contains no MV at all and is **MIT** licensed: the two world.execute(me) MVs are one-click installs from 创意工坊, each with its own licence and a link to its original — the ASCII scenes from [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (Bilibili: 野生大K, **used with the author's permission**) and the dsh PV from [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (MIT data + **CC BY-NC-SA 4.0** whale-girl art). See [License and credits](#license-and-credits).
 
@@ -213,6 +213,7 @@ The format is always detected from the file's **content**, not its extension (a 
   - LRC: two lines per timestamp (English and Chinese), or `English / 中文` on one line.
   - SRT/VTT: two text lines per block.
   - Or your local ascii `lyrics.json`.
+  - Since 0.9.3, the original wiers-jack `src/lyrics.js` can be selected directly: only its static `LYRICS = [{ t, en, cn }]` data is read; `t` is seconds and `cn` is the Chinese row. Imports and overlay code never execute. A copy renamed `.json` is also recognized. Choose a local source file, not the Gitee HTML page; lyrics remain local and are not included in workshop uploads.
 - **Spectrum**: optional `spectrum.json`, for frame-identical bars with the original player. Otherwise a live analyser is used.
 - **Keys**:
   - Space/Enter: play/pause

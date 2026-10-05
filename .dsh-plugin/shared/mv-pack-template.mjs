@@ -54,7 +54,7 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
     notice: { type: 'string', maxLength: 4000 },
     duration: { type: 'number', minimum: 1, maximum: 36000, description: 'Song length in seconds; defaults to the audio length.' },
     audio: fileRef('Audio file, relative to this mv.json (no ..) or absolute.', 'Seconds added to the audio clock (sync).'),
-    lyrics: fileRef('LRC / SRT / VTT / lyrics.json ([{time,end,en,zh}]).', 'Seconds added to lyric times.'),
+    lyrics: fileRef('Local LRC / SRT / VTT / lyrics.json ([{time,end,en,zh}]) or lyrics.js / .mjs (static LYRICS = [{t,en,cn}]; never executed).', 'Seconds added to lyric times.'),
     spectrum: fileRef('Optional spectrum.json ({fps, frames: number[48][]}).'),
     canvas: {
       type: 'object', additionalProperties: false, patternProperties: { '^x-': {} },
@@ -63,6 +63,7 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
         assets: { type: 'object', description: 'Data files a renderer reads (name → relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv; since 0.9.1 scene scripts get them in setup(info).assets.', additionalProperties: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] } },
         output: { enum: ['text', 'pixels', 'webgl'], default: 'text', description: 'text: render(t, cols, rows, ctx); pixels (0.9.1+): paint(g, t, width, height, ctx) on Canvas2D; webgl (0.9.2+): setup(info, gl), paint(gl, t, width, height, ctx) on sandbox-owned WebGL2. Bundle dependencies before importing.' },
         size: { type: 'array', items: { type: 'integer' }, minItems: 2, maxItems: 2, default: [1280, 720], description: 'Bitmap scenes: canvas size [width, height] (160–1920 × 90–1080), letterboxed in the panel.' },
+        subtitles: { type: 'boolean', default: false, description: '0.9.3+: opt-in player overlay of the user\'s local lyric cues; only renderer "script" with output "pixels" or "webgl". Keep off if the scene draws its own subtitles.' },
         script: { type: 'string', pattern: '\\.m?js$', description: 'Scene script (.js) for renderer "script": defines render(t, cols, rows, ctx). Runs sandboxed in the panel.' },
         fontSize: { type: 'number', minimum: 8, maximum: 32 },
         bpm: { type: 'number', minimum: 20, maximum: 400, description: 'Song tempo for scene scripts: ctx.beat = { bpm, index, bar, phase, pulse }.' },
@@ -84,7 +85,7 @@ VS Code completion and checks.
 
 1. Copy this folder and rename it (e.g. \`My Song\`).
 2. Put your own audio file next to \`mv.json\` (e.g. \`song.mp3\`) and your lyrics
-   (\`lyrics.lrc\`, \`.srt\`, \`.vtt\` or a \`lyrics.json\`). Replace \`lyrics.example.lrc\`.
+   (\`lyrics.lrc\`, \`.srt\`, \`.vtt\`, \`lyrics.json\` or \`lyrics.js\`). Replace \`lyrics.example.lrc\`.
 3. Edit \`mv.json\`: title, artist, file names.
 4. Harness → MV 放映室 → **导入 MV 包…** → choose the folder (or paste the path of
    \`mv.json\`). Importing never runs anything.
@@ -105,6 +106,7 @@ VS Code completion and checks.
 | \`canvas.fontSize\` | no | 8–32 px. |
 | \`canvas.bpm\`, \`canvas.beatOffset\` | no | Tempo (20–400) and first-beat time for scene scripts (\`ctx.beat\`). |
 | \`canvas.output\`, \`canvas.size\` | no | \`"pixels"\` (0.9.1+) draws Canvas2D with \`paint(g, t, width, height, ctx)\`; \`"webgl"\` (0.9.2+) draws WebGL2 with \`paint(gl, t, width, height, ctx)\`. Size defaults to \`[1280, 720]\`. \`setup(info, gl)\` receives JSON/ImageBitmap assets; WebGL also gets \`info.canvas\`, a minimal facade for an explicitly supplied Three.js context. |
+| \`canvas.subtitles\` | no | \`true\` (0.9.3+) overlays the user's local bilingual lyrics on a \`script\` bitmap (\`pixels\` / \`webgl\`). Defaults to \`false\`; leave off when the scene already draws subtitles. |
 | \`x-dsh-mv-ai.sections\` | no | Song sections \`[{ kind, label, start, end }]\` for scene scripts (\`ctx.section\`). |
 | \`x-dsh-mv-workshop\` | no | Workshop data (id, version, license, author, audio duration / fingerprint); written by 发布到工坊. |
 
@@ -112,6 +114,12 @@ Paths are relative to the folder of \`mv.json\` (\`/\` or \`\\\\\`; \`..\` is no
 or absolute. Unknown fields are errors; put your own data in fields starting with \`x-\`.
 A \`terminal\` section from packs made for versions before 0.6.0 is ignored with a
 warning (the panel no longer runs external players).
+
+Local \`lyrics.js\` / \`.mjs\` files may declare a static \`LYRICS\` array with
+\`{ t, en, cn }\` entries, including \`export const LYRICS = [...]\` as in
+wiers-jack's MV. Only those data literals are read; helper functions are not
+executed, and expressions or imports inside the data are not supported. Do not
+rename JavaScript to JSON. Workshop uploads still exclude lyric text.
 
 ## Audio formats
 
@@ -169,7 +177,7 @@ VS Code 等编辑器提供补全和校验。
 ## 快速开始
 
 1. 复制本文件夹并改名（例如 \`我的歌\`）。
-2. 把你自己的音频（如 \`song.mp3\`）和歌词（\`lyrics.lrc\` / \`.srt\` / \`.vtt\` / \`lyrics.json\`）
+2. 把你自己的音频（如 \`song.mp3\`）和歌词（\`lyrics.lrc\` / \`.srt\` / \`.vtt\` / \`lyrics.json\` / \`lyrics.js\`）
    放到 \`mv.json\` 旁边（替换 \`lyrics.example.lrc\`）。
 3. 编辑 \`mv.json\`：歌名、歌手、文件名。
 4. Harness → MV 放映室 → **导入 MV 包…** → 选择该文件夹（或粘贴 \`mv.json\` 的路径）。导入不会运行任何程序。
@@ -190,11 +198,16 @@ VS Code 等编辑器提供补全和校验。
 | \`canvas.fontSize\` | 否 | 8–32 像素。 |
 | \`canvas.bpm\`、\`canvas.beatOffset\` | 否 | 歌曲速度（20–400）和第一拍时间，供场景脚本使用（\`ctx.beat\`）。 |
 | \`canvas.output\`、\`canvas.size\` | 否 | \`"pixels"\`（0.9.1+）用 \`paint(g, t, width, height, ctx)\` 画 Canvas2D；\`"webgl"\`（0.9.2+）用 \`paint(gl, t, width, height, ctx)\` 画 WebGL2。默认大小 \`[1280, 720]\`。\`setup(info, gl)\` 接收 JSON/ImageBitmap 素材；WebGL 还收到供 Three.js 显式上下文使用的最小 \`info.canvas\` 接口。 |
+| \`canvas.subtitles\` | 否 | \`true\`（0.9.3+）在 \`script\` 的 \`pixels\` / \`webgl\` 画面上叠加用户本地双语歌词。默认 \`false\`；场景已自行画字幕时不要打开，以免重复。 |
 | \`x-dsh-mv-ai.sections\` | 否 | 歌曲段落 \`[{ kind, label, start, end }]\`，供场景脚本使用（\`ctx.section\`）。 |
 | \`x-dsh-mv-workshop\` | 否 | 创意工坊信息（id、版本、许可、作者、音频时长 / 指纹），由「发布到工坊」写入。 |
 
 路径相对于 \`mv.json\` 所在文件夹（\`/\` 或 \`\\\\\` 都行，不允许 \`..\`），也可以写绝对路径。
 未知字段会报错；自定义数据请用 \`x-\` 开头的字段。0.6.0 之前的包里的 \`terminal\` 字段会被忽略并给出提示（面板不再运行外部播放器）。
+
+本地 \`lyrics.js\` / \`.mjs\` 支持静态 \`LYRICS\` 数组中的 \`{ t, en, cn }\` 数据，
+包括 wiers-jack MV 使用的 \`export const LYRICS = [...]\`。只读取数据字面量，不执行
+后面的辅助函数，也不支持数组内的表达式或导入。无需把 JS 改名为 JSON；创意工坊仍不上传歌词文本。
 
 ## 音频格式
 

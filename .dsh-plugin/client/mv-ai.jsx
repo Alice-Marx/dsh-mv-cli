@@ -7,7 +7,8 @@
 import React from 'react'
 import { Alert, Icon } from './mv-ui.jsx'
 import { errorText } from './mv-info.mjs'
-import { AUDIO_ACCEPT } from './canvas-mv.jsx'
+import { AUDIO_ACCEPT, LYRICS_ACCEPT } from './canvas-mv.jsx'
+import { linesFromText, linesToLrc } from '../shared/mv-align.mjs'
 import { createAiPack, inspectAiAudio, openBlankSession, sessionSupport, startAgentSession } from './mv-ai-state.mjs'
 import { directoryPicker, loadPackFromHost, rememberPack } from './mv-pack-state.mjs'
 import { looksTimed } from '../shared/mv-ai-prompt.mjs'
@@ -83,8 +84,18 @@ export function AiPackDialog({ api, harness, info, onClose, onLoaded, onRecent }
   }
   const chooseLyrics = () => {
     const input = document.createElement('input')
-    input.type = 'file'; input.accept = '.lrc,.txt,.srt,.vtt'
-    input.onchange = async () => { const chosen = input.files?.[0]; if (chosen) setLyrics(await chosen.text()) }
+    input.type = 'file'; input.accept = LYRICS_ACCEPT
+    input.onchange = async () => {
+      const chosen = input.files?.[0]
+      if (!chosen) return
+      try {
+        const body = await chosen.text()
+        const parsed = linesFromText(body, { name: chosen.name })
+        // The Host expects timed lyrics as LRC, never a JS module renamed .lrc.
+        setLyrics(parsed.timed ? linesToLrc(parsed.lines) : body)
+        setError('')
+      } catch (failure) { setError(errorText(failure, '无法解析歌词。')) }
+    }
     input.click()
   }
   const chooseDir = async () => { try { const dir = await pick?.(); if (dir) setParentDir(dir) } catch (failure) { setError(errorText(failure, '无法打开文件夹选择器。')) } }
