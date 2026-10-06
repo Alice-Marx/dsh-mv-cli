@@ -9,6 +9,7 @@
  */
 import { chatAt, drawPage, PAGE_W, PAGE_H } from './chat.mjs'
 import { attentionTokens, KEYWORDS, lineAt, tokenId, tokenize, typed } from './band.mjs'
+import { drawRasterLayer, rasterFrameAt } from './raster.mjs'
 
 export const W = 1280, H = 720
 export const DSHPV_DURATION = 211.913
@@ -21,10 +22,10 @@ const BEAT = 60 / 130, FIRST_BEAT = 0.1587
 const SCR = '!<>-_\\/[]{}=+*^?#%$&@01|~:;'
 const LEFT = [24, 56, 384, 604], INNER = [3, 9, 3, 3], RIGHT = [392, 44, 1268, 608]
 const FONT = [
-  '"DejaVu Sans Mono", Consolas, "Cascadia Mono", Menlo, monospace',
-  'bold "DejaVu Sans Mono", Consolas, "Cascadia Mono", Menlo, monospace',
-  'bold "Space Mono", "DejaVu Sans Mono", Consolas, monospace',
-  '"Anton", Impact, "Arial Narrow Bold", "Arial Black", sans-serif',
+  'Consolas, "DejaVu Sans Mono", "Cascadia Mono", Menlo, monospace',
+  'bold Consolas, "DejaVu Sans Mono", "Cascadia Mono", Menlo, monospace',
+  'bold "DshMvPvSpaceMono", "Space Mono", Consolas, "DejaVu Sans Mono", monospace',
+  '"DshMvPvAnton", "Anton", Impact, "Arial Narrow Bold", "Arial Black", sans-serif',
   '"Microsoft YaHei", "Noto Sans CJK SC", "PingFang SC", sans-serif',
   '"Segoe UI Symbol", "DejaVu Sans", "Segoe UI", sans-serif',
 ]
@@ -116,7 +117,7 @@ const PROPS = { cat: '🐱', your_cat: '🐈', eggplant: '🍆', tomato: '🍅' 
 export class DshPvFilm {
   constructor({ energy = () => 0 } = {}) {
     this.energy = energy
-    this.timeline = null; this.chat = null; this.band = null; this.art = {}
+    this.timeline = null; this.chat = null; this.band = null; this.art = {}; this.raster = null
     this.lines = []; this.tokens = null
     this.duration = DSHPV_DURATION
     this.buffer = null; this.page = null; this.trail = null
@@ -124,8 +125,8 @@ export class DshPvFilm {
     this.status = 'loading'
   }
 
-  setData({ timeline, chat, band, art = {} }) {
-    this.timeline = prepareTimeline(timeline); this.chat = chat; this.band = band; this.art = art
+  setData({ timeline, chat, band, art = {}, raster = null }) {
+    this.timeline = prepareTimeline(timeline); this.chat = chat; this.band = band; this.art = art; this.raster = raster
     this.status = 'ready'
   }
 
@@ -179,7 +180,9 @@ export class DshPvFilm {
     const lay = shot.lay?.[0] ?? 'split'
     if (tc >= tl.hardCut) { this.post(ctx, tc, 0.25); ctx.restore(); return }
 
+    drawRasterLayer(ctx, this.raster, tc, 'under')
     this.ops(ctx, kf, tc, r)
+    drawRasterLayer(ctx, this.raster, tc, 'over')
     // her art in the shots whose upstream raster layers carried it
     this.art_(ctx, shot, kf, tc, r)
     const chrome = !['fullbleed', 'cinema', 'raw'].includes(lay)
@@ -305,6 +308,11 @@ export class DshPvFilm {
 
   art_(ctx, shot, kf, t, r) {
     const fn = shot.fn
+    // Real compositor surfaces replace these old approximations. Keep the
+    // live lyric banners below: their text still comes from the user's cues.
+    if (rasterFrameAt(this.raster, t)?.ops.length && (
+      fn === 'exec_hit' && shot.lay[0] === 'split' || fn === 'whale_fall' || fn === 'last_execution'
+    )) return
     if (fn === 'exec_hit' && shot.lay[0] === 'split') {
       // the split cuts: her, red, behind the EXECUTION tape
       const img = this.image(t > 156 ? 'frightened' : 'angry')
@@ -513,7 +521,9 @@ export class DshPvFilm {
     if (prev && strength > 0) {
       ctx.save()
       ctx.globalCompositeOperation = 'lighter'
-      if (this.lastT !== undefined && Math.abs(t - this.lastT) < 0.2) { ctx.globalAlpha = 0.1 * strength; ctx.drawImage(prev, 0, 0) }
+      // Accumulate only forward-moving frames. Re-rendering a paused frame or
+      // seeking backwards must not brighten it based on RAF count/history.
+      if (this.lastT !== undefined && t > this.lastT && t - this.lastT < 0.2) { ctx.globalAlpha = 0.1 * strength; ctx.drawImage(prev, 0, 0) }
       if ('filter' in ctx && this.bloom !== false) {
         ctx.filter = 'blur(4px)'; ctx.globalAlpha = 0.3 * strength
         ctx.drawImage(this.buffer, 0, 0)

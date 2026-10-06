@@ -60,7 +60,7 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
       type: 'object', additionalProperties: false, patternProperties: { '^x-': {} },
       properties: {
         renderer: { enum: MV_RENDERERS_BUILTIN, default: 'generic', description: 'generic | script (needs canvas.script) | dsh-pv (needs canvas.assets; used by the dsh PV workshop pack).' },
-        assets: { type: 'object', description: 'Data files a renderer reads (name → relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv; since 0.9.1 scene scripts get them in setup(info).assets.', additionalProperties: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] } },
+        assets: { type: 'object', description: 'Data files a renderer reads (name → relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv; since 0.9.1 scene scripts get them in setup(info).assets. Since 0.9.5 only dsh-pv font-head / font-banner may name the supported local OFL TTF files.', properties: { 'font-head': { const: 'fonts/SpaceMono-Bold.ttf' }, 'font-banner': { const: 'fonts/Anton-Regular.ttf' } }, additionalProperties: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] } },
         output: { enum: ['text', 'pixels', 'webgl'], default: 'text', description: 'text: render(t, cols, rows, ctx); pixels (0.9.1+): paint(g, t, width, height, ctx) on Canvas2D; webgl (0.9.2+): setup(info, gl), paint(gl, t, width, height, ctx) on sandbox-owned WebGL2. Bundle dependencies before importing.' },
         size: { type: 'array', items: { type: 'integer' }, minItems: 2, maxItems: 2, default: [1280, 720], description: 'Bitmap scenes: canvas size [width, height] (160–1920 × 90–1080), letterboxed in the panel.' },
         subtitles: { type: 'boolean', default: false, description: '0.9.3+: opt-in player overlay of local or installed workshop lyric cues; only renderer "script" with output "pixels" or "webgl". Keep off if the scene draws its own subtitles.' },
@@ -69,6 +69,7 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
         bpm: { type: 'number', minimum: 20, maximum: 400, description: 'Song tempo for scene scripts: ctx.beat = { bpm, index, bar, phase, pulse }.' },
         beatOffset: { type: 'number', minimum: -60, maximum: 60, description: 'Time of the first beat in seconds (default 0).' },
       },
+      allOf: [{ if: { required: ['assets'], properties: { assets: { anyOf: [{ required: ['font-head'] }, { required: ['font-banner'] }] } } }, then: { required: ['renderer'], properties: { renderer: { const: 'dsh-pv' } } } }],
     },
     'x-dsh-mv-workshop': {
       type: 'object', additionalProperties: true,
@@ -83,6 +84,9 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
         lyricsCredit: { type: 'string', minLength: 1, maxLength: 500, description: 'Required lyric author and translator attribution, kept with the installed pack.' },
         lyricsSource: { type: 'string', maxLength: 300, pattern: '^https://[^\\s"<>]{3,300}$', description: 'Optional HTTPS source or authorization/guideline link; not a remote lyric file to load.' },
         lyricsTiming: { type: 'string', description: 'Optional lyrics.timing.json: pure cue times and normalized-text hashes only, never text.' },
+        fontsLicense: { const: 'OFL-1.1', description: 'Required when dsh-pv includes its supported OFL font files; not inherited from scene-code licensing.' },
+        fontsCredit: { type: 'string', minLength: 1, maxLength: 500, description: 'Required original font authors/copyright attribution.' },
+        fontsNotice: { const: 'fonts/NOTICE.md', description: 'Required bundled font attribution notice; include each matching fonts/OFL_*.txt in full.' },
       },
     },
     terminal: { deprecated: true, description: 'Ignored since 0.6.0: the panel no longer runs external TUI players.' },
@@ -158,6 +162,22 @@ remain supported and can still use a local lyric file.
 - \`spectrum.file\` may reference local \`{ fps, bands?, frames }\` JSON with
   consistent numeric bands in 0–1 (not audio samples or base64 music). No spectrum
   file is necessary when using the live analyser. These packs require 0.9.4+.
+
+## Optional dsh-pv fonts (0.9.5+)
+
+The dsh-pv renderer may declare \`canvas.assets["font-head"] = "fonts/SpaceMono-Bold.ttf"\`
+and \`canvas.assets["font-banner"] = "fonts/Anton-Regular.ttf"\`. Each is one local TTF
+file, at most 512 KiB, loaded from pack bytes with fixed scoped font families and
+weights. Other font keys, font shards, URLs and script-supplied font faces are
+not supported. Declared fonts must load successfully; undeclared fonts preserve
+the older local/system fallback behavior.
+
+When publishing them, declare \`fontsLicense: "OFL-1.1"\`, \`fontsCredit\` and
+\`fontsNotice: "fonts/NOTICE.md"\` in \`x-dsh-mv-workshop\`. Include that attribution
+notice and the matching full \`fonts/OFL_spacemono.txt\` / \`fonts/OFL_anton.txt\`.
+These font terms are independent of the visual code and artwork. Windows fonts
+such as Consolas, Microsoft YaHei and Segoe UI are only used when installed on
+the listener's computer; do not copy their font files or glyph atlases into a pack.
 
 ## Audio formats
 
@@ -264,6 +284,20 @@ VS Code 等编辑器提供补全和校验。
   512 KiB；\`lyrics.timing.json\` 始终只允许时间和哈希，不含文字。
 - \`spectrum.file\` 可引用包内 \`{ fps, bands?, frames }\` JSON，频段宽度一致、数值 0–1，
   不能携带音频采样或 base64 音乐；使用实时分析时不必提供。此类完整包需要插件 0.9.4+。
+
+## 可选的 dsh-pv 字体（0.9.5+）
+
+dsh-pv 渲染器可声明 \`canvas.assets["font-head"] = "fonts/SpaceMono-Bold.ttf"\`
+和 \`canvas.assets["font-banner"] = "fonts/Anton-Regular.ttf"\`。每项只能是一个包内 TTF
+文件，限 512 KiB，以固定的作用域字体名和字重从包内字节加载；不接受其他字体键、
+字体分片、URL 或脚本指定的字体名称。已声明字体加载失败会明确报错；旧包未声明字体时，
+继续使用本机 / 系统后备字体。
+
+发布时在 \`x-dsh-mv-workshop\` 中声明 \`fontsLicense: "OFL-1.1"\`、
+\`fontsCredit\` 和 \`fontsNotice: "fonts/NOTICE.md"\`，随包保留该署名说明及对应的
+\`fonts/OFL_spacemono.txt\` / \`fonts/OFL_anton.txt\` 许可全文。字体许可不继承画面代码或
+立绘的许可。Consolas、微软雅黑、Segoe UI 等 Windows 字体只使用听众本机已安装版本，
+不能把字体文件或逐字符图集复制进工坊包。
 
 ## 音频格式
 

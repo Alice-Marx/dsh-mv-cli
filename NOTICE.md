@@ -25,6 +25,8 @@ their sources stay in this repository under `presets/`, which is not part of the
 《world.execute(me);》的作曲、作词、录音及其歌词文本的一切权利归 **Mili** 及其权利人所有。
 插件 npm 本体不含歌曲、真实歌词或音乐录音；用户自行提供音乐。自0.9.4起，工坊可分发明确授权并署名的歌词、译文、时间轴、频谱及画面资源，安装后自动加载。Mili 同人完整包的歌词使用依据为 https://projectmili.com/copyright-guidelines ，限非商业同人用途，并非代码 MIT 对歌词授予许可；具体资源分别按包内 NOTICE / LYRICS-NOTICE 与字段声明使用。
 
+0.9.5 可加载工坊内独立声明的 OFL-1.1 字体与图像图集；npm 本体不含字体或舞者图像。新舞者基于用户提供的 DeepSeek1.png 重新制作，用户确认非商业同人公开，保留原角色署名并标注 AI 辅助；不是上游未公开舞者或第三方 MMD 素材。Windows 字体仅本机使用，不分发字体文件、转换字体或逐字符字模；依据 https://learn.microsoft.com/en-us/typography/fonts/font-faq 。
+
 All rights in "world.execute(me);" (composition, lyrics, recordings) belong to Mili and the respective rights
 holders. The npm plugin includes no song data. Workshop packs may include separately licensed and credited lyrics, translations and non-audio resources; music recordings remain user-provided. Mili caption terms for non-commercial fan MVs are independent from visual-code MIT and are recorded in each pack's LYRICS-NOTICE.
 

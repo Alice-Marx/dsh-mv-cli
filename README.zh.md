@@ -4,9 +4,11 @@
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.4**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.5**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
 
 **0.9.4 完整包：只需自备音乐。** 已授权歌词、译文、逐句/逐词时间、频谱与声明的画面资源随工坊下载并自动加载。Three / Wallpaper 更新至 **1.1.0**，Polytech Tree 更新至 **1.2.0**。歌词使用条款独立于代码 MIT；Mili 歌词用于遵循[官方条款](https://projectmili.com/copyright-guidelines)的非商业同人 MV。npm 插件本体仍不带歌曲或真实歌词。旧版仅时间轴包继续兼容；旧手选缓存不会盖住新版自带歌词，新版里主动选择的替代歌词仅在本版本记住。
+
+**0.9.5 dsh PV 资源适配：** 支持随包的有界图像时间轴、多页图集，以及 Space Mono Bold / Anton Regular 的 OFL 字体。新舞者根据用户提供的角色立绘重新制作、注明 AI 辅助，**不是未公开原片舞者帧的恢复**。Consolas、微软雅黑和 Segoe UI Symbol 仅使用本机已安装字体；不打包 Windows 字体文件或逐字字模。新资源包要求 0.9.5；旧包不必添加这些可选资源。
 
 > **非官方同人作品。** 插件**不附带**任何音频、视频、歌词文本或字体；文件由你自己提供，只在本机读取，不会上传。歌曲与歌词的权利归 Mili。自 **0.9.0** 起插件本身不再内置任何 MV，许可为纯 **MIT**：两个 world.execute(me) MV 改为在创意工坊一键安装，各自按自己的许可分发并标明原作——ASCII 场景来自 [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii)（Bilibili「野生大K」，**经原作者许可**），dsh PV 来自 [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv)（数据 MIT + **CC BY-NC-SA 4.0** 鲸鱼娘立绘）。见 [许可与致谢](#许可与致谢)。
 
@@ -268,7 +270,7 @@
 
 **怎么做的：** 在本机用上游的合成渲染器跑了一遍，把每个镜头 2–6 个关键帧（约每 0.5 s 一个）的绘制指令（文字、矩形、线条、颜色、位置）、DeepSeek 窗口的布局与对话内容、各层透明度记录下来，以工坊包里的 `data/timeline-*.json`、`data/chat-*.json`、`data/band.json` 分发（≤ 512 KB 的分片，约 4.4 MB，源文件在 `presets/dsh-pv/data/`），由 `canvas.assets` 列出；渲染器（MIT）在插件里。画布按时间回放关键帧，新出现的文字做解码式打字，并补上动态部分：随实时音量跳动的心跳线、右侧 ops 滚动条、stdout 词元条、DeepSeek 窗口（原生重画，不用 DeepSeek 前端的 CSS / 图标 / 字体）、EXECUTION 红色分屏与胶带、结尾鲸落，以及光迹、泛光、扫描线、暗角等后期效果。数据里**不含任何歌词文字**：歌词只以 sha256 和时间出现，构建脚本还检查了不存在任何 4 词以上的歌词片段，歌词全部在运行时取自你的文件。
 
-**还原度：** 镜头结构、时间、文字、布局、对话窗口和歌词条与原 PV 一致；上游的几类位图层（字符舞者、热力格、照片 / 贴图）没有移植，用近似画面代替，「IF I CAN」等大字横幅是近似重画。字体使用系统字体（DejaVu Sans Mono / Consolas / 微软雅黑等），不附带上游字体。
+**还原度：** 旧 1.0.0 包用近似图形代替上游位图层。0.9.5 的完整包构建器补入实际合成器导出的图像层，舞者改用新制动作；并非未公开原片或第三方 MMD 缓存的复制。图像帧有采样和压缩，字体在不同系统仍可能略有差异。可分发的 Space Mono / Anton 随包附 OFL 许可；Windows 字体只能来自本机合法安装。[Microsoft 字体说明](https://learn.microsoft.com/en-us/typography/fonts/font-faq)。
 
 **立绘：** 工坊包里带了上游的 8 张鲸鱼娘表情和 1 张女仆立绘（缩到 200×360 的 WebP），按 **CC BY-NC-SA 4.0** 授权（整包许可 `CC-BY-NC-SA-4.0`），署名链与改动说明见包内 `art/NOTICE.md`（本仓库 `presets/dsh-pv/art/`）。这些角色设计据上游说明是用 AI 图像模型（GPT Image 2）生成的。没有立绘时渲染器改画占位剪影。
 
@@ -307,7 +309,7 @@ npm run pack:local        # dist/ljwei-stak-dsh-mv-cli-<版本>.tgz（prepack �
 ## 已知限制
 
 - 与原版 Python 渲染逐帧对照：1232 个参考帧中约 2% 不一致，全部位于 75–81 s 的 legacy mesh 段，是浮点末位 / z-buffer 平局造成的个别字符差异。
-- dsh PV：时间线固定为原曲长度 211.9 s；其他剪辑版本需要用音频同步偏移对齐，长度不同的版本后半段会错位。上游位图层是近似画面；没有附带字体，不同系统上字形略有差异。立绘为 CC BY-NC-SA 4.0（非商业）。工坊包约 4.8 MB，需要 0.9.0 及以上（旧版上限 4 MB）。
+- dsh PV：时间线固定为原曲长度 211.9 s；其他剪辑版本需要用音频同步偏移对齐，长度不同的版本后半段会错位。新舞者是 AI 辅助重制，不是原片隐藏素材。Windows 字体不随包分发，不同系统字形可能略有差异。旧 1.0.0 包继续兼容；新图层/字体要求 0.9.5。仅 dsh-pv 包可达 64 文件 / 24 MiB，单个图像仍限 1 MiB、JSON 512 KiB，图集解码总像素上限 64 Mi；其他包保留 40 文件 / 8 MiB。
 - 「用 AI 制作新 MV」需要 Harness 客户端提供 Agent 会话接口（否则请复制粘贴提示词）。场景脚本运行在 Blob Web Worker 里；如果某个 Harness 版本禁止 blob worker，脚本包会用通用画面播放。Agent 工具依赖 Host 的 `tools` 服务；没有时 Agent 按 AGENT.md 自查。
 - 超过 1 GB 的音频文件会被拒绝；单个 WAV 缓存最大 1.5 GB（约 2.5 小时）。
 - `79c4e5…` 的偏移为推测值。

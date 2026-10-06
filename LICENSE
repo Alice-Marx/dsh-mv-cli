@@ -35,3 +35,6 @@ NOT covered by this licence (repository only, not in the npm package):
 - presets/dsh-pv/art/: whale-girl images licensed CC BY-NC-SA 4.0 (licence text
   and attribution chain in that folder). presets/dsh-pv/data/ is MIT
   (MisakaZentai). Both are published as the "world-execute-me-dsh-pv" workshop pack.
+- presets/dsh-pv-remake/dance-poses-v1.png: AI-assisted derived character
+  artwork, CC BY-NC-SA 4.0 with its independent NOTICE and source attribution;
+  not covered by this MIT licence and not included in npm.

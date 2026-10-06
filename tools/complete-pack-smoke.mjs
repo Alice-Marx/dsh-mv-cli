@@ -15,6 +15,7 @@ import { parsePackRead } from '../.dsh-plugin/shared/mv-pack.mjs'
 import { parseLyrics } from '../.dsh-plugin/shared/mv-lyrics.mjs'
 import { validateWorkshopPack, WORKSHOP_INDEX_FORMAT } from '../.dsh-plugin/shared/mv-workshop.mjs'
 const require = createRequire(import.meta.url)
+const clientVersion = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version
 const { chromium } = require(process.env.DSH_MV_PLAYWRIGHT || 'playwright')
 const [outArg, ...packArgs] = process.argv.slice(2)
 assert.ok(outArg && packArgs.length, 'usage: complete-pack-smoke.mjs <output-dir> <pack-dir> ...')
@@ -31,7 +32,7 @@ async function collect(root, sub = '') {
 }
 for (const arg of packArgs) {
   const root = resolve(arg), files = await collect(root), raw = JSON.parse(await readFile(join(root, 'mv.json'), 'utf8')), id = raw['x-dsh-mv-workshop'].id
-  const checked = await validateWorkshopPack({ id, files, readText: async path => (await readFile(join(root, path))).toString('utf8') })
+  const checked = await validateWorkshopPack({ id, files, readText: async path => (await readFile(join(root, path))).toString('utf8'), readBytes: path => readFile(join(root, path)) })
   assert.deepEqual(checked.errors, [], id)
   assert.ok(files.every(f => !/\.(mp3|wav|m4a|mp4|flac|ogg)$/i.test(f.path)), 'no music')
   catalogue.push({ ...checked.meta, files: files.map(({ bytes, ...file }) => file) })
@@ -53,7 +54,7 @@ for (const entry of catalogue) {
 const clientSource = `import React from 'react';import {createRoot} from 'react-dom/client';import {CanvasMv} from './.dsh-plugin/client/canvas-mv.jsx';import {openMediaStore,putMedia} from './.dsh-plugin/client/mv/media-store.mjs';import {mediaSlot} from './.dsh-plugin/client/mv-workshop-state.mjs';
 let root=null;window.playerRef=React.createRef();window.synthetic=false;
 window.mountPack=async(pack,seed=false)=>{if(root){root.unmount();root=null;}if(seed){const db=await openMediaStore();await putMedia(db,mediaSlot(pack,'lyrics'),{name:'stale.json',text:JSON.stringify([{time:0,en:'STALE CACHE MUST NOT WIN'}])});}root=createRoot(document.getElementById('root'));root.render(React.createElement(CanvasMv,{pack,api:{packRead:request=>window.hostRead(request,window.synthetic)},ref:window.playerRef}));};`
-const bundle = await build({ stdin: { contents: clientSource, resolveDir: resolve(import.meta.dirname, '..'), sourcefile: 'complete-pack-qa.jsx' }, bundle: true, write: false, format: 'iife', platform: 'browser', target: 'es2020', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment', define: { __DSH_MV_CLIENT_VERSION__: '"0.9.4"', 'process.env.NODE_ENV': '"production"' } })
+const bundle = await build({ stdin: { contents: clientSource, resolveDir: resolve(import.meta.dirname, '..'), sourcefile: 'complete-pack-qa.jsx' }, bundle: true, write: false, format: 'iife', platform: 'browser', target: 'es2020', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment', define: { __DSH_MV_CLIENT_VERSION__: JSON.stringify(clientVersion), 'process.env.NODE_ENV': '"production"' } })
 const css = await readFile(new URL('../.dsh-plugin/client/mv.css', import.meta.url), 'utf8')
 const server = createServer((req, res) => { res.setHeader('Content-Type', 'text/html'); res.end('<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#10141c;color:white}#root{width:960px}</style><div id="root"></div>') })
 await new Promise(r => server.listen(0, '127.0.0.1', r))

@@ -13,7 +13,8 @@ import { DEFAULT_DURATION, FilmClock, frameTime, keyAction, stepCue, stepOffset 
 import { GenericFilm, genericChapters, timeText } from './mv/generic-film.mjs'
 import { ScriptFilm, isBitmapSceneOutput } from './mv/script-film.mjs'
 import { DshPvFilm, DSHPV_CHAPTERS, DSHPV_DURATION } from './mv/dshpv/film.mjs'
-import { hasDshPvAssets, loadDshPv, loadSceneAssets, disposeSceneAssets, packAssetReader } from './mv/dshpv/assets.mjs'
+import { hasDshPvAssets, loadDshPv, disposeDshPvData, loadSceneAssets, disposeSceneAssets, packAssetReader } from './mv/dshpv/assets.mjs'
+import { loadDshPvFonts } from './mv/dshpv/fonts.mjs'
 import { matchBand } from './mv/dshpv/band.mjs'
 import { CalibEditor } from './mv-calib.jsx'
 import { EMPTY_PACK, fetchPackAudio, fetchPackText } from './mv-pack-state.mjs'
@@ -90,7 +91,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         },
       }),
       dshpv: new DshPvFilm({ energy: t => state.energy(t) }),
-      dshpvLoad: null,
+      dshpvLoad: null, dshpvData: null, dshpvFonts: null, dshpvOwner: null, disposed: false,
       film: null,
       renderer: new GridRenderer(canvas.current, { fontSize }),
       clock: new FilmClock({ audio: audio.current }),
@@ -134,7 +135,12 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     raf = requestAnimationFrame(frame)
     const onFs = () => setFullscreen(document.fullscreenElement === wrap.current)
     document.addEventListener('fullscreenchange', onFs)
-    return () => { cancelAnimationFrame(raf); document.removeEventListener('fullscreenchange', onFs); live.close(); state.script.stop() }
+    return () => {
+      state.disposed = true; state.dshpvOwner = null
+      disposeDshPvData(state.dshpvData); state.dshpvFonts?.dispose()
+      state.dshpvData = null; state.dshpvFonts = null
+      cancelAnimationFrame(raf); document.removeEventListener('fullscreenchange', onFs); live.close(); state.script.stop()
+    }
   }, [])
 
   React.useEffect(() => { engine.current?.renderer.setFontSize(fontSize); storeFont(fontSize) }, [fontSize])
@@ -234,6 +240,15 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   React.useEffect(() => {
     let cancelled = false
     const state = engine.current
+    const dshpvOwner = Symbol('dsh-pv pack load')
+    const releaseDshPv = () => {
+      disposeDshPvData(state.dshpvData); state.dshpvFonts?.dispose()
+      state.dshpvData = null; state.dshpvFonts = null; state.dshpvFor = ''
+      state.dshpv.timeline = null; state.dshpv.chat = null; state.dshpv.band = null
+      state.dshpv.art = {}; state.dshpv.raster = null; state.dshpv.lastT = undefined
+    }
+    state.dshpvOwner = dshpvOwner
+    releaseDshPv()
     void (async () => {
       dbRef.current ??= await openMediaStore()
       if (cancelled) return
@@ -254,11 +269,29 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         state.dshpvFor = `${pack.id}@${pack.loadedAt ?? ''}`
         state.dshpv.status = 'loading'
         state.dshpvLoad = read
-          ? loadDshPv(read).then(data => {
-            state.dshpv.setData(data)
-            if (data.missingArt.length) setSceneNote(`dsh-pv：这个包缺少 ${data.missingArt.length} 张立绘，改用占位剪影。`)
-            return data
-          }).catch(failure => { state.dshpv.status = 'error'; state.dshpvFor = ''; setError(`无法加载 dsh-pv 资源：${failure?.message ?? failure}`); return null })
+          ? (async () => {
+            let data = null, fonts = null
+            try {
+              data = await loadDshPv(read)
+              if (cancelled || state.disposed || state.dshpvOwner !== dshpvOwner) {
+                disposeDshPvData(data); return null
+              }
+              fonts = await loadDshPvFonts(read)
+              if (cancelled || state.disposed || state.dshpvOwner !== dshpvOwner) {
+                disposeDshPvData(data); fonts.dispose(); return null
+              }
+              state.dshpvData = data; state.dshpvFonts = fonts
+              state.dshpv.setData(data)
+              if (data.missingArt.length) setSceneNote(`dsh-pv：这个包缺少 ${data.missingArt.length} 张立绘，改用占位剪影。`)
+              return data
+            } catch (failure) {
+              disposeDshPvData(data); fonts?.dispose()
+              if (!cancelled && !state.disposed && state.dshpvOwner === dshpvOwner) {
+                state.dshpv.status = 'error'; state.dshpvFor = ''; setError(`无法加载 dsh-pv 资源：${failure?.message ?? failure}`)
+              }
+              return null
+            }
+          })()
           : Promise.resolve(null)
         if (!read) { state.dshpv.status = 'error'; state.film = state.generic; setSceneNote('这个 MV 包使用 dsh-pv 渲染器，但没有附带它的数据（canvas.assets）。0.9.0 起插件不再内置这些数据：请到「创意工坊」安装「world.execute(me); dsh PV」包。现在改用通用画面。') }
       }
@@ -348,7 +381,10 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         }
       }
     })()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+      if (state.dshpvOwner === dshpvOwner) { state.dshpvOwner = null; releaseDshPv() }
+    }
   }, [pack.id, pack.loadedAt])
 
   const clearAudio = () => {

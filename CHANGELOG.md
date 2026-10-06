@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.5 — 2026-10-07
+
+- dsh-pv can load a bounded optional raster timeline and image atlases to restore missing source image layers without changing the old vector/live-caption pipeline.
+- Bundled Space Mono Bold and Anton Regular use a bounded TrueType loader with independent OFL attribution. Consolas, Microsoft YaHei and Segoe UI Symbol remain local system fonts; proprietary font files are not redistributed.
+- Cancelled loads, pack switches and unmount release decoded images and font references.
+- Only dsh-pv packs allow 64 files / 24 MiB for the additional raster pages and licence attachments; ordinary packs retain 40 files / 8 MiB. Image/data single-file and decoded-atlas memory bounds remain enforced.
+- The whale-girl dancer is newly remade from the user-provided character reference, not the unpublished original MMD/AI frames; source and AI-use notices accompany the pack.
+- Complete dsh PV 1.1.0 includes 98 English cues, 97 shots with remade geometry, 1,658 raster samples and 14 atlas pages, with no song audio. Real Chrome verifies seeks, movement, both fonts, legacy manifests and cancelled-load cleanup. Paused frames no longer accumulate history-dependent glow; source raster artwork replaces the old standing/EXECUTION approximations.
+- Verified with 219 passing tests, one optional skip, real-browser full-pack installation and all decoded resources released on switch/unmount.
+
 ## 0.9.4 — 2026-10-06
 
 - **Complete workshop packs / 完整工坊包**: only music recordings remain user-provided. Explicitly licensed lyrics, translations, cue/word timing, spectrum and declared visual assets can be published, installed and loaded together; lyric terms and credits are independent from code licences.

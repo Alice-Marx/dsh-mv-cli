@@ -199,7 +199,7 @@ export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = wo
           await writeFile(target, bytes, { flag: 'wx' })
         }
         // Re-check the downloaded pack with the same rules as the workshop CI.
-        const result = await validateWorkshopPack({ id, files: entry.files.map(f => ({ path: f.path, size: f.size })), readText: path => readFile(join(temp, ...path.split('/')), 'utf8') })
+        const result = await validateWorkshopPack({ id, files: entry.files.map(f => ({ path: f.path, size: f.size })), readText: path => readFile(join(temp, ...path.split('/')), 'utf8'), readBytes: path => readFile(join(temp, ...path.split('/'))) })
         if (result.errors.length) throw new Error(`下载的包没有通过检查：\n${result.errors.join('\n')}`)
         await writeFile(join(temp, STATE_FILE), json({ id, version: entry.version, commit: value.commit, title: entry.title, artist: entry.artist, license: entry.license, author: entry.author, duration: entry.duration, installedAt: now().toISOString(), files: entry.files, source: WORKSHOP_REPO }))
         const dir = join(root, id)
@@ -386,7 +386,7 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
   }
   // Preserve companion attribution, not arbitrary files or hidden audio.
   for (const parent of new Set([...copiedAssets].map(ref => dirname(ref)).filter(dir => dir !== '.'))) {
-    for (const name of ['NOTICE.md', 'LICENSE.txt', 'LICENSE.md']) {
+    for (const name of ['NOTICE.md', 'LICENSE.txt', 'LICENSE.md', ...(parent.replace(/\\/g, '/') === 'fonts' ? ['OFL_spacemono.txt', 'OFL_anton.txt'] : [])]) {
       const ref = `${parent.replace(/\\/g, '/')}/${name}`
       try {
         const path = packFilePath(packDir, ref), entry = await stat(path)
@@ -412,6 +412,9 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
     audio: { ...(duration ? { duration: Math.round(duration * 1000) / 1000 } : {}), ...(request.fingerprint ? { fingerprint: { kind: FINGERPRINT_KIND, values: request.fingerprint } } : {}) },
     ...(timing ? { lyricsTiming: WORKSHOP_TIMING_FILE } : {}),
     ...(lyrics ? { lyricsLicense, lyricsCredit, ...(lyricsSource ? { lyricsSource } : {}) } : {}),
+    ...(pack.canvas?.renderer === 'dsh-pv' && (pack.canvas.assets?.['font-head'] || pack.canvas.assets?.['font-banner']) ? {
+      fontsLicense: originalWorkshop.fontsLicense, fontsCredit: originalWorkshop.fontsCredit, fontsNotice: originalWorkshop.fontsNotice,
+    } : {}),
     ...(raw['x-dsh-mv-workshop']?.source ? { source: raw['x-dsh-mv-workshop'].source } : {}),
     ...(packRequires(pack, raw['x-dsh-mv-workshop']?.requires) ? { requires: packRequires(pack, raw['x-dsh-mv-workshop']?.requires) } : {}),
     publishedAt: now().toISOString().slice(0, 10),
@@ -449,7 +452,7 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
   // A source cover may also be a canvas asset. Keep the asset bytes in that case
   // so the published manifest still refers to exactly the file it was authored with.
   if (cover && !entryPaths.has(cover.name)) entries.push({ path: cover.name, bytes: cover.bytes })
-  const result = await validateWorkshopPack({ id: request.id, files: entries.map(e => ({ path: e.path, size: e.bytes.length })), readText: async path => entries.find(e => e.path === path).bytes.toString('utf8') })
+  const result = await validateWorkshopPack({ id: request.id, files: entries.map(e => ({ path: e.path, size: e.bytes.length })), readText: async path => entries.find(e => e.path === path).bytes.toString('utf8'), readBytes: async path => entries.find(e => e.path === path).bytes })
   const dir = join(publishRoot, request.id, 'packs', request.id)
   const errors = [...assetErrors, ...result.errors]
   if (!errors.length) {

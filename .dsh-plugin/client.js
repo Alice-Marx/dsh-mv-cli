@@ -314,7 +314,7 @@ function lyricModuleReader(text4) {
   if (source.length > 2 * 1024 * 1024) throw new Error("\u6B4C\u8BCD JS \u8D85\u8FC7 2 Mi \u5B57\u7B26\u9650\u5236\u3002");
   let at = 0, cached = null, items = 0, literalMode = false, regexAllowed = true;
   const numberPattern = /[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/iy;
-  const fail3 = (message) => {
+  const fail5 = (message) => {
     throw new Error(`\u6B4C\u8BCD JS\uFF1A${message}\uFF08\u4F4D\u7F6E ${at}\uFF09\u3002\u53EA\u8BFB\u53D6 LYRICS \u9759\u6001\u6570\u7EC4\uFF0C\u4E0D\u6267\u884C\u4EE3\u7801\u3002`);
   };
   const token = () => {
@@ -329,7 +329,7 @@ function lyricModuleReader(text4) {
       }
       if (source.startsWith("/*", at)) {
         const end = source.indexOf("*/", at + 2);
-        if (end < 0) fail3("\u6CE8\u91CA\u672A\u95ED\u5408");
+        if (end < 0) fail5("\u6CE8\u91CA\u672A\u95ED\u5408");
         at = end + 2;
         continue;
       }
@@ -341,7 +341,7 @@ function lyricModuleReader(text4) {
       let inClass = false, closed = false;
       while (at < source.length) {
         const ch = source[at++];
-        if (/[\r\n]/.test(ch)) fail3("\u524D\u7F6E\u6B63\u5219\u5B57\u9762\u91CF\u672A\u95ED\u5408");
+        if (/[\r\n]/.test(ch)) fail5("\u524D\u7F6E\u6B63\u5219\u5B57\u9762\u91CF\u672A\u95ED\u5408");
         if (ch === "\\") {
           at++;
           continue;
@@ -353,7 +353,7 @@ function lyricModuleReader(text4) {
           break;
         }
       }
-      if (!closed) fail3("\u524D\u7F6E\u6B63\u5219\u5B57\u9762\u91CF\u672A\u95ED\u5408");
+      if (!closed) fail5("\u524D\u7F6E\u6B63\u5219\u5B57\u9762\u91CF\u672A\u95ED\u5408");
       while (at < source.length && /[a-z]/i.test(source[at])) at++;
       return { kind: "opaque", value: "" };
     }
@@ -365,13 +365,13 @@ function lyricModuleReader(text4) {
           closed = true;
           break;
         }
-        if (c === "`" && ch === "$" && source[at] === "{") fail3("\u4E0D\u652F\u6301\u6A21\u677F\u63D2\u503C");
-        if (c !== "`" && /[\r\n]/.test(ch)) fail3("\u5B57\u7B26\u4E32\u672A\u95ED\u5408");
+        if (c === "`" && ch === "$" && source[at] === "{") fail5("\u4E0D\u652F\u6301\u6A21\u677F\u63D2\u503C");
+        if (c !== "`" && /[\r\n]/.test(ch)) fail5("\u5B57\u7B26\u4E32\u672A\u95ED\u5408");
         if (ch !== "\\") {
           value += ch;
           continue;
         }
-        if (at >= source.length) fail3("\u5B57\u7B26\u4E32\u8F6C\u4E49\u672A\u95ED\u5408");
+        if (at >= source.length) fail5("\u5B57\u7B26\u4E32\u8F6C\u4E49\u672A\u95ED\u5408");
         const esc = source[at++];
         if (esc === "\n") continue;
         if (esc === "\r") {
@@ -380,7 +380,7 @@ function lyricModuleReader(text4) {
         }
         const simple = { n: "\n", r: "\r", t: "	", b: "\b", f: "\f", v: "\v", "0": "\0", "\\": "\\", '"': '"', "'": "'", "`": "`", "/": "/", "$": "$" };
         if (Object.hasOwn(simple, esc)) {
-          if (esc === "0" && /\d/.test(source[at] ?? "")) fail3("\u4E0D\u652F\u6301\u516B\u8FDB\u5236\u8F6C\u4E49");
+          if (esc === "0" && /\d/.test(source[at] ?? "")) fail5("\u4E0D\u652F\u6301\u516B\u8FDB\u5236\u8F6C\u4E49");
           value += simple[esc];
           continue;
         }
@@ -388,22 +388,22 @@ function lyricModuleReader(text4) {
           let hex;
           if (esc === "u" && source[at] === "{") {
             const end = source.indexOf("}", ++at);
-            if (end < 0) fail3("Unicode \u8F6C\u4E49\u672A\u95ED\u5408");
+            if (end < 0) fail5("Unicode \u8F6C\u4E49\u672A\u95ED\u5408");
             hex = source.slice(at, end);
-            if (!/^[\da-f]{1,6}$/i.test(hex) || parseInt(hex, 16) > 1114111) fail3("Unicode \u8F6C\u4E49\u65E0\u6548");
+            if (!/^[\da-f]{1,6}$/i.test(hex) || parseInt(hex, 16) > 1114111) fail5("Unicode \u8F6C\u4E49\u65E0\u6548");
             at = end + 1;
           } else {
             const size = esc === "x" ? 2 : 4;
             hex = source.slice(at, at + size);
-            if (!(size === 2 ? /^[\da-f]{2}$/i : /^[\da-f]{4}$/i).test(hex)) fail3("\u5B57\u7B26\u4E32\u8F6C\u4E49\u65E0\u6548");
+            if (!(size === 2 ? /^[\da-f]{2}$/i : /^[\da-f]{4}$/i).test(hex)) fail5("\u5B57\u7B26\u4E32\u8F6C\u4E49\u65E0\u6548");
             at += size;
           }
           value += String.fromCodePoint(parseInt(hex, 16));
           continue;
         }
-        fail3("\u4E0D\u652F\u6301\u7684\u5B57\u7B26\u4E32\u8F6C\u4E49");
+        fail5("\u4E0D\u652F\u6301\u7684\u5B57\u7B26\u4E32\u8F6C\u4E49");
       }
-      if (!closed) fail3("\u5B57\u7B26\u4E32\u672A\u95ED\u5408");
+      if (!closed) fail5("\u5B57\u7B26\u4E32\u672A\u95ED\u5408");
       return { kind: "string", value };
     }
     if (/[A-Za-z_$]/.test(c)) {
@@ -434,10 +434,10 @@ function lyricModuleReader(text4) {
   };
   const isPunct = (t, value) => t.kind === "punct" && t.value === value;
   const expect = (value) => {
-    if (!isPunct(next(), value)) fail3(`\u671F\u671B ${value}`);
+    if (!isPunct(next(), value)) fail5(`\u671F\u671B ${value}`);
   };
   const literal = (depth2 = 0) => {
-    if (depth2 > 3 || ++items > 1e5) fail3("\u6570\u636E\u7ED3\u6784\u8FC7\u6DF1\u6216\u8FC7\u5927");
+    if (depth2 > 3 || ++items > 1e5) fail5("\u6570\u636E\u7ED3\u6784\u8FC7\u6DF1\u6216\u8FC7\u5927");
     const t = next();
     if (t.kind === "string") return t.value;
     if (t.kind === "number" && Number.isFinite(t.value)) return t.value;
@@ -445,7 +445,7 @@ function lyricModuleReader(text4) {
     if (isPunct(t, "[")) {
       const array = [];
       while (!isPunct(peek(), "]")) {
-        if (array.length >= 1e4) fail3("\u6570\u7EC4\u8D85\u8FC7 10000 \u9879");
+        if (array.length >= 1e4) fail5("\u6570\u7EC4\u8D85\u8FC7 10000 \u9879");
         array.push(literal(depth2 + 1));
         if (isPunct(peek(), "]")) break;
         expect(",");
@@ -454,20 +454,20 @@ function lyricModuleReader(text4) {
       return array;
     }
     if (isPunct(t, "{")) {
-      const object = /* @__PURE__ */ Object.create(null);
+      const object2 = /* @__PURE__ */ Object.create(null);
       while (!isPunct(peek(), "}")) {
         const key = next();
-        if (!["id", "string"].includes(key.kind) || ["__proto__", "constructor", "prototype"].includes(key.value)) fail3("\u4E0D\u5141\u8BB8\u8BA1\u7B97\u952E\u3001\u5C55\u5F00\u3001\u65B9\u6CD5\u6216\u539F\u578B\u5B57\u6BB5");
-        if (Object.hasOwn(object, key.value)) fail3("\u91CD\u590D\u5B57\u6BB5");
+        if (!["id", "string"].includes(key.kind) || ["__proto__", "constructor", "prototype"].includes(key.value)) fail5("\u4E0D\u5141\u8BB8\u8BA1\u7B97\u952E\u3001\u5C55\u5F00\u3001\u65B9\u6CD5\u6216\u539F\u578B\u5B57\u6BB5");
+        if (Object.hasOwn(object2, key.value)) fail5("\u91CD\u590D\u5B57\u6BB5");
         expect(":");
-        object[key.value] = literal(depth2 + 1);
+        object2[key.value] = literal(depth2 + 1);
         if (isPunct(peek(), "}")) break;
         expect(",");
       }
       expect("}");
-      return object;
+      return object2;
     }
-    fail3("\u6570\u7EC4\u91CC\u53EA\u80FD\u4F7F\u7528\u5B57\u7B26\u4E32\u3001\u6709\u9650\u6570\u5B57\u548C\u9759\u6001\u5BF9\u8C61\uFF0C\u4E0D\u80FD\u4F7F\u7528\u8868\u8FBE\u5F0F\u6216\u51FD\u6570\u8C03\u7528");
+    fail5("\u6570\u7EC4\u91CC\u53EA\u80FD\u4F7F\u7528\u5B57\u7B26\u4E32\u3001\u6709\u9650\u6570\u5B57\u548C\u9759\u6001\u5BF9\u8C61\uFF0C\u4E0D\u80FD\u4F7F\u7528\u8868\u8FBE\u5F0F\u6216\u51FD\u6570\u8C03\u7528");
   };
   let depth = 0, state = 0;
   for (let t = next(); t.kind !== "eof"; t = next()) {
@@ -479,18 +479,18 @@ function lyricModuleReader(text4) {
       state = t.kind === "id" && t.value.toUpperCase() === "LYRICS" ? 2 : 0;
       if (state) continue;
     } else if (state === 2) {
-      if (!isPunct(t, "=")) fail3("LYRICS \u5E94\u76F4\u63A5\u8D4B\u503C\u4E3A\u9759\u6001\u6570\u7EC4");
+      if (!isPunct(t, "=")) fail5("LYRICS \u5E94\u76F4\u63A5\u8D4B\u503C\u4E3A\u9759\u6001\u6570\u7EC4");
       literalMode = true;
-      if (!isPunct(peek(), "[")) fail3("LYRICS \u5E94\u4E3A\u9759\u6001\u6570\u7EC4");
+      if (!isPunct(peek(), "[")) fail5("LYRICS \u5E94\u4E3A\u9759\u6001\u6570\u7EC4");
       const data = literal();
       const after = next();
-      if (after.kind !== "eof" && !isPunct(after, ";")) fail3("\u4E0D\u5141\u8BB8\u5728\u6570\u7EC4\u540E\u8C03\u7528\u65B9\u6CD5\u6216\u8BA1\u7B97\u8868\u8FBE\u5F0F\uFF1B\u8BF7\u7528\u5206\u53F7\u7ED3\u675F\u58F0\u660E");
+      if (after.kind !== "eof" && !isPunct(after, ";")) fail5("\u4E0D\u5141\u8BB8\u5728\u6570\u7EC4\u540E\u8C03\u7528\u65B9\u6CD5\u6216\u8BA1\u7B97\u8868\u8FBE\u5F0F\uFF1B\u8BF7\u7528\u5206\u53F7\u7ED3\u675F\u58F0\u660E");
       return data;
     }
     if (t.kind === "punct" && ["{", "[", "("].includes(t.value)) depth++;
     else if (t.kind === "punct" && ["}", "]", ")"].includes(t.value)) depth = Math.max(0, depth - 1);
   }
-  fail3("\u627E\u4E0D\u5230 const LYRICS = [...] \u6570\u636E\u58F0\u660E");
+  fail5("\u627E\u4E0D\u5230 const LYRICS = [...] \u6570\u636E\u58F0\u660E");
 }
 function parseLyricsJs(text4, options) {
   const data = lyricModuleReader(text4);
@@ -2262,6 +2262,151 @@ var KEYWORDS = /* @__PURE__ */ new Set([
   "back"
 ]);
 
+// .dsh-plugin/client/mv/dshpv/raster.mjs
+var DSHPV_RASTER_LIMITS = Object.freeze({
+  frames: 12e3,
+  frameOps: 256,
+  frameDrawPixels: 4 * 1280 * 720,
+  totalOps: 64e3,
+  atlases: 16,
+  imageSide: 8192,
+  imagePixels: 16 * 1024 * 1024,
+  totalPixels: 64 * 1024 * 1024,
+  jsonBytes: 8 * 1024 * 1024,
+  imageBytes: 8 * 1024 * 1024,
+  duration: 36e3
+});
+var SIZE = [1280, 720];
+var object = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+var fail = (message) => {
+  throw new Error(`dsh-pv raster\uFF1A${message}`);
+};
+var keys = (value, allowed, name) => {
+  if (!object(value)) fail(`${name} \u5FC5\u987B\u662F\u5BF9\u8C61`);
+  for (const key of Object.keys(value)) if (!allowed.includes(key)) fail(`${name} \u6709\u672A\u77E5\u5B57\u6BB5 ${key}`);
+};
+var finite = (value) => typeof value === "number" && Number.isFinite(value);
+function validateRasterTimeline(value) {
+  keys(value, ["version", "size", "frames"], "\u65F6\u95F4\u8F74");
+  if (value.version !== 1) fail("version \u5FC5\u987B\u662F 1");
+  if (!Array.isArray(value.size) || value.size.length !== 2 || value.size.some((v, i) => v !== SIZE[i])) fail("size \u5FC5\u987B\u662F [1280,720]");
+  if (!Array.isArray(value.frames) || !value.frames.length || value.frames.length > DSHPV_RASTER_LIMITS.frames) fail("frames \u6570\u91CF\u65E0\u6548");
+  let previous = -1, total = 0;
+  const frames = value.frames.map((frame, index) => {
+    keys(frame, ["t", "ops"], `frames[${index}]`);
+    if (!finite(frame.t) || frame.t < 0 || frame.t > DSHPV_RASTER_LIMITS.duration || frame.t <= previous) fail("\u5E27\u65F6\u95F4\u5FC5\u987B\u4E25\u683C\u9012\u589E\u4E14\u5728\u5141\u8BB8\u8303\u56F4\u5185");
+    previous = frame.t;
+    if (!Array.isArray(frame.ops) || frame.ops.length > DSHPV_RASTER_LIMITS.frameOps) fail("\u6BCF\u5E27 ops \u6570\u91CF\u65E0\u6548");
+    total += frame.ops.length;
+    if (total > DSHPV_RASTER_LIMITS.totalOps) fail("ops \u603B\u6570\u8FC7\u591A");
+    let drawPixels = 0;
+    const ops = frame.ops.map((op, at) => {
+      keys(op, ["atlas", "src", "dst", "alpha", "z"], `frames[${index}].ops[${at}]`);
+      if (!Number.isInteger(op.atlas) || op.atlas < 0 || op.atlas >= DSHPV_RASTER_LIMITS.atlases) fail("atlas \u7D22\u5F15\u65E0\u6548");
+      if (!Array.isArray(op.src) || op.src.length !== 4 || op.src.some((v) => !Number.isInteger(v)) || op.src[0] < 0 || op.src[1] < 0 || op.src[2] <= 0 || op.src[3] <= 0 || op.src.some((v) => v > DSHPV_RASTER_LIMITS.imageSide)) fail("src \u5E94\u662F\u6709\u754C\u7684\u6574\u6570\u50CF\u7D20\u77E9\u5F62");
+      if (!Array.isArray(op.dst) || op.dst.length !== 4 || op.dst.some((v) => !finite(v)) || Math.abs(op.dst[0]) > SIZE[0] || Math.abs(op.dst[1]) > SIZE[1] || op.dst[2] <= 0 || op.dst[2] > SIZE[0] || op.dst[3] <= 0 || op.dst[3] > SIZE[1]) fail("dst \u5E94\u662F\u753B\u9762\u8303\u56F4\u5185\u7684\u6709\u9650\u77E9\u5F62");
+      const alpha = op.alpha ?? 1;
+      if (!finite(alpha) || alpha < 0 || alpha > 1) fail("alpha \u5FC5\u987B\u5728 0 \u5230 1 \u4E4B\u95F4");
+      if (op.z !== "under" && op.z !== "over") fail("z \u5FC5\u987B\u662F under \u6216 over");
+      drawPixels += op.dst[2] * op.dst[3];
+      if (drawPixels > DSHPV_RASTER_LIMITS.frameDrawPixels) fail("\u6BCF\u5E27\u56FE\u5C42\u603B\u7ED8\u5236\u9762\u79EF\u8FC7\u5927");
+      return { atlas: op.atlas, src: [...op.src], dst: [...op.dst], alpha, z: op.z };
+    });
+    return { t: frame.t, ops };
+  });
+  return { version: 1, size: [...SIZE], frames };
+}
+function checkDimensions(width2, height) {
+  if (!Number.isInteger(width2) || !Number.isInteger(height) || width2 <= 0 || height <= 0 || width2 > DSHPV_RASTER_LIMITS.imageSide || height > DSHPV_RASTER_LIMITS.imageSide || width2 * height > DSHPV_RASTER_LIMITS.imagePixels) fail("\u56FE\u96C6\u5C3A\u5BF8\u8D85\u51FA\u5141\u8BB8\u8303\u56F4");
+  return { width: width2, height };
+}
+function rasterImageDimensions(input) {
+  const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
+  if (!bytes.length || bytes.length > DSHPV_RASTER_LIMITS.imageBytes) fail("\u56FE\u96C6\u6587\u4EF6\u5927\u5C0F\u65E0\u6548");
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const text4 = (at2, length) => String.fromCharCode(...bytes.subarray(at2, at2 + length));
+  if (bytes.length >= 24 && bytes[0] === 137 && text4(1, 7) === "PNG\r\n\n" && text4(12, 4) === "IHDR") return checkDimensions(view.getUint32(16), view.getUint32(20));
+  if (bytes.length < 26 || text4(0, 4) !== "RIFF" || text4(8, 4) !== "WEBP") fail("\u56FE\u96C6\u5FC5\u987B\u662F PNG \u6216 WebP");
+  if (view.getUint32(4, true) !== bytes.length - 8) fail("WebP RIFF \u6587\u4EF6\u5927\u5C0F\u4E0D\u5339\u914D");
+  const uint24 = (at2) => bytes[at2] | bytes[at2 + 1] << 8 | bytes[at2 + 2] << 16;
+  const seen = /* @__PURE__ */ new Set(), metadata = /* @__PURE__ */ new Set(["ICCP", "EXIF", "XMP "]);
+  let at = 12, chunks = 0, metadataBytes = 0, logical = null, pixels = null, flags = 0;
+  while (at < bytes.length) {
+    if (++chunks > 16 || at + 8 > bytes.length) fail("WebP chunk \u6570\u91CF\u8FC7\u591A\u6216\u6587\u4EF6\u4E0D\u5B8C\u6574");
+    const kind = text4(at, 4), length = view.getUint32(at + 4, true), data = at + 8;
+    if (data + length + (length & 1) > bytes.length) fail("WebP \u56FE\u96C6\u4E0D\u5B8C\u6574");
+    if (length & 1 && bytes[data + length] !== 0) fail("WebP padding \u65E0\u6548");
+    if (kind === "ANIM" || kind === "ANMF") fail("WebP \u56FE\u96C6\u4E0D\u80FD\u5305\u542B\u52A8\u753B");
+    if (!["VP8X", "VP8 ", "VP8L", "ALPH", ...metadata].includes(kind) || seen.has(kind)) fail("WebP chunk \u672A\u53D7\u652F\u6301\u6216\u91CD\u590D");
+    seen.add(kind);
+    if (kind === "VP8X") {
+      if (at !== 12 || length !== 10 || bytes[data + 1] || bytes[data + 2] || bytes[data + 3]) fail("WebP VP8X header \u65E0\u6548");
+      flags = bytes[data];
+      if (flags & 2) fail("WebP \u56FE\u96C6\u4E0D\u80FD\u5305\u542B\u52A8\u753B");
+      if (flags & 193) fail("WebP VP8X \u4FDD\u7559\u6807\u8BB0\u65E0\u6548");
+      logical = checkDimensions(1 + uint24(data + 4), 1 + uint24(data + 7));
+    } else if (kind === "VP8L" || kind === "VP8 ") {
+      if (pixels) fail("WebP \u5FC5\u987B\u53EA\u6709\u4E00\u4E2A pixel chunk");
+      if (kind === "VP8L") {
+        if (length < 5 || bytes[data] !== 47 || bytes[data + 4] >> 5 !== 0) fail("WebP VP8L header \u65E0\u6548");
+        pixels = checkDimensions(1 + (bytes[data + 1] | (bytes[data + 2] & 63) << 8), 1 + (bytes[data + 2] >> 6 | bytes[data + 3] << 2 | (bytes[data + 4] & 15) << 10));
+      } else {
+        if (length < 10 || bytes[data] & 1 || bytes[data + 3] !== 157 || bytes[data + 4] !== 1 || bytes[data + 5] !== 42) fail("WebP VP8 header \u65E0\u6548");
+        pixels = checkDimensions(view.getUint16(data + 6, true) & 16383, view.getUint16(data + 8, true) & 16383);
+      }
+    } else if (metadata.has(kind)) {
+      metadataBytes += length;
+      if (!length || length > 256 * 1024 || metadataBytes > 512 * 1024) fail("WebP \u5143\u6570\u636E\u8FC7\u591A\u6216\u65E0\u6548");
+    } else if (!length || pixels) fail("WebP ALPH chunk \u65E0\u6548");
+    at = data + length + (length & 1);
+  }
+  if (!pixels) fail("WebP \u7F3A\u5C11 pixel chunk");
+  if (logical && (logical.width !== pixels.width || logical.height !== pixels.height)) fail("WebP \u903B\u8F91\u5C3A\u5BF8\u4E0E pixel chunk \u5C3A\u5BF8\u4E0D\u5339\u914D");
+  if (!logical && (seen.has("ALPH") || [...metadata].some((kind) => seen.has(kind))) || seen.has("ALPH") && (seen.has("VP8L") || !(flags & 16))) fail("WebP \u6269\u5C55 chunk \u7F3A\u5C11\u6709\u6548 VP8X header");
+  if (logical && (Boolean(flags & 32) !== seen.has("ICCP") || Boolean(flags & 8) !== seen.has("EXIF") || Boolean(flags & 4) !== seen.has("XMP "))) fail("WebP \u5143\u6570\u636E\u6807\u8BB0\u4E0D\u5339\u914D");
+  return pixels;
+}
+function validateRasterAtlases(raster, atlases) {
+  if (!Array.isArray(atlases) || !atlases.length || atlases.length > DSHPV_RASTER_LIMITS.atlases) fail("\u7F3A\u5C11\u56FE\u96C6\u6216\u56FE\u96C6\u6570\u91CF\u8FC7\u591A");
+  let total = 0;
+  for (const image of atlases) {
+    const { width: width2, height } = checkDimensions(image?.width, image?.height);
+    total += width2 * height;
+    if (total > DSHPV_RASTER_LIMITS.totalPixels) fail("\u56FE\u96C6\u603B\u50CF\u7D20\u6570\u91CF\u8FC7\u591A");
+  }
+  for (const frame of raster.frames) for (const op of frame.ops) {
+    const image = atlases[op.atlas];
+    if (!image) fail("atlas \u7D22\u5F15\u6307\u5411\u672A\u63D0\u4F9B\u7684\u56FE\u96C6");
+    const [x, y, w, h] = op.src;
+    if (x + w > image.width || y + h > image.height) fail("src \u8D85\u51FA\u56FE\u96C6\u8303\u56F4");
+  }
+  return { ...raster, atlases };
+}
+function rasterFrameAt(raster, t) {
+  const frames = raster?.frames;
+  if (!frames?.length || !finite(t) || t < frames[0].t) return null;
+  let lo = 0, hi = frames.length - 1;
+  while (lo < hi) {
+    const mid = lo + hi + 1 >> 1;
+    if (frames[mid].t <= t) lo = mid;
+    else hi = mid - 1;
+  }
+  return frames[lo];
+}
+function drawRasterLayer(ctx, raster, t, z) {
+  const frame = rasterFrameAt(raster, t);
+  if (!frame) return;
+  ctx.save();
+  try {
+    for (const op of frame.ops) if (op.z === z && op.alpha > 0) {
+      ctx.globalAlpha = op.alpha;
+      ctx.drawImage(raster.atlases[op.atlas], ...op.src, ...op.dst);
+    }
+  } finally {
+    ctx.restore();
+  }
+}
+
 // .dsh-plugin/client/mv/dshpv/film.mjs
 var W = 1280;
 var H = 720;
@@ -2289,10 +2434,10 @@ var SCR = "!<>-_\\/[]{}=+*^?#%$&@01|~:;";
 var INNER = [3, 9, 3, 3];
 var RIGHT = [392, 44, 1268, 608];
 var FONT = [
-  '"DejaVu Sans Mono", Consolas, "Cascadia Mono", Menlo, monospace',
-  'bold "DejaVu Sans Mono", Consolas, "Cascadia Mono", Menlo, monospace',
-  'bold "Space Mono", "DejaVu Sans Mono", Consolas, monospace',
-  '"Anton", Impact, "Arial Narrow Bold", "Arial Black", sans-serif',
+  'Consolas, "DejaVu Sans Mono", "Cascadia Mono", Menlo, monospace',
+  'bold Consolas, "DejaVu Sans Mono", "Cascadia Mono", Menlo, monospace',
+  'bold "DshMvPvSpaceMono", "Space Mono", Consolas, "DejaVu Sans Mono", monospace',
+  '"DshMvPvAnton", "Anton", Impact, "Arial Narrow Bold", "Arial Black", sans-serif',
   '"Microsoft YaHei", "Noto Sans CJK SC", "PingFang SC", sans-serif',
   '"Segoe UI Symbol", "DejaVu Sans", "Segoe UI", sans-serif'
 ];
@@ -2351,15 +2496,15 @@ function prepareTimeline(timeline) {
     const n = shot.kf.length;
     shot.kf.forEach((kf, j) => {
       kf.from = shot.s + (shot.e - shot.s) * j / n;
-      const keys = /* @__PURE__ */ new Set();
+      const keys2 = /* @__PURE__ */ new Set();
       kf.fresh = [];
       for (const op of kf.o) {
         if (op[0] !== "t") continue;
         const key = `${op[1]},${op[2]},${op[6]}`;
-        keys.add(key);
+        keys2.add(key);
         kf.fresh.push(!prev.has(key));
       }
-      prev = keys;
+      prev = keys2;
     });
   }
   return { ...timeline, css: pal };
@@ -2403,6 +2548,7 @@ var DshPvFilm = class {
     this.chat = null;
     this.band = null;
     this.art = {};
+    this.raster = null;
     this.lines = [];
     this.tokens = null;
     this.duration = DSHPV_DURATION;
@@ -2412,11 +2558,12 @@ var DshPvFilm = class {
     this.times = [];
     this.status = "loading";
   }
-  setData({ timeline, chat, band, art = {} }) {
+  setData({ timeline, chat, band, art = {}, raster = null }) {
     this.timeline = prepareTimeline(timeline);
     this.chat = chat;
     this.band = band;
     this.art = art;
+    this.raster = raster;
     this.status = "ready";
   }
   /** lines: the matched band lines (band.mjs matchBand) */
@@ -2487,7 +2634,9 @@ var DshPvFilm = class {
       ctx.restore();
       return;
     }
+    drawRasterLayer(ctx, this.raster, tc, "under");
     this.ops(ctx, kf, tc, r);
+    drawRasterLayer(ctx, this.raster, tc, "over");
     this.art_(ctx, shot, kf, tc, r);
     const chrome = !["fullbleed", "cinema", "raw"].includes(lay);
     if (chrome && lay !== "shell") this.ticker(ctx, shot, tc, gain);
@@ -2644,6 +2793,7 @@ var DshPvFilm = class {
   }
   art_(ctx, shot, kf, t, r) {
     const fn = shot.fn;
+    if (rasterFrameAt(this.raster, t)?.ops.length && (fn === "exec_hit" && shot.lay[0] === "split" || fn === "whale_fall" || fn === "last_execution")) return;
     if (fn === "exec_hit" && shot.lay[0] === "split") {
       const img = this.image(t > 156 ? "frightened" : "angry");
       this.mosaic(ctx, img, [24, 56, 560, 600], { cell: 4, tint: "red", crop: img ? [0, 0, img.width, img.height * 0.55] : null, glitch: 0.15, r });
@@ -2912,7 +3062,7 @@ var DshPvFilm = class {
     if (prev && strength > 0) {
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
-      if (this.lastT !== void 0 && Math.abs(t - this.lastT) < 0.2) {
+      if (this.lastT !== void 0 && t > this.lastT && t - this.lastT < 0.2) {
         ctx.globalAlpha = 0.1 * strength;
         ctx.drawImage(prev, 0, 0);
       }
@@ -2967,7 +3117,7 @@ function box(ctx, x0, y0, x1, y1, title, level, color, gain = 1) {
 }
 
 // .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.9.4" : "";
+var CLIENT_VERSION = true ? "0.9.5" : "";
 var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u653E\u6620\u5BA4\u3002";
 function isMissingRemoteMethod(message) {
   const value = String(message ?? "");
@@ -2994,6 +3144,134 @@ function versionNotice({ hostVersion, clientVersion = CLIENT_VERSION, loaded = t
   return "";
 }
 
+// .dsh-plugin/shared/mv-pack.mjs
+var MV_PACK_FORMAT = "dsh-mv-pack";
+var MV_PACK_VERSION = 1;
+var MV_PACK_MANIFEST = "mv.json";
+var MV_PACK_SCHEMA_FILE = "mv.schema.json";
+var MV_CANVAS_RENDERERS = Object.freeze(["generic", "world-execute-me", "dsh-pv", "script"]);
+var MV_PACK_FILE_ROLES = Object.freeze(["audio", "lyrics", "spectrum", "scene", "timing", "asset"]);
+var MV_RENDERERS_BUILTIN = Object.freeze(["generic", "dsh-pv", "script"]);
+var MV_SCENE_OUTPUTS = Object.freeze(["text", "pixels", "webgl"]);
+var MV_PIXEL_LIMITS = Object.freeze({ minWidth: 160, minHeight: 90, maxWidth: 1920, maxHeight: 1080, defaultSize: Object.freeze([1280, 720]) });
+var MV_ASSET_EXTENSIONS = Object.freeze([".json", ".webp", ".png"]);
+var MV_ASSET_NAME = /^[a-z0-9][a-z0-9-]{0,39}$/;
+var DSHPV_FONT_LIMITS = Object.freeze({ fileBytes: 512 * 1024, maxTables: 64, maxNameRecords: 128, maxNameChars: 256 });
+var DSHPV_FONT_ASSETS = Object.freeze({
+  "font-head": Object.freeze({ path: "fonts/SpaceMono-Bold.ttf", licenseFile: "fonts/OFL_spacemono.txt", family: "DshMvPvSpaceMono", weight: "700", sourceFamily: "Space Mono", sourceStyle: "Bold" }),
+  "font-banner": Object.freeze({ path: "fonts/Anton-Regular.ttf", licenseFile: "fonts/OFL_anton.txt", family: "DshMvPvAnton", weight: "400", sourceFamily: "Anton", sourceStyle: "Regular" })
+});
+var MV_LYRICS_EXTENSIONS = Object.freeze([".lrc", ".srt", ".vtt", ".json", ".txt", ".js", ".mjs"]);
+var MV_PACK_LIMITS = Object.freeze({
+  manifestBytes: 256 * 1024,
+  textFileBytes: 8 * 1024 * 1024,
+  sceneBytes: 256 * 1024,
+  /** 0.9.2: webgl scenes may be larger (Three.js bundles etc.); the workshop limit is the source of truth. */
+  webglSceneBytes: 2 * 1024 * 1024,
+  audioBytes: 1024 * 1024 * 1024,
+  readChunkBytes: 512 * 1024,
+  maxCredits: 50,
+  maxTextChars: 4e3,
+  maxShortChars: 200,
+  maxPathChars: 1024,
+  maxDuration: 36e3,
+  maxOffset: 30,
+  maxAssets: 32,
+  maxAssetParts: 16,
+  assetBytes: 8 * 1024 * 1024,
+  recentPacks: 50
+  // library entries kept (0.8.2: was 8; the list view stays compact)
+});
+var isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var basenameOf = (path) => String(path).split(/[\\/]/).filter(Boolean).pop() ?? "";
+function isAbsolutePackPath(value) {
+  return typeof value === "string" && (value.startsWith("/") || /^[A-Za-z]:[\\/]/.test(value) || /^\\\\[^\\]+\\[^\\]+/.test(value));
+}
+function checkDshPvFont(value, name = "font.ttf") {
+  const bytes = value instanceof Uint8Array ? value : value instanceof ArrayBuffer ? new Uint8Array(value) : null;
+  const errors = [];
+  if (!bytes || bytes.byteLength < 12 || bytes.byteLength > DSHPV_FONT_LIMITS.fileBytes) return { errors: [`${name}\uFF1ATTF \u5B57\u4F53\u5927\u5C0F\u65E0\u6548\uFF0812 \u5B57\u8282\u2013512 KiB\uFF09`] };
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tables = view.getUint16(4, false);
+  if (view.getUint32(0, false) !== 65536 || tables < 1 || tables > DSHPV_FONT_LIMITS.maxTables || 12 + tables * 16 > bytes.byteLength) return { errors: [`${name}\uFF1A\u4E0D\u662F\u53D7\u652F\u6301\u7684 TrueType TTF \u5B57\u4F53\uFF08sfnt \u7B7E\u540D / \u8868\u76EE\u5F55\u65E0\u6548\uFF09`] };
+  let nameTable = null;
+  for (let i = 0; i < tables; i++) {
+    const at = 12 + i * 16, offset = view.getUint32(at + 8, false), length = view.getUint32(at + 12, false);
+    if (offset < 12 + tables * 16 || offset > bytes.byteLength || length > bytes.byteLength - offset) {
+      errors.push(`${name}\uFF1ATTF \u7B2C ${i + 1} \u4E2A\u8868\u8D85\u51FA\u6587\u4EF6\u8303\u56F4`);
+      break;
+    }
+    if (view.getUint32(at, false) === 1851878757) {
+      if (nameTable) {
+        errors.push(`${name}\uFF1ATTF \u6709\u91CD\u590D\u7684 name \u8868`);
+        break;
+      }
+      nameTable = { offset, length };
+    }
+  }
+  const descriptor2 = (Object.hasOwn(DSHPV_FONT_ASSETS, name) ? DSHPV_FONT_ASSETS[name] : void 0) ?? Object.values(DSHPV_FONT_ASSETS).find((font) => font.path === name || basenameOf(font.path) === name);
+  if (!errors.length && descriptor2) errors.push(...checkDshPvFontName(view, nameTable, descriptor2, name));
+  return { errors };
+}
+function checkDshPvFontName(view, table, descriptor2, name) {
+  const invalid = (message) => [`${name}\uFF1ATTF name \u8868${message}`];
+  if (!table || table.length < 6) return invalid("\u7F3A\u5931\u6216\u65E0\u6548\uFF0C\u4E0D\u80FD\u786E\u8BA4\u53D7\u652F\u6301\u7684 OFL \u5B57\u4F53\u8EAB\u4EFD");
+  const { offset, length } = table, format = view.getUint16(offset), count = view.getUint16(offset + 2), strings = view.getUint16(offset + 4);
+  if (format > 1 || count < 1 || count > DSHPV_FONT_LIMITS.maxNameRecords || 6 + count * 12 > length || strings < 6 + count * 12 || strings > length) return invalid("\u8BB0\u5F55\u6570\u91CF / \u5B57\u7B26\u4E32\u8303\u56F4\u65E0\u6548");
+  const families = /* @__PURE__ */ new Set(), styles = /* @__PURE__ */ new Set();
+  for (let i = 0; i < count; i++) {
+    const at = offset + 6 + i * 12, platform = view.getUint16(at), id = view.getUint16(at + 6), size = view.getUint16(at + 8), start = view.getUint16(at + 10);
+    if (size > DSHPV_FONT_LIMITS.maxNameChars * 2 || start > length - strings || size > length - strings - start) return invalid("\u5B57\u7B26\u4E32\u8D85\u51FA\u6587\u4EF6\u8303\u56F4\u6216\u8FC7\u957F");
+    if (![0, 3].includes(platform) || ![1, 2, 16, 17].includes(id)) continue;
+    if (size % 2) return invalid("Unicode \u5B57\u7B26\u4E32\u957F\u5EA6\u4E0D\u662F\u5076\u6570");
+    let text4 = "";
+    for (let pos = offset + strings + start; pos < offset + strings + start + size; pos += 2) text4 += String.fromCharCode(view.getUint16(pos));
+    if (/[\u0000-\u001f\u007f]/.test(text4)) return invalid("\u5B57\u4F53\u540D\u79F0\u542B\u63A7\u5236\u5B57\u7B26");
+    if (id === 1 || id === 16) families.add(text4.trim());
+    else styles.add(text4.trim());
+  }
+  if (!families.size || !styles.size || [...families].some((family) => family !== descriptor2.sourceFamily) || [...styles].some((style) => style !== descriptor2.sourceStyle)) return invalid(`\u8EAB\u4EFD\u4E0D\u7B26\uFF08\u53EA\u652F\u6301 ${descriptor2.sourceFamily} ${descriptor2.sourceStyle}\uFF1B\u91CD\u547D\u540D Windows / \u5176\u4ED6\u5B57\u4F53\u4E0D\u80FD\u968F\u5305\u5206\u53D1\uFF09`);
+  return [];
+}
+function parseManifestPath(value) {
+  if (typeof value !== "string") throw new TypeError("MV \u5305\u8DEF\u5F84\u5FC5\u987B\u662F\u5B57\u7B26\u4E32");
+  const path = value.trim().replace(/^"(.*)"$/, "$1");
+  if (!path || path.length > MV_PACK_LIMITS.maxPathChars || /[\0\r\n"]/.test(path)) throw new TypeError("MV \u5305\u8DEF\u5F84\u65E0\u6548");
+  if (!isAbsolutePackPath(path)) throw new TypeError("MV \u5305\u8DEF\u5F84\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\uFF08mv.json \u6587\u4EF6\u6216\u5B83\u6240\u5728\u7684\u6587\u4EF6\u5939\uFF09");
+  return path;
+}
+function parsePackLoad(value) {
+  if (!isObject(value)) throw new TypeError("pack load request must be an object");
+  const extra = Object.keys(value).filter((key) => key !== "path");
+  if (extra.length) throw new TypeError(`pack load request has unexpected fields: ${extra.join(", ")}`);
+  return { path: parseManifestPath(value.path) };
+}
+function parsePackRead(value) {
+  if (!isObject(value)) throw new TypeError("pack read request must be an object");
+  const extra = Object.keys(value).filter((key) => !["manifestPath", "role", "offset", "length", "asset", "part"].includes(key));
+  if (extra.length) throw new TypeError(`pack read request has unexpected fields: ${extra.join(", ")}`);
+  if (!MV_PACK_FILE_ROLES.includes(value.role)) throw new TypeError(`role must be ${MV_PACK_FILE_ROLES.join(" / ")}`);
+  const offset = value.offset ?? 0;
+  const length = value.length ?? MV_PACK_LIMITS.readChunkBytes;
+  if (!Number.isInteger(offset) || offset < 0 || offset > MV_PACK_LIMITS.audioBytes) throw new TypeError("offset is invalid");
+  if (!Number.isInteger(length) || length < 1 || length > MV_PACK_LIMITS.readChunkBytes) throw new TypeError(`length must be 1..${MV_PACK_LIMITS.readChunkBytes}`);
+  const request2 = { manifestPath: parseManifestPath(value.manifestPath), role: value.role, offset, length };
+  if (value.role === "asset") {
+    if (typeof value.asset !== "string" || !MV_ASSET_NAME.test(value.asset)) throw new TypeError("asset must be a canvas.assets name");
+    const part2 = value.part ?? 0;
+    if (!Number.isInteger(part2) || part2 < 0 || part2 >= MV_PACK_LIMITS.maxAssetParts) throw new TypeError("part is invalid");
+    return { ...request2, asset: value.asset, part: part2 };
+  }
+  if (value.asset !== void 0 || value.part !== void 0) throw new TypeError('asset / part are only for role "asset"');
+  return request2;
+}
+function parseTemplateWrite(value) {
+  if (!isObject(value)) throw new TypeError("template request must be an object");
+  const extra = Object.keys(value).filter((key) => key !== "dir");
+  if (extra.length) throw new TypeError(`template request has unexpected fields: ${extra.join(", ")}`);
+  return { dir: parseManifestPath(value.dir) };
+}
+
 // .dsh-plugin/client/mv/dshpv/assets.mjs
 var DSHPV_DATA = ["timeline", "chat", "band"];
 var DSHPV_ART = ["maid-left", ...["cheerful", "starry", "shy", "serious", "confused", "frightened", "angry", "exasperated"].map((n) => `whale-${n}`)];
@@ -3015,9 +3293,10 @@ var join = (parts) => {
 };
 var hasDshPvAssets = (pack) => DSHPV_DATA.every((name) => pack?.pack?.canvas?.assets?.[name] !== void 0);
 function packAssetReader(api, manifestPath, pack) {
-  return async (name) => {
+  return async (name, { maxBytes = MV_PACK_LIMITS.assetBytes } = {}) => {
     const value = pack?.canvas?.assets?.[name];
     if (value === void 0) return null;
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 1 || maxBytes > MV_PACK_LIMITS.assetBytes) throw new Error(`MV \u5305\u8D44\u6E90 ${name} \u7684\u8BFB\u53D6\u5927\u5C0F\u9650\u5236\u65E0\u6548\u3002`);
     const count = Array.isArray(value) ? value.length : 1;
     const files = [];
     for (let part2 = 0; part2 < count; part2++) {
@@ -3025,7 +3304,13 @@ function packAssetReader(api, manifestPath, pack) {
       let offset = 0;
       for (; ; ) {
         const chunk = unwrapRemote(await api.packRead({ manifestPath, role: "asset", asset: name, part: part2, offset, length: CHUNK }), `\u65E0\u6CD5\u8BFB\u53D6 MV \u5305\u8D44\u6E90 ${name}\u3002`);
-        if (chunk.bytes > 0) parts.push(fromBase64(chunk.base64));
+        if (!Number.isSafeInteger(chunk.bytes) || chunk.bytes < 0 || chunk.bytes > CHUNK || offset + chunk.bytes > maxBytes) throw new Error(`MV \u5305\u8D44\u6E90 ${name} \u8D85\u8FC7 ${Math.round(maxBytes / 1024)} KiB \u8BFB\u53D6\u9650\u5236\u3002`);
+        if (chunk.bytes > 0) {
+          if (typeof chunk.base64 !== "string" || chunk.base64.length > 4 * Math.ceil(chunk.bytes / 3)) throw new Error(`MV \u5305\u8D44\u6E90 ${name} \u7684\u8FD4\u56DE\u7F16\u7801\u957F\u5EA6\u65E0\u6548\u3002`);
+          const bytes = fromBase64(chunk.base64);
+          if (bytes.byteLength !== chunk.bytes) throw new Error(`MV \u5305\u8D44\u6E90 ${name} \u7684\u8FD4\u56DE\u5B57\u8282\u957F\u5EA6\u4E0D\u4E00\u81F4\u3002`);
+          parts.push(bytes);
+        }
         offset += chunk.bytes;
         if (chunk.done || !chunk.bytes) break;
       }
@@ -3045,7 +3330,7 @@ function mergeShards(shards) {
   return out;
 }
 async function toImage(bytes) {
-  const blob = new Blob([bytes], { type: "image/webp" });
+  const blob = new Blob([bytes], { type: bytes[0] === 137 && bytes[1] === 80 ? "image/png" : "image/webp" });
   if (typeof createImageBitmap === "function") return createImageBitmap(blob);
   const url = URL.createObjectURL(blob);
   try {
@@ -3058,24 +3343,67 @@ async function toImage(bytes) {
   }
 }
 var asList = (value) => value == null ? null : Array.isArray(value) ? value : [value];
-async function loadDshPv(read) {
+var disposedImages = /* @__PURE__ */ new WeakSet();
+function disposeDshPvData(data) {
+  for (const image of [...Object.values(data?.art ?? {}), ...data?.raster?.atlases ?? []]) {
+    if (!image || typeof image !== "object" || disposedImages.has(image)) continue;
+    disposedImages.add(image);
+    try {
+      image.close?.();
+    } catch {
+    }
+  }
+}
+function parseRasterShards(files, dec) {
+  if (!files.length || files.length > 16 || files.reduce((n, bytes) => n + bytes.byteLength, 0) > DSHPV_RASTER_LIMITS.jsonBytes) throw new Error("dsh-pv raster\uFF1A\u65F6\u95F4\u8F74\u6587\u4EF6\u6570\u91CF\u6216\u5927\u5C0F\u65E0\u6548");
+  const shards = files.map((bytes) => JSON.parse(dec.decode(bytes)));
+  for (const shard of shards) {
+    if (!shard || typeof shard !== "object" || Array.isArray(shard) || Object.keys(shard).some((key) => !["version", "size", "frames"].includes(key))) throw new Error("dsh-pv raster\uFF1A\u65F6\u95F4\u8F74\u5206\u7247\u6709\u672A\u77E5\u5B57\u6BB5");
+    if (shard.version !== void 0 && shard.version !== 1 || shard.size !== void 0 && (!Array.isArray(shard.size) || shard.size.length !== 2 || shard.size[0] !== 1280 || shard.size[1] !== 720) || shard.frames !== void 0 && !Array.isArray(shard.frames)) throw new Error("dsh-pv raster\uFF1A\u65F6\u95F4\u8F74\u5206\u7247\u65E0\u6548");
+  }
+  return validateRasterTimeline(mergeShards(shards));
+}
+async function loadDshPv(read, { decodeImage = toImage } = {}) {
   const dec = new TextDecoder();
   const [timeline, chat, band] = await Promise.all(DSHPV_DATA.map(async (name) => {
     const files = asList(await read(name));
     if (!files?.length) throw new Error(`\u7F3A\u5C11 dsh-pv \u8D44\u6E90 ${name}`);
     return mergeShards(files.map((bytes) => JSON.parse(dec.decode(bytes))));
   }));
-  const art = {}, missingArt = [];
-  await Promise.all(DSHPV_ART.map(async (name) => {
-    try {
-      const files = asList(await read(name));
-      if (files?.[0]) art[name] = await toImage(files[0]);
-      else missingArt.push(name);
-    } catch {
-      missingArt.push(name);
+  const data = { timeline, chat, band, art: {}, missingArt: [] };
+  try {
+    const descriptor2 = asList(await read("raster-timeline"));
+    const raster = descriptor2 === null ? null : parseRasterShards(descriptor2, dec);
+    let atlasFiles = null, dimensions = null;
+    if (raster) {
+      atlasFiles = asList(await read("raster-atlas"));
+      if (!atlasFiles?.length || atlasFiles.length > DSHPV_RASTER_LIMITS.atlases) throw new Error("dsh-pv raster\uFF1A\u7F3A\u5C11\u56FE\u96C6\u6216\u56FE\u96C6\u6570\u91CF\u8FC7\u591A");
+      dimensions = atlasFiles.map(rasterImageDimensions);
+      validateRasterAtlases(raster, dimensions);
     }
-  }));
-  return { timeline, chat, band, art, missingArt };
+    await Promise.all(DSHPV_ART.map(async (name) => {
+      try {
+        const files = asList(await read(name));
+        if (files?.[0]) data.art[name] = await decodeImage(files[0]);
+        else data.missingArt.push(name);
+      } catch {
+        data.missingArt.push(name);
+      }
+    }));
+    if (raster) {
+      data.raster = { ...raster, atlases: [] };
+      for (let i = 0; i < atlasFiles.length; i++) {
+        const image = await decodeImage(atlasFiles[i]);
+        data.raster.atlases.push(image);
+        if (image?.width !== dimensions[i].width || image?.height !== dimensions[i].height) throw new Error("dsh-pv raster\uFF1A\u89E3\u7801\u540E\u7684\u56FE\u96C6\u5C3A\u5BF8\u4E0D\u5339\u914D");
+      }
+      data.raster = validateRasterAtlases(raster, data.raster.atlases);
+    }
+    return data;
+  } catch (error) {
+    disposeDshPvData(data);
+    throw error;
+  }
 }
 async function loadSceneAssets(read, pack, { images = false } = {}) {
   const dec = new TextDecoder();
@@ -3108,6 +3436,100 @@ function disposeSceneAssets({ transfer = [] } = {}) {
     } catch {
     }
   }
+}
+
+// .dsh-plugin/client/mv/dshpv/fonts.mjs
+var DSHPV_FONT_FAMILIES = Object.freeze({ head: "DshMvPvSpaceMono", banner: "DshMvPvAnton" });
+var documents = /* @__PURE__ */ new WeakMap();
+var sameBytes = (a, b) => a.byteLength === b.byteLength && a.every((value, i) => value === b[i]);
+var fail2 = (message) => {
+  throw new Error(`dsh-pv fonts\uFF1A${message}`);
+};
+function release(entry2) {
+  if (entry2.refs > 0) entry2.refs--;
+  if (entry2.refs !== 0) return;
+  if (entry2.cache.get(entry2.family) === entry2) entry2.cache.delete(entry2.family);
+  if (entry2.registered) {
+    entry2.registered = false;
+    try {
+      entry2.fontSet.delete(entry2.face);
+    } catch {
+    }
+  }
+}
+async function acquire(bytes, descriptor2, fontSet, FontFaceClass) {
+  let cache = documents.get(fontSet);
+  if (!cache) {
+    cache = /* @__PURE__ */ new Map();
+    documents.set(fontSet, cache);
+  }
+  let entry2 = cache.get(descriptor2.family);
+  if (entry2) {
+    if (!sameBytes(entry2.bytes, bytes)) fail2(`${descriptor2.family} \u5DF2\u88AB\u53E6\u4E00\u4EFD\u4E0D\u540C\u5B57\u8282\u7684\u5B57\u4F53\u5360\u7528\uFF1B\u8BF7\u5173\u95ED\u539F\u5305\u540E\u518D\u52A0\u8F7D`);
+    entry2.refs++;
+  } else {
+    const copy2 = new Uint8Array(bytes);
+    const face = new FontFaceClass(descriptor2.family, copy2.buffer, { style: "normal", weight: descriptor2.weight, display: "block" });
+    entry2 = { bytes: copy2, family: descriptor2.family, face, fontSet, cache, refs: 1, registered: false, promise: null };
+    cache.set(descriptor2.family, entry2);
+    entry2.promise = Promise.resolve().then(() => face.load()).then(() => {
+      fontSet.add(face);
+      entry2.registered = true;
+      return entry2;
+    }).catch((error) => {
+      if (cache.get(entry2.family) === entry2) cache.delete(entry2.family);
+      throw error;
+    });
+  }
+  try {
+    return await entry2.promise;
+  } catch (error) {
+    release(entry2);
+    throw error;
+  }
+}
+async function loadDshPvFonts(read, { FontFaceClass = globalThis.FontFace, fontSet = globalThis.document?.fonts } = {}) {
+  if (typeof read !== "function") fail2("\u7F3A\u5C11\u5305\u5185\u5B57\u4F53\u8BFB\u53D6\u5668");
+  const sources = await Promise.all(Object.entries(DSHPV_FONT_ASSETS).map(async ([name, descriptor2]) => {
+    let files;
+    try {
+      files = await read(name, { maxBytes: DSHPV_FONT_LIMITS.fileBytes });
+    } catch (error) {
+      fail2(`${name} \u65E0\u6CD5\u8BFB\u53D6\uFF1A${error?.message ?? error}`);
+    }
+    if (files == null) return null;
+    if (!Array.isArray(files) || files.length !== 1) fail2(`${name} \u5FC5\u987B\u662F\u5355\u4E2A TTF \u5B57\u4F53\u6587\u4EF6\uFF0C\u4E0D\u80FD\u4F7F\u7528\u5206\u7247`);
+    const value = files[0];
+    const bytes = value instanceof Uint8Array ? value : value instanceof ArrayBuffer ? new Uint8Array(value) : null;
+    const checked = checkDshPvFont(bytes, name);
+    if (checked.errors.length) fail2(checked.errors.join("\uFF1B"));
+    return { name, descriptor: descriptor2, bytes };
+  }));
+  const declared = sources.filter(Boolean);
+  const entries = [], families = {};
+  if (declared.length && (typeof FontFaceClass !== "function" || !fontSet || typeof fontSet.add !== "function" || typeof fontSet.delete !== "function")) fail2("\u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u80FD\u52A0\u8F7D\u968F\u5305 TTF \u5B57\u4F53\uFF08FontFace / document.fonts \u4E0D\u53EF\u7528\uFF09");
+  try {
+    for (const source of declared) {
+      try {
+        entries.push(await acquire(source.bytes, source.descriptor, fontSet, FontFaceClass));
+      } catch (error) {
+        fail2(`${source.name} \u52A0\u8F7D\u5931\u8D25\uFF1A${error?.message ?? error}`);
+      }
+      families[source.name === "font-head" ? "head" : "banner"] = source.descriptor.family;
+    }
+  } catch (error) {
+    for (const entry2 of entries) release(entry2);
+    throw error;
+  }
+  let disposed = false;
+  return {
+    families: Object.freeze(families),
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      for (const entry2 of entries) release(entry2);
+    }
+  };
 }
 
 // .dsh-plugin/client/mv-calib.jsx
@@ -3873,8 +4295,8 @@ function plain(value, subject) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) throw new TypeError(`${subject} must be an object`);
   return value;
 }
-function onlyKeys(value, keys, subject) {
-  const extra = Object.keys(value).filter((key) => !keys.includes(key));
+function onlyKeys(value, keys2, subject) {
+  const extra = Object.keys(value).filter((key) => !keys2.includes(key));
   if (extra.length) throw new TypeError(`${subject} has unexpected fields: ${extra.join(", ")}`);
 }
 function parseAbsolutePath(value, subject = "path") {
@@ -3912,82 +4334,6 @@ function ffmpegArgs(source, target) {
 function displayCommand(file, args) {
   const quote = (text4) => /[\s"]/.test(text4) ? `"${text4}"` : text4;
   return [file, ...args].map(quote).join(" ");
-}
-
-// .dsh-plugin/shared/mv-pack.mjs
-var MV_PACK_FORMAT = "dsh-mv-pack";
-var MV_PACK_VERSION = 1;
-var MV_PACK_MANIFEST = "mv.json";
-var MV_PACK_SCHEMA_FILE = "mv.schema.json";
-var MV_CANVAS_RENDERERS = Object.freeze(["generic", "world-execute-me", "dsh-pv", "script"]);
-var MV_PACK_FILE_ROLES = Object.freeze(["audio", "lyrics", "spectrum", "scene", "timing", "asset"]);
-var MV_RENDERERS_BUILTIN = Object.freeze(["generic", "dsh-pv", "script"]);
-var MV_SCENE_OUTPUTS = Object.freeze(["text", "pixels", "webgl"]);
-var MV_PIXEL_LIMITS = Object.freeze({ minWidth: 160, minHeight: 90, maxWidth: 1920, maxHeight: 1080, defaultSize: Object.freeze([1280, 720]) });
-var MV_ASSET_EXTENSIONS = Object.freeze([".json", ".webp", ".png"]);
-var MV_ASSET_NAME = /^[a-z0-9][a-z0-9-]{0,39}$/;
-var MV_LYRICS_EXTENSIONS = Object.freeze([".lrc", ".srt", ".vtt", ".json", ".txt", ".js", ".mjs"]);
-var MV_PACK_LIMITS = Object.freeze({
-  manifestBytes: 256 * 1024,
-  textFileBytes: 8 * 1024 * 1024,
-  sceneBytes: 256 * 1024,
-  /** 0.9.2: webgl scenes may be larger (Three.js bundles etc.); the workshop limit is the source of truth. */
-  webglSceneBytes: 2 * 1024 * 1024,
-  audioBytes: 1024 * 1024 * 1024,
-  readChunkBytes: 512 * 1024,
-  maxCredits: 50,
-  maxTextChars: 4e3,
-  maxShortChars: 200,
-  maxPathChars: 1024,
-  maxDuration: 36e3,
-  maxOffset: 30,
-  maxAssets: 32,
-  maxAssetParts: 16,
-  assetBytes: 8 * 1024 * 1024,
-  recentPacks: 50
-  // library entries kept (0.8.2: was 8; the list view stays compact)
-});
-var isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-function isAbsolutePackPath(value) {
-  return typeof value === "string" && (value.startsWith("/") || /^[A-Za-z]:[\\/]/.test(value) || /^\\\\[^\\]+\\[^\\]+/.test(value));
-}
-function parseManifestPath(value) {
-  if (typeof value !== "string") throw new TypeError("MV \u5305\u8DEF\u5F84\u5FC5\u987B\u662F\u5B57\u7B26\u4E32");
-  const path = value.trim().replace(/^"(.*)"$/, "$1");
-  if (!path || path.length > MV_PACK_LIMITS.maxPathChars || /[\0\r\n"]/.test(path)) throw new TypeError("MV \u5305\u8DEF\u5F84\u65E0\u6548");
-  if (!isAbsolutePackPath(path)) throw new TypeError("MV \u5305\u8DEF\u5F84\u5FC5\u987B\u662F\u7EDD\u5BF9\u8DEF\u5F84\uFF08mv.json \u6587\u4EF6\u6216\u5B83\u6240\u5728\u7684\u6587\u4EF6\u5939\uFF09");
-  return path;
-}
-function parsePackLoad(value) {
-  if (!isObject(value)) throw new TypeError("pack load request must be an object");
-  const extra = Object.keys(value).filter((key) => key !== "path");
-  if (extra.length) throw new TypeError(`pack load request has unexpected fields: ${extra.join(", ")}`);
-  return { path: parseManifestPath(value.path) };
-}
-function parsePackRead(value) {
-  if (!isObject(value)) throw new TypeError("pack read request must be an object");
-  const extra = Object.keys(value).filter((key) => !["manifestPath", "role", "offset", "length", "asset", "part"].includes(key));
-  if (extra.length) throw new TypeError(`pack read request has unexpected fields: ${extra.join(", ")}`);
-  if (!MV_PACK_FILE_ROLES.includes(value.role)) throw new TypeError(`role must be ${MV_PACK_FILE_ROLES.join(" / ")}`);
-  const offset = value.offset ?? 0;
-  const length = value.length ?? MV_PACK_LIMITS.readChunkBytes;
-  if (!Number.isInteger(offset) || offset < 0 || offset > MV_PACK_LIMITS.audioBytes) throw new TypeError("offset is invalid");
-  if (!Number.isInteger(length) || length < 1 || length > MV_PACK_LIMITS.readChunkBytes) throw new TypeError(`length must be 1..${MV_PACK_LIMITS.readChunkBytes}`);
-  const request2 = { manifestPath: parseManifestPath(value.manifestPath), role: value.role, offset, length };
-  if (value.role === "asset") {
-    if (typeof value.asset !== "string" || !MV_ASSET_NAME.test(value.asset)) throw new TypeError("asset must be a canvas.assets name");
-    const part2 = value.part ?? 0;
-    if (!Number.isInteger(part2) || part2 < 0 || part2 >= MV_PACK_LIMITS.maxAssetParts) throw new TypeError("part is invalid");
-    return { ...request2, asset: value.asset, part: part2 };
-  }
-  if (value.asset !== void 0 || value.part !== void 0) throw new TypeError('asset / part are only for role "asset"');
-  return request2;
-}
-function parseTemplateWrite(value) {
-  if (!isObject(value)) throw new TypeError("template request must be an object");
-  const extra = Object.keys(value).filter((key) => key !== "dir");
-  if (extra.length) throw new TypeError(`template request has unexpected fields: ${extra.join(", ")}`);
-  return { dir: parseManifestPath(value.dir) };
 }
 
 // .dsh-plugin/shared/mv-ai-prompt.mjs
@@ -5168,6 +5514,8 @@ var PRESET_PACKS = Object.freeze([
 ]);
 var WORKSHOP_LIMITS = Object.freeze({
   maxFiles: 40,
+  /** 0.9.5: dsh-pv raster pages, data shards and independent OFL notices. */
+  dshPvFiles: 64,
   fileBytes: 512 * 1024,
   coverBytes: 1024 * 1024,
   scriptBytes: 256 * 1024,
@@ -5175,11 +5523,12 @@ var WORKSHOP_LIMITS = Object.freeze({
   webglScriptBytes: 2 * 1024 * 1024,
   /** 0.9.0: 8 MB (was 4) so the dsh PV pack's recorded data fits; single files stay ≤ 512 KB (shard big JSON). */
   packBytes: 8 * 1024 * 1024,
+  dshPvPackBytes: 24 * 1024 * 1024,
   indexBytes: 8 * 1024 * 1024,
   maxPacks: 5e3,
   maxLongLine: 4e3
 });
-var WORKSHOP_ALLOWED_EXT = Object.freeze([".json", ".js", ".mjs", ".lrc", ".srt", ".vtt", ".md", ".txt", ".png", ".webp", ".jpg", ".jpeg"]);
+var WORKSHOP_ALLOWED_EXT = Object.freeze([".json", ".js", ".mjs", ".lrc", ".srt", ".vtt", ".md", ".txt", ".png", ".webp", ".jpg", ".jpeg", ".ttf"]);
 var WORKSHOP_BANNED_EXT = Object.freeze([
   ".mp3",
   ".mp2",
@@ -5329,9 +5678,9 @@ async function retimeCues(cues, timing, hashOf) {
   for (let i = 0; i < out.length; i++) if (!Number.isFinite(out[i].end) || out[i].end <= out[i].time) out[i].end = out[i + 1]?.time ?? out[i].time + 4;
   return { cues: out, matched, total: lines.length };
 }
-var onlyKeys2 = (value, keys, subject) => {
+var onlyKeys2 = (value, keys2, subject) => {
   if (!isObject3(value)) throw new TypeError(`${subject} must be an object`);
-  const extra = Object.keys(value).filter((k) => !keys.includes(k));
+  const extra = Object.keys(value).filter((k) => !keys2.includes(k));
   if (extra.length) throw new TypeError(`${subject} has unexpected fields: ${extra.join(", ")}`);
   return value;
 };
@@ -6381,7 +6730,7 @@ var MV_PACK_JSON_SCHEMA = Object.freeze({
       patternProperties: { "^x-": {} },
       properties: {
         renderer: { enum: MV_RENDERERS_BUILTIN, default: "generic", description: "generic | script (needs canvas.script) | dsh-pv (needs canvas.assets; used by the dsh PV workshop pack)." },
-        assets: { type: "object", description: "Data files a renderer reads (name \u2192 relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv; since 0.9.1 scene scripts get them in setup(info).assets.", additionalProperties: { oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }] } },
+        assets: { type: "object", description: "Data files a renderer reads (name \u2192 relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv; since 0.9.1 scene scripts get them in setup(info).assets. Since 0.9.5 only dsh-pv font-head / font-banner may name the supported local OFL TTF files.", properties: { "font-head": { const: "fonts/SpaceMono-Bold.ttf" }, "font-banner": { const: "fonts/Anton-Regular.ttf" } }, additionalProperties: { oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }] } },
         output: { enum: ["text", "pixels", "webgl"], default: "text", description: "text: render(t, cols, rows, ctx); pixels (0.9.1+): paint(g, t, width, height, ctx) on Canvas2D; webgl (0.9.2+): setup(info, gl), paint(gl, t, width, height, ctx) on sandbox-owned WebGL2. Bundle dependencies before importing." },
         size: { type: "array", items: { type: "integer" }, minItems: 2, maxItems: 2, default: [1280, 720], description: "Bitmap scenes: canvas size [width, height] (160\u20131920 \xD7 90\u20131080), letterboxed in the panel." },
         subtitles: { type: "boolean", default: false, description: '0.9.3+: opt-in player overlay of local or installed workshop lyric cues; only renderer "script" with output "pixels" or "webgl". Keep off if the scene draws its own subtitles.' },
@@ -6389,7 +6738,8 @@ var MV_PACK_JSON_SCHEMA = Object.freeze({
         fontSize: { type: "number", minimum: 8, maximum: 32 },
         bpm: { type: "number", minimum: 20, maximum: 400, description: "Song tempo for scene scripts: ctx.beat = { bpm, index, bar, phase, pulse }." },
         beatOffset: { type: "number", minimum: -60, maximum: 60, description: "Time of the first beat in seconds (default 0)." }
-      }
+      },
+      allOf: [{ if: { required: ["assets"], properties: { assets: { anyOf: [{ required: ["font-head"] }, { required: ["font-banner"] }] } } }, then: { required: ["renderer"], properties: { renderer: { const: "dsh-pv" } } } }]
     },
     "x-dsh-mv-workshop": {
       type: "object",
@@ -6404,7 +6754,10 @@ var MV_PACK_JSON_SCHEMA = Object.freeze({
         lyricsLicense: { type: "string", minLength: 1, maxLength: 120, description: "Required when sharing lyric text: explicit distribution terms covering lyrics and translations, including any non-commercial restrictions. Unknown, UNLICENSED or pending permission is rejected; this is never inferred from MIT scene code." },
         lyricsCredit: { type: "string", minLength: 1, maxLength: 500, description: "Required lyric author and translator attribution, kept with the installed pack." },
         lyricsSource: { type: "string", maxLength: 300, pattern: '^https://[^\\s"<>]{3,300}$', description: "Optional HTTPS source or authorization/guideline link; not a remote lyric file to load." },
-        lyricsTiming: { type: "string", description: "Optional lyrics.timing.json: pure cue times and normalized-text hashes only, never text." }
+        lyricsTiming: { type: "string", description: "Optional lyrics.timing.json: pure cue times and normalized-text hashes only, never text." },
+        fontsLicense: { const: "OFL-1.1", description: "Required when dsh-pv includes its supported OFL font files; not inherited from scene-code licensing." },
+        fontsCredit: { type: "string", minLength: 1, maxLength: 500, description: "Required original font authors/copyright attribution." },
+        fontsNotice: { const: "fonts/NOTICE.md", description: "Required bundled font attribution notice; include each matching fonts/OFL_*.txt in full." }
       }
     },
     terminal: { deprecated: true, description: "Ignored since 0.6.0: the panel no longer runs external TUI players." }
@@ -6479,6 +6832,22 @@ remain supported and can still use a local lyric file.
 - \`spectrum.file\` may reference local \`{ fps, bands?, frames }\` JSON with
   consistent numeric bands in 0\u20131 (not audio samples or base64 music). No spectrum
   file is necessary when using the live analyser. These packs require 0.9.4+.
+
+## Optional dsh-pv fonts (0.9.5+)
+
+The dsh-pv renderer may declare \`canvas.assets["font-head"] = "fonts/SpaceMono-Bold.ttf"\`
+and \`canvas.assets["font-banner"] = "fonts/Anton-Regular.ttf"\`. Each is one local TTF
+file, at most 512 KiB, loaded from pack bytes with fixed scoped font families and
+weights. Other font keys, font shards, URLs and script-supplied font faces are
+not supported. Declared fonts must load successfully; undeclared fonts preserve
+the older local/system fallback behavior.
+
+When publishing them, declare \`fontsLicense: "OFL-1.1"\`, \`fontsCredit\` and
+\`fontsNotice: "fonts/NOTICE.md"\` in \`x-dsh-mv-workshop\`. Include that attribution
+notice and the matching full \`fonts/OFL_spacemono.txt\` / \`fonts/OFL_anton.txt\`.
+These font terms are independent of the visual code and artwork. Windows fonts
+such as Consolas, Microsoft YaHei and Segoe UI are only used when installed on
+the listener's computer; do not copy their font files or glyph atlases into a pack.
 
 ## Audio formats
 
@@ -6584,6 +6953,20 @@ VS Code \u7B49\u7F16\u8F91\u5668\u63D0\u4F9B\u8865\u5168\u548C\u6821\u9A8C\u3002
   512 KiB\uFF1B\`lyrics.timing.json\` \u59CB\u7EC8\u53EA\u5141\u8BB8\u65F6\u95F4\u548C\u54C8\u5E0C\uFF0C\u4E0D\u542B\u6587\u5B57\u3002
 - \`spectrum.file\` \u53EF\u5F15\u7528\u5305\u5185 \`{ fps, bands?, frames }\` JSON\uFF0C\u9891\u6BB5\u5BBD\u5EA6\u4E00\u81F4\u3001\u6570\u503C 0\u20131\uFF0C
   \u4E0D\u80FD\u643A\u5E26\u97F3\u9891\u91C7\u6837\u6216 base64 \u97F3\u4E50\uFF1B\u4F7F\u7528\u5B9E\u65F6\u5206\u6790\u65F6\u4E0D\u5FC5\u63D0\u4F9B\u3002\u6B64\u7C7B\u5B8C\u6574\u5305\u9700\u8981\u63D2\u4EF6 0.9.4+\u3002
+
+## \u53EF\u9009\u7684 dsh-pv \u5B57\u4F53\uFF080.9.5+\uFF09
+
+dsh-pv \u6E32\u67D3\u5668\u53EF\u58F0\u660E \`canvas.assets["font-head"] = "fonts/SpaceMono-Bold.ttf"\`
+\u548C \`canvas.assets["font-banner"] = "fonts/Anton-Regular.ttf"\`\u3002\u6BCF\u9879\u53EA\u80FD\u662F\u4E00\u4E2A\u5305\u5185 TTF
+\u6587\u4EF6\uFF0C\u9650 512 KiB\uFF0C\u4EE5\u56FA\u5B9A\u7684\u4F5C\u7528\u57DF\u5B57\u4F53\u540D\u548C\u5B57\u91CD\u4ECE\u5305\u5185\u5B57\u8282\u52A0\u8F7D\uFF1B\u4E0D\u63A5\u53D7\u5176\u4ED6\u5B57\u4F53\u952E\u3001
+\u5B57\u4F53\u5206\u7247\u3001URL \u6216\u811A\u672C\u6307\u5B9A\u7684\u5B57\u4F53\u540D\u79F0\u3002\u5DF2\u58F0\u660E\u5B57\u4F53\u52A0\u8F7D\u5931\u8D25\u4F1A\u660E\u786E\u62A5\u9519\uFF1B\u65E7\u5305\u672A\u58F0\u660E\u5B57\u4F53\u65F6\uFF0C
+\u7EE7\u7EED\u4F7F\u7528\u672C\u673A / \u7CFB\u7EDF\u540E\u5907\u5B57\u4F53\u3002
+
+\u53D1\u5E03\u65F6\u5728 \`x-dsh-mv-workshop\` \u4E2D\u58F0\u660E \`fontsLicense: "OFL-1.1"\`\u3001
+\`fontsCredit\` \u548C \`fontsNotice: "fonts/NOTICE.md"\`\uFF0C\u968F\u5305\u4FDD\u7559\u8BE5\u7F72\u540D\u8BF4\u660E\u53CA\u5BF9\u5E94\u7684
+\`fonts/OFL_spacemono.txt\` / \`fonts/OFL_anton.txt\` \u8BB8\u53EF\u5168\u6587\u3002\u5B57\u4F53\u8BB8\u53EF\u4E0D\u7EE7\u627F\u753B\u9762\u4EE3\u7801\u6216
+\u7ACB\u7ED8\u7684\u8BB8\u53EF\u3002Consolas\u3001\u5FAE\u8F6F\u96C5\u9ED1\u3001Segoe UI \u7B49 Windows \u5B57\u4F53\u53EA\u4F7F\u7528\u542C\u4F17\u672C\u673A\u5DF2\u5B89\u88C5\u7248\u672C\uFF0C
+\u4E0D\u80FD\u628A\u5B57\u4F53\u6587\u4EF6\u6216\u9010\u5B57\u7B26\u56FE\u96C6\u590D\u5236\u8FDB\u5DE5\u574A\u5305\u3002
 
 ## \u97F3\u9891\u683C\u5F0F
 
@@ -6998,6 +7381,10 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       }),
       dshpv: new DshPvFilm({ energy: (t) => state.energy(t) }),
       dshpvLoad: null,
+      dshpvData: null,
+      dshpvFonts: null,
+      dshpvOwner: null,
+      disposed: false,
       film: null,
       renderer: new GridRenderer(canvas.current, { fontSize }),
       clock: new FilmClock({ audio: audio.current }),
@@ -7058,6 +7445,12 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     const onFs = () => setFullscreen(document.fullscreenElement === wrap3.current);
     document.addEventListener("fullscreenchange", onFs);
     return () => {
+      state.disposed = true;
+      state.dshpvOwner = null;
+      disposeDshPvData(state.dshpvData);
+      state.dshpvFonts?.dispose();
+      state.dshpvData = null;
+      state.dshpvFonts = null;
       cancelAnimationFrame(raf);
       document.removeEventListener("fullscreenchange", onFs);
       live.close();
@@ -7166,6 +7559,22 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   import_react3.default.useEffect(() => {
     let cancelled = false;
     const state = engine.current;
+    const dshpvOwner = /* @__PURE__ */ Symbol("dsh-pv pack load");
+    const releaseDshPv = () => {
+      disposeDshPvData(state.dshpvData);
+      state.dshpvFonts?.dispose();
+      state.dshpvData = null;
+      state.dshpvFonts = null;
+      state.dshpvFor = "";
+      state.dshpv.timeline = null;
+      state.dshpv.chat = null;
+      state.dshpv.band = null;
+      state.dshpv.art = {};
+      state.dshpv.raster = null;
+      state.dshpv.lastT = void 0;
+    };
+    state.dshpvOwner = dshpvOwner;
+    releaseDshPv();
     void (async () => {
       dbRef.current ?? (dbRef.current = await openMediaStore());
       if (cancelled) return;
@@ -7196,16 +7605,36 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
         const read = dshpvReader ?? (hasDshPvAssets(pack) && api?.packRead ? packAssetReader(api, pack.manifestPath, pack.pack) : null);
         state.dshpvFor = `${pack.id}@${pack.loadedAt ?? ""}`;
         state.dshpv.status = "loading";
-        state.dshpvLoad = read ? loadDshPv(read).then((data) => {
-          state.dshpv.setData(data);
-          if (data.missingArt.length) setSceneNote(`dsh-pv\uFF1A\u8FD9\u4E2A\u5305\u7F3A\u5C11 ${data.missingArt.length} \u5F20\u7ACB\u7ED8\uFF0C\u6539\u7528\u5360\u4F4D\u526A\u5F71\u3002`);
-          return data;
-        }).catch((failure) => {
-          state.dshpv.status = "error";
-          state.dshpvFor = "";
-          setError(`\u65E0\u6CD5\u52A0\u8F7D dsh-pv \u8D44\u6E90\uFF1A${failure?.message ?? failure}`);
-          return null;
-        }) : Promise.resolve(null);
+        state.dshpvLoad = read ? (async () => {
+          let data = null, fonts = null;
+          try {
+            data = await loadDshPv(read);
+            if (cancelled || state.disposed || state.dshpvOwner !== dshpvOwner) {
+              disposeDshPvData(data);
+              return null;
+            }
+            fonts = await loadDshPvFonts(read);
+            if (cancelled || state.disposed || state.dshpvOwner !== dshpvOwner) {
+              disposeDshPvData(data);
+              fonts.dispose();
+              return null;
+            }
+            state.dshpvData = data;
+            state.dshpvFonts = fonts;
+            state.dshpv.setData(data);
+            if (data.missingArt.length) setSceneNote(`dsh-pv\uFF1A\u8FD9\u4E2A\u5305\u7F3A\u5C11 ${data.missingArt.length} \u5F20\u7ACB\u7ED8\uFF0C\u6539\u7528\u5360\u4F4D\u526A\u5F71\u3002`);
+            return data;
+          } catch (failure) {
+            disposeDshPvData(data);
+            fonts?.dispose();
+            if (!cancelled && !state.disposed && state.dshpvOwner === dshpvOwner) {
+              state.dshpv.status = "error";
+              state.dshpvFor = "";
+              setError(`\u65E0\u6CD5\u52A0\u8F7D dsh-pv \u8D44\u6E90\uFF1A${failure?.message ?? failure}`);
+            }
+            return null;
+          }
+        })() : Promise.resolve(null);
         if (!read) {
           state.dshpv.status = "error";
           state.film = state.generic;
@@ -7317,6 +7746,10 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     })();
     return () => {
       cancelled = true;
+      if (state.dshpvOwner === dshpvOwner) {
+        state.dshpvOwner = null;
+        releaseDshPv();
+      }
     };
   }, [pack.id, pack.loadedAt]);
   const clearAudio = () => {
@@ -7686,41 +8119,41 @@ function EngineCard({ api, info, refresh, compact = false }) {
 }
 
 // .dsh-plugin/shared/mv-calib-protocol.mjs
-var fail = (message) => {
+var fail3 = (message) => {
   throw new TypeError(message);
 };
 var LRCLIB_FIELDS = Object.freeze(["title", "artist", "album", "duration"]);
 function parseLyricsLookup(value) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) fail("lyricsLookup must be an object");
+  if (!value || typeof value !== "object" || Array.isArray(value)) fail3("lyricsLookup must be an object");
   const extra = Object.keys(value).filter((k) => !LRCLIB_FIELDS.includes(k));
-  if (extra.length) fail(`lyricsLookup: unexpected fields: ${extra.join(", ")}`);
-  const text4 = (v, name, max = 300) => v === void 0 ? "" : typeof v === "string" && v.length <= max ? v.trim() : fail(`${name} must be a string`);
+  if (extra.length) fail3(`lyricsLookup: unexpected fields: ${extra.join(", ")}`);
+  const text4 = (v, name, max = 300) => v === void 0 ? "" : typeof v === "string" && v.length <= max ? v.trim() : fail3(`${name} must be a string`);
   const title = text4(value.title, "title");
-  if (!title) fail("title is required");
-  const duration = value.duration === void 0 || value.duration === null ? null : Number.isFinite(value.duration) && value.duration > 0 && value.duration < 36e3 ? value.duration : fail("duration out of range");
+  if (!title) fail3("title is required");
+  const duration = value.duration === void 0 || value.duration === null ? null : Number.isFinite(value.duration) && value.duration > 0 && value.duration < 36e3 ? value.duration : fail3("duration out of range");
   return { title, artist: text4(value.artist, "artist"), album: text4(value.album, "album"), duration };
 }
 var PACK_TEXT_FILES = Object.freeze({ "lyrics.lrc": 2 * 1048576, [MV_PACK_MANIFEST]: 512 * 1024, "timing.json": 8 * 1048576, "sections.json": 1048576 });
 var ANALYSIS_FILES = Object.freeze({ manifest: MV_PACK_MANIFEST, transcript: "analysis/transcript.json", vocals: "analysis/vocals.wav", timing: "timing.json", sections: "sections.json" });
 var READ_CHUNK = 1024 * 1024;
-var absManifest = (v) => typeof v === "string" && isAbsolutePackPath(v) ? v : fail("manifestPath must be an absolute path");
+var absManifest = (v) => typeof v === "string" && isAbsolutePackPath(v) ? v : fail3("manifestPath must be an absolute path");
 function parsePackWriteText(value) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) fail("packWriteText must be an object");
+  if (!value || typeof value !== "object" || Array.isArray(value)) fail3("packWriteText must be an object");
   const extra = Object.keys(value).filter((k) => !["manifestPath", "file", "text"].includes(k));
-  if (extra.length) fail(`packWriteText: unexpected fields: ${extra.join(", ")}`);
-  if (!Object.hasOwn(PACK_TEXT_FILES, value.file)) fail(`file must be one of ${Object.keys(PACK_TEXT_FILES).join(", ")}`);
-  if (typeof value.text !== "string") fail("text must be a string");
-  if (Buffer.byteLength(value.text, "utf8") > PACK_TEXT_FILES[value.file]) fail(`${value.file} is too large`);
+  if (extra.length) fail3(`packWriteText: unexpected fields: ${extra.join(", ")}`);
+  if (!Object.hasOwn(PACK_TEXT_FILES, value.file)) fail3(`file must be one of ${Object.keys(PACK_TEXT_FILES).join(", ")}`);
+  if (typeof value.text !== "string") fail3("text must be a string");
+  if (Buffer.byteLength(value.text, "utf8") > PACK_TEXT_FILES[value.file]) fail3(`${value.file} is too large`);
   return { manifestPath: absManifest(value.manifestPath), file: value.file, text: value.text };
 }
 function parseAnalysisRead(value) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) fail("analysisRead must be an object");
+  if (!value || typeof value !== "object" || Array.isArray(value)) fail3("analysisRead must be an object");
   const extra = Object.keys(value).filter((k) => !["manifestPath", "name", "offset", "length"].includes(k));
-  if (extra.length) fail(`analysisRead: unexpected fields: ${extra.join(", ")}`);
-  if (!Object.hasOwn(ANALYSIS_FILES, value.name)) fail(`name must be one of ${Object.keys(ANALYSIS_FILES).join(", ")}`);
+  if (extra.length) fail3(`analysisRead: unexpected fields: ${extra.join(", ")}`);
+  if (!Object.hasOwn(ANALYSIS_FILES, value.name)) fail3(`name must be one of ${Object.keys(ANALYSIS_FILES).join(", ")}`);
   const offset = value.offset ?? 0, length = value.length ?? READ_CHUNK;
-  if (!Number.isInteger(offset) || offset < 0) fail("offset must be a non-negative integer");
-  if (!Number.isInteger(length) || length < 1 || length > READ_CHUNK) fail("length out of range");
+  if (!Number.isInteger(offset) || offset < 0) fail3("offset must be a non-negative integer");
+  if (!Number.isInteger(length) || length < 1 || length > READ_CHUNK) fail3("length out of range");
   return { manifestPath: absManifest(value.manifestPath), name: value.name, offset, length };
 }
 
@@ -9314,18 +9747,18 @@ var ENGINE_MODELS = Object.freeze({
 });
 var ENGINE_LANGUAGES = Object.freeze(["auto", "zh", "ja", "en", "ko", "yue"]);
 var ENGINE_LIMITS = Object.freeze({ promptChars: 600, jobEvents: 4e3, installTimeoutMs: 3 * 36e5, runTimeoutMs: 36e5, readWaitMs: 1500 });
-var fail2 = (message) => {
+var fail4 = (message) => {
   throw new TypeError(message);
 };
-var obj = (value, subject) => value && typeof value === "object" && !Array.isArray(value) ? value : fail2(`${subject} must be an object`);
-var only = (value, keys, subject) => {
-  const extra = Object.keys(value).filter((k) => !keys.includes(k));
-  if (extra.length) fail2(`${subject}: unexpected fields: ${extra.join(", ")}`);
+var obj = (value, subject) => value && typeof value === "object" && !Array.isArray(value) ? value : fail4(`${subject} must be an object`);
+var only = (value, keys2, subject) => {
+  const extra = Object.keys(value).filter((k) => !keys2.includes(k));
+  if (extra.length) fail4(`${subject}: unexpected fields: ${extra.join(", ")}`);
 };
-var oneOf = (value, list, subject, fallback) => value === void 0 ? fallback : list.includes(value) ? value : fail2(`${subject} must be one of ${list.join(", ")}`);
-var bool = (value, subject, fallback) => value === void 0 ? fallback : typeof value === "boolean" ? value : fail2(`${subject} must be a boolean`);
-var absPath = (value, subject) => typeof value === "string" && isAbsolutePackPath(value) && value.length < 1e3 ? value : fail2(`${subject} must be an absolute path`);
-var jobIdOf = (value) => typeof value === "string" && /^mvjob-[a-f0-9]{12,32}$/.test(value) ? value : fail2("jobId is invalid");
+var oneOf = (value, list, subject, fallback) => value === void 0 ? fallback : list.includes(value) ? value : fail4(`${subject} must be one of ${list.join(", ")}`);
+var bool = (value, subject, fallback) => value === void 0 ? fallback : typeof value === "boolean" ? value : fail4(`${subject} must be a boolean`);
+var absPath = (value, subject) => typeof value === "string" && isAbsolutePackPath(value) && value.length < 1e3 ? value : fail4(`${subject} must be an absolute path`);
+var jobIdOf = (value) => typeof value === "string" && /^mvjob-[a-f0-9]{12,32}$/.test(value) ? value : fail4("jobId is invalid");
 function parseEngineInfo(value = {}) {
   only(obj(value, "engineInfo"), ["refresh"], "engineInfo");
   return { refresh: bool(value.refresh, "refresh", false) };
@@ -9333,19 +9766,19 @@ function parseEngineInfo(value = {}) {
 function parseEngineInstall(value) {
   const v = obj(value, "engineInstall");
   only(v, ["confirmed", "profile", "model"], "engineInstall");
-  if (v.confirmed !== true) fail2("engineInstall needs confirmed: true");
+  if (v.confirmed !== true) fail4("engineInstall needs confirmed: true");
   return { confirmed: true, profile: oneOf(v.profile, Object.keys(ENGINE_TORCH), "profile", "cuda"), model: oneOf(v.model, Object.keys(ENGINE_MODELS), "model", "large-v3") };
 }
 function parseEngineModel(value) {
   const v = obj(value, "engineModel");
   only(v, ["confirmed", "model"], "engineModel");
-  if (v.confirmed !== true) fail2("engineModel needs confirmed: true");
+  if (v.confirmed !== true) fail4("engineModel needs confirmed: true");
   return { confirmed: true, model: oneOf(v.model, Object.keys(ENGINE_MODELS), "model", "small") };
 }
 function parseEngineTranscribe(value) {
   const v = obj(value, "engineTranscribe");
   only(v, ["manifestPath", "model", "language", "separate", "prompt", "device"], "engineTranscribe");
-  const prompt = v.prompt === void 0 ? "" : typeof v.prompt === "string" ? v.prompt.slice(0, ENGINE_LIMITS.promptChars) : fail2("prompt must be a string");
+  const prompt = v.prompt === void 0 ? "" : typeof v.prompt === "string" ? v.prompt.slice(0, ENGINE_LIMITS.promptChars) : fail4("prompt must be a string");
   return {
     manifestPath: absPath(v.manifestPath, "manifestPath"),
     model: oneOf(v.model, Object.keys(ENGINE_MODELS), "model", "large-v3"),
@@ -9359,9 +9792,9 @@ function parseJobRead(value) {
   const v = obj(value, "jobRead");
   only(v, ["jobId", "cursor", "waitMs"], "jobRead");
   const cursor = v.cursor ?? 0;
-  if (!Number.isInteger(cursor) || cursor < 0) fail2("cursor must be a non-negative integer");
+  if (!Number.isInteger(cursor) || cursor < 0) fail4("cursor must be a non-negative integer");
   const waitMs = v.waitMs ?? 0;
-  if (!Number.isInteger(waitMs) || waitMs < 0 || waitMs > ENGINE_LIMITS.readWaitMs) fail2("waitMs out of range");
+  if (!Number.isInteger(waitMs) || waitMs < 0 || waitMs > ENGINE_LIMITS.readWaitMs) fail4("waitMs out of range");
   return { jobId: jobIdOf(v.jobId), cursor, waitMs };
 }
 function parseJobCancel(value) {
