@@ -3,7 +3,7 @@
  * workshop GitHub repository, install packs into
  * %LOCALAPPDATA%\dsh-mv\workshop\<id>\ after checking every file's size and
  * sha256 against the index, uninstall them, and prepare a pack for
- * publishing (audio and lyric text stripped, lyric timings kept as hashes).
+ * publishing (audio excluded; licensed lyrics and non-audio resources retained).
  * Publishing itself happens in the user's browser on github.com; this module
  * never uploads anything and never runs anything from a pack.
  */
@@ -294,7 +294,7 @@ export function lyricsTiming(cues) {
   }
 }
 
-function packReadme({ title, artist, author, license, description, credits, hasTiming, duration }) {
+function packReadme({ title, artist, author, license, description, credits, hasLyrics, lyricsLicense, lyricsCredit, lyricsSource, hasTiming, duration }) {
   return `# ${title}${artist ? ` — ${artist}` : ''}
 
 ${description || 'A canvas MV for DeepSeek Harness · MV 放映室 (dsh-mv).'}
@@ -306,15 +306,16 @@ ${(credits ?? []).map(line => `- ${line}`).join('\n')}
 
 ## How to play / 如何播放
 
-This pack contains **no audio and no lyric text**. Install it from 创意工坊 in the MV 放映室 panel, then choose
-your own copy of the song${hasTiming ? ' and your own lyrics file (lines are matched to the pack\'s timings by hash)' : ''}.
+This pack contains **no audio**. Install it from 创意工坊 in the MV 放映室 panel, then choose
+your own copy of the song. ${hasLyrics ? 'Included lyrics and translations load automatically.' : hasTiming ? 'Choose a local lyrics file to match the included timing hashes.' : 'This visual pack has no lyric track.'}
 
-本包**不含音频和歌词文本**。在 MV 放映室的「创意工坊」安装后，选择你自己的歌曲文件${hasTiming ? '和歌词文件（按哈希匹配包里的时间轴）' : ''}即可播放。
+本包**不含音频**。在 MV 放映室的「创意工坊」安装后，选择你自己的歌曲文件即可播放。${hasLyrics ? '歌词和译文随包安装并自动加载。' : hasTiming ? '本包只有歌词时间轴，需另选本地歌词文件。' : '本视觉包没有歌词轨。'}
 Song rights belong to their owners. 歌曲版权归原作者所有。
+${hasLyrics ? `\n## Lyrics / 歌词\n\n- License / 使用条款: ${lyricsLicense}\n- Credit / 署名: ${lyricsCredit}\n${lyricsSource ? `- Source / 来源: ${lyricsSource}\n` : ''}\nThe pack's code license does not replace the separate lyric terms. 歌词使用条款独立于代码许可。\n` : ''}
 `
 }
 
-/** Build the publish folder for a local pack: stripped mv.json, scene, cover, README, timings. */
+/** Build a complete non-audio pack. Lyrics are parsed as static data, never executed. */
 export async function preparePublish(request, { publishRoot, now = () => new Date(), load = loadPack, readText = p => readFile(p, 'utf8'), readBytes = p => readFile(p) }) {
   const { manifestPath, packDir, pack } = await load(request.manifestPath)
   const raw = JSON.parse(await readText(manifestPath))
@@ -324,7 +325,7 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
   const copiedAssets = new Set()
   // Carry the notices required by bundled libraries/adapted code. Do not crawl
   // arbitrary user files; only this explicit root-level provenance allow-list.
-  for (const name of ['LICENSE', 'LICENSE.txt', 'LICENSE.md', 'NOTICE.md', 'source-provenance.json']) {
+  for (const name of ['LICENSE', 'LICENSE.txt', 'LICENSE.md', 'NOTICE.md', 'LYRICS-NOTICE.md', 'source-provenance.json']) {
     try {
       const path = join(packDir, name), entry = await stat(path)
       if (!entry.isFile()) continue
@@ -337,16 +338,32 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
   const scriptPath = pack.canvas?.renderer === 'script' ? (isAbsolutePackPath(pack.canvas.script) ? 'scenes.js' : pack.canvas.script) : null
   const stripped = []
   if (raw.audio !== undefined) stripped.push('audio（音频不会上传）')
-  if (raw.spectrum !== undefined) stripped.push('spectrum（由用户音频实时分析）')
   let timing = null
+  let lyrics = null, spectrum = null
+  const originalWorkshop = raw['x-dsh-mv-workshop'] ?? {}
+  const lyricsLicense = request.lyricsLicense || originalWorkshop.lyricsLicense || ''
+  const lyricsCredit = request.lyricsCredit || originalWorkshop.lyricsCredit || ''
+  const lyricsSource = request.lyricsSource || originalWorkshop.lyricsSource || ''
   if (pack.lyrics?.file) {
-    stripped.push('lyrics（歌词文本不会上传，只保留时间轴哈希）')
     try {
       const path = packFilePath(packDir, pack.lyrics.file)
       const cues = parseLyrics(path, await readText(path), { duration: pack.duration ?? 1e9 })
+      if (!cues.length) throw new Error('没有可发布的带时间歌词')
+      lyrics = { file: 'lyrics.workshop.json', offset: pack.lyrics.offset ?? 0 }
+      files.set(lyrics.file, json(cues))
       const shift = pack.lyrics.offset ?? 0
-      if (cues.length) timing = lyricsTiming(cues.map(c => ({ ...c, time: c.time + shift, end: c.end + shift, words: c.words?.map(w => ({ ...w, time: w.time + shift })) })))
-    } catch { /* no timings then */ }
+      timing = lyricsTiming(cues.map(c => ({ ...c, time: c.time + shift, end: c.end + shift, words: c.words?.map(w => ({ ...w, time: w.time + shift })) })))
+    } catch (error) { assetErrors.push(`无法保留歌词：${error?.message ?? error}`) }
+  } else if (pack.workshop?.lyricsTiming) {
+    try { timing = JSON.parse(await readText(packFilePath(packDir, pack.workshop.lyricsTiming))) }
+    catch (error) { assetErrors.push(`无法保留原有歌词时间轴：${error?.message ?? error}`) }
+  }
+  if (pack.spectrum?.file) {
+    try {
+      const value = JSON.parse(await readText(packFilePath(packDir, pack.spectrum.file)))
+      spectrum = { file: 'spectrum.workshop.json' }
+      files.set(spectrum.file, json(value))
+    } catch (error) { assetErrors.push(`无法保留频谱数据：${error?.message ?? error}`) }
   }
   if (pack.canvas?.renderer === 'script') {
     const source = await readText(packFilePath(packDir, pack.canvas.script))
@@ -367,26 +384,41 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
       }
     }
   }
+  // Preserve companion attribution, not arbitrary files or hidden audio.
+  for (const parent of new Set([...copiedAssets].map(ref => dirname(ref)).filter(dir => dir !== '.'))) {
+    for (const name of ['NOTICE.md', 'LICENSE.txt', 'LICENSE.md']) {
+      const ref = `${parent.replace(/\\/g, '/')}/${name}`
+      try {
+        const path = packFilePath(packDir, ref), entry = await stat(path)
+        if (!entry.isFile()) continue
+        if (entry.size > WORKSHOP_LIMITS.fileBytes) { assetErrors.push(`${ref} 太大`); continue }
+        if (!files.has(ref)) files.set(ref, await readText(path))
+      } catch (error) { if (error.code !== 'ENOENT') assetErrors.push(`无法保留 ${ref}：${error.message}`) }
+    }
+  }
   const duration = request.duration ?? pack.duration ?? null
   const manifest = { ...raw }
   delete manifest.audio; delete manifest.lyrics; delete manifest.spectrum; delete manifest.$schema; delete manifest.terminal
+  if (lyrics) manifest.lyrics = lyrics
+  if (spectrum) manifest.spectrum = spectrum
   if (pack.canvas) manifest.canvas = { ...raw.canvas, ...(scriptPath ? { renderer: 'script', script: scriptPath } : {}), ...(pack.canvas.assets ? { assets: pack.canvas.assets } : {}) }
   if (duration) manifest.duration = Math.round(duration * 1000) / 1000
   const ai = raw['x-dsh-mv-ai']
   if (ai) { delete manifest['x-dsh-mv-ai']; if (Array.isArray(ai.sections) && ai.sections.length) manifest['x-dsh-mv-ai'] = { sections: ai.sections } }
-  manifest.notice = [raw.notice, 'Workshop pack: no audio or lyric text included. Play it with your own copy of the song. 工坊包不含音频和歌词文本，请使用你自己的歌曲文件。'].filter(Boolean).join('\n')
+  manifest.notice = [raw.notice, 'Workshop pack: no audio included. Licensed lyrics and declared visual/data resources are included when present. 工坊包不含音频；已授权歌词与声明的画面/数据资源随包提供。'].filter(Boolean).join('\n')
   manifest['x-dsh-mv-workshop'] = {
     id: request.id, version: request.version, license: request.license, author: request.author,
     ...(request.description ? { description: request.description } : {}), ...(request.tags.length ? { tags: request.tags } : {}), ...(request.homepage ? { homepage: request.homepage } : {}),
     audio: { ...(duration ? { duration: Math.round(duration * 1000) / 1000 } : {}), ...(request.fingerprint ? { fingerprint: { kind: FINGERPRINT_KIND, values: request.fingerprint } } : {}) },
     ...(timing ? { lyricsTiming: WORKSHOP_TIMING_FILE } : {}),
+    ...(lyrics ? { lyricsLicense, lyricsCredit, ...(lyricsSource ? { lyricsSource } : {}) } : {}),
     ...(raw['x-dsh-mv-workshop']?.source ? { source: raw['x-dsh-mv-workshop'].source } : {}),
     ...(packRequires(pack, raw['x-dsh-mv-workshop']?.requires) ? { requires: packRequires(pack, raw['x-dsh-mv-workshop']?.requires) } : {}),
     publishedAt: now().toISOString().slice(0, 10),
   }
   files.set('mv.json', json(manifest))
   if (timing) files.set(WORKSHOP_TIMING_FILE, json(timing))
-  files.set('README.md', packReadme({ title: pack.title, artist: pack.artist, author: request.author, license: request.license, description: request.description, credits: pack.credits, hasTiming: Boolean(timing), duration }))
+  files.set('README.md', packReadme({ title: pack.title, artist: pack.artist, author: request.author, license: request.license, description: request.description, credits: pack.credits, hasLyrics: Boolean(lyrics), lyricsLicense, lyricsCredit, lyricsSource, hasTiming: Boolean(timing), duration }))
   try {
     const path = join(packDir, 'README.md'), entry = await stat(path)
     if (entry.isFile()) {
@@ -407,7 +439,7 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
   for (const entry of assetEntries) {
     if (entryPaths.has(entry.path)) {
       // An asset may name the scene itself. It is already copied, byte for byte.
-      if (entry.path === scriptPath && entries.find(e => e.path === scriptPath)?.bytes.equals(entry.bytes)) continue
+      if (entries.find(e => e.path === entry.path)?.bytes.equals(entry.bytes)) continue
       assetErrors.push(`canvas.assets 的文件路径与发布文件冲突：${entry.path}`)
       continue
     }
@@ -433,12 +465,13 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
     ok: errors.length === 0, id: request.id, dir: errors.length ? null : dir,
     files: entries.map(e => ({ path: e.path, size: e.bytes.length, sha256: sha256(e.bytes) })),
     errors, warnings: [...new Set(result.warnings)], stripped,
-    timingLines: timing?.lines.length ?? 0, links: publishLinks(request.id),
+    timingLines: timing?.lines.length ?? 0, lyricLines: lyrics ? timing?.lines.length ?? 0 : 0, links: publishLinks(request.id),
     prTitle: `Add pack: ${pack.title}${pack.artist ? ` — ${pack.artist}` : ''} (${request.id})`,
     prBody: [
       `Pack: \`packs/${request.id}/\` · version ${request.version} · license ${request.license} · author ${request.author}`,
       '',
-      '- [x] No audio, no lyric text (prepared by dsh-mv 发布到工坊; lyrics are timings + hashes only)',
+      '- [x] No audio (lyrics, translations and visual/data resources are retained when declared)',
+      ...(lyrics ? [`- [ ] I have the right to share lyrics under ${lyricsLicense}, credited to ${lyricsCredit}`] : []),
       '- [x] Scene script passes the static sandbox checks',
       `- [ ] I have the right to share this pack under ${request.license} (confirm before submitting)`,
     ].join('\n'),

@@ -16,18 +16,17 @@ their sources stay in this repository under `presets/`, which is not part of the
 | --- | --- | --- |
 | [`world-execute-me`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me) | [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) | 经原作者许可再分发，非开源 / redistributed with the author's permission, not open source |
 | [`world-execute-me-dsh-pv`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-dsh-pv) | [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) | 数据 MIT + 立绘 CC BY-NC-SA 4.0 → 整包 `CC-BY-NC-SA-4.0` |
-| [`world-execute-me-wallpaper`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper)（0.9.1） | [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper) | MIT © 2026 seasnakes（音乐与歌词 © Mili，不包含 / music and lyrics © Mili, not included） |
-| [`polytech-tree`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree)（0.9.1） | [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree) | 代码 MIT © 2026 secwind + 结构化数据 CC BY 4.0 → `MIT AND CC-BY-4.0`（未使用 CC BY-SA 的 `desc` 字段 / the CC BY-SA `desc` field is not used） |
+| [`world-execute-me-three`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-three) 1.1.0 | [wiers-jack/world-execute-me-mv](https://gitee.com/wiers-jack/world-execute-me-mv) | 作者确认的 MIT 视觉代码许可 + Mili 非商业同人歌词条款；音乐录音不包含 / author-confirmed MIT visual code + separate Mili non-commercial fan-caption terms; no recording |
+| [`world-execute-me-wallpaper`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper) 1.1.0 | [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper) | MIT © 2026 seasnakes + Mili 非商业同人歌词条款；音乐录音不包含 / MIT visual code + separate Mili non-commercial fan-caption terms; no recording |
+| [`polytech-tree`](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree) 1.2.0 | [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree) | 代码 MIT + 结构化数据 CC BY 4.0 + 原始中文描述 CC BY-SA 4.0，含完整条目与来源署名 / code MIT + structured data CC BY 4.0 + full original descriptions CC BY-SA 4.0, with source credits |
 
 ## 1. 歌曲与歌词 / Song and lyrics
 
 《world.execute(me);》的作曲、作词、录音及其歌词文本的一切权利归 **Mili** 及其权利人所有。
-本插件和上述工坊包都**不包含**任何音频、视频、歌词文本、频谱数据或字体；用户需自行提供合法取得的音频与歌词文件，
-文件只在用户本机的 Harness 里读取，不会上传。
+插件 npm 本体不含歌曲、真实歌词或音乐录音；用户自行提供音乐。自0.9.4起，工坊可分发明确授权并署名的歌词、译文、时间轴、频谱及画面资源，安装后自动加载。Mili 同人完整包的歌词使用依据为 https://projectmili.com/copyright-guidelines ，限非商业同人用途，并非代码 MIT 对歌词授予许可；具体资源分别按包内 NOTICE / LYRICS-NOTICE 与字段声明使用。
 
 All rights in "world.execute(me);" (composition, lyrics, recordings) belong to Mili and the respective rights
-holders. Neither the package nor the workshop packs contain audio, video, lyric text, spectrum data or fonts;
-users supply their own files.
+holders. The npm plugin includes no song data. Workshop packs may include separately licensed and credited lyrics, translations and non-audio resources; music recordings remain user-provided. Mili caption terms for non-commercial fan MVs are independent from visual-code MIT and are recorded in each pack's LYRICS-NOTICE.
 
 ## 2. 场景与时间轴：world.execute-me-ascii（经作者许可移植）/ Scenes and timing (ported with permission)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Builds the workshop pack "polytech-tree" from a checkout of https://github.com/secwind7/polytech-tree
-// (code MIT; data/ structured fields CC BY 4.0, Chinese `desc` summaries CC BY-SA 4.0 — NOT used here).
+// (code MIT; structured fields CC BY 4.0; full Chinese descriptions CC BY-SA 4.0).
 //   node presets/ports/polytech-tree/build.mjs <checkout> <out-dir> [--cover file.png]
 // The tower layout (src/layout.ts) and the tour schedule (src/tour.ts) are ported to JS below and run
 // once at build time; the pack carries the result (positions, reveal times, edges) as canvas.assets and
@@ -21,7 +21,8 @@ const ID = 'polytech-tree', REPO = 'https://github.com/secwind7/polytech-tree', 
 const eras = [...json('data/eras.json')].sort((a, b) => a.order - b.order)
 const categories = json('data/categories.json')
 const eraIndex = new Map(eras.map((e, i) => [e.id, i])), catIndex = new Map(categories.map((c, i) => [c.id, i]))
-const techs = json('data/techs.json').map(t => ({ id: t.id, name: t.name || t.nameEn, nameEn: t.nameEn, year: t.year, era: eraIndex.get(t.era) ?? 0, category: catIndex.get(t.category) ?? 0, importance: t.importance, prereqs: t.prereqs ?? [] }))
+const originalTechs = json('data/techs.json')
+const techs = originalTechs.map(t => ({ id: t.id, name: t.name || t.nameEn, nameEn: t.nameEn, year: t.year, era: eraIndex.get(t.era) ?? 0, category: catIndex.get(t.category) ?? 0, importance: t.importance, prereqs: t.prereqs ?? [] }))
 const ERA_COUNT = eras.length, CATEGORY_COUNT = categories.length
 
 // ---- layout.ts (port) ------------------------------------------------------------------------
@@ -131,7 +132,8 @@ Attribution: *Polytech Tree (github.com/secwind7/polytech-tree), CC BY 4.0.*
 **Changes:** the fields above were reduced to what the tour draws; node positions, reveal times and edge
 timings were computed from them with the original layout / tour algorithms (MIT) and stored here
 (\`nodes-*.json\`: [x, y, z, category, importance, revealAt, spin, phase] + names; \`edges.json\`: [from, to, start, duration];
-\`tower.json\`: eras and categories). The Chinese \`desc\` summaries (CC BY-SA 4.0) are **not** included.
+\`tower.json\`: eras and categories). The complete original rows, including Chinese \`desc\` summaries
+(CC BY-SA 4.0) and per-entry source credits, are retained unchanged in \`catalog-*.json\`.
 `)
 const script = readFileSync(join(here, 'scene.js'), 'utf8').replace('/*COMMIT*/', COMMIT ? ` (commit ${COMMIT.slice(0, 12)})` : '')
 writeFileSync(join(out, 'scenes.js'), script)
@@ -162,15 +164,16 @@ writeFileSync(join(out, 'NOTICE.md'), `# NOTICE — Polytech Tree · 人类科�
   Adapted by Alice-Marx (2026-10): a WebGL2 GPU-instanced tour with perspective and depth-tested octahedra;
   layout and schedule precomputed at build time. This is not the original interactive Three.js application.
 - **Data** (data/): *Polytech Tree (github.com/secwind7/polytech-tree), CC BY 4.0* — https://creativecommons.org/licenses/by/4.0/ .
-  Changed: reduced to structured fields and precomputed positions / timings (see data/NOTICE.md). The \`desc\`
-  summaries (CC BY-SA 4.0, partly derived from English Wikipedia) are not included.
+  Visual fields are reduced to precomputed positions / timings (see data/NOTICE.md). Full original catalogue
+  rows, including \`desc\` summaries (CC BY-SA 4.0, partly derived from English Wikipedia), retain their original
+  source credits and share-alike terms in \`data/catalog-*.json\`.
 - No music or lyrics are included or needed.
 `)
 writeFileSync(join(out, 'README.md'), `# Polytech Tree · 人类科技树漫游
 
-**Original / 原作:** [secwind7/polytech-tree](${REPO}) · code MIT · data CC BY 4.0
+**Original / 原作:** [secwind7/polytech-tree](${REPO}) · code MIT · structured data CC BY 4.0 · descriptions CC BY-SA 4.0
 
-把 Polytech Tree 的「▶ 漫游动画」适配为实时 GPU 3D（\`canvas.output: "webgl"\`，需要 dsh-mv-cli **0.9.2** 或更新）：
+把 Polytech Tree 的「▶ 漫游动画」适配为实时 GPU 3D（\`canvas.output: "webgl"\`，完整包需要 dsh-mv-cli **0.9.4** 或更新）：
 ${placed.length} 项科技、${edges.length} 条前置关系、${ERA_COUNT} 个时代；镜头沿塔轴俯视上升，每个时代按科技数分配 10–30 秒，
 科技按年份逐个显现，前置连线在目标显现前 1.6 秒内爬到。全片约 ${Math.round(duration)} 秒。
 
@@ -181,4 +184,28 @@ ${placed.length} 项科技、${edges.length} 条前置关系、${ERA_COUNT} 个�
 See [NOTICE.md](NOTICE.md) for attribution, licences and changes.
 `)
 if (cover) copyFileSync(cover, join(out, 'cover.png'))
+// Complete source catalogue, including descriptions and original source credits.
+// Keep source rows unchanged; shard only for the workshop's per-file byte cap.
+const cataloguePaths = []
+let rows = [], size = 16
+const flush = () => {
+  if (!rows.length) return
+  const path = `data/catalog-${cataloguePaths.length + 1}.json`
+  writeFileSync(join(out, path), JSON.stringify({ techs: rows }))
+  cataloguePaths.push(path); rows = []; size = 16
+}
+for (const row of originalTechs) {
+  const bytes = Buffer.byteLength(JSON.stringify(row)) + 1
+  if (bytes > 480 * 1024) throw new Error('A source catalogue row exceeds the workshop file cap')
+  if (size + bytes > 384 * 1024) flush()
+  rows.push(row); size += bytes
+}
+flush()
+writeFileSync(join(out, 'data', 'source-meta.json'), JSON.stringify({ eras, categories }))
+manifest.canvas.assets.catalogue = cataloguePaths
+manifest.canvas.assets['source-meta'] = 'data/source-meta.json'
+Object.assign(manifest['x-dsh-mv-workshop'], { version: '1.2.0', requires: '0.9.4', license: 'MIT AND CC-BY-4.0 AND CC-BY-SA-4.0', description: `完整非音乐科技树漫游：${placed.length} 项科技、${edges.length} 条关系、原始完整条目/中文描述/来源署名随包提供。没有原曲或歌词轨，可静音播放或自备音乐。需要插件0.9.4+。` })
+manifest.credits.push('Full source catalogue descriptions: secwind7 and credited Wikipedia contributors, CC-BY-SA-4.0; original per-entry sources retained')
+writeFileSync(join(out, 'mv.json'), JSON.stringify(manifest, null, 2) + '\n')
+for (const name of ['README.md', 'NOTICE.md', 'data/NOTICE.md']) writeFileSync(join(out, name), '# Complete non-audio resources / 完整非音乐资源 1.2.0\n\nFull original technology rows, descriptions and per-entry sources are retained in data/catalog-*.json; original eras/categories are in data/source-meta.json. Only sharding changed. Structured fields remain CC BY 4.0; Chinese descriptions remain CC BY-SA 4.0, including attribution to upstream and referenced Wikipedia contributors. Code is MIT. The row descriptions and their adaptations must retain their share-alike terms: https://creativecommons.org/licenses/by-sa/4.0/ . The original project has no song/lyric track; no artificial lyrics are added. 可以静音播放，或自备音乐。\n\n' + readFileSync(join(out, name), 'utf8'))
 console.log(`wrote ${out}: ${placed.length} nodes, ${edges.length} edges, ${ERA_COUNT} eras, duration ${duration}s`)

@@ -95,7 +95,7 @@ for (const [id, dir, script] of [['world-execute-me-wallpaper', 'world.execute-m
     const pack = result.pack
     const output = id === 'polytech-tree' ? 'webgl' : 'pixels'
     assert.equal(pack.canvas.output, output)
-    assert.equal(packRequires(pack, result.meta.requires), output === 'webgl' ? '0.9.2' : '0.9.1')
+    assert.equal(packRequires(pack, result.meta.requires), output === 'webgl' ? '0.9.4' : '0.9.1')
     assert.ok(result.meta.source?.includes('github.com'))
     for (const f of files) assert.ok(!/\.(mp3|flac|wav|ogg|m4a|lrc)$/i.test(f.path), f.path)
     const assets = {}

@@ -25,25 +25,24 @@ async function publishedExample() {
   writeFileSync(join(src, 'mv.json'), JSON.stringify(manifest))
   writeFileSync(join(src, 'song.mp3'), 'ID3 not really audio')
   const out = tmp()
-  const request = parseWorkshopPublish({ manifestPath: join(src, 'mv.json'), id: 'neon-terminal-example', version: '1.0.0', license: 'MIT', author: 'tester', tags: ['example'], duration: 120, fingerprint: encodeFingerprint(new Uint8Array([1, 2, 3, 4])) })
+  const request = parseWorkshopPublish({ manifestPath: join(src, 'mv.json'), id: 'neon-terminal-example', version: '1.0.0', license: 'MIT', lyricsLicense: 'CC0-1.0', lyricsCredit: 'Synthetic example by tester', author: 'tester', tags: ['example'], duration: 120, fingerprint: encodeFingerprint(new Uint8Array([1, 2, 3, 4])) })
   return { result: await preparePublish(request, { publishRoot: out }), src }
 }
 
-test('publish: strips audio and lyric text, keeps timings as hashes, passes the workshop rules', async () => {
+test('publish: strips only audio, keeps licensed bilingual lyrics and timings, passes workshop rules', async () => {
   const { result } = await publishedExample()
   assert.equal(result.ok, true, result.errors.join('\n'))
-  assert.deepEqual(result.files.map(f => f.path).sort(), ['README.md', 'lyrics.timing.json', 'mv.json', 'scenes.js'])
-  assert.ok(result.stripped.some(s => s.startsWith('audio')) && result.stripped.some(s => s.startsWith('lyrics')))
+  assert.deepEqual(result.files.map(f => f.path).sort(), ['README.md', 'lyrics.timing.json', 'lyrics.workshop.json', 'mv.json', 'scenes.js'])
+  assert.ok(result.stripped.some(s => s.startsWith('audio')))
+  assert.ok(!result.stripped.some(s => s.startsWith('lyrics')))
   const manifest = JSON.parse(readFileSync(join(result.dir, 'mv.json'), 'utf8'))
-  assert.equal(manifest.audio, undefined); assert.equal(manifest.lyrics, undefined)
+  assert.equal(manifest.audio, undefined); assert.equal(manifest.lyrics.file, 'lyrics.workshop.json')
   assert.equal(manifest['x-dsh-mv-workshop'].license, 'MIT')
   assert.equal(manifest['x-dsh-mv-workshop'].audio.fingerprint.kind, 'energy-2hz-v1')
   assert.equal(manifest['x-dsh-mv-ai'].sections.length, 6)
-  // No lyric text anywhere in the output.
-  for (const name of readdirSync(result.dir)) {
-    const text = readFileSync(join(result.dir, name), 'utf8')
-    for (const phrase of ['first verse line goes here', 'karaoke highlight here', '占位 歌词']) assert.ok(!text.includes(phrase), `${name} contains lyric text`)
-  }
+  const bundled = JSON.parse(readFileSync(join(result.dir, manifest.lyrics.file), 'utf8'))
+  assert.ok(bundled.some(c => c.en === 'first verse line goes here'))
+  assert.ok(bundled.some(c => c.words?.length > 0), 'enhanced word stamps survive JSON roundtrip')
   const timing = JSON.parse(readFileSync(join(result.dir, 'lyrics.timing.json'), 'utf8'))
   assert.deepEqual(checkTiming(timing).errors, [])
   assert.equal(timing.lines[1].h, sha(normalizeLyricLine('first verse line goes here')).slice(0, 16))

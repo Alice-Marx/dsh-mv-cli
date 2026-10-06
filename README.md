@@ -4,7 +4,9 @@ English · [简体中文](README.zh.md)
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊 / workshop](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.3**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.4**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+
+**0.9.4 complete packs:** only music is user-provided. Licensed lyrics, translations, cue/word timing, spectrum data and declared visual resources download together and load automatically. Update Three / Wallpaper to **1.1.0**, Polytech Tree to **1.2.0**. Song-text terms are separate from code MIT; the Mili fan packs are non-commercial under [Mili's official guidelines](https://projectmili.com/copyright-guidelines). The npm plugin itself still includes no song or lyric data. Older timing-only packs remain supported.
 
 > **Unofficial fan work.** The plugin ships **no** audio, video, lyric text or fonts; you bring your own files and they never leave your computer. The song and lyrics belong to Mili. Since **0.9.0** the plugin itself contains no MV at all and is **MIT** licensed: the two world.execute(me) MVs are one-click installs from 创意工坊, each with its own licence and a link to its original — the ASCII scenes from [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii) (Bilibili: 野生大K, **used with the author's permission**) and the dsh PV from [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv) (MIT data + **CC BY-NC-SA 4.0** whale-girl art). See [License and credits](#license-and-credits).
 
@@ -19,7 +21,7 @@ English · [简体中文](README.zh.md)
 - **MV packs** (`mv.json`): play any song with the generic spectrum + lyrics renderer or your own sandboxed scene script; start from a template with prompts and examples.
 - **用 AI 制作新 MV**: pick a song; the plugin builds a pack and hands it to a Harness agent session that writes the timing and the scene script, checked with the plugin's agent tools.
 - **Automatic lyric timing**: LRCLIB lookup (optional) + a local faster-whisper / Demucs engine, word alignment with per-line confidence and section detection, then a **calibration editor** on the waveform.
-- **创意工坊 (workshop)**: browse, install, update and publish community MV packs from the public GitHub repository [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop) (sha256-checked, no audio or lyric text inside).
+- **创意工坊 (workshop)**: browse, install, update and publish community MV packs from [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop) (sha256-checked, no song audio; licensed captions and visual/data resources may be included).
 - **Three skins** (Harness 原生 / 现代音乐应用 / 终端 · 黑客), each with 跟随 / 浅色 / 深色.
 - **Library**: compact **list** (default) or cover **grid**, up to 50 recent packs, and a **collapsible** library header that shrinks to the song now playing.
 
@@ -140,13 +142,13 @@ Safety: the plugin never runs external programs for this flow, scene scripts run
 
 ## 创意工坊 (MV workshop, 0.7.0)
 
-A community gallery of MV packs that lives in the public GitHub repository [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop); there is no server of our own. Each pack is a folder `packs/<id>/` (`mv.json`, scenes, `cover.png`/`.webp`, README, optional `lyrics.timing.json`). GitHub Actions validates every pull request (schema, size limits, no audio or lyric-text files, licence field, static sandbox checks, scenes run at sample times) and, after a merge, regenerates `index.json` with each file's sha256.
+A community gallery of MV packs that lives in the public GitHub repository [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop); there is no server of our own. Each pack is a folder `packs/<id>/` (`mv.json`, scenes, `cover.png`/`.webp`, README, optional `lyrics.timing.json`). GitHub Actions validates every pull request (schema, size limits, no song audio; separately licensed lyric tracks, licence field, static sandbox checks, scenes run at sample times) and, after a merge, regenerates `index.json` with each file's sha256.
 
 **Install and play**
 
 1. **曲库 → 创意工坊**: browse covers, search by title / artist / author / tag, filter by licence or renderer, or show only installed packs. Cards and details show the **原作** (original work) link when a pack sets `x-dsh-mv-workshop.source`. Click a card for details (licence, duration, files with sha256, GitHub source).
 2. **安装到曲库**: the panel downloads the files from `raw.githubusercontent.com` at the commit named in the index, checks size and sha256, validates the pack again and stores it in `<install folder>\<id>` (default `%LOCALAPPDATA%\dsh-mv\workshop`, changeable since 0.9.1, see below). Cards show **有更新** when the index has a newer version (**更新到 …**); **卸载** removes the folder.
-3. Play it with **your own** audio (and optionally lyrics): the panel remembers them per pack. It compares the duration (±2 s) and, when the pack stores one, a coarse audio fingerprint, and warns when they do not match (a different edit or a different song). If the pack has `lyrics.timing.json`, your lyric lines are retimed to the pack's timing by matching line hashes; packs never contain lyric text.
+3. Play it with **your own** music. Declared pack lyrics, translations and spectrum load automatically. Old timing-only packs may still need a local lyric file. Music choices are remembered per pack; a new complete pack takes priority over stale cached lyrics, while deliberate overrides are remembered for that same pack version. Duration and optional audio fingerprint checks remain local. `lyrics.timing.json` can retime matching user-provided lyric lines by hashes.
 
 **Install location (0.9.1)**: the bottom of the 创意工坊 page shows where packs are installed (default `%LOCALAPPDATA%\dsh-mv\workshop`), with **打开文件夹**, **更改…** and **恢复默认**. Type a full path on any drive, e.g. `F:\MV\workshop` (or a `\\server\share` path); the Host checks it, creates it and tests that it can write there before switching, and explains why when it cannot. Then choose **移动到新位置** — each pack is copied, verified against the sha256 recorded at install and only then deleted from the old folder (progress and failures are shown; a failed pack stays where it was) — or **留在原处**: packs left in the old folder stay in the library and keep working, and can be moved later from the same place. Library entries follow moved packs. The setting is stored by the Host in `%LOCALAPPDATA%\dsh-mv\settings.json`; the plugin config field `workshopDir` sets the default folder (the panel's choice wins).
 
@@ -155,10 +157,10 @@ A community gallery of MV packs that lives in the public GitHub repository [Alic
 **Publish**
 
 1. Load your pack, open 创意工坊 and click **发布到工坊…**. Fill in id, version, licence (required), author, description and tags; choose whether to include the audio fingerprint and a cover (the current frame).
-2. **检查并打包**: the Host validates the pack, **removes audio, spectrum and lyric text** (keeping only line times and hashes in `lyrics.timing.json`), writes the cover and README, and prepares the folder `%LOCALAPPDATA%\dsh-mv\workshop-publish\<id>\packs\<id>\`. The dialog lists every file and the steps, with a ready PR title and description.
+2. **检查并打包**: the Host validates the pack, **removes only song audio**, retains licensed lyrics/translations with cue/word timing, spectrum and declared visual assets, preserves attribution and prepares `%LOCALAPPDATA%\dsh-mv\workshop-publish\<id>\packs\<id>\`. Lyrics require separate `lyricsLicense`, `lyricsCredit` and optional `lyricsSource` declarations; static JS is converted to JSON without execution.
 3. Tick the confirmation box, then **在 GitHub 上提交…** opens GitHub's upload page for `packs/<id>` in your browser: drag the files in; GitHub forks the repository for you and you open the pull request yourself. Nothing is submitted automatically. (Device-flow sign-in needs an OAuth app client id and was not added.)
 
-Trust: workshop packs are written by other people. Their scene scripts always run in the same sandbox as other script packs (Web Worker without network, storage or DOM, frame time limits, automatic fallback), and the panel shows this note in the workshop. Packs contain no audio or lyrics; respect the song's rights and each pack's licence (repository default CC BY-NC-SA 4.0 unless the pack says otherwise).
+Trust: workshop packs are written by other people. Their scene scripts always run in the same sandbox as other script packs (Web Worker without network, storage or DOM, frame time limits, automatic fallback), and the panel shows this note in the workshop. Packs contain no song audio; lyrics have separate terms; respect the song's rights and each pack's licence (repository default CC BY-NC-SA 4.0 unless the pack says otherwise).
 
 ## Automatic lyric timing (自动制作) and calibration
 
@@ -213,7 +215,7 @@ The format is always detected from the file's **content**, not its extension (a 
   - LRC: two lines per timestamp (English and Chinese), or `English / 中文` on one line.
   - SRT/VTT: two text lines per block.
   - Or your local ascii `lyrics.json`.
-  - Since 0.9.3, the original wiers-jack `src/lyrics.js` can be selected directly: only its static `LYRICS = [{ t, en, cn }]` data is read; `t` is seconds and `cn` is the Chinese row. Imports and overlay code never execute. A copy renamed `.json` is also recognized. Choose a local source file, not the Gitee HTML page; lyrics remain local and are not included in workshop uploads.
+  - Since 0.9.3, the original wiers-jack `src/lyrics.js` can be selected directly: only its static `LYRICS = [{ t, en, cn }]` data is read; `t` is seconds and `cn` is the Chinese row. Imports and overlay code never execute. A copy renamed `.json` is also recognized. Choose a local source file, not the Gitee HTML page; local files stay local unless you explicitly publish a separately licensed lyric track.
 - **Spectrum**: optional `spectrum.json`, for frame-identical bars with the original player. Otherwise a live analyser is used.
 - **Keys**:
   - Space/Enter: play/pause
@@ -256,16 +258,16 @@ The format is always detected from the file's **content**, not its extension (a 
 
 ## More community packs (0.9.1)
 
-Packs ported from MIT-licensed projects, with no audio or lyric text and links to their originals. Wallpaper remains a Canvas2D pixel scene (0.9.1+); Polytech Tree now uses GPU 3D (0.9.2+):
+Packs ported from MIT-licensed projects, with no song audio and links to their originals; caption terms are declared separately. Wallpaper remains a Canvas2D pixel scene (0.9.1+); Polytech Tree now uses GPU 3D (0.9.2+):
 
-- **world.execute(me); · Wallpaper MV** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper), original [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper), MIT © 2026 seasnakes): the wallpaper MV's canvas scenes (orbs, apple, heart, EXECUTE countdown …) at 1920×1080, driven by the original BPM grid and 14 sections; the lyric card shows your own lyrics. Bring your own copy of Mili's song (music and lyrics © Mili). The Wallpaper Engine glue, the lyrics file and the original's UI are not included.
-- **Polytech Tree · 人类科技树漫游** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree), original [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree), code MIT © 2026 secwind, data CC BY 4.0): the tour animation — 3862 technologies in 11 eras, coloured by field, appearing year by year while the camera rises along the tower, with prerequisite links crawling in. The original is Three.js 3D; here the layout and camera path are precomputed and **drawn as a WebGL2 GPU-instanced scene** (not 2D as the README here used to say). Only the CC BY 4.0 structured data is used (not the CC BY-SA descriptions). Not a song: play silently or with any music (about 3 minutes).
+- **world.execute(me); · Wallpaper MV** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper), original [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper), MIT © 2026 seasnakes): the wallpaper MV's canvas scenes (orbs, apple, heart, EXECUTE countdown …) at 1920×1080, driven by the original BPM grid and 14 sections; the lyric card shows the included bilingual captions automatically (or a local override). Bring your own copy of Mili's song (music and lyrics © Mili). Wallpaper Engine host glue and the original UI are not included; the complete pack includes lyric data.
+- **Polytech Tree · 人类科技树漫游** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree), original [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree), code MIT © 2026 secwind, structured data CC BY 4.0, descriptions CC BY-SA 4.0): 3862 technologies in 11 eras, appearing year by year as the camera rises, with prerequisite links. The original is Three.js 3D; this adaptation is a **WebGL2 GPU-instanced scene** with precomputed layout and camera path. Pack 1.2.0 includes the complete original catalogue, descriptions and per-entry source credits. Not a song: play silently or with any music (about 3 minutes).
 
 ### 0.9.2+ WebGL / 3D packs
 
 `canvas.output: "webgl"` supports real GPU 3D and explicitly adapted, bundled Three.js scenes. It does not run arbitrary HTML projects or DOM-dependent libraries. The sandbox stays restricted; scripts may be up to 2 MiB.
 
-- **world.execute(me); · Original Three.js MV** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-three), adapter in `presets/ports/wiers-jack-three/`, original [wiers-jack/world-execute-me-mv](https://gitee.com/wiers-jack/world-execute-me-mv)): the original 12 sections, camera paths and bloom post-processing adapted to the Worker; own audio/lyrics required. Distributed under MIT with the author's direct permission, confirmed by the maintainer on 2026-10-05; the source revision still declares ISC without a standalone LICENSE. The pack's LICENSE/NOTICE records that distinction and preserves Three.js attribution.
+- **world.execute(me); · Original Three.js MV** ([pack](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-three), adapter in `presets/ports/wiers-jack-three/`, original [wiers-jack/world-execute-me-mv](https://gitee.com/wiers-jack/world-execute-me-mv)): the original 12 sections, camera paths and bloom post-processing adapted to the Worker; only your own music required; captions and timing are included. Distributed under MIT with the author's direct permission, confirmed by the maintainer on 2026-10-05; the source revision still declares ISC without a standalone LICENSE. The pack's LICENSE/NOTICE records that distinction and preserves Three.js attribution.
 
 ![Pixel scene packs](docs/screenshots/ports.png)
 

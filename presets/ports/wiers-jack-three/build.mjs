@@ -12,6 +12,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, resolve, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { includeLyrics } from '../lyrics-resource.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const [checkoutArg, outArg] = process.argv.slice(2);
@@ -23,6 +24,7 @@ const checkout = resolve(checkoutArg), out = resolve(outArg);
 if (existsSync(out)) throw new Error(`Output already exists; choose a new folder: ${out}`);
 const offline = process.argv.includes('--offline-app');
 const authorMitPermission = process.argv.includes('--author-mit-permission');
+const withLyrics = process.argv.includes('--include-lyrics');
 const authorGrant = authorMitPermission ? {
   license: 'MIT',
   copyrightHolder: 'wiers-jack',
@@ -207,4 +209,21 @@ writeFileSync(join(out, 'NOTICE.md'), `# Attribution and authorization\n\nOrigin
 writeFileSync(join(out, 'README.md'), `# world.execute(me); · Original Three.js MV\n\nThis pack preserves wiers-jack's actual Three.js rendering: all 12 original scenes and their 213-second timeline, camera paths, 1.2-second crossfades, fog/palettes, UnrealBloomPass and final shader effects. Install with dsh-mv-cli 0.9.3+ and select your own audio and lyrics. The scene runs offline in the WebGL worker.\n\nVersion 1.0.2 enables canvas.subtitles: the panel renders your local bilingual lyrics over the 3D image. Select the original src/lyrics.js directly (or your own LRC/JSON). Only the static LYRICS array is read; imports and overlay code never run. Nothing from your lyric file is uploaded. Update the plugin and this workshop pack, then select the file via Lyrics -> Choose.\n\nThe default 1280×720 render target keeps the full post-processing practical. Only DOM/audio/subtitle glue and embedded lyric text have been adapted; the visuals are upstream geometry rather than replacement cubes. See NOTICE.md for exact changes and attribution.\n\n${authorMitPermission ? 'License: original visual code MIT by direct author permission confirmed by the workshop maintainer on 2026-10-05; adapter and Three.js MIT. This permission does not license Mili music or lyrics, which are not bundled.\n\n' : ''}Build from a checkout of ${repo}:\n\n\`\`\`sh\nnpm ci --ignore-scripts # in the upstream checkout (esbuild and Three.js)\nnode presets/ports/wiers-jack-three/build.mjs <checkout> <output-directory>${authorMitPermission ? ' --author-mit-permission' : ''}\n\`\`\`\n\nThe MIT flag records the separately confirmed author grant; it must not be used to assume permission for unrelated upstream revisions or assets. The output is one readable, non-minified scenes.js; source-provenance.json records source hashes, changed modules and the authorization basis. This package contains no lyric text or audio file.\n`);
 writeFileSync(join(out, 'source-provenance.json'), `${JSON.stringify({ repo, commit, upstreamPackageLicense: upstreamPackage.license, authorGrant, adapterLicense: authorMitPermission ? 'MIT' : null, threeVersion: threePackage.version, dependencySource: offline ? 'original app.js dependency blocks (offline)' : 'installed upstream dependencies', appSha256, duration, crossfade: 1.2, sceneCount: sectionData.length, sections: sectionData, bundleBytes: Buffer.byteLength(source), bundleSha256: createHash('sha256').update(source).digest('hex'), modules: Object.fromEntries(transformed) }, null, 2)}\n`);
 if (cover) copyFileSync(resolve(cover), join(out, 'cover.png'));
+if (withLyrics) {
+  const resource = includeLyrics({ source: join(checkout, 'src', 'lyrics.js'), out, duration, credit: 'wiers-jack (upstream Chinese captions and timing), author MIT permission confirmed by maintainer' });
+  manifest.lyrics = resource.lyrics;
+  manifest.credits = manifest.credits.map(credit => credit === 'Music and lyrics: Mili (not included)' ? 'Song text: Mili (separate non-commercial fan-MV terms); music recording not included' : credit);
+  manifest.credits.push(resource.workshop.lyricsCredit);
+  manifest.notice = 'Choose only your own music. Lyrics, Chinese captions, timing and all visual resources are included for non-commercial fan use; code MIT and song-text usage terms are separate. See LYRICS-NOTICE.md.';
+  Object.assign(manifest['x-dsh-mv-workshop'], resource.workshop, { version: '1.1.0', requires: '0.9.4', license: 'MIT AND LicenseRef-Mili-NonCommercial-FanWork', description: '完整非音乐 Three.js MV：12 原始场景、镜头/泛光、75 条双语歌词与时间轴随包提供并自动加载，只需自备音乐。非商业同人用途，需要插件 0.9.4+。' });
+  writeFileSync(join(out, 'mv.json'), JSON.stringify(manifest, null, 2) + '\n');
+  const provenancePath = join(out, 'source-provenance.json');
+  const provenance = JSON.parse(readFileSync(provenancePath, 'utf8'));
+  provenance.lyrics = resource.provenance;
+  writeFileSync(provenancePath, JSON.stringify(provenance, null, 2) + '\n');
+  writeFileSync(join(out, 'README.md'), `# ${manifest.title} · 1.1.0\n\nOriginal: ${repo}. Install dsh-mv-cli **0.9.4+**, then choose only your own music. The full 12-section Three.js scene bundle, bloom, camera paths, procedural textures, 75 English/Chinese caption cues and timing install together and load automatically. Non-commercial unofficial fan MV.\n\n只需自备音乐：歌词、译文、时间轴和画面资源均随包提供。可另选本地歌词替代；新的工坊版本会优先加载更新后的内置歌词。\n\nCode: author-confirmed MIT, with separate Three.js MIT. Song text is **not MIT**; see LYRICS-NOTICE.md and NOTICE.md. The scene worker stays offline; captions are static data rendered by the panel.\n\nBuild: node presets/ports/wiers-jack-three/build.mjs <checkout> <new-output-folder> --offline-app --author-mit-permission --include-lyrics\n`);
+  const noticePath = join(out, 'NOTICE.md');
+  const notice = readFileSync(noticePath, 'utf8').replace('No audio, lyric file, artwork or external network asset is bundled.', 'No audio recording, official artwork or external network asset is bundled. Static bilingual caption data and timing are included; see LYRICS-NOTICE.md.').replace('Music/lyrics: © Mili and their rights holders, not included.', 'Music recording: not included. Song text: Mili and their rights holders, used for this non-commercial unofficial fan MV under the official guidelines; Chinese captions/timing: credited upstream wiers-jack. These terms are separate from code MIT.');
+  writeFileSync(noticePath, notice);
+}
 console.log(`wrote ${out}: ${Buffer.byteLength(source)} bytes; ${sectionData.length} ORIGINAL Three.js scenes + bloom; ${authorMitPermission ? 'MIT (maintainer-confirmed direct author permission)' : `upstream license declaration ${upstreamPackage.license || 'UNSPECIFIED'}`}`);

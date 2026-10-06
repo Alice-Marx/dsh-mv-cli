@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.4 — 2026-10-06
+
+- **Complete workshop packs / 完整工坊包**: only music recordings remain user-provided. Explicitly licensed lyrics, translations, cue/word timing, spectrum and declared visual assets can be published, installed and loaded together; lyric terms and credits are independent from code licences.
+- Normalize static JS lyric data to JSON without execution; preserve enhanced word timings, companion notices and existing timing-only packs. Undeclared lyrics, audio and unsafe files remain rejected.
+- Bundled lyrics take priority over old cached selections; deliberate local overrides are remembered only for that pack version.
+- Original Three.js and Wallpaper packs 1.1.0 include 75 and 92 bilingual captions respectively, for non-commercial fan MV use under Mili's guidelines. Polytech Tree 1.2.0 retains all 3862 source rows, descriptions and source credits under their original MIT / CC BY / CC BY-SA terms.
+- Validated with 175 passing tests (one optional skip) and real-browser install, automatic loading, reopen and nonblank GPU frames.
+
 ## 0.9.3 — 2026-10-06
 
 - **lyrics.js compatibility / 歌词兼容**: safely read a literal `LYRICS` array from the user's local wiers-jack-style JS module; map absolute-second `t` and Chinese `cn` to canonical `time`/`zh`. Comments, single quotes, trailing commas, escapes and unrelated imports/helpers are supported without executing code.
@@ -174,3 +182,9 @@
 - Canvas MV: JS port of world.execute-me-ascii `Film.render` / `scenes.py` (with the author's permission), canvas grid renderer with the original 256-colour palette, `<audio>` master clock, AnalyserNode or `spectrum.json` bands, LRC / SRT / `lyrics.json` loaders, per-sha256 audio and subtitle offsets with a measured table of known encodes, IndexedDB memory of the last files, keyboard controls, help overlay, fullscreen, silent mode.
 - MV terminal: fixed-launch PTY sessions for world_execute_me `tui_live.py` or a user-supplied world-execute-me-ascii-rust binary; path checks, confirmation card with the exact command, xterm.js with WebGL/DOM, long-poll transport, resize, stop, orphan cleanup.
 - Host/client version banner; tests for protocol, gateway boundary, Cordis inject, client loader and frame parity with the original renderer.
+# 0.9.4
+
+- Complete non-audio workshop packs: retain licensed lyrics/translations, exact cue/word timing, spectrum data, visual assets and companion attribution. Only music recordings remain user-provided.
+- Installed lyric tracks load automatically; stale cached files do not override a new pack, while deliberate same-version overrides are remembered.
+- Separate lyric license/credit/source declarations, static JS data extraction without execution, byte/hash/path checks and audio/video bans.
+- Three and Wallpaper complete fan packs include bilingual captions under separate non-commercial Mili terms; Polytech includes its complete CC-licensed source catalogue.

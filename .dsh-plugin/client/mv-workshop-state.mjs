@@ -28,6 +28,9 @@ export function mediaSlot(pack, kind) {
 /** Workshop packs that replaced the 0.8.x built-in presets reuse the files picked for those presets ('audio' / 'lyrics' / 'spectrum'). */
 export const legacyPresetSlot = pack => PRESET_PACKS.some(p => p.id === pack?.pack?.workshop?.id)
 
+/** Bundled tracks win over old cached choices; deliberate overrides belong to one pack version. */
+export const rememberedTrackApplies = (pack, record, bundledLoaded) => !bundledLoaded || Boolean(record?.override === true && pack?.pack?.workshop?.version && record.packVersion === pack.pack.workshop.version)
+
 /** Duration and energy fingerprint of an audio file's bytes (decoded locally; nothing leaves the panel). */
 export async function fingerprintAudio(bytes, decode = decodeToChannels) {
   const { channels, sampleRate, duration } = await decode(bytes)

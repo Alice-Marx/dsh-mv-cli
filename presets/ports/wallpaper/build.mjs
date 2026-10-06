@@ -7,16 +7,19 @@
 // recording) becomes canvas.assets JSON shards; events.js is inlined. Not included: the audio,
 // lyrics-data.js (lyric text; the card draws YOUR lyrics file instead), the Claude UI mock-up,
 // Wallpaper Engine glue (wallpaper.js, project.json, index.html).
-import { mkdirSync, readFileSync, writeFileSync, copyFileSync, rmSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync, copyFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
+import { includeLyrics } from '../lyrics-resource.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const [src, out] = process.argv.slice(2)
 const coverAt = process.argv.indexOf('--cover')
 const cover = coverAt > 0 ? process.argv[coverAt + 1] : null
 if (!src || !out) { console.error('usage: build.mjs <checkout> <out-dir> [--cover png]'); process.exit(2) }
+if (existsSync(out)) throw new Error(`Output already exists; choose a new folder: ${out}`)
+const withLyrics = process.argv.includes('--include-lyrics')
 const read = f => readFileSync(join(src, f), 'utf8').replace(/\r\n/g, '\n')
 const load = (file, name) => { const box = { window: {} }; vm.runInNewContext(read(file), box); return box.window[name] }
 
@@ -87,7 +90,6 @@ function paint(g, t, width, height, ctx) {
   drawLyricCard(g, ctx.lyric, width, height);
 }
 `
-rmSync(out, { recursive: true, force: true })
 mkdirSync(join(out, 'data'), { recursive: true })
 writeFileSync(join(out, 'scenes.js'), script)
 
@@ -169,4 +171,16 @@ seasnakes 的 world.execute(me); 动态壁纸 MV（原为网页 / Wallpaper Engi
 See [NOTICE.md](NOTICE.md) for attribution and changes.
 `)
 if (cover) copyFileSync(cover, join(out, 'cover.png'))
+if (withLyrics) {
+  const resource = includeLyrics({ source: join(src, 'lyrics-data.js'), out, kind: 'wallpaper', duration, credit: 'seasnakes (upstream Chinese captions and timing), upstream adaptation MIT' })
+  manifest.lyrics = resource.lyrics
+  manifest.notice = 'Only music is user-provided. Lyrics, Chinese captions, timing and visuals are included for non-commercial fan use. Song text has separate terms; see LYRICS-NOTICE.md.'
+  Object.assign(manifest['x-dsh-mv-workshop'], resource.workshop, { version: '1.1.0', requires: '0.9.4', license: 'MIT AND LicenseRef-Mili-NonCommercial-FanWork', description: '完整非音乐动态壁纸 MV：原始画布动画、节拍/频谱与92条双语歌词卡片随包提供并自动加载，只需自备音乐。非商业同人用途，需要插件0.9.4+。' })
+  manifest.credits.push(resource.workshop.lyricsCredit)
+  writeFileSync(join(out, 'mv.json'), JSON.stringify(manifest, null, 2) + '\n')
+  writeFileSync(join(out, 'source-provenance.json'), JSON.stringify({ repo: REPO, commit: COMMIT, lyrics: resource.provenance }, null, 2) + '\n')
+  writeFileSync(join(out, 'README.md'), `# ${manifest.title} · 1.1.0\n\nOriginal: ${REPO}. Install dsh-mv-cli **0.9.4+** and choose only your own music (about ${Math.round(duration)} seconds). Original Canvas2D animation, beat/spectrum analysis, 92 English/Chinese captions and timing are included and load automatically. Non-commercial unofficial fan MV.\n\n只需自备音乐，歌词、译文、时间轴、原作节拍/频谱和双语字幕卡片随包提供。原作默认关闭的 Claude UI mockup and Wallpaper Engine property panel are not part of the MV renderer.\n\nVisual code: MIT. Song text is **not MIT**; see LYRICS-NOTICE.md. Original timing/captions: seasnakes. Worker stays offline; caption JS is never executed.\n`)
+  const noticePath = join(out, 'NOTICE.md')
+  writeFileSync(noticePath, readFileSync(noticePath, 'utf8').replace("user's own lyrics. Removed: audio, `lyrics-data.js` (lyric text)", "included static bilingual caption data. Removed: audio recording").replace('Mili — "world.execute(me);". Not included.', 'Mili — "world.execute(me);". Music recordings are not included; static captions are included for non-commercial fan-MV use, with separate Mili terms and upstream seasnakes credit in LYRICS-NOTICE.md.'))
+}
 console.log(`wrote ${out}: scenes.js ${script.length} chars, ${shards.length} analysis shards`)

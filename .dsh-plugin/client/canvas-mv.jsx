@@ -22,7 +22,7 @@ import { unwrapRemote } from './remote-state.mjs'
 import { audioMimeOf, displayCommand, ffmpegArgs, sniffAudio } from '../shared/mv-audio-protocol.mjs'
 import { MV_LYRICS_EXTENSIONS } from '../shared/mv-pack.mjs'
 import { Alert, Icon, KeyHelp, Popover } from './mv-ui.jsx'
-import { checkAudioForPack, fingerprintAudio, legacyPresetSlot, mediaSlot, retimeWithPack } from './mv-workshop-state.mjs'
+import { checkAudioForPack, fingerprintAudio, legacyPresetSlot, mediaSlot, retimeWithPack, rememberedTrackApplies } from './mv-workshop-state.mjs'
 
 /** Everything the panel's Chromium can decode; the content decides, not the extension. */
 export const AUDIO_ACCEPT = 'audio/*,video/*,.mp3,.mp2,.m4a,.m4b,.mp4,.m4v,.mov,.aac,.webm,.mkv,.mka,.ogg,.oga,.opus,.flac,.wav'
@@ -191,7 +191,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       const generic = !dshpv
       const cues = parseLyrics(name, body, { duration: dshpv ? DSHPV_DURATION : 1e9 })
       if (!cues.length) throw new Error('文件里没有带时间的歌词行。')
-      if (shift) for (const cue of cues) { cue.time += shift; cue.end += shift }
+      if (shift) for (const cue of cues) { cue.time += shift; cue.end += shift; for (const word of cue.words ?? []) word.time += shift }
       if (dshpv) {
         const data = await state.dshpvLoad
         const band = data ? await matchBand(data.band, cues) : { lines: [], matched: 0, total: 0 }
@@ -212,19 +212,21 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       }
       setLyricsText(body)
       const slot = mediaSlot(packRef.current, 'lyrics')
-      if (remember && slot) await putMedia(dbRef.current, slot, { name, text: body })
-    } catch (failure) { setError(`无法解析歌词：${failure?.message ?? failure}`) }
+      if (remember && slot) await putMedia(dbRef.current, slot, { name, text: body, override: true, packVersion: packRef.current?.pack?.workshop?.version ?? '' })
+      return true
+    } catch (failure) { setError(`无法解析歌词：${failure?.message ?? failure}`); return false }
   }, [])
 
-  const useSpectrumText = React.useCallback(async (name, body, { remember = true } = {}) => {
+  const useSpectrumText = React.useCallback(async (name, body, { remember = true, shift = 0 } = {}) => {
     setError('')
     try {
       const fileEnergy = spectrumFromJson(body)
-      engine.current.energy = t => fileEnergy(t)
+      engine.current.energy = t => fileEnergy(t - shift)
       setSpectrumInfo({ name })
       const slot = mediaSlot(packRef.current, 'spectrum')
-      if (remember && slot) await putMedia(dbRef.current, slot, { name, text: body })
-    } catch (failure) { setError(`无法读取频谱：${failure?.message ?? failure}`) }
+      if (remember && slot) await putMedia(dbRef.current, slot, { name, text: body, override: true, packVersion: packRef.current?.pack?.workshop?.version ?? '' })
+      return true
+    } catch (failure) { setError(`无法读取频谱：${failure?.message ?? failure}`); return false }
   }, [])
 
   // Switch renderer and media whenever the active MV pack changes. The
@@ -303,13 +305,14 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
           timingRef.current = JSON.parse(text)
         } catch { timingRef.current = null }
       }
+      const bundledLoaded = { lyrics: false, spectrum: false }
       for (const role of ['lyrics', 'spectrum']) {
         if (!pack.pack[role] || !pack.files?.[role]?.exists || pack.files[role].tooLarge || !api) continue
         try {
           const { name, text } = await fetchPackText(api, pack.manifestPath, role, { isCancelled: () => cancelled })
           if (cancelled) return
-          if (role === 'lyrics') await useLyricsText(name, text, { remember: false, shift: pack.pack.lyrics?.offset ?? 0 })
-          else await useSpectrumText(name, text, { remember: false })
+          if (role === 'lyrics') bundledLoaded.lyrics = await useLyricsText(name, text, { remember: false, shift: pack.pack.lyrics?.offset ?? 0 })
+          else bundledLoaded.spectrum = await useSpectrumText(name, text, { remember: false, shift: pack.pack.spectrum?.offset ?? 0 })
         } catch (failure) { if (!cancelled) setError(`无法读取 MV 包的 ${role}：${failure?.message ?? failure}`) }
       }
       clearAudio()
@@ -324,10 +327,10 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
           getMedia(db, mediaSlot(pack, 'spectrum')).then(v => v ?? legacy('spectrum')),
         ])
         if (cancelled) return
-        if (l?.text) await useLyricsText(l.name, l.text, { remember: false })
-        if (sp?.text) await useSpectrumText(sp.name, sp.text, { remember: false })
+        if (l?.text && rememberedTrackApplies(pack, l, bundledLoaded.lyrics)) await useLyricsText(l.name, l.text, { remember: false })
+        if (sp?.text && rememberedTrackApplies(pack, sp, bundledLoaded.spectrum)) await useSpectrumText(sp.name, sp.text, { remember: false })
         if (a?.file) await useAudioFile(a.file, { remember: false })
-        if (!a?.file) setMatchNote({ level: 'info', message: '这是创意工坊的包，不带音频：请选择你自己的歌曲文件（和歌词），插件会检查它是否与这个包匹配。' })
+        if (!a?.file) setMatchNote({ level: 'info', message: bundledLoaded.lyrics ? '包内歌词与译文已自动加载；只需选择你自己的音乐文件，插件会检查歌曲时长是否匹配。' : '这是创意工坊的包，不带音频：请选择你自己的歌曲文件。没有可用的包内歌词轨时，可另选本地歌词。' })
         return
       }
       if (pack.pack.audio && pack.files?.audio?.exists && !pack.files.audio.tooLarge && api) {

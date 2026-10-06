@@ -123,7 +123,14 @@ export function parseLyricsJson(text, { duration = 1e9 } = {}) {
     time: Number(item?.time ?? item?.t), end: Number(item?.end),
     en: typeof item?.en === 'string' ? item.en : '',
     zh: typeof item?.zh === 'string' ? item.zh : typeof item?.cn === 'string' ? item.cn : '',
+    words: jsonWords(item?.words),
   })), duration)
+}
+
+function jsonWords(value) {
+  if (value === undefined || value === null) return undefined
+  if (!Array.isArray(value) || value.length > 400 || value.some(w => !w || typeof w.text !== 'string' || !Number.isFinite(w.time))) throw new Error('歌词 words 应为最多 400 个 { text, time }，不能截断或丢弃逐词时间。')
+  return value.map(w => ({ text: w.text, time: w.time }))
 }
 
 /** Recognition only; the parser below checks tokens and never imports/evaluates JS. */

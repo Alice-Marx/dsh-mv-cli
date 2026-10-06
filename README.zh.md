@@ -4,7 +4,9 @@
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.3**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.4**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+
+**0.9.4 完整包：只需自备音乐。** 已授权歌词、译文、逐句/逐词时间、频谱与声明的画面资源随工坊下载并自动加载。Three / Wallpaper 更新至 **1.1.0**，Polytech Tree 更新至 **1.2.0**。歌词使用条款独立于代码 MIT；Mili 歌词用于遵循[官方条款](https://projectmili.com/copyright-guidelines)的非商业同人 MV。npm 插件本体仍不带歌曲或真实歌词。旧版仅时间轴包继续兼容；旧手选缓存不会盖住新版自带歌词，新版里主动选择的替代歌词仅在本版本记住。
 
 > **非官方同人作品。** 插件**不附带**任何音频、视频、歌词文本或字体；文件由你自己提供，只在本机读取，不会上传。歌曲与歌词的权利归 Mili。自 **0.9.0** 起插件本身不再内置任何 MV，许可为纯 **MIT**：两个 world.execute(me) MV 改为在创意工坊一键安装，各自按自己的许可分发并标明原作——ASCII 场景来自 [yym8224961/world.execute-me-ascii](https://github.com/yym8224961/world.execute-me-ascii)（Bilibili「野生大K」，**经原作者许可**），dsh PV 来自 [MisakaZentai/world-execute-me-dsh-pv](https://github.com/MisakaZentai/world-execute-me-dsh-pv)（数据 MIT + **CC BY-NC-SA 4.0** 鲸鱼娘立绘）。见 [许可与致谢](#许可与致谢)。
 
@@ -19,7 +21,7 @@
 - **MV 包**（`mv.json`）：任何歌都能放，使用通用频谱 + 歌词渲染器或你自己写的沙箱场景脚本；可从带提示词和示例的模板开始。
 - **用 AI 制作新 MV**：选一首歌，插件建好 MV 包并交给 Harness 的 Agent 会话，由 Agent 写时间轴和场景脚本，并用插件的 Agent 工具自查。
 - **自动制作歌词时间轴**：可选的 LRCLIB 查询 + 本机 faster-whisper / Demucs 引擎，逐词对齐、每句置信度和段落识别，然后在波形上用**歌词校准编辑器**微调。
-- **创意工坊**：从公开 GitHub 仓库 [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop) 浏览、安装、更新和发布社区 MV 包（sha256 校验，包内不含音频和歌词文字）。
+- **创意工坊**：从公开 GitHub 仓库 [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop) 浏览、安装、更新和发布社区 MV 包（sha256 校验，只排除歌曲音频，明确授权的歌词与其他资源随包下载）。
 - **三套外观**（Harness 原生 / 现代音乐应用 / 终端 · 黑客），各自支持「跟随 / 浅色 / 深色」。
 - **曲库**：紧凑**列表**（默认）或封面**网格**，最多 50 个最近的包，曲库标题可**收起**到只剩正在播放的一首。
 
@@ -150,7 +152,7 @@
 
 ## 创意工坊（0.7.0）
 
-社区 MV 包画廊，基于公开 GitHub 仓库 [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop)，没有自建服务器。每个包是一个 `packs/<id>/` 文件夹（`mv.json`、场景脚本、`cover.png`/`.webp`、README，可选 `lyrics.timing.json`）。GitHub Actions 检查每个 PR（结构、大小限制、不得含音频或歌词文本文件、必须声明许可、沙箱安全的静态检查、在几个时间点试运行场景），合并后重新生成带每个文件 sha256 的 `index.json`。
+社区 MV 包画廊，基于公开 GitHub 仓库 [Alice-Marx/dsh-mv-workshop](https://github.com/Alice-Marx/dsh-mv-workshop)，没有自建服务器。每个包是一个 `packs/<id>/` 文件夹（`mv.json`、场景脚本、`cover.png`/`.webp`、README，可选 `lyrics.timing.json`）。GitHub Actions 检查每个 PR（结构、大小限制、不得含歌曲音频，歌词轨需独立授权署名、必须声明许可、沙箱安全的静态检查、在几个时间点试运行场景），合并后重新生成带每个文件 sha256 的 `index.json`。
 
 **安装与播放**
 
@@ -165,10 +167,10 @@
 **发布**
 
 1. 载入你的包，打开创意工坊，点 **发布到工坊…**。填写 id、版本、许可（必填）、作者、简介和标签，选择是否附带音频指纹和封面（当前画面）。
-2. **检查并打包**：Host 校验这个包，**去掉音频、频谱和歌词文本**（`lyrics.timing.json` 只保留每句的时间和哈希），写好封面和 README，整理到 `%LOCALAPPDATA%\dsh-mv\workshop-publish\<id>\packs\<id>\`。对话框列出所有文件和步骤，并给出可直接使用的 PR 标题和说明。
+2. **检查并打包**：Host 校验这个包，**只去掉歌曲音频**，保留已授权歌词、译文、逐句/逐词时间、数值频谱和声明的画面资源及署名，整理到 `%LOCALAPPDATA%\dsh-mv\workshop-publish\<id>\packs\<id>\`。歌词需单独填写 `lyricsLicense`、`lyricsCredit`，可填 `lyricsSource`；JS 只提取静态数据并转成 JSON，不执行代码。
 3. 勾选确认框后，**在 GitHub 上提交…** 会在浏览器里打开 `packs/<id>` 的 GitHub 上传页面：把文件拖进去，GitHub 会自动帮你 fork，由你自己创建 Pull Request。插件不会自动提交任何东西。（设备码登录需要 OAuth 应用的 client id，本版未实现。）
 
-信任提示：工坊里的包由其他人编写。它们的场景脚本始终和其他脚本包一样在沙箱中运行（没有网络、存储和 DOM 的 Web Worker，限制每帧耗时，出错自动回退），工坊界面也会显示这条提示。包内不含音频和歌词；请尊重歌曲权利和每个包的许可（仓库默认 CC BY-NC-SA 4.0，包内另有声明的除外）。
+信任提示：工坊里的包由其他人编写。它们的场景脚本始终和其他脚本包一样在沙箱中运行（没有网络、存储和 DOM 的 Web Worker，限制每帧耗时，出错自动回退），工坊界面也会显示这条提示。包内不含歌曲音频，歌词可按独立使用条款提供；请尊重歌曲权利和每个包的许可（仓库默认 CC BY-NC-SA 4.0，包内另有声明的除外）。
 
 ## 自动制作歌词时间轴与校准
 
@@ -222,7 +224,7 @@
    - LRC：同一时间戳写两行（英文一行、中文一行），或一行写 `English / 中文`；支持 `[offset:]`。
    - SRT / VTT：每个字幕块两行文本。
    - 或直接选你本地 world.execute-me-ascii 目录下的 `lyrics.json`（`[{time,end,en,zh}]`）。
-   - 从 0.9.3 起，可以直接选择 wiers-jack 原作的 `src/lyrics.js`：仅提取静态 `LYRICS = [{ t, en, cn }]` 数组，`t` 为秒，`cn` 为中文行；不执行 import、函数或字幕渲染代码。之前改名为 `.json` 的副本也可识别。请选择本地源码文件，不是 Gitee 网页另存的 HTML；歌词仍只在本机读取，不随工坊上传。
+   - 从 0.9.3 起，可以直接选择 wiers-jack 原作的 `src/lyrics.js`：仅提取静态 `LYRICS = [{ t, en, cn }]` 数组，`t` 为秒，`cn` 为中文行；不执行 import、函数或字幕渲染代码。之前改名为 `.json` 的副本也可识别。请选择本地源码文件，不是 Gitee 网页另存的 HTML；歌词默认只在本机读取；明确授权署名后可随完整工坊包发布。
 3. 可选：选该目录下的 `spectrum.json`，画面就和原版终端播放器的频谱逐帧一致；不选则用实时 AnalyserNode。
 4. 点 **▶ 播放**（或播放条左侧的圆形按钮）。音频同步可以在播放条上用 −/+ 调整，字幕偏移、字号在「设置」里。点画面获得焦点后用键盘（播放条上的键盘图标也列出了这些按键）：
 
@@ -272,10 +274,10 @@
 
 ## 更多社区包（0.9.1）
 
-从 MIT 项目移植的包，不含音频和歌词文本并链接原作。Wallpaper 保持 Canvas2D 像素场景（0.9.1+），Polytech Tree 升级为 GPU 3D（0.9.2+）：
+从开源项目移植的包，不含歌曲音频并链接原作；歌词与代码分别声明使用条款。Wallpaper 保持 Canvas2D 像素场景（0.9.1+），Polytech Tree 升级为 GPU 3D（0.9.2+）：
 
-- **world.execute(me); · Wallpaper MV**（[工坊包](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper)，原作 [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper)，MIT © 2026 seasnakes）：壁纸 MV 的画布场景（双球、苹果、爱心、EXECUTE 倒计时……），1920×1080，按原作的 BPM 网格和 14 个段落同步；歌词卡显示你自己的歌词。请使用你自己的 Mili 歌曲文件（音乐和歌词版权归 Mili）。不包含 Wallpaper Engine 适配、歌词文件和原作的界面。
-- **Polytech Tree · 人类科技树漫游**（[工坊包](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree)，原作 [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree)，代码 MIT © 2026 secwind，数据 CC BY 4.0）：漫游动画——3862 项科技分 11 个时代、按领域着色，镜头沿塔轴上升，科技按年代逐个出现，前置连线爬向它。原作是 Three.js 3D，这里用裸 WebGL2 shader 重画：按相机路径把布局好的多面体在 GPU 上实例化绘制，前置连线逐根爬到目标节点。只使用 CC BY 4.0 的结构化数据（不含 CC BY-SA 的中文简介）。不是歌曲：可以静音播放或配任意音乐（约 3 分钟）。
+- **world.execute(me); · Wallpaper MV**（[工坊包](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-wallpaper)，原作 [seasnakes/world.execute-me-wallpaper](https://github.com/seasnakes/world.execute-me-wallpaper)，视觉代码 MIT © 2026 seasnakes）：壁纸 MV 的画布场景（双球、苹果、爱心、EXECUTE 倒计时……），1920×1080，按原作的 BPM 网格和 14 个段落同步；1.1.0 完整包自带双语歌词并自动加载，歌词按独立的 Mili 非商业同人条款使用。只需自备歌曲音频。不包含 Wallpaper Engine 宿主适配和原网页界面。
+- **Polytech Tree · 人类科技树漫游**（[工坊包](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/polytech-tree)，原作 [secwind7/polytech-tree](https://github.com/secwind7/polytech-tree)，代码 MIT © 2026 secwind，结构化数据 CC BY 4.0，描述 CC BY-SA 4.0）：3862 项科技、11 个时代，科技按年代逐个出现，镜头沿塔轴上升，前置关系连线爬向目标。使用 WebGL2 GPU 实例化、透视与深度遮挡，保留原布局和漫游时序；1.2.0 完整包带原始全部条目、中文描述和逐项来源署名。原作没有歌曲或歌词轨，可静音播放或配任意音乐（约 3 分钟）。
 
 ### 0.9.2 起的 3D WebGL 工坊包
 

@@ -23,7 +23,7 @@ export function TrustNote() {
     <Alert kind="info">
       <p className="mv-wrap"><b>关于信任：</b>工坊里的包由社区投稿，经维护者在 GitHub 上审核后合并；插件安装时按索引校验每个文件的 sha256，并重新做一遍检查。
         场景脚本<b>始终在沙箱里运行</b>（独立 Web Worker，没有网络、存储、DOM 和文件访问，每帧限时，出错自动换回通用画面），但仍请只安装你信任的作者的包。
-        包里<b>没有音频和歌词文本</b>：请使用你自己的歌曲文件。</p>
+        包里<b>没有歌曲音频</b>：请使用你自己的音乐。已授权歌词、译文和画面资源可随包安装并自动加载。</p>
     </Alert>
   )
 }
@@ -149,7 +149,7 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
               <span className="mv-chip">{RENDERERS[current.renderer] ?? current.renderer}</span>
               {current.requires && <span className={`mv-chip${tooOld(current) ? ' mv-chip-warn' : ''}`} title="能播放这个包的最低插件版本">需要插件 v{current.requires}+</span>}
               {current.sections > 0 && <span className="mv-chip">{current.sections} 个段落</span>}
-              <span className="mv-chip" title="安装后用你自己的歌词文件；按哈希匹配包里的逐句时间">{current.timing ? '带歌词时间轴' : '无歌词时间轴'}</span>
+              <span className="mv-chip" title={current.lyrics ? '歌词和译文随包下载，打开时自动加载' : '旧包可只有时间轴，按哈希匹配你自己的歌词文件'}>{current.lyrics ? '含歌词与译文' : current.timing ? '仅歌词时间轴' : '无歌词轨'}</span>
               <span className="mv-chip" title="用来检查你的音频是否是同一个版本">{current.fingerprint ? '带音频指纹' : '仅按时长匹配'}</span>
               {current.tags.map(t => <span key={t} className="mv-chip">#{t}</span>)}
             </div>
@@ -177,6 +177,7 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
               <span className="mv-card-title">{pack.title}</span>
               <span className="mv-card-sub">{pack.artist || '未知艺术家'} · {durationText(pack.duration)}</span>
               <span className="mv-card-sub">by {pack.author || '—'} · {pack.license}</span>
+              {pack.lyrics && <span className="mv-card-sub">歌词与译文已包含 · 只需自备音乐</span>}
               {pack.source && <span className="mv-card-sub"><SourceLink url={pack.source} compact /></span>}
               {installed[pack.id] && <span className={`mv-ws-badge${updates.has(pack.id) ? ' mv-ws-badge-update' : ''}`}>{updates.has(pack.id) ? '有更新' : '已安装'}</span>}
             </div>
@@ -285,6 +286,7 @@ export function PublishDialog({ api, pack, canvas = () => null, onClose }) {
   const [form, setForm] = React.useState(() => ({
     id: ws.id ?? workshopSlug(pack.pack.title, pack.pack.artist), version: ws.version ?? '1.0.0', license: ws.license ?? '',
     author: ws.author ?? '', description: '', tags: '', fingerprint: true, cover: true,
+    lyricsLicense: ws.lyricsLicense ?? '', lyricsCredit: ws.lyricsCredit ?? '', lyricsSource: ws.lyricsSource ?? '',
   }))
   const [busy, setBusy] = React.useState('')
   const [error, setError] = React.useState('')
@@ -304,6 +306,7 @@ export function PublishDialog({ api, pack, canvas = () => null, onClose }) {
       const value = await publishWorkshopPack(api, {
         manifestPath: pack.manifestPath, id: form.id.trim(), version: form.version.trim(), license: form.license.trim(), author: form.author.trim(),
         description: form.description.trim(), tags: form.tags.split(/[,，\s]+/).map(t => t.trim()).filter(Boolean).slice(0, 8),
+        ...(pack.pack.lyrics ? { lyricsLicense: form.lyricsLicense.trim(), lyricsCredit: form.lyricsCredit.trim(), lyricsSource: form.lyricsSource.trim() } : {}),
         ...(fp?.duration ? { duration: Math.round(fp.duration * 1000) / 1000 } : {}), ...(fp?.base64 ? { fingerprint: fp.base64 } : {}),
         ...(coverPng && coverPng.length < 1_300_000 ? { coverPng } : {}),
       })
@@ -316,7 +319,7 @@ export function PublishDialog({ api, pack, canvas = () => null, onClose }) {
   return (
     <div className="mv-confirm" role="dialog" aria-label="发布到工坊">
       <strong>发布「{pack.pack.title}」到创意工坊</strong>
-      <p className="mv-caption">插件会：检查包 → <b>去掉音频和歌词文本</b>（歌词只保留每行时间、逐词时间和文字哈希）→ 生成 README 和封面 → 放进本机的发布文件夹。
+      <p className="mv-caption">插件会：检查包 → <b>仅去掉歌曲音频</b>，保留已授权歌词、译文、时间轴、频谱与画面资源 → 生成 README 和封面 → 放进本机的发布文件夹。歌词 JS 只提取静态数据，不执行代码。
         然后由你在浏览器里把文件上传到 GitHub 并创建 Pull Request；<b>插件不会替你提交任何东西</b>。</p>
       <div className="mv-form">
         <label className="mv-field"><span>包 id（文件夹名）</span><input value={form.id} spellCheck={false} onChange={event => set('id', event.target.value.toLowerCase())} /></label>
@@ -325,6 +328,11 @@ export function PublishDialog({ api, pack, canvas = () => null, onClose }) {
           <datalist id="mv-ws-licenses">{LICENSES.map(l => <option key={l} value={l} />)}</datalist></label>
         <label className="mv-field"><span>作者（GitHub 用户名或署名）</span><input value={form.author} spellCheck={false} onChange={event => set('author', event.target.value)} /></label>
       </div>
+      {pack.pack.lyrics && <div className="mv-form">
+        <label className="mv-field"><span>歌词与译文使用条款（不自动继承代码许可）</span><input value={form.lyricsLicense} maxLength={120} onChange={event => set('lyricsLicense', event.target.value)} /></label>
+        <label className="mv-field"><span>歌词 / 译文署名</span><input value={form.lyricsCredit} maxLength={500} onChange={event => set('lyricsCredit', event.target.value)} /></label>
+        <label className="mv-field"><span>歌词授权 / 来源链接（https，可选）</span><input value={form.lyricsSource} maxLength={300} onChange={event => set('lyricsSource', event.target.value)} /></label>
+      </div>}
       <label className="mv-field"><span>简介</span><input value={form.description} maxLength={500} onChange={event => set('description', event.target.value)} /></label>
       <label className="mv-field" style={{ marginTop: 8 }}><span>标签（逗号分隔，最多 8 个）</span><input value={form.tags} onChange={event => set('tags', event.target.value)} /></label>
       <div className="mv-row" style={{ marginTop: 6 }}>
@@ -332,14 +340,14 @@ export function PublishDialog({ api, pack, canvas = () => null, onClose }) {
         <label className="mv-check"><input type="checkbox" checked={form.cover} onChange={event => set('cover', event.target.checked)} /><span>用当前画面做封面</span></label>
       </div>
       <div className="mv-row" style={{ marginTop: 8 }}>
-        <button type="button" className="mv-button" disabled={Boolean(busy) || !form.id || !form.license.trim() || !form.author.trim()} onClick={() => void prepare()}>{busy || '检查并打包'}</button>
+        <button type="button" className="mv-button" disabled={Boolean(busy) || !form.id || !form.license.trim() || !form.author.trim() || (Boolean(pack.pack.lyrics) && (!form.lyricsLicense.trim() || !form.lyricsCredit.trim()))} onClick={() => void prepare()}>{busy || '检查并打包'}</button>
         <button type="button" className="mv-button mv-button-secondary" onClick={onClose}>取消</button>
       </div>
       {error && <Alert kind="error"><p className="mv-wrap">{error}</p></Alert>}
       {result && !result.ok && <Alert kind="error"><p className="mv-wrap" style={{ whiteSpace: 'pre-wrap' }}>没有通过检查，请修改后重试：{'\n'}{result.errors.join('\n')}</p></Alert>}
       {result?.ok && <div className="mv-ws-publish">
         <Alert kind="ok"><p className="mv-wrap">已通过检查并打包到：<code>{result.dir}</code>
-          {result.stripped.length > 0 && <><br />已去掉：{result.stripped.join('；')}</>}{result.timingLines ? <><br />歌词时间轴：{result.timingLines} 行（只有时间和哈希）</> : null}</p></Alert>
+          {result.stripped.length > 0 && <><br />已去掉：{result.stripped.join('；')}</>}{result.lyricLines ? <><br />已包含歌词与译文：{result.lyricLines} 行，安装后自动加载</> : result.timingLines ? <><br />仅歌词时间轴：{result.timingLines} 行</> : null}</p></Alert>
         {result.warnings.length > 0 && <Alert kind="warn"><p className="mv-wrap" style={{ whiteSpace: 'pre-wrap' }}>{result.warnings.join('\n')}</p></Alert>}
         <ul className="mv-caption mv-ws-files">{result.files.map(f => <li key={f.path}><code title={f.path}>{f.path}</code><span className="mv-ws-size">{sizeText(f.size)}</span><span /></li>)}</ul>
         <ol className="mv-caption mv-ws-steps">
@@ -350,7 +358,7 @@ export function PublishDialog({ api, pack, canvas = () => null, onClose }) {
           <li>维护者审核、CI 检查通过并合并后，包会出现在所有人的创意工坊里。</li>
         </ol>
         <label className="mv-check" style={{ height: 'auto' }}><input type="checkbox" checked={agreed} onChange={event => setAgreed(event.target.checked)} />
-          <span>我确认有权以 <b>{form.license}</b> 分享这些文件，包里没有音频、歌词文本或无权分享的素材。</span></label>
+          <span>我确认有权按各资源声明的使用条款分享这些文件（代码：<b>{form.license}</b>{pack.pack.lyrics ? `；歌词：${form.lyricsLicense}` : ''}），包里没有歌曲音频或无权分享的素材。</span></label>
         <div className="mv-row" style={{ marginTop: 6 }}>
           {agreed
             ? <a className="mv-button" href={result.links.upload} target="_blank" rel="noreferrer">在 GitHub 上提交…</a>
