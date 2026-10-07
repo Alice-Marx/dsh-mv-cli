@@ -1084,6 +1084,10 @@ var SCENE_LIMITS = Object.freeze({
   hardTimeoutMs: 1500,
   /** Setup / first compile. */
   setupTimeoutMs: 2e3,
+  /** Optional cooperative preparation, before any playback frames are accepted. */
+  prepareStepTimeoutMs: 1e4,
+  prepareTotalTimeoutMs: 12e4,
+  prepareMaxSteps: 512,
   maxCols: 240,
   maxRows: 85
 });
@@ -1194,6 +1198,25 @@ function __mvNormalize(out, cols, rows) {
   return { lines: outLines, styles: outStyles }
 }
 `;
+var SCENE_PREPARE_RUNTIME_SOURCE = String.raw`
+function __mvPrepareIterator(iterator) {
+  if (!iterator || typeof iterator !== 'object' || typeof iterator.then === 'function') throw new TypeError('prepare() 必须返回同步迭代器，不能返回 Promise');
+  const next = iterator.next;
+  if (typeof next !== 'function') throw new TypeError('prepare() 必须返回带 next() 的同步迭代器');
+  return { iterator, next };
+}
+function __mvPrepareProgress(result, previous) {
+  if (!result || typeof result !== 'object' || typeof result.then === 'function' || typeof result.done !== 'boolean') throw new TypeError('prepare.next() 必须返回同步的 { done, value }，不能返回 Promise');
+  if (result.done) return { done: true, progress: 1, label: '' };
+  const value = result.value;
+  if (value === undefined) return { done: false, progress: previous, label: '' };
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('prepare() 的进度应为 { progress, label } 或 undefined');
+  const progress = value.progress, label = value.label === undefined ? '' : value.label;
+  if (!Number.isFinite(progress) || progress < 0 || progress > 1 || progress < previous) throw new RangeError('prepare() progress 必须是 0–1 的单调有限数');
+  if (typeof label !== 'string' || label.length > 160) throw new TypeError('prepare() label 必须是不超过 160 字符的字符串');
+  return { done: false, progress, label };
+}
+`;
 var WEBGL_CANVAS_FACADE_SOURCE = String.raw`
 function __mvCanvasFacade(canvas, gl) {
   const facade = Object.create(null);
@@ -1218,7 +1241,7 @@ function sceneWorkerSource(userSource, { output = "text" } = {}) {
   const blocked = JSON.stringify(sceneBlockedGlobals(output));
   const userBody = JSON.stringify(`"use strict";
 ${stripModuleSyntax(userSource)}
-;return { render: typeof render === 'function' ? render : null, paint: typeof paint === 'function' ? paint : null, setup: typeof setup === 'function' ? setup : null };`);
+;return { render: typeof render === 'function' ? render : null, paint: typeof paint === 'function' ? paint : null, setup: typeof setup === 'function' ? setup : null, prepare: typeof prepare === 'function' ? prepare : null };`);
   return `"use strict";
 (() => {
 const __global = self;
@@ -1257,8 +1280,10 @@ const __canvasListen = typeof EventTarget !== 'undefined' ? EventTarget.prototyp
   }
 })();
 ${SCENE_RUNTIME_SOURCE}
+${SCENE_PREPARE_RUNTIME_SOURCE}
 ${WEBGL_CANVAS_FACADE_SOURCE}
-let __scene = null, __setupError = '', __cv = null, __g = null, __facade = null, __initialized = false, __contextLost = false;
+let __scene = null, __setupError = '', __cv = null, __g = null, __facade = null, __initialized = false, __contextLost = false, __ready = false;
+let __prepare = null, __prepareId = 0, __prepareProgress = 0, __prepareStarted = 0, __prepareWidth = 0, __prepareHeight = 0;
 try {
   __scene = __compile(${userBody})();
   if (__bitmap && !__scene.paint) __setupError = __webgl
@@ -1316,11 +1341,49 @@ __listen('message', event => {
     if (__initialized) return;
     __initialized = true;
     if (!__setupError && __webgl) { try { __surface(msg.info && msg.info.width || 1280, msg.info && msg.info.height || 720) } catch (error) { __setupError = String(error && error.stack || error) } }
-    if (!__setupError && __scene.setup) { try { __scene.setup(__webgl ? { ...(msg.info || {}), canvas: __facade } : (msg.info || {}), __webgl ? __g : undefined) } catch (error) { __setupError = String(error && error.stack || error) } }
+    if (!__setupError) { try {
+      const info = __webgl ? { ...(msg.info || {}), canvas: __facade } : (msg.info || {});
+      if (__scene.setup) __scene.setup(info, __webgl ? __g : undefined);
+      __prepareWidth = __cv && __cv.width; __prepareHeight = __cv && __cv.height;
+      if (__scene.prepare) __prepare = __mvPrepareIterator(__scene.prepare(info, __webgl ? __g : undefined));
+      if (__prepare && __bitmap && (__cv.width !== __prepareWidth || __cv.height !== __prepareHeight)) throw new Error('prepare() \u4E0D\u80FD\u66F4\u6539\u8F93\u51FA canvas.size');
+    } catch (error) { __setupError = String(error && error.stack || error) } }
+    if (!__setupError && __prepare) {
+      __prepareStarted = __now();
+      __post({ type: 'preparing', id: 0, progress: 0, label: '' });
+      return;
+    }
+    __ready = !__setupError;
     __post({ type: 'ready', error: __setupError });
     return;
   }
-  if (msg.type !== 'frame' || !__initialized || __setupError || __contextLost) return;
+  if (msg.type === 'prepare-next' && __initialized && __prepare && !__setupError && !__contextLost) {
+    const started = __now();
+    try {
+      if (!Number.isSafeInteger(msg.id) || msg.id !== __prepareId + 1) throw new Error('\u51C6\u5907\u6B65\u9AA4\u7F16\u53F7\u4E0D\u5339\u914D');
+      if (msg.id > ${SCENE_LIMITS.prepareMaxSteps}) throw new Error('prepare() \u8D85\u8FC7 ${SCENE_LIMITS.prepareMaxSteps} \u4E2A\u6B65\u9AA4');
+      if (started - __prepareStarted > ${SCENE_LIMITS.prepareTotalTimeoutMs}) throw new Error('prepare() \u603B\u8BA1\u8D85\u65F6');
+      __prepareId = msg.id;
+      const status = __mvPrepareProgress(__prepare.next.call(__prepare.iterator), __prepareProgress);
+      if (__bitmap && (__cv.width !== __prepareWidth || __cv.height !== __prepareHeight)) throw new Error('prepare() \u4E0D\u80FD\u66F4\u6539\u8F93\u51FA canvas.size');
+      if (__webgl && (__contextLost || __g.isContextLost?.())) throw new Error('WebGL \u4E0A\u4E0B\u6587\u5DF2\u4E22\u5931\uFF0C\u573A\u666F\u5DF2\u505C\u6B62\u3002');
+      // Complete first-use GPU work here, not in the first timed playback frame.
+      if (__webgl && typeof __g.finish === 'function') __g.finish();
+      const ended = __now();
+      if (ended - started > ${SCENE_LIMITS.prepareStepTimeoutMs}) throw new Error('prepare() \u5355\u6B65\u9AA4\u8D85\u65F6');
+      if (ended - __prepareStarted > ${SCENE_LIMITS.prepareTotalTimeoutMs}) throw new Error('prepare() \u603B\u8BA1\u8D85\u65F6');
+      __prepareProgress = status.progress;
+      if (status.done) {
+        __prepare = null; __ready = true;
+        __post({ type: 'ready', error: '', id: msg.id });
+      } else __post({ type: 'preparing', id: msg.id, progress: status.progress, label: status.label });
+    } catch (error) {
+      __prepare = null; __setupError = String(error && error.stack || error).slice(0, 2000);
+      __post({ type: 'fatal', error: __setupError });
+    }
+    return;
+  }
+  if (msg.type !== 'frame' || !__initialized || !__ready || __setupError || __contextLost) return;
   const started = __now();
   try {
     if (__bitmap) {
@@ -1521,11 +1584,13 @@ function blobWorkerFactory(source, { WorkerClass = globalThis.Worker, BlobClass 
 }
 var ScriptFilm = class extends GenericFilm {
   constructor({ createWorker = blobWorkerFactory, now = () => globalThis.performance?.now?.() ?? Date.now(), onFail = () => {
+  }, onPrepare = () => {
   }, ...options } = {}) {
     super(options);
     this.createWorker = createWorker;
     this.now = now;
     this.onFail = onFail;
+    this.onPrepare = onPrepare;
     this.worker = null;
     this.state = "idle";
     this.frame = null;
@@ -1537,6 +1602,10 @@ var ScriptFilm = class extends GenericFilm {
     this.size = [1280, 720];
     this.bitmap = null;
     this.setupTimer = null;
+    this.prepareTimer = null;
+    this.prepareTotalTimer = null;
+    this.preparePending = null;
+    this.prepareProgress = 0;
     this.loadReject = null;
   }
   /** Song structure for ctx.section / ctx.beat (from mv.json). */
@@ -1574,6 +1643,32 @@ var ScriptFilm = class extends GenericFilm {
         clearTimeout(this.setupTimer);
         this.setupTimer = null;
       };
+      const clearPrepareTimers = () => {
+        clearTimeout(this.prepareTimer);
+        clearTimeout(this.prepareTotalTimer);
+        this.prepareTimer = null;
+        this.prepareTotalTimer = null;
+        this.preparePending = null;
+      };
+      const reportPreparation = (status) => {
+        try {
+          this.onPrepare(status);
+        } catch {
+        }
+      };
+      const sendPreparationStep = (id) => {
+        if (id > SCENE_LIMITS.prepareMaxSteps) {
+          reject(this.fail(`\u573A\u666F\u51C6\u5907\u8D85\u8FC7 ${SCENE_LIMITS.prepareMaxSteps} \u4E2A\u6B65\u9AA4\u3002`));
+          return;
+        }
+        this.preparePending = id;
+        this.prepareTimer = setTimeout(() => reject(this.fail(`\u573A\u666F\u51C6\u5907\u5355\u6B65\u9AA4\u8D85\u8FC7 ${SCENE_LIMITS.prepareStepTimeoutMs} ms\uFF0C\u5DF2\u505C\u6B62\u3002`)), SCENE_LIMITS.prepareStepTimeoutMs);
+        try {
+          worker.postMessage({ type: "prepare-next", id });
+        } catch (error) {
+          reject(this.fail(`\u65E0\u6CD5\u51C6\u5907\u573A\u666F\u811A\u672C\uFF1A${error?.message ?? error}`));
+        }
+      };
       this.setupTimer = setTimeout(() => reject(this.fail("\u573A\u666F\u811A\u672C\u52A0\u8F7D\u8D85\u65F6\u3002")), SCENE_LIMITS.setupTimeoutMs);
       worker.onerror = (event) => {
         if (this.worker !== worker) return;
@@ -1600,20 +1695,47 @@ var ScriptFilm = class extends GenericFilm {
           reject(error);
           return;
         }
-        if (this.state === "loading") {
-          if (msg.type !== "ready" || typeof msg.error !== "string" || msg.bitmap !== void 0) {
+        if (this.state === "loading" || this.state === "preparing") {
+          if (msg.type === "preparing") {
+            const expected = this.state === "loading" ? 0 : this.preparePending;
+            const valid = Number.isSafeInteger(msg.id) && msg.id === expected && msg.id <= SCENE_LIMITS.prepareMaxSteps && msg.bitmap === void 0 && Number.isFinite(msg.progress) && msg.progress >= this.prepareProgress && msg.progress <= 1 && typeof msg.label === "string" && msg.label.length <= 160 && (this.state !== "loading" || msg.progress === 0);
+            if (!valid) {
+              closeBitmap(msg.bitmap);
+              reject(this.fail(invalidWorkerMessage("\u51C6\u5907\u8FDB\u5EA6\u6216\u6B65\u9AA4\u7F16\u53F7\u4E0D\u6B63\u786E\u3002")));
+              return;
+            }
+            clearSetupTimer();
+            clearTimeout(this.prepareTimer);
+            this.prepareTimer = null;
+            if (this.state === "loading") {
+              this.state = "preparing";
+              this.prepareTotalTimer = setTimeout(() => reject(this.fail(`\u573A\u666F\u51C6\u5907\u603B\u8BA1\u8D85\u8FC7 ${SCENE_LIMITS.prepareTotalTimeoutMs} ms\uFF0C\u5DF2\u505C\u6B62\u3002`)), SCENE_LIMITS.prepareTotalTimeoutMs);
+            }
+            this.prepareProgress = msg.progress;
+            reportPreparation({ step: msg.id, progress: msg.progress, label: msg.label, done: false });
+            if (this.worker !== worker || this.state !== "preparing") return;
+            sendPreparationStep(msg.id + 1);
+            return;
+          }
+          if (msg.type !== "ready" || typeof msg.error !== "string" || msg.bitmap !== void 0 || this.state === "preparing" && (!Number.isSafeInteger(msg.id) || msg.id !== this.preparePending)) {
             closeBitmap(msg.bitmap);
             clearSetupTimer();
             reject(this.fail(invalidWorkerMessage("\u521D\u59CB\u5316\u54CD\u5E94\u683C\u5F0F\u4E0D\u6B63\u786E\u3002")));
             return;
           }
           clearSetupTimer();
+          const prepared = this.state === "preparing";
+          clearPrepareTimers();
           if (msg.error) {
             reject(this.fail(`\u573A\u666F\u811A\u672C\u65E0\u6CD5\u52A0\u8F7D\uFF1A${msg.error.split("\n")[0]}`));
             return;
           }
           this.state = "ready";
           this.loadReject = null;
+          if (prepared) {
+            this.prepareProgress = 1;
+            reportPreparation({ step: msg.id, progress: 1, label: "", done: true });
+          }
           resolve();
           return;
         }
@@ -1704,6 +1826,12 @@ var ScriptFilm = class extends GenericFilm {
   stop({ keepState = false } = {}) {
     clearTimeout(this.setupTimer);
     this.setupTimer = null;
+    clearTimeout(this.prepareTimer);
+    clearTimeout(this.prepareTotalTimer);
+    this.prepareTimer = null;
+    this.prepareTotalTimer = null;
+    this.preparePending = null;
+    this.prepareProgress = 0;
     const reject = this.loadReject;
     this.loadReject = null;
     reject?.(new Error(keepState ? this.error : "\u573A\u666F\u811A\u672C\u52A0\u8F7D\u5DF2\u53D6\u6D88\u3002"));
@@ -1760,7 +1888,7 @@ var ScriptFilm = class extends GenericFilm {
           i += 1;
         }
       }
-    } else if (this.state === "loading" || this.state === "ready") c.center(Math.floor(h / 2), "\u2026", DIM);
+    } else if (this.state === "loading" || this.state === "preparing" || this.state === "ready") c.center(Math.floor(h / 2), this.state === "preparing" ? `\u51C6\u5907 ${Math.round(this.prepareProgress * 100)}%` : "\u2026", DIM);
     if (opts.help) this.help(c, opts.offset ?? 0, opts.helpLines);
     return c;
   }
@@ -1779,12 +1907,36 @@ var ScriptFilm = class extends GenericFilm {
       g.imageSmoothingQuality = "high";
       g.drawImage(this.bitmap, Math.round((cw2 - dw) / 2), Math.round((ch - dh) / 2), dw, dh);
       if (opts.subtitles === true) bitmapSubtitles(g, this.cue(t - (opts.offset ?? 0)), Math.round((cw2 - dw) / 2), Math.round((ch - dh) / 2), dw, dh);
-    } else if (this.state === "loading" || this.state === "ready") {
+    } else if (this.state === "loading" || this.state === "preparing" || this.state === "ready") {
       g.fillStyle = "#556";
       g.font = `${Math.max(12, Math.round(ch / 30))}px monospace`;
       g.textAlign = "center";
       g.textBaseline = "middle";
-      g.fillText("\u2026", cw2 / 2, ch / 2);
+      g.fillText(this.state === "preparing" ? `\u51C6\u5907 ${Math.round(this.prepareProgress * 100)}%` : "\u2026", cw2 / 2, ch / 2);
+    }
+  }
+};
+
+// .dsh-plugin/client/mv/scene-play-gate.mjs
+var ScenePlayGate = class {
+  constructor() {
+    this.sequence = 0;
+    this.pending = false;
+  }
+  cancel() {
+    this.sequence++;
+    this.pending = false;
+  }
+  async play(load, isCurrent, start) {
+    const id = ++this.sequence;
+    this.pending = true;
+    try {
+      await load;
+      if (id !== this.sequence || !isCurrent()) return false;
+      await start();
+      return id === this.sequence && isCurrent();
+    } finally {
+      if (id === this.sequence) this.pending = false;
     }
   }
 };
@@ -3117,7 +3269,7 @@ function box(ctx, x0, y0, x1, y1, title, level, color, gain = 1) {
 }
 
 // .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.9.5" : "";
+var CLIENT_VERSION = true ? "0.9.6" : "";
 var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u653E\u6620\u5BA4\u3002";
 function isMissingRemoteMethod(message) {
   const value = String(message ?? "");
@@ -7359,6 +7511,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   const [packStatus, setPackStatus] = import_react3.default.useState("");
   const [volume, setVolume] = import_react3.default.useState({ level: 1, muted: false });
   const [sceneNote, setSceneNote] = import_react3.default.useState("");
+  const [scenePreparing, setScenePreparing] = import_react3.default.useState("");
   const [decodeFail, setDecodeFail] = import_react3.default.useState(null);
   const [audioFile, setAudioFile] = import_react3.default.useState(null);
   const [lyricsText, setLyricsText] = import_react3.default.useState("");
@@ -7373,6 +7526,9 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       generic: new GenericFilm({ energy: (t) => state.energy(t) }),
       script: new ScriptFilm({
         energy: (t) => state.energy(t),
+        onPrepare: (progress) => {
+          if (!state.disposed && state.film === state.script) setScenePreparing(`\u6B63\u5728\u9884\u70ED 3D \u8D44\u6E90\u2026 ${Math.round(progress.progress * 100)}%${progress.label ? ` \xB7 ${progress.label}` : ""}`);
+        },
         onFail: (reason) => {
           if (state.film === state.script) state.film = state.generic;
           setPixelScene(false);
@@ -7393,7 +7549,10 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       fileEnergy: null,
       started: false,
       help: false,
-      sha: ""
+      sha: "",
+      sceneLoad: null,
+      sceneOwner: null,
+      playGate: new ScenePlayGate()
     };
     state.energy = () => live.energy();
     state.film = state.generic;
@@ -7560,6 +7719,13 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     let cancelled = false;
     const state = engine.current;
     const dshpvOwner = /* @__PURE__ */ Symbol("dsh-pv pack load");
+    state.sceneOwner = dshpvOwner;
+    state.playGate.cancel();
+    state.clock.pause();
+    state.script.stop();
+    clearAudio();
+    if (isScript(pack)) setScenePreparing("\u6B63\u5728\u52A0\u8F7D\u573A\u666F\u8D44\u6E90\u2026");
+    else setScenePreparing("");
     const releaseDshPv = () => {
       disposeDshPvData(state.dshpvData);
       state.dshpvFonts?.dispose();
@@ -7575,7 +7741,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     };
     state.dshpvOwner = dshpvOwner;
     releaseDshPv();
-    void (async () => {
+    const mediaLoad = (async () => {
       dbRef.current ?? (dbRef.current = await openMediaStore());
       if (cancelled) return;
       const db = dbRef.current;
@@ -7708,7 +7874,6 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
           if (!cancelled) setError(`\u65E0\u6CD5\u8BFB\u53D6 MV \u5305\u7684 ${role}\uFF1A${failure?.message ?? failure}`);
         }
       }
-      clearAudio();
       const audioSlot = mediaSlot(pack, "audio"), lyricsSlot = mediaSlot(pack, "lyrics");
       if (audioSlot) {
         const legacy = (kind) => legacyPresetSlot(pack) ? getMedia(db, kind) : Promise.resolve(null);
@@ -7720,7 +7885,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
         if (cancelled) return;
         if (l?.text && rememberedTrackApplies(pack, l, bundledLoaded.lyrics)) await useLyricsText(l.name, l.text, { remember: false });
         if (sp?.text && rememberedTrackApplies(pack, sp, bundledLoaded.spectrum)) await useSpectrumText(sp.name, sp.text, { remember: false });
-        if (a?.file) await useAudioFile(a.file, { remember: false });
+        if (a?.file && !state.sha) await useAudioFile(a.file, { remember: false });
         if (!a?.file) setMatchNote({ level: "info", message: bundledLoaded.lyrics ? "\u5305\u5185\u6B4C\u8BCD\u4E0E\u8BD1\u6587\u5DF2\u81EA\u52A8\u52A0\u8F7D\uFF1B\u53EA\u9700\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u4E50\u6587\u4EF6\uFF0C\u63D2\u4EF6\u4F1A\u68C0\u67E5\u6B4C\u66F2\u65F6\u957F\u662F\u5426\u5339\u914D\u3002" : "\u8FD9\u662F\u521B\u610F\u5DE5\u574A\u7684\u5305\uFF0C\u4E0D\u5E26\u97F3\u9891\uFF1A\u8BF7\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2\u6587\u4EF6\u3002\u6CA1\u6709\u53EF\u7528\u7684\u5305\u5185\u6B4C\u8BCD\u8F68\u65F6\uFF0C\u53EF\u53E6\u9009\u672C\u5730\u6B4C\u8BCD\u3002" });
         return;
       }
@@ -7743,9 +7908,20 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
           }
         }
       }
-    })();
+    })().catch((failure) => {
+      if (!cancelled && state.sceneOwner === dshpvOwner) setError(`\u65E0\u6CD5\u52A0\u8F7D MV \u5305\uFF1A${failure?.message ?? failure}`);
+    }).finally(() => {
+      if (!cancelled && state.sceneOwner === dshpvOwner) setScenePreparing("");
+    });
+    state.sceneLoad = mediaLoad;
     return () => {
       cancelled = true;
+      if (state.sceneOwner === dshpvOwner) {
+        state.sceneOwner = null;
+        state.playGate.cancel();
+        state.clock.pause();
+        state.script.stop();
+      }
       if (state.dshpvOwner === dshpvOwner) {
         state.dshpvOwner = null;
         releaseDshPv();
@@ -7778,17 +7954,25 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   };
   const play = async () => {
     const state = engine.current;
+    const owner = state.sceneOwner;
     try {
       state.live.ensure();
     } catch {
     }
-    if (state.clock.time() >= state.clock.duration - 0.5) state.clock.seek(0);
-    state.started = true;
     try {
-      await state.clock.play();
+      await state.playGate.play(state.sceneLoad, () => !state.disposed && state.sceneOwner === owner, async () => {
+        if (state.clock.time() >= state.clock.duration - 0.5) state.clock.seek(0);
+        state.started = true;
+        await state.clock.play();
+      });
     } catch (failure) {
-      setError(`\u65E0\u6CD5\u64AD\u653E\uFF1A${failure?.message ?? failure}`);
+      if (state.sceneOwner === owner) setError(`\u65E0\u6CD5\u64AD\u653E\uFF1A${failure?.message ?? failure}`);
     }
+  };
+  const pause = () => {
+    const state = engine.current;
+    state?.playGate.cancel();
+    state?.clock.pause();
   };
   const act = (action) => {
     const state = engine.current;
@@ -7796,8 +7980,8 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     const t = state.clock.time();
     switch (action.type) {
       case "toggle":
-        if (!state.started || !state.clock.playing) void play();
-        else state.clock.pause();
+        if (state.playGate.pending || state.clock.playing) pause();
+        else void play();
         return true;
       case "seekBy":
         state.clock.seek(Math.max(-60, t + action.delta));
@@ -7923,7 +8107,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     play: () => {
       if (!engine.current?.clock.playing) void play();
     },
-    pause: () => engine.current?.clock.pause(),
+    pause,
     playing: () => Boolean(engine.current?.clock.playing)
   }), []);
   const previewCues = import_react3.default.useCallback((cues) => {
@@ -7939,7 +8123,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   const chapter = chapterList.reduce((current, item) => item[0] <= Math.max(0, status.t) ? item : current, chapterList[0]);
   import_react3.default.useImperativeHandle(ref, () => ({
     toggle: () => act({ type: "toggle" }),
-    pause: () => engine.current?.clock.pause(),
+    pause,
     focus: () => wrap3.current?.focus(),
     /** Transport for the skins' player bar / status line (polled; no per-frame panel renders). */
     time: () => engine.current?.clock.time() ?? 0,
@@ -7985,7 +8169,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   };
   const syncLabel = known ? `\u5DF2\u8BC6\u522B\uFF1A${known.label}` : audioInfo ? "\u672A\u8BC6\u522B\u7684\u7248\u672C\uFF1A\u542C\u7740\u4E0D\u540C\u6B65\u5C31\u7528 Alt+[ / Alt+] \u6821\u51C6" : "";
   return /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-canvas-tab" }, !audioInfo && !packStatus && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("h2", null, pack.pack.workshop ? "\u521B\u610F\u5DE5\u574A\u7684\u5305\u4E0D\u5E26\u97F3\u9891\uFF1A\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2" : "\u8FD9\u4E2A MV \u5305\u6CA1\u6709\u53EF\u7528\u7684\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("ol", null, /* @__PURE__ */ import_react3.default.createElement("li", null, "\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08MP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV \u89C6\u9891\u7684\u97F3\u8F68\u3001Opus/Ogg\u3001FLAC\u3001WAV \u90FD\u884C\uFF0C\u6309\u5185\u5BB9\u8BC6\u522B\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\uFF1B\u5728\u672C\u673A\u89E3\u7801\uFF0C\u4E0D\u4E0A\u4F20\uFF09\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u53EF\u9009\uFF1A\u9009\u62E9\u6B4C\u8BCD\uFF08LRC / SRT / VTT / JSON / lyrics.js\uFF09\uFF0C\u753B\u9762\u4F1A\u663E\u793A\u5B57\u5E55\u3002JS \u53EA\u8BFB\u53D6\u9759\u6001 LYRICS \u6570\u636E\uFF0C\u4E0D\u6267\u884C\u4EE3\u7801\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u70B9 ", /* @__PURE__ */ import_react3.default.createElement("b", null, "\u25B6 \u64AD\u653E"), "\u3002\u4E5F\u53EF\u4EE5\u4E0D\u9009\u97F3\u9891\uFF0C\u76F4\u63A5\u9759\u97F3\u89C2\u770B\u753B\u9762\u3002")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", onClick: pickAudio }, "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => pickText(LYRICS_ACCEPT, useLyricsText) }, "\u9009\u62E9\u6B4C\u8BCD\u2026")))), packStatus && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, packStatus)), matchNote && pack.pack.workshop && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: matchNote.level === "warn" ? "warn" : matchNote.level === "ok" ? "ok" : "info", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setMatchNote(null) }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, matchNote.level === "warn" ? "\u26A0 \u97F3\u9891\u53EF\u80FD\u4E0E\u8FD9\u4E2A\u5DE5\u574A\u5305\u4E0D\u5339\u914D\uFF1A\n" : "", matchNote.message)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-sources", "aria-label": "\u5A92\u4F53\u6587\u4EF6" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${audioInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u266A"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value", title: audioInfo ? `${audioInfo.name}
-sha256 ${audioInfo.sha}` : "" }, audioInfo ? `${audioInfo.name}${audioInfo.label && audioInfo.label !== "\u672A\u77E5\u683C\u5F0F" ? ` \xB7 ${audioInfo.label}` : ""}` : "\u672A\u9009\u62E9 \xB7 \u9759\u97F3\u6A21\u5F0F")), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: pickAudio }, audioInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${lyricsInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u201C"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u6B4C\u8BCD"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, lyricsInfo ? `${lyricsInfo.name}\uFF08${lyricsInfo.count} \u53E5${lyricsInfo.note ? ` \xB7 ${lyricsInfo.note}` : ""}\uFF09` : "\u672A\u52A0\u8F7D \xB7 \u53EA\u663E\u793A [ \u95F4\u594F ]")), lyricsInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearLyrics() }, "\u79FB\u9664"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "LRC / SRT / VTT / JSON / lyrics.js\uFF08\u53EA\u8BFB\u53D6\u9759\u6001 LYRICS \u6570\u636E\uFF0C\u4E0D\u6267\u884C\u4EE3\u7801\uFF09", onClick: () => pickText(LYRICS_ACCEPT, useLyricsText) }, lyricsInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u25AE\u25AE"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u9891\u8C31"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, spectrumInfo ? spectrumInfo.name : "\u5B9E\u65F6\u5206\u6790")), spectrumInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearSpectrum() }, "\u6539\u7528\u5B9E\u65F6"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "\u53EF\u9009\uFF1Aspectrum.json", onClick: () => pickText(".json", useSpectrumText) }, spectrumInfo ? "\u66F4\u6362" : "\u6587\u4EF6\u2026"))), error && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "error", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setError("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", null, error)), sceneNote && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSceneNote("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, sceneNote)), decodeFail && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: decodeFail.ffmpeg && !decodeFail.confirming ? /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: decodeFail.busy, onClick: () => setDecodeFail((value) => ({ ...value, confirming: true })) }, "\u7528 ffmpeg \u8F6C\u6362\u2026")) : null }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, "\u9762\u677F\u65E0\u6CD5\u89E3\u7801\u8FD9\u4E2A\u97F3\u9891\uFF08", decodeFail.label, "\uFF09\u3002", decodeFail.ffmpeg ? "\u627E\u5230\u4E86\u4F60\u672C\u673A\u7684 ffmpeg\uFF0C\u53EF\u4EE5\u628A\u5B83\u8F6C\u6362\u6210 WAV \u7F13\u5B58\u540E\u64AD\u653E\uFF08\u539F\u6587\u4EF6\u4E0D\u53D8\uFF09\u3002" : "\u5B89\u88C5 ffmpeg\uFF08\u653E\u8FDB PATH\uFF0C\u6216 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\uFF09\u540E\u53EF\u4EE5\u81EA\u52A8\u8F6C\u6362\uFF1B\u6216\u8005\u6362\u6210 MP3 / M4A / FLAC / WAV\u3002"), decodeFail.confirming && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u7528 ffmpeg \u8F6C\u6362" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, "\u7528\u4F60\u672C\u673A\u7684 ffmpeg \u8F6C\u6362\u8FD9\u4E2A\u6587\u4EF6\uFF1F"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "Host \u5C06\u8FD0\u884C\uFF08\u4E0D\u7ECF\u8FC7 shell\uFF0C\u6700\u591A 10 \u5206\u949F\uFF09\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, displayCommand(decodeFail.ffmpeg, ffmpegArgs(decodeFail.path, "<\u63D2\u4EF6\u7F13\u5B58>\\<sha256>.wav"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: decodeFail.busy, onClick: () => void convertWithFfmpeg() }, decodeFail.busy ? decodeFail.busy : "\u786E\u8BA4\u8F6C\u6362"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(decodeFail.busy), onClick: () => setDecodeFail((value) => ({ ...value, confirming: false })) }, "\u53D6\u6D88")))), /* @__PURE__ */ import_react3.default.createElement(
+sha256 ${audioInfo.sha}` : "" }, audioInfo ? `${audioInfo.name}${audioInfo.label && audioInfo.label !== "\u672A\u77E5\u683C\u5F0F" ? ` \xB7 ${audioInfo.label}` : ""}` : "\u672A\u9009\u62E9 \xB7 \u9759\u97F3\u6A21\u5F0F")), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: pickAudio }, audioInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${lyricsInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u201C"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u6B4C\u8BCD"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, lyricsInfo ? `${lyricsInfo.name}\uFF08${lyricsInfo.count} \u53E5${lyricsInfo.note ? ` \xB7 ${lyricsInfo.note}` : ""}\uFF09` : "\u672A\u52A0\u8F7D \xB7 \u53EA\u663E\u793A [ \u95F4\u594F ]")), lyricsInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearLyrics() }, "\u79FB\u9664"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "LRC / SRT / VTT / JSON / lyrics.js\uFF08\u53EA\u8BFB\u53D6\u9759\u6001 LYRICS \u6570\u636E\uFF0C\u4E0D\u6267\u884C\u4EE3\u7801\uFF09", onClick: () => pickText(LYRICS_ACCEPT, useLyricsText) }, lyricsInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u25AE\u25AE"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u9891\u8C31"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, spectrumInfo ? spectrumInfo.name : "\u5B9E\u65F6\u5206\u6790")), spectrumInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearSpectrum() }, "\u6539\u7528\u5B9E\u65F6"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "\u53EF\u9009\uFF1Aspectrum.json", onClick: () => pickText(".json", useSpectrumText) }, spectrumInfo ? "\u66F4\u6362" : "\u6587\u4EF6\u2026"))), error && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "error", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setError("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", null, error)), sceneNote && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSceneNote("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, sceneNote)), scenePreparing && /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption", role: "status", "aria-live": "polite" }, scenePreparing, "\uFF1B\u64AD\u653E\u4F1A\u7B49\u5F85\u8D44\u6E90\u51C6\u5907\u5B8C\u6210\u3002"), decodeFail && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: decodeFail.ffmpeg && !decodeFail.confirming ? /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: decodeFail.busy, onClick: () => setDecodeFail((value) => ({ ...value, confirming: true })) }, "\u7528 ffmpeg \u8F6C\u6362\u2026")) : null }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, "\u9762\u677F\u65E0\u6CD5\u89E3\u7801\u8FD9\u4E2A\u97F3\u9891\uFF08", decodeFail.label, "\uFF09\u3002", decodeFail.ffmpeg ? "\u627E\u5230\u4E86\u4F60\u672C\u673A\u7684 ffmpeg\uFF0C\u53EF\u4EE5\u628A\u5B83\u8F6C\u6362\u6210 WAV \u7F13\u5B58\u540E\u64AD\u653E\uFF08\u539F\u6587\u4EF6\u4E0D\u53D8\uFF09\u3002" : "\u5B89\u88C5 ffmpeg\uFF08\u653E\u8FDB PATH\uFF0C\u6216 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\uFF09\u540E\u53EF\u4EE5\u81EA\u52A8\u8F6C\u6362\uFF1B\u6216\u8005\u6362\u6210 MP3 / M4A / FLAC / WAV\u3002"), decodeFail.confirming && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u7528 ffmpeg \u8F6C\u6362" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, "\u7528\u4F60\u672C\u673A\u7684 ffmpeg \u8F6C\u6362\u8FD9\u4E2A\u6587\u4EF6\uFF1F"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "Host \u5C06\u8FD0\u884C\uFF08\u4E0D\u7ECF\u8FC7 shell\uFF0C\u6700\u591A 10 \u5206\u949F\uFF09\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, displayCommand(decodeFail.ffmpeg, ffmpegArgs(decodeFail.path, "<\u63D2\u4EF6\u7F13\u5B58>\\<sha256>.wav"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: decodeFail.busy, onClick: () => void convertWithFfmpeg() }, decodeFail.busy ? decodeFail.busy : "\u786E\u8BA4\u8F6C\u6362"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(decodeFail.busy), onClick: () => setDecodeFail((value) => ({ ...value, confirming: false })) }, "\u53D6\u6D88")))), /* @__PURE__ */ import_react3.default.createElement(
     "div",
     {
       ref: wrap3,

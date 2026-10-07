@@ -82,7 +82,18 @@ workshop pack (source in `presets/world-execute-me/`, excluded from the MIT lice
 - **0.7.0 模板示例 / template examples**：模板 `examples/` 里的七个场景模块和 `rich-pack` 是对 world-execute-me-dsh-pv（MIT，Copyright (c) 2026 MisakaZentai）中聊天窗口、心跳线、运维滚动条、stdout token 条、EXECUTION 分屏、鲸落结尾和后期效果的简化改编，随附该 MIT 许可文本（`examples/NOTICE.md`）。**不含**立绘（鲸鱼剪影由代码绘制）、歌曲音频或歌词文字（示例歌词为占位文字）。Simplified adaptations of the dsh PV scenes (MIT, © 2026 MisakaZentai), shipped with the MIT notice; no artwork, audio or lyric text.
 - **创意工坊 / workshop**：工坊中的包由各自作者按包内声明的许可发布（仓库默认 CC BY-NC-SA 4.0），不属于本 npm 包；本插件只按用户操作下载。Workshop packs are licensed by their authors and are not part of this package.
 
-## 5. 歌词引擎与在线服务（不随包分发）/ Lyrics engine and online service (not bundled)
+## 5. FrostNova 实时 3D 工坊适配（仓库源码，非 npm 内容）
+
+`presets/ports/frostnova-web/` adapts FrostNovaOrg/world-execute-web commit
+`29aefca50e40c14498420e1c6e1f3a1037727e17`, Copyright (C) 2026 FrostNova,
+Visuals — Claude Opus 5.5 Max. Its adapter/build code is AGPL-3.0-or-later,
+modified 2026-10-07 by Alice-Marx, and is excluded from this repository's MIT
+grant and npm files. Full corresponding source and notices accompany the
+workshop release. OFL font inputs have their own full licenses. Mili song text
+and official translation are not AGPL; Claude name/logo are Anthropic trademarks.
+No recording, key or encrypted audio part is distributed or fetched.
+
+## 6. 歌词引擎与在线服务（不随包分发）/ Lyrics engine and online service (not bundled)
 
 用户确认后，插件用 uv 把下列软件和模型下载到 `%LOCALAPPDATA%\dsh-mv\engine`，它们按各自许可证使用，不随本包分发：
 PyTorch（BSD-3-Clause）、faster-whisper（MIT，SYSTRAN）、CTranslate2（MIT）、Demucs / htdemucs（MIT，Meta）、

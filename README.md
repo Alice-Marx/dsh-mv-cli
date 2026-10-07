@@ -4,7 +4,14 @@ English · [简体中文](README.zh.md)
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊 / workshop](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.5**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.6**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+
+**0.9.6 heavy 3D preparation:** optional `function* prepare(info, gl)` prewarms
+resources/shaders before playback, with progress, cancellation, a 10-second
+step deadline, 120-second total deadline and 512-step limit. Music waits for
+preparation. Frame limits and blocked network/font/storage APIs are unchanged.
+FrostNova's realtime 3D workshop adaptation uses this lifecycle; its AGPL
+source, original word/Chinese captions and OFL resources are published separately.
 
 **0.9.4 complete packs:** only music is user-provided. Licensed lyrics, translations, cue/word timing, spectrum data and declared visual resources download together and load automatically. Update Three / Wallpaper to **1.1.0**, Polytech Tree to **1.2.0**. Song-text terms are separate from code MIT; the Mili fan packs are non-commercial under [Mili's official guidelines](https://projectmili.com/copyright-guidelines). The npm plugin itself still includes no song or lyric data. Older timing-only packs remain supported.
 

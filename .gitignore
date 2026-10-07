@@ -1,4 +1,9 @@
 node_modules/
+tmp/
+.env
+.env.*
+.npmrc
+*_token.txt
 dist/
 *.log
 .DS_Store

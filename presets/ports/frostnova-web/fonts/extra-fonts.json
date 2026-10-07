@@ -1,0 +1,41 @@
+[
+  {
+    "family": "STIX Two Text",
+    "file": "source/STIXTwoText.ttf",
+    "italicFile": "source/STIXTwoText-Italic.ttf",
+    "license": "source/STIXTwoText-OFL.txt",
+    "sourceUrl": "https://github.com/google/fonts/tree/main/ofl/stixtwotext",
+    "weights": [400, 500, 600, 700]
+  },
+  {
+    "family": "STIX Two Math",
+    "file": "source/STIXTwoMath.ttf",
+    "license": "source/STIXTwoMath-OFL.txt",
+    "sourceUrl": "https://github.com/google/fonts/tree/main/ofl/stixtwomath",
+    "weights": [400]
+  },
+  {
+    "family": "Noto Sans KR",
+    "file": "source/NotoSansKR.ttf",
+    "license": "source/NotoSansKR-OFL.txt",
+    "sourceUrl": "https://github.com/google/fonts/tree/main/ofl/notosanskr",
+    "weights": [800],
+    "chars": "넷가　豈﹏"
+  },
+  {
+    "family": "Noto Sans",
+    "file": "source/NotoSans.ttf",
+    "license": "source/NotoSans-OFL.txt",
+    "sourceUrl": "https://github.com/google/fonts/tree/main/ofl/notosans",
+    "weights": [500],
+    "chars": "ᵀₙ"
+  },
+  {
+    "family": "Noto Sans Symbols 2",
+    "file": "source/NotoSansSymbols2.ttf",
+    "license": "source/NotoSansSymbols2-OFL.txt",
+    "sourceUrl": "https://github.com/google/fonts/tree/main/ofl/notosanssymbols2",
+    "weights": [400],
+    "chars": "✢✳✻"
+  }
+]

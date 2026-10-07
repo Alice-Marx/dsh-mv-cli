@@ -1,0 +1,15 @@
+{
+  "name": "frostnova-workshop-build-tools",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "acorn": "8.15.0",
+    "esbuild": "0.28.2",
+    "fflate": "0.8.3",
+    "playwright": "1.62.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.9.6 — 2026-10-07
+
+- Optional synchronous-generator `prepare(info, gl)` runs bounded stages before
+  a scene becomes ready: progress, 10-second per-step timeout, independent
+  120-second total timeout, 512-step cap and strict response sequence checks.
+- Music cannot start ahead of scene/resource readiness. Pausing, switching
+  packs or unmounting cancels a queued play; old preparation cannot start a
+  replacement pack. Cancellation terminates the worker and releases bitmaps.
+- Legacy scripts remain compatible. Setup remains 2 seconds; realtime frame
+  watchdog (1.5 seconds), bitmap 100-ms budget and blocked capabilities are
+  unchanged. Host preparation is recording-only, not a GPU validation claim.
+- FrostNova world-execute-web is adapted separately as an AGPL workshop pack
+  with a complete corresponding-source offer, original timing/quoted code,
+  Chinese captions and offline OFL font assets; no audio/key service.
+- Host canvas recording supports VM-local Path2D handles. WebGL scenes that
+  derive geometry from real canvas pixels explicitly require browser QA;
+  fabricated empty glyph data is not treated as a rendering failure.
+
 ## 0.9.5 — 2026-10-07
 
 - dsh-pv can load a bounded optional raster timeline and image atlases to restore missing source image layers without changing the old vector/live-caption pipeline.

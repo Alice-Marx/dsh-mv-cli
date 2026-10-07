@@ -4,7 +4,13 @@
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.5**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.6**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+
+**0.9.6 重型 3D 预热：** 可选 `function* prepare(info, gl)` 在播放前分阶段
+初始化素材、编译着色器，显示进度并支持取消；每步限 10 秒、总计限 120 秒，最多
+512 步，音乐等待准备完成。逐帧保护及网络、字体注册、存储禁用规则不变。
+FrostNova 实时 3D 工坊适配使用此机制；AGPL 对应源码、原逐词/中文字幕及 OFL
+资源独立发布，不打包进 MIT 插件的 npm 内容。
 
 **0.9.4 完整包：只需自备音乐。** 已授权歌词、译文、逐句/逐词时间、频谱与声明的画面资源随工坊下载并自动加载。Three / Wallpaper 更新至 **1.1.0**，Polytech Tree 更新至 **1.2.0**。歌词使用条款独立于代码 MIT；Mili 歌词用于遵循[官方条款](https://projectmili.com/copyright-guidelines)的非商业同人 MV。npm 插件本体仍不带歌曲或真实歌词。旧版仅时间轴包继续兼容；旧手选缓存不会盖住新版自带歌词，新版里主动选择的替代歌词仅在本版本记住。
 

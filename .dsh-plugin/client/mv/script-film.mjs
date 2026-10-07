@@ -63,13 +63,14 @@ export function blobWorkerFactory(source, { WorkerClass = globalThis.Worker, Blo
 }
 
 export class ScriptFilm extends GenericFilm {
-  constructor({ createWorker = blobWorkerFactory, now = () => (globalThis.performance?.now?.() ?? Date.now()), onFail = () => {}, ...options } = {}) {
+  constructor({ createWorker = blobWorkerFactory, now = () => (globalThis.performance?.now?.() ?? Date.now()), onFail = () => {}, onPrepare = () => {}, ...options } = {}) {
     super(options)
     this.createWorker = createWorker
     this.now = now
     this.onFail = onFail
+    this.onPrepare = onPrepare
     this.worker = null
-    this.state = 'idle' // idle | loading | ready | failed
+    this.state = 'idle' // idle | loading | preparing | ready | failed
     this.frame = null
     this.pending = null
     this.slow = 0
@@ -79,6 +80,10 @@ export class ScriptFilm extends GenericFilm {
     this.size = [1280, 720]
     this.bitmap = null
     this.setupTimer = null
+    this.prepareTimer = null
+    this.prepareTotalTimer = null
+    this.preparePending = null
+    this.prepareProgress = 0
     this.loadReject = null
   }
 
@@ -107,6 +112,18 @@ export class ScriptFilm extends GenericFilm {
         clearTimeout(this.setupTimer)
         this.setupTimer = null
       }
+      const clearPrepareTimers = () => {
+        clearTimeout(this.prepareTimer); clearTimeout(this.prepareTotalTimer)
+        this.prepareTimer = null; this.prepareTotalTimer = null; this.preparePending = null
+      }
+      const reportPreparation = status => { try { this.onPrepare(status) } catch { /* UI callbacks cannot stall the preparation protocol. */ } }
+      const sendPreparationStep = id => {
+        if (id > SCENE_LIMITS.prepareMaxSteps) { reject(this.fail(`场景准备超过 ${SCENE_LIMITS.prepareMaxSteps} 个步骤。`)); return }
+        this.preparePending = id
+        this.prepareTimer = setTimeout(() => reject(this.fail(`场景准备单步骤超过 ${SCENE_LIMITS.prepareStepTimeoutMs} ms，已停止。`)), SCENE_LIMITS.prepareStepTimeoutMs)
+        try { worker.postMessage({ type: 'prepare-next', id }) }
+        catch (error) { reject(this.fail(`无法准备场景脚本：${error?.message ?? error}`)) }
+      }
       this.setupTimer = setTimeout(() => reject(this.fail('场景脚本加载超时。')), SCENE_LIMITS.setupTimeoutMs)
       worker.onerror = event => {
         if (this.worker !== worker) return
@@ -130,17 +147,39 @@ export class ScriptFilm extends GenericFilm {
           reject(error)
           return
         }
-        if (this.state === 'loading') {
-          if (msg.type !== 'ready' || typeof msg.error !== 'string' || msg.bitmap !== undefined) {
+        if (this.state === 'loading' || this.state === 'preparing') {
+          if (msg.type === 'preparing') {
+            const expected = this.state === 'loading' ? 0 : this.preparePending
+            const valid = Number.isSafeInteger(msg.id) && msg.id === expected && msg.id <= SCENE_LIMITS.prepareMaxSteps && msg.bitmap === undefined && Number.isFinite(msg.progress) && msg.progress >= this.prepareProgress && msg.progress <= 1 && typeof msg.label === 'string' && msg.label.length <= 160 && (this.state !== 'loading' || msg.progress === 0)
+            if (!valid) {
+              closeBitmap(msg.bitmap); reject(this.fail(invalidWorkerMessage('准备进度或步骤编号不正确。'))); return
+            }
+            clearSetupTimer()
+            clearTimeout(this.prepareTimer); this.prepareTimer = null
+            if (this.state === 'loading') {
+              this.state = 'preparing'
+              // This independent deadline is never renewed by progress messages.
+              this.prepareTotalTimer = setTimeout(() => reject(this.fail(`场景准备总计超过 ${SCENE_LIMITS.prepareTotalTimeoutMs} ms，已停止。`)), SCENE_LIMITS.prepareTotalTimeoutMs)
+            }
+            this.prepareProgress = msg.progress
+            reportPreparation({ step: msg.id, progress: msg.progress, label: msg.label, done: false })
+            if (this.worker !== worker || this.state !== 'preparing') return
+            sendPreparationStep(msg.id + 1)
+            return
+          }
+          if (msg.type !== 'ready' || typeof msg.error !== 'string' || msg.bitmap !== undefined || (this.state === 'preparing' && (!Number.isSafeInteger(msg.id) || msg.id !== this.preparePending))) {
             closeBitmap(msg.bitmap)
             clearSetupTimer()
             reject(this.fail(invalidWorkerMessage('初始化响应格式不正确。')))
             return
           }
           clearSetupTimer()
+          const prepared = this.state === 'preparing'
+          clearPrepareTimers()
           if (msg.error) { reject(this.fail(`场景脚本无法加载：${msg.error.split('\n')[0]}`)); return }
           this.state = 'ready'
           this.loadReject = null
+          if (prepared) { this.prepareProgress = 1; reportPreparation({ step: msg.id, progress: 1, label: '', done: true }) }
           resolve()
           return
         }
@@ -203,6 +242,8 @@ export class ScriptFilm extends GenericFilm {
   stop({ keepState = false } = {}) {
     clearTimeout(this.setupTimer)
     this.setupTimer = null
+    clearTimeout(this.prepareTimer); clearTimeout(this.prepareTotalTimer)
+    this.prepareTimer = null; this.prepareTotalTimer = null; this.preparePending = null; this.prepareProgress = 0
     const reject = this.loadReject
     this.loadReject = null
     reject?.(new Error(keepState ? this.error : '场景脚本加载已取消。'))
@@ -248,7 +289,7 @@ export class ScriptFilm extends GenericFilm {
           x += k; i += 1
         }
       }
-    } else if (this.state === 'loading' || this.state === 'ready') c.center(Math.floor(h / 2), '…', DIM)
+    } else if (this.state === 'loading' || this.state === 'preparing' || this.state === 'ready') c.center(Math.floor(h / 2), this.state === 'preparing' ? `准备 ${Math.round(this.prepareProgress * 100)}%` : '…', DIM)
     if (opts.help) this.help(c, opts.offset ?? 0, opts.helpLines)
     return c
   }
@@ -268,11 +309,11 @@ export class ScriptFilm extends GenericFilm {
       g.imageSmoothingQuality = 'high'
       g.drawImage(this.bitmap, Math.round((cw - dw) / 2), Math.round((ch - dh) / 2), dw, dh)
       if (opts.subtitles === true) bitmapSubtitles(g, this.cue(t - (opts.offset ?? 0)), Math.round((cw - dw) / 2), Math.round((ch - dh) / 2), dw, dh)
-    } else if (this.state === 'loading' || this.state === 'ready') {
+    } else if (this.state === 'loading' || this.state === 'preparing' || this.state === 'ready') {
       g.fillStyle = '#556'
       g.font = `${Math.max(12, Math.round(ch / 30))}px monospace`
       g.textAlign = 'center'; g.textBaseline = 'middle'
-      g.fillText('…', cw / 2, ch / 2)
+      g.fillText(this.state === 'preparing' ? `准备 ${Math.round(this.prepareProgress * 100)}%` : '…', cw / 2, ch / 2)
     }
   }
 }

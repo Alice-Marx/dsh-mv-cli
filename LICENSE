@@ -28,6 +28,11 @@ is ported from MisakaZentai/world-execute-me-dsh-pv under the MIT licence,
 Copyright (c) 2026 MisakaZentai (see NOTICE.md).
 
 NOT covered by this licence (repository only, not in the npm package):
+- presets/ports/frostnova-web/: FrostNovaOrg/world-execute-web adaptation and
+  its corresponding-source build tools, AGPL-3.0-or-later (Copyright (C) 2026
+  FrostNova; modifications Copyright (C) 2026 Alice-Marx). Font files have
+  their own OFL notices. Song text/translation have separate rights; no audio
+  is included. See that directory's README and NOTICE.
 - presets/world-execute-me/src/ (scenes.gen.mjs, film.mjs, canvas.mjs, pyrt.mjs):
   a port of world.execute-me-ascii by yym8224961, used and redistributed with
   that author's permission, which is NOT an open-source licence. It is published
