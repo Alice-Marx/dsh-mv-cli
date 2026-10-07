@@ -4,7 +4,15 @@
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.6**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.7**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+
+**0.9.7 重型 3D 启动：** 可选 `warmup(info, gl)` 在 `prepare()` 之后、播放之前，
+于最终输出尺寸上调用一次，把编译着色器、分配渲染目标这类一次性 GPU 开销放进面板
+自己的 20 秒期限里付掉，而不是卡住第一帧可见画面。卡住判定改为分级：播放开始后的
+前 10 秒放宽到 8 秒，且不计入慢帧配额；之后立刻恢复原来的 1500 毫秒与 45 帧配额，
+歌曲中途卡死仍会被停止。`setup()` 上限 5 秒，`prepare()` 总计 300 秒（每步 10 秒、
+最多 512 步）。旧场景 API 继续兼容，分级期限也适用于没有 `warmup()` 的场景。
+每帧在发出请求时确定期限，跨过前 10 秒边界的在途帧仍保留该期限。
 
 **0.9.6 重型 3D 预热：** 可选 `function* prepare(info, gl)` 在播放前分阶段
 初始化素材、编译着色器，显示进度并支持取消；每步限 10 秒、总计限 120 秒，最多

@@ -211,6 +211,23 @@ should take under ${SCENE_LIMITS.frameBudgetMs} ms; a script that throws, hangs 
 ${SCENE_LIMITS.hardTimeoutMs} ms or is too slow is stopped and the panel falls back to the
 \`generic\` renderer. \`examples/scenes.example.js\` is a working example.
 
+### Startup: setup(), prepare(), warmup() (0.9.7+)
+
+\`setup(info, gl)\` runs once before anything is drawn (${SCENE_LIMITS.setupTimeoutMs} ms limit) and must only
+create objects. \`prepare(info, gl)\` is an optional generator for work that takes a while: \`yield { progress, label }\`
+after each unit and the panel shows that progress while nothing is played.
+
+\`warmup(info, gl)\` is optional and runs once, after prepare(), on the final output surface, just
+before the scene is allowed to draw. Use it for one-off GPU cost — compiling shaders, allocating
+render targets — so that cost is paid here instead of stalling the first visible frame. It must not
+change the output canvas size, and gets its own ${SCENE_LIMITS.warmupTimeoutMs} ms limit. Split anything longer with
+\`prepare()\` instead.
+
+The first ${SCENE_LIMITS.firstFrameGraceMs} ms of playback get a wider stall window
+(${SCENE_LIMITS.firstFrameTimeoutMs} ms) and are not counted against the slow-frame budget, because drivers
+legitimately compile on first use. After that the limits above apply unchanged, so a scene that
+stalls or crawls mid-song is still stopped.
+
 ### Real 3D (0.9.2+)
 
 Use \`"canvas": { "renderer": "script", "script": "scenes.js", "output": "webgl", "size": [1280, 720] }\`.
@@ -325,6 +342,19 @@ MP4/MOV/WebM/MKV 视频里的音轨、Ogg Vorbis/Opus、FLAC、WAV（PCM / 浮�
 脚本在 Web Worker 沙箱里运行：没有网络、存储、DOM，不能 import。每帧应在 ${SCENE_LIMITS.frameBudgetMs} 毫秒内完成；
 脚本报错、卡住 ${SCENE_LIMITS.hardTimeoutMs} 毫秒或持续太慢时会被停止，面板自动换回 \`generic\` 通用画面。
 \`examples/scenes.example.js\` 是一个能直接运行的示例。
+
+### 启动：setup()、prepare()、warmup()（0.9.7+）
+
+\`setup(info, gl)\` 在开画前调用一次（上限 ${SCENE_LIMITS.setupTimeoutMs} 毫秒），只负责创建对象。
+\`prepare(info, gl)\` 是可选的生成器，用来分担耗时的工作：每做完一块就 \`yield { progress, label }\`，
+面板会显示这个进度，期间不会开始播放。
+
+\`warmup(info, gl)\` 也是可选的，在 prepare() 之后、场景被允许出画之前，在最终输出尺寸上调用一次。
+用它承担一次性的 GPU 开销——编译着色器、分配渲染目标——这样这份开销在这里付掉，而不是卡住第一帧可见画面。
+它不能更改输出画布尺寸，有独立的 ${SCENE_LIMITS.warmupTimeoutMs} 毫秒上限；再长的预热请改用 \`prepare()\` 分步完成。
+
+播放开始后的前 ${SCENE_LIMITS.firstFrameGraceMs} 毫秒内，卡住判定放宽到 ${SCENE_LIMITS.firstFrameTimeoutMs} 毫秒，且这些慢帧不计入慢帧配额
+（显卡首次使用本来就要编译）。之后立刻恢复上面的限制，所以歌曲中途卡死或持续变慢仍然会被停止。
 
 ### 真正 3D（0.9.2+）
 

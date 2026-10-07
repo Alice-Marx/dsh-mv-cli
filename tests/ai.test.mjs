@@ -154,15 +154,23 @@ test('ScriptFilm: paints worker frames, falls back on stall, slowness and errors
   const canvas = film.render(0.05, 10, 3)
   assert.equal(canvas.cells[0].slice(0, 3).map(cell => cell[0]).join(''), 'abc')
   assert.equal(canvas.cells[0][0][1], 2, 'per-character style digit')
-  // stall: no answer within the hard timeout
-  now = SCENE_LIMITS.hardTimeoutMs + 10
+  FakeWorker.last.answer()
+  // Stall: once the graded first-use window has closed, a frame that never
+  // answers still trips the unchanged steady-state hard timeout.
+  now = SCENE_LIMITS.firstFrameGraceMs + 10
   film.render(0.1, 10, 3)
-  assert.match(failed, /没有返回/)
+  now += SCENE_LIMITS.hardTimeoutMs + 1
+  film.render(0.1, 10, 3)
+  assert.match(failed, /可能是死循环/)
   assert.equal(FakeWorker.last.terminated, true)
 
   failed = ''
-  const slow = new ScriptFilm({ createWorker: src => new FakeWorker(src), now: () => 0, onFail: reason => { failed = reason } })
+  let slowNow = 0
+  const slow = new ScriptFilm({ createWorker: src => new FakeWorker(src), now: () => slowNow, onFail: reason => { failed = reason } })
   await slow.load(EXAMPLE_SCENE)
+  // The quota is a steady-state allowance, so the clock has to leave the
+  // first-use window before slow frames start being charged against it.
+  slowNow = SCENE_LIMITS.firstFrameGraceMs + 10
   for (let i = 0; i <= SCENE_LIMITS.slowFramesAllowed + 1 && !failed; i++) { slow.render(i, 10, 3); FakeWorker.last.answer(SCENE_LIMITS.frameBudgetMs + 20) }
   assert.match(failed, /太慢/)
 

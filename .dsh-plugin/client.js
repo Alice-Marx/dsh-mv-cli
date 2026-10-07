@@ -1082,11 +1082,27 @@ var SCENE_LIMITS = Object.freeze({
   slowFramesAllowed: 45,
   /** No answer within this time: the worker is terminated. */
   hardTimeoutMs: 1500,
-  /** Setup / first compile. */
-  setupTimeoutMs: 2e3,
+  /** Setup / first compile. 0.9.7: raised for heavy setup() and large bundles. */
+  setupTimeoutMs: 5e3,
+  /**
+   * 0.9.7: the first {@link firstFrameGraceMs} after `ready` may carry one-off
+   * GPU first-use cost (shader compilation, render-target allocation). Inside
+   * that window a pending frame may take {@link firstFrameTimeoutMs} instead of
+   * {@link hardTimeoutMs}, and frames slower than the frame budget are not
+   * charged to the steady-state slow-frame quota. Steady state is unchanged.
+   */
+  firstFrameTimeoutMs: 8e3,
+  firstFrameGraceMs: 1e4,
+  /**
+   * 0.9.7: optional synchronous `warmup(info, gl)`, run once after
+   * setup()/prepare() and before `ready`, on the final output surface, followed
+   * by gl.finish(). Its own deadline; preparation deadlines do not cover it.
+   */
+  warmupTimeoutMs: 2e4,
   /** Optional cooperative preparation, before any playback frames are accepted. */
   prepareStepTimeoutMs: 1e4,
-  prepareTotalTimeoutMs: 12e4,
+  /** 0.9.7: raised for long edit tables (hundreds of shots) on slow GPUs. */
+  prepareTotalTimeoutMs: 3e5,
   prepareMaxSteps: 512,
   maxCols: 240,
   maxRows: 85
@@ -1199,6 +1215,14 @@ function __mvNormalize(out, cols, rows) {
 }
 `;
 var SCENE_PREPARE_RUNTIME_SOURCE = String.raw`
+const __mvPromiseThen = Promise.prototype.then;
+function __mvWarmupResult(result) {
+  if (result && (typeof result === 'object' || typeof result === 'function') && (typeof result.then === 'function' || typeof result.next === 'function')) {
+    // Observe native rejected Promises without invoking a script-owned thenable.
+    try { __mvPromiseThen.call(result, undefined, () => {}); } catch (error) {}
+    throw new TypeError('warmup() 必须同步完成，不能返回 Promise、thenable 或迭代器');
+  }
+}
 function __mvPrepareIterator(iterator) {
   if (!iterator || typeof iterator !== 'object' || typeof iterator.then === 'function') throw new TypeError('prepare() 必须返回同步迭代器，不能返回 Promise');
   const next = iterator.next;
@@ -1241,7 +1265,7 @@ function sceneWorkerSource(userSource, { output = "text" } = {}) {
   const blocked = JSON.stringify(sceneBlockedGlobals(output));
   const userBody = JSON.stringify(`"use strict";
 ${stripModuleSyntax(userSource)}
-;return { render: typeof render === 'function' ? render : null, paint: typeof paint === 'function' ? paint : null, setup: typeof setup === 'function' ? setup : null, prepare: typeof prepare === 'function' ? prepare : null };`);
+;return { render: typeof render === 'function' ? render : null, paint: typeof paint === 'function' ? paint : null, setup: typeof setup === 'function' ? setup : null, prepare: typeof prepare === 'function' ? prepare : null, warmup: typeof warmup === 'function' ? warmup : null };`);
   return `"use strict";
 (() => {
 const __global = self;
@@ -1283,7 +1307,7 @@ ${SCENE_RUNTIME_SOURCE}
 ${SCENE_PREPARE_RUNTIME_SOURCE}
 ${WEBGL_CANVAS_FACADE_SOURCE}
 let __scene = null, __setupError = '', __cv = null, __g = null, __facade = null, __initialized = false, __contextLost = false, __ready = false;
-let __prepare = null, __prepareId = 0, __prepareProgress = 0, __prepareStarted = 0, __prepareWidth = 0, __prepareHeight = 0;
+let __prepare = null, __prepareId = 0, __prepareProgress = 0, __prepareStarted = 0, __prepareWidth = 0, __prepareHeight = 0, __info = null;
 try {
   __scene = __compile(${userBody})();
   if (__bitmap && !__scene.paint) __setupError = __webgl
@@ -1335,17 +1359,44 @@ function __paint(msg) {
   if (__webgl && typeof __g.flush === 'function') __g.flush();
   return __snapshot.call(__cv);
 }
+// 0.9.7: optional warmup(info, gl) runs once, after setup()/prepare(), on the final output
+// surface and before the ready handshake. Scenes use it to pay one-off GPU first-use cost
+// (shader compilation, render-target allocation) here, under its own deadline, instead of
+// inside the first realtime playback frame. It must leave the output canvas size alone.
+function __warmup(id) {
+  if (__setupError || !__scene.warmup) return false;
+  const started = __now();
+  __post({ type: 'warming', id: id === undefined ? 0 : id });
+  __mvWarmupResult(__scene.warmup(__info, __webgl ? __g : undefined));
+  if (__bitmap && (__cv.width !== __prepareWidth || __cv.height !== __prepareHeight)) throw new Error('warmup() \u4E0D\u80FD\u66F4\u6539\u8F93\u51FA canvas.size');
+  if (__webgl && (__contextLost || __g.isContextLost?.())) throw new Error('WebGL \u4E0A\u4E0B\u6587\u5DF2\u4E22\u5931\uFF0C\u573A\u666F\u5DF2\u505C\u6B62\u3002');
+  // Force pending driver work to complete so the next playback frame is not the one that pays it.
+  if (__webgl && typeof __g.finish === 'function') __g.finish();
+  if (__webgl && (__contextLost || __g.isContextLost?.())) throw new Error('WebGL \u4E0A\u4E0B\u6587\u5DF2\u4E22\u5931\uFF0C\u573A\u666F\u5DF2\u505C\u6B62\u3002');
+  if (__now() - started > ${SCENE_LIMITS.warmupTimeoutMs}) throw new Error('warmup() \u9884\u70ED\u8D85\u65F6');
+  return true;
+}
+// Single exit to the ready handshake, so warmup runs exactly once whether or not
+// prepare() existed. The id argument echoes the final prepare step so the
+// supervisor can check the response sequence.
+function __finishSetup(id) {
+  let warmed = false;
+  try { warmed = __warmup(id) }
+  catch (error) { __prepare = null; __setupError = String(error && error.stack || error).slice(0, 2000); __post({ type: 'fatal', error: __setupError }); return }
+  __ready = !__setupError;
+  __post({ type: 'ready', error: __setupError, ...(id === undefined && !warmed ? {} : { id: id === undefined ? 0 : id }) });
+}
 __listen('message', event => {
   const msg = event.data || {};
   if (msg.type === 'init') {
     if (__initialized) return;
     __initialized = true;
-    if (!__setupError && __webgl) { try { __surface(msg.info && msg.info.width || 1280, msg.info && msg.info.height || 720) } catch (error) { __setupError = String(error && error.stack || error) } }
+    if (!__setupError && __bitmap) { try { __surface(msg.info && msg.info.width || 1280, msg.info && msg.info.height || 720) } catch (error) { __setupError = String(error && error.stack || error) } }
     if (!__setupError) { try {
-      const info = __webgl ? { ...(msg.info || {}), canvas: __facade } : (msg.info || {});
-      if (__scene.setup) __scene.setup(info, __webgl ? __g : undefined);
+      __info = __webgl ? { ...(msg.info || {}), canvas: __facade } : (msg.info || {});
+      if (__scene.setup) __scene.setup(__info, __webgl ? __g : undefined);
       __prepareWidth = __cv && __cv.width; __prepareHeight = __cv && __cv.height;
-      if (__scene.prepare) __prepare = __mvPrepareIterator(__scene.prepare(info, __webgl ? __g : undefined));
+      if (__scene.prepare) __prepare = __mvPrepareIterator(__scene.prepare(__info, __webgl ? __g : undefined));
       if (__prepare && __bitmap && (__cv.width !== __prepareWidth || __cv.height !== __prepareHeight)) throw new Error('prepare() \u4E0D\u80FD\u66F4\u6539\u8F93\u51FA canvas.size');
     } catch (error) { __setupError = String(error && error.stack || error) } }
     if (!__setupError && __prepare) {
@@ -1353,8 +1404,7 @@ __listen('message', event => {
       __post({ type: 'preparing', id: 0, progress: 0, label: '' });
       return;
     }
-    __ready = !__setupError;
-    __post({ type: 'ready', error: __setupError });
+    __finishSetup();
     return;
   }
   if (msg.type === 'prepare-next' && __initialized && __prepare && !__setupError && !__contextLost) {
@@ -1374,8 +1424,8 @@ __listen('message', event => {
       if (ended - __prepareStarted > ${SCENE_LIMITS.prepareTotalTimeoutMs}) throw new Error('prepare() \u603B\u8BA1\u8D85\u65F6');
       __prepareProgress = status.progress;
       if (status.done) {
-        __prepare = null; __ready = true;
-        __post({ type: 'ready', error: '', id: msg.id });
+        __prepare = null;
+        __finishSetup(msg.id);
       } else __post({ type: 'preparing', id: msg.id, progress: status.progress, label: status.label });
     } catch (error) {
       __prepare = null; __setupError = String(error && error.stack || error).slice(0, 2000);
@@ -1596,6 +1646,9 @@ var ScriptFilm = class extends GenericFilm {
     this.frame = null;
     this.pending = null;
     this.slow = 0;
+    this.graceFrames = 0;
+    this.graceSlow = 0;
+    this.readyAt = 0;
     this.nextId = 1;
     this.error = "";
     this.output = "text";
@@ -1604,8 +1657,11 @@ var ScriptFilm = class extends GenericFilm {
     this.setupTimer = null;
     this.prepareTimer = null;
     this.prepareTotalTimer = null;
+    this.warmupTimer = null;
+    this.warmupId = null;
     this.preparePending = null;
     this.prepareProgress = 0;
+    this.prepared = false;
     this.loadReject = null;
   }
   /** Song structure for ctx.section / ctx.beat (from mv.json). */
@@ -1613,6 +1669,20 @@ var ScriptFilm = class extends GenericFilm {
     this.sections = sections;
     this.bpm = bpm;
     this.beatOffset = beatOffset;
+  }
+  /**
+   * True while the one-off first-use window after `ready` is still open, where a
+   * slow frame is expected GPU work rather than a stalled scene. A clock that
+   * reads before `ready` (never in practice, but the clock is injectable) does
+   * not reopen the window.
+   */
+  inFirstFrameGrace(now = this.now()) {
+    const elapsed = now - this.readyAt;
+    return this.state === "ready" && elapsed >= 0 && elapsed < SCENE_LIMITS.firstFrameGraceMs;
+  }
+  /** Milliseconds of first-use allowance already spent, negative before `ready`. */
+  firstUseElapsed() {
+    return this.now() - this.readyAt;
   }
   /** Start the script; resolves when it is ready, rejects with the reason. */
   load(source, { output = "text", size = [1280, 720], assets = {}, transfer = [] } = {}) {
@@ -1643,12 +1713,13 @@ var ScriptFilm = class extends GenericFilm {
         clearTimeout(this.setupTimer);
         this.setupTimer = null;
       };
-      const clearPrepareTimers = () => {
+      const clearPrepareTimers = ({ keepProgress = false } = {}) => {
         clearTimeout(this.prepareTimer);
         clearTimeout(this.prepareTotalTimer);
         this.prepareTimer = null;
         this.prepareTotalTimer = null;
         this.preparePending = null;
+        if (!keepProgress) this.prepareProgress = 0;
       };
       const reportPreparation = (status) => {
         try {
@@ -1695,7 +1766,21 @@ var ScriptFilm = class extends GenericFilm {
           reject(error);
           return;
         }
-        if (this.state === "loading" || this.state === "preparing") {
+        if (this.state === "loading" || this.state === "preparing" || this.state === "warming") {
+          if (msg.type === "warming") {
+            const expected = this.state === "loading" ? 0 : this.preparePending;
+            if (msg.bitmap !== void 0 || this.state === "warming" || !Number.isSafeInteger(msg.id) || msg.id !== expected) {
+              closeBitmap(msg.bitmap);
+              reject(this.fail(invalidWorkerMessage("\u51C6\u5907\u5B8C\u6210\u540E\u7684\u9884\u70ED\u901A\u77E5\u4E0D\u6B63\u786E\u3002")));
+              return;
+            }
+            this.warmupId = msg.id;
+            clearSetupTimer();
+            clearPrepareTimers({ keepProgress: true });
+            this.state = "warming";
+            this.warmupTimer = setTimeout(() => reject(this.fail(`\u573A\u666F\u9884\u70ED\u8D85\u8FC7 ${SCENE_LIMITS.warmupTimeoutMs} ms\uFF0C\u5DF2\u505C\u6B62\u3002\u8BF7\u8BA9 warmup() \u66F4\u5FEB\uFF0C\u6216\u7528 prepare() \u5206\u6B65\u9884\u70ED\u3002`)), SCENE_LIMITS.warmupTimeoutMs);
+            return;
+          }
           if (msg.type === "preparing") {
             const expected = this.state === "loading" ? 0 : this.preparePending;
             const valid = Number.isSafeInteger(msg.id) && msg.id === expected && msg.id <= SCENE_LIMITS.prepareMaxSteps && msg.bitmap === void 0 && Number.isFinite(msg.progress) && msg.progress >= this.prepareProgress && msg.progress <= 1 && typeof msg.label === "string" && msg.label.length <= 160 && (this.state !== "loading" || msg.progress === 0);
@@ -1709,6 +1794,7 @@ var ScriptFilm = class extends GenericFilm {
             this.prepareTimer = null;
             if (this.state === "loading") {
               this.state = "preparing";
+              this.prepared = true;
               this.prepareTotalTimer = setTimeout(() => reject(this.fail(`\u573A\u666F\u51C6\u5907\u603B\u8BA1\u8D85\u8FC7 ${SCENE_LIMITS.prepareTotalTimeoutMs} ms\uFF0C\u5DF2\u505C\u6B62\u3002`)), SCENE_LIMITS.prepareTotalTimeoutMs);
             }
             this.prepareProgress = msg.progress;
@@ -1717,20 +1803,23 @@ var ScriptFilm = class extends GenericFilm {
             sendPreparationStep(msg.id + 1);
             return;
           }
-          if (msg.type !== "ready" || typeof msg.error !== "string" || msg.bitmap !== void 0 || this.state === "preparing" && (!Number.isSafeInteger(msg.id) || msg.id !== this.preparePending)) {
+          if (msg.type !== "ready" || typeof msg.error !== "string" || msg.bitmap !== void 0 || this.state === "preparing" && (!Number.isSafeInteger(msg.id) || msg.id !== this.preparePending) || this.state === "warming" && msg.id !== this.warmupId || this.prepared && !Number.isSafeInteger(msg.id)) {
             closeBitmap(msg.bitmap);
             clearSetupTimer();
             reject(this.fail(invalidWorkerMessage("\u521D\u59CB\u5316\u54CD\u5E94\u683C\u5F0F\u4E0D\u6B63\u786E\u3002")));
             return;
           }
           clearSetupTimer();
-          const prepared = this.state === "preparing";
-          clearPrepareTimers();
+          const prepared = this.prepared;
+          clearPrepareTimers({ keepProgress: prepared });
+          clearTimeout(this.warmupTimer);
+          this.warmupTimer = null;
           if (msg.error) {
             reject(this.fail(`\u573A\u666F\u811A\u672C\u65E0\u6CD5\u52A0\u8F7D\uFF1A${msg.error.split("\n")[0]}`));
             return;
           }
           this.state = "ready";
+          this.readyAt = this.now();
           this.loadReject = null;
           if (prepared) {
             this.prepareProgress = 1;
@@ -1785,6 +1874,11 @@ var ScriptFilm = class extends GenericFilm {
       this.fail(invalidWorkerMessage("\u5E27\u8017\u65F6\u5FC5\u987B\u662F\u975E\u8D1F\u6709\u9650\u6570\u3002"));
       return;
     }
+    if (this.now() - pending.at > pending.timeoutMs || msg.ms > pending.timeoutMs) {
+      closeBitmap(msg.bitmap);
+      this.fail(this.frameTimeoutReason(pending));
+      return;
+    }
     if (isBitmapSceneOutput(this.output)) {
       const bitmap = msg.bitmap;
       if (!bitmap || typeof bitmap !== "object" || typeof bitmap.close !== "function" || typeof globalThis.ImageBitmap === "function" && !(bitmap instanceof globalThis.ImageBitmap) || !Number.isInteger(bitmap.width) || !Number.isInteger(bitmap.height) || bitmap.width !== this.size[0] || bitmap.height !== this.size[1]) {
@@ -1811,6 +1905,11 @@ var ScriptFilm = class extends GenericFilm {
       this.frame = msg.frame;
     }
     const budget = isBitmapSceneOutput(this.output) ? PIXEL_SCENE_LIMITS.frameBudgetMs : SCENE_LIMITS.frameBudgetMs;
+    if (pending.firstUseGrace) {
+      this.graceFrames++;
+      if (msg.ms > budget) this.graceSlow++;
+      return;
+    }
     if (msg.ms > budget) {
       if (++this.slow > SCENE_LIMITS.slowFramesAllowed) this.fail(`\u573A\u666F\u811A\u672C\u592A\u6162\uFF08\u4E00\u5E27 ${Math.round(msg.ms)} ms\uFF0C\u9884\u7B97 ${budget} ms\uFF09\u3002`);
     } else this.slow = Math.max(0, this.slow - 1);
@@ -1828,10 +1927,14 @@ var ScriptFilm = class extends GenericFilm {
     this.setupTimer = null;
     clearTimeout(this.prepareTimer);
     clearTimeout(this.prepareTotalTimer);
+    clearTimeout(this.warmupTimer);
     this.prepareTimer = null;
     this.prepareTotalTimer = null;
     this.preparePending = null;
     this.prepareProgress = 0;
+    this.warmupTimer = null;
+    this.warmupId = null;
+    this.prepared = false;
     const reject = this.loadReject;
     this.loadReject = null;
     reject?.(new Error(keepState ? this.error : "\u573A\u666F\u811A\u672C\u52A0\u8F7D\u5DF2\u53D6\u6D88\u3002"));
@@ -1849,6 +1952,8 @@ var ScriptFilm = class extends GenericFilm {
     closeBitmap(this.bitmap);
     this.bitmap = null;
     this.slow = 0;
+    this.graceFrames = 0;
+    this.graceSlow = 0;
     if (!keepState) {
       this.state = "idle";
       this.error = "";
@@ -1858,18 +1963,22 @@ var ScriptFilm = class extends GenericFilm {
     if (this.state !== "ready" || !this.worker) return;
     const now = this.now();
     if (this.pending) {
-      if (now - this.pending.at > SCENE_LIMITS.hardTimeoutMs) this.fail(`\u573A\u666F\u811A\u672C ${SCENE_LIMITS.hardTimeoutMs} ms \u6CA1\u6709\u8FD4\u56DE\uFF08\u53EF\u80FD\u662F\u6B7B\u5FAA\u73AF\uFF09\uFF0C\u5DF2\u505C\u6B62\u3002`);
+      if (now - this.pending.at > this.pending.timeoutMs) this.fail(this.frameTimeoutReason(this.pending));
       return;
     }
     const at = t + (opts.offset ?? 0);
     const ctx = sceneContext({ t, duration: this.duration, title: this.title, artist: this.artist, cue: this.cue(at), next: this.nextCue(at), bands: this.energy(t), ready: Boolean(opts.ready), paused: Boolean(opts.paused), sections: this.sections ?? [], bpm: this.bpm ?? 0, beatOffset: this.beatOffset ?? 0 });
     const id = this.nextId++;
-    this.pending = { id, at: now, cols: w, rows: h };
+    const firstUseGrace = this.inFirstFrameGrace(now);
+    this.pending = { id, at: now, cols: w, rows: h, firstUseGrace, timeoutMs: firstUseGrace ? SCENE_LIMITS.firstFrameTimeoutMs : SCENE_LIMITS.hardTimeoutMs };
     try {
       this.worker.postMessage({ type: "frame", id, t, cols: w, rows: h, ctx });
     } catch (error) {
       this.fail(`\u65E0\u6CD5\u5411\u573A\u666F\u811A\u672C\u8BF7\u6C42\u5E27\uFF1A${error?.message ?? error}`);
     }
+  }
+  frameTimeoutReason(pending) {
+    return pending.firstUseGrace ? `\u573A\u666F\u811A\u672C\u9996\u5E27 ${pending.timeoutMs} ms \u6CA1\u6709\u8FD4\u56DE\uFF0C\u5DF2\u505C\u6B62\u3002\u8BF7\u5728\u573A\u666F\u91CC\u52A0 warmup(info, gl) \u9884\u70ED\uFF0C\u6216\u8BA9 setup()/prepare() \u5206\u6B65\u5B8C\u6210\u521D\u59CB\u5316\u3002` : `\u573A\u666F\u811A\u672C ${pending.timeoutMs} ms \u6CA1\u6709\u8FD4\u56DE\uFF08\u53EF\u80FD\u662F\u6B7B\u5FAA\u73AF\uFF09\uFF0C\u5DF2\u505C\u6B62\u3002`;
   }
   /** Same interface as Film / GenericFilm: a Canvas for time t. */
   render(t, w, h, opts = {}) {
@@ -1888,9 +1997,15 @@ var ScriptFilm = class extends GenericFilm {
           i += 1;
         }
       }
-    } else if (this.state === "loading" || this.state === "preparing" || this.state === "ready") c.center(Math.floor(h / 2), this.state === "preparing" ? `\u51C6\u5907 ${Math.round(this.prepareProgress * 100)}%` : "\u2026", DIM);
+    } else if (this.state === "loading" || this.state === "preparing" || this.state === "warming" || this.state === "ready") c.center(Math.floor(h / 2), this.waitingLabel, DIM);
     if (opts.help) this.help(c, opts.offset ?? 0, opts.helpLines);
     return c;
+  }
+  /** Placeholder shown while the scene is still loading / preparing / warming up. */
+  get waitingLabel() {
+    if (this.state === "preparing") return `\u51C6\u5907 ${Math.round(this.prepareProgress * 100)}%`;
+    if (this.state === "warming") return "\u9884\u70ED\u2026";
+    return "\u2026";
   }
   /** Bitmap scenes: paint the newest frame letterboxed onto the panel's visible 2D canvas. */
   draw(g, t, opts = {}) {
@@ -1907,12 +2022,12 @@ var ScriptFilm = class extends GenericFilm {
       g.imageSmoothingQuality = "high";
       g.drawImage(this.bitmap, Math.round((cw2 - dw) / 2), Math.round((ch - dh) / 2), dw, dh);
       if (opts.subtitles === true) bitmapSubtitles(g, this.cue(t - (opts.offset ?? 0)), Math.round((cw2 - dw) / 2), Math.round((ch - dh) / 2), dw, dh);
-    } else if (this.state === "loading" || this.state === "preparing" || this.state === "ready") {
+    } else if (this.state === "loading" || this.state === "preparing" || this.state === "warming" || this.state === "ready") {
       g.fillStyle = "#556";
       g.font = `${Math.max(12, Math.round(ch / 30))}px monospace`;
       g.textAlign = "center";
       g.textBaseline = "middle";
-      g.fillText(this.state === "preparing" ? `\u51C6\u5907 ${Math.round(this.prepareProgress * 100)}%` : "\u2026", cw2 / 2, ch / 2);
+      g.fillText(this.waitingLabel, cw2 / 2, ch / 2);
     }
   }
 };
@@ -3269,7 +3384,7 @@ function box(ctx, x0, y0, x1, y1, title, level, color, gain = 1) {
 }
 
 // .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.9.6" : "";
+var CLIENT_VERSION = true ? "0.9.7" : "";
 var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u653E\u6620\u5BA4\u3002";
 function isMissingRemoteMethod(message) {
   const value = String(message ?? "");
@@ -7033,6 +7148,23 @@ should take under ${SCENE_LIMITS.frameBudgetMs} ms; a script that throws, hangs 
 ${SCENE_LIMITS.hardTimeoutMs} ms or is too slow is stopped and the panel falls back to the
 \`generic\` renderer. \`examples/scenes.example.js\` is a working example.
 
+### Startup: setup(), prepare(), warmup() (0.9.7+)
+
+\`setup(info, gl)\` runs once before anything is drawn (${SCENE_LIMITS.setupTimeoutMs} ms limit) and must only
+create objects. \`prepare(info, gl)\` is an optional generator for work that takes a while: \`yield { progress, label }\`
+after each unit and the panel shows that progress while nothing is played.
+
+\`warmup(info, gl)\` is optional and runs once, after prepare(), on the final output surface, just
+before the scene is allowed to draw. Use it for one-off GPU cost \u2014 compiling shaders, allocating
+render targets \u2014 so that cost is paid here instead of stalling the first visible frame. It must not
+change the output canvas size, and gets its own ${SCENE_LIMITS.warmupTimeoutMs} ms limit. Split anything longer with
+\`prepare()\` instead.
+
+The first ${SCENE_LIMITS.firstFrameGraceMs} ms of playback get a wider stall window
+(${SCENE_LIMITS.firstFrameTimeoutMs} ms) and are not counted against the slow-frame budget, because drivers
+legitimately compile on first use. After that the limits above apply unchanged, so a scene that
+stalls or crawls mid-song is still stopped.
+
 ### Real 3D (0.9.2+)
 
 Use \`"canvas": { "renderer": "script", "script": "scenes.js", "output": "webgl", "size": [1280, 720] }\`.
@@ -7146,6 +7278,19 @@ MP4/MOV/WebM/MKV \u89C6\u9891\u91CC\u7684\u97F3\u8F68\u3001Ogg Vorbis/Opus\u3001
 \u811A\u672C\u5728 Web Worker \u6C99\u7BB1\u91CC\u8FD0\u884C\uFF1A\u6CA1\u6709\u7F51\u7EDC\u3001\u5B58\u50A8\u3001DOM\uFF0C\u4E0D\u80FD import\u3002\u6BCF\u5E27\u5E94\u5728 ${SCENE_LIMITS.frameBudgetMs} \u6BEB\u79D2\u5185\u5B8C\u6210\uFF1B
 \u811A\u672C\u62A5\u9519\u3001\u5361\u4F4F ${SCENE_LIMITS.hardTimeoutMs} \u6BEB\u79D2\u6216\u6301\u7EED\u592A\u6162\u65F6\u4F1A\u88AB\u505C\u6B62\uFF0C\u9762\u677F\u81EA\u52A8\u6362\u56DE \`generic\` \u901A\u7528\u753B\u9762\u3002
 \`examples/scenes.example.js\` \u662F\u4E00\u4E2A\u80FD\u76F4\u63A5\u8FD0\u884C\u7684\u793A\u4F8B\u3002
+
+### \u542F\u52A8\uFF1Asetup()\u3001prepare()\u3001warmup()\uFF080.9.7+\uFF09
+
+\`setup(info, gl)\` \u5728\u5F00\u753B\u524D\u8C03\u7528\u4E00\u6B21\uFF08\u4E0A\u9650 ${SCENE_LIMITS.setupTimeoutMs} \u6BEB\u79D2\uFF09\uFF0C\u53EA\u8D1F\u8D23\u521B\u5EFA\u5BF9\u8C61\u3002
+\`prepare(info, gl)\` \u662F\u53EF\u9009\u7684\u751F\u6210\u5668\uFF0C\u7528\u6765\u5206\u62C5\u8017\u65F6\u7684\u5DE5\u4F5C\uFF1A\u6BCF\u505A\u5B8C\u4E00\u5757\u5C31 \`yield { progress, label }\`\uFF0C
+\u9762\u677F\u4F1A\u663E\u793A\u8FD9\u4E2A\u8FDB\u5EA6\uFF0C\u671F\u95F4\u4E0D\u4F1A\u5F00\u59CB\u64AD\u653E\u3002
+
+\`warmup(info, gl)\` \u4E5F\u662F\u53EF\u9009\u7684\uFF0C\u5728 prepare() \u4E4B\u540E\u3001\u573A\u666F\u88AB\u5141\u8BB8\u51FA\u753B\u4E4B\u524D\uFF0C\u5728\u6700\u7EC8\u8F93\u51FA\u5C3A\u5BF8\u4E0A\u8C03\u7528\u4E00\u6B21\u3002
+\u7528\u5B83\u627F\u62C5\u4E00\u6B21\u6027\u7684 GPU \u5F00\u9500\u2014\u2014\u7F16\u8BD1\u7740\u8272\u5668\u3001\u5206\u914D\u6E32\u67D3\u76EE\u6807\u2014\u2014\u8FD9\u6837\u8FD9\u4EFD\u5F00\u9500\u5728\u8FD9\u91CC\u4ED8\u6389\uFF0C\u800C\u4E0D\u662F\u5361\u4F4F\u7B2C\u4E00\u5E27\u53EF\u89C1\u753B\u9762\u3002
+\u5B83\u4E0D\u80FD\u66F4\u6539\u8F93\u51FA\u753B\u5E03\u5C3A\u5BF8\uFF0C\u6709\u72EC\u7ACB\u7684 ${SCENE_LIMITS.warmupTimeoutMs} \u6BEB\u79D2\u4E0A\u9650\uFF1B\u518D\u957F\u7684\u9884\u70ED\u8BF7\u6539\u7528 \`prepare()\` \u5206\u6B65\u5B8C\u6210\u3002
+
+\u64AD\u653E\u5F00\u59CB\u540E\u7684\u524D ${SCENE_LIMITS.firstFrameGraceMs} \u6BEB\u79D2\u5185\uFF0C\u5361\u4F4F\u5224\u5B9A\u653E\u5BBD\u5230 ${SCENE_LIMITS.firstFrameTimeoutMs} \u6BEB\u79D2\uFF0C\u4E14\u8FD9\u4E9B\u6162\u5E27\u4E0D\u8BA1\u5165\u6162\u5E27\u914D\u989D
+\uFF08\u663E\u5361\u9996\u6B21\u4F7F\u7528\u672C\u6765\u5C31\u8981\u7F16\u8BD1\uFF09\u3002\u4E4B\u540E\u7ACB\u523B\u6062\u590D\u4E0A\u9762\u7684\u9650\u5236\uFF0C\u6240\u4EE5\u6B4C\u66F2\u4E2D\u9014\u5361\u6B7B\u6216\u6301\u7EED\u53D8\u6162\u4ECD\u7136\u4F1A\u88AB\u505C\u6B62\u3002
 
 ### \u771F\u6B63 3D\uFF080.9.2+\uFF09
 

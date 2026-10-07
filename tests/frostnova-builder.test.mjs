@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { extractQuotes, formatTokens, parse, adaptInertBase64 } from '../presets/ports/frostnova-web/build.mjs'
+import { extractQuotes, formatTokens, parse, adaptInertBase64, sceneWrapper, SCENE_STAGES } from '../presets/ports/frostnova-web/build.mjs'
 import { base64Bytes } from '../presets/ports/frostnova-web/offline-data.mjs'
 import vm from 'node:vm'
 test('FrostNova quotations remain exact static strings without executing input', () => {
@@ -31,4 +31,13 @@ test('FrostNova inert mesh tables need no atob or Host object', () => {
   assert.deepEqual(Array.from(base64Bytes(encoded)), [0, 255, 1, 2])
   const original = vm.runInNewContext(text + '\nArray.from(b)', { atob: s => Buffer.from(s, 'base64').toString('binary') })
   assert.deepEqual(Array.from(original), Array.from(base64Bytes(encoded)))
+})
+test('the generated FrostNova adapter forwards every lifecycle stage, warmup included', () => {
+  const scene = sceneWrapper('var __bundled = 1;')
+  const declared = parse(scene, { ecmaVersion: 'latest', sourceType: 'script' }).body.filter(s => s.type === 'FunctionDeclaration').map(s => s.id.name)
+  for (const stage of SCENE_STAGES) assert.ok(declared.includes(stage), `The generated adapter must forward ${stage}()`)
+  // The worker only runs a stage it finds by name on the generated scene, so a
+  // stage the bundled module exports but the wrapper omits is silently inert.
+  for (const stage of ['setup', 'prepare', 'warmup', 'paint']) assert.ok(scene.includes(`__frostScene.${stage}(`), `${stage}() must reach the bundled scene`)
+  assert.equal(SCENE_STAGES.length, 4)
 })

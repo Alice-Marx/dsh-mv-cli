@@ -21,7 +21,8 @@ export const ID = 'world-execute-me-frostnova'
 const here = dirname(fileURLToPath(import.meta.url))
 const sha = bytes => createHash('sha256').update(bytes).digest('hex')
 const pin = 'https://github.com/FrostNovaOrg/world-execute-web/tree/' + UPSTREAM_COMMIT
-const sourceUrl = 'https://github.com/Alice-Marx/dsh-mv-workshop/releases/download/world-execute-me-frostnova-1.0.0/20261007_frostnova-corresponding-source-1.0.0.zip'
+export const WORKSHOP_VERSION = '1.0.1'
+const sourceUrl = `https://github.com/Alice-Marx/dsh-mv-workshop/releases/download/world-execute-me-frostnova-${WORKSHOP_VERSION}/20261007_frostnova-corresponding-source-${WORKSHOP_VERSION}.zip`
 
 export function formatTokens(code) {
   // Insert whitespace only at parser-known punctuation, never inside literals,
@@ -94,6 +95,20 @@ function compressedAssets(out, name, bytes, assets) {
   assets[name] = paths.length === 1 ? paths[0] : paths
   return { sourceBytes: bytes.length, sourceSha256: sha(bytes), gzipBytes: data.length, files: paths }
 }
+// The worker discovers lifecycle stages by name on the generated scene, so a
+// wrapper that forgets to forward one makes that stage permanently inert even
+// though the bundled module exports it. Build the wrapper in one place and keep
+// every stage listed here in step with the bundled scene.
+export const SCENE_STAGES = ['setup', 'prepare', 'warmup', 'paint']
+export function sceneWrapper(bundleText) {
+  return `// SPDX-License-Identifier: AGPL-3.0-or-later\n// FrostNova world-execute-web ${UPSTREAM_COMMIT}; adapter Alice-Marx, modified 2026-10-07.\n// Corresponding Source: ${sourceUrl}\nlet __frostInitialAssets = null, __frostScene = null;\nfunction __makeFrostNova() {\n`
+    + formatTokens(bundleText)
+    + '\nreturn FrostNovaWorkshop;\n}\n'
+    + `function setup(info, gl) { __frostInitialAssets = info.assets; __frostScene = __makeFrostNova(); return __frostScene.setup(info, gl); }\n`
+    + `function prepare(info, gl) { return __frostScene.prepare(info, gl); }\n`
+    + `function warmup(info, gl) { return __frostScene.warmup(info, gl); }\n`
+    + `function paint(gl, t, w, h, ctx) { return __frostScene.paint(gl, t, w, h, ctx); }\n`
+}
 export async function buildPack(checkout, out, fontDir) {
   assert.ok(!existsSync(out), 'Choose a new output directory')
   if (existsSync(join(checkout, '.git'))) {
@@ -164,10 +179,14 @@ export async function buildPack(checkout, out, fontDir) {
       b.onLoad({ filter: /.*/, namespace: 'frost-upstream' }, args => ({ contents: adapt(args.path), loader: 'js', resolveDir: checkout }))
     } }],
   })
-  const scene = `// SPDX-License-Identifier: AGPL-3.0-or-later\n// FrostNova world-execute-web ${UPSTREAM_COMMIT}; adapter Alice-Marx, modified 2026-10-07.\n// Corresponding Source: ${sourceUrl}\nlet __frostInitialAssets = null, __frostScene = null;\nfunction __makeFrostNova() {\n` + formatTokens(bundle.outputFiles[0].text) + '\nreturn FrostNovaWorkshop;\n}\nfunction setup(info, gl) { __frostInitialAssets = info.assets; __frostScene = __makeFrostNova(); return __frostScene.setup(info, gl); }\nfunction prepare(info, gl) { return __frostScene.prepare(info, gl); }\nfunction paint(gl, t, w, h, ctx) { return __frostScene.paint(gl, t, w, h, ctx); }\n'
+  const scene = sceneWrapper(bundle.outputFiles[0].text)
   if (process.env.FROST_DEBUG_SCENE) writeFileSync(process.env.FROST_DEBUG_SCENE, scene)
   const checkedScript = checkScriptSafety(scene, 'scenes.js', { mode: 'webgl' })
   assert.deepEqual(checkedScript.errors, [])
+  // The worker only runs a lifecycle stage the generated adapter actually
+  // declares, so a wrapper that forgets to forward one is silently inert.
+  const declared = new Set(parse(scene, { ecmaVersion: 'latest', sourceType: 'script' }).body.filter(s => s.type === 'FunctionDeclaration').map(s => s.id.name))
+  for (const stage of SCENE_STAGES) assert.ok(declared.has(stage), `The generated adapter must forward ${stage}()`)
   assert.ok(!Object.keys(modules).some(p => p.startsWith('src/player/')))
   mkdirSync(join(out, 'data'), { recursive: true }); mkdirSync(join(out, 'licenses'))
   writeFileSync(join(out, 'scenes.js'), scene)
@@ -205,8 +224,9 @@ export async function buildPack(checkout, out, fontDir) {
     'x-dsh-mv-ai': { sections: timing.sections.map(s => ({ kind: ['c1','c2','c3'].includes(s.id) ? 'chorus' : s.id === 'outro' ? 'outro' : s.id === 'intro' ? 'intro' : ['bridge','chant'].includes(s.id) ? 'bridge' : 'verse', label: s.label || s.id, start: s.start, end: s.end })) },
     'x-dsh-mv-workshop': { id: ID, version: '1.0.0', requires: '0.9.5', author: 'Alice-Marx', license: 'AGPL-3.0-or-later AND LicenseRef-Mili-NonCommercial-FanWork', source: pin, homepage: `https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/${ID}`, description: 'FrostNova 原作实时3D完整非音乐适配：305镜头、16章、逐词英文与官方中文、60Hz分析、代码字形和离线OFL字体素材随包提供。音乐自备，非官方AI辅助同人MV；需插件0.9.5。', tags: ['world.execute(me)', 'Mili', 'frostnova', 'three.js', '3d', 'webgl'], publishedAt: '2026-10-07', lyricsLicense: 'LicenseRef-Mili-NonCommercial-FanWork', lyricsCredit: 'Mili / rights holders: song text and official Chinese translation; timing from FrostNovaOrg/world-execute-web', lyricsSource: terms, lyricsTiming: 'lyrics.timing.json' },
   }
-  manifest['x-dsh-mv-workshop'].requires = '0.9.6'
-  manifest['x-dsh-mv-workshop'].description = manifest['x-dsh-mv-workshop'].description.replace('0.9.5', '0.9.6')
+  manifest['x-dsh-mv-workshop'].requires = '0.9.7'
+  manifest['x-dsh-mv-workshop'].version = WORKSHOP_VERSION
+  manifest['x-dsh-mv-workshop'].description = manifest['x-dsh-mv-workshop'].description.replace('0.9.5', '0.9.7')
   writeFileSync(join(out, 'mv.json'), JSON.stringify(manifest, null, 2) + '\n')
   writeFileSync(join(out, 'LYRICS-NOTICE.md'), `# Song text and official Chinese translation\n\nMili and their rights holders own the English song text (including code-form lyric text) and official Chinese translation. Neither AGPL nor font OFL licenses these texts. Retained unchanged from ${pin}; timing and analysis are by FrostNova.\n\nThis free, non-commercial unofficial AI-assisted fan MV uses the previously confirmed fan-work scope under ${terms} (checked 2026-10-07). No recording, audio key, encrypted song part or official cover artwork is included. Commercial or broader use of these texts needs the rights holders' own permission. This restriction applies to song text, not to the AGPL software grant.\n`)
   writeFileSync(join(out, 'NOTICE.md'), `# Attribution, changes and source offer\n\nCopyright (C) 2026 FrostNova; Visuals — Claude Opus 5.5 Max. Original ${pin}. AGPL-3.0-or-later code and program-generated pictures; LICENSE.txt reproduces the full grant. Modified 2026-10-07 by Alice-Marx; the worker adapter is also AGPL-3.0-or-later.\n\nFree complete Corresponding Source download: ${sourceUrl}\nBuild adapter source: https://github.com/Alice-Marx/dsh-mv-cli/tree/main/presets/ports/frostnova-web\nThe source includes fixed upstream modules, patch/build logic, unminified adapter, fonts/mask builder, exact analysis inputs and build instructions. Anyone interacting with this adapted program can obtain it without charge.\n\nChanges: static 17 chapter registration, main edit's 305 shots/16 active chapters retained; network/DOM/player/vault bootstrap and asynchronous load/prewarm removed; all 2D texture canvases use offline OFL glyph masks; original quoted source strings and exact Float32 analysis restored from bounded gzip JSON chunks; original rig, draw/shader/pointcut/bloom algorithms and English word timing retained. Original Chinese subtitle schedule/rules/style composited offline. Output fixed at 960×540, initial internal render 640×360, bounded adaptive reduction to 320×180, realtime motion-blur cap 1. Negative-time 5-second warning source retained but song clock starts at zero; the photosensitivity warning is displayed in package documentation. No conversion to flat video or replacement generic geometry.\n\nThree.js and fflate retain their MIT notices in licenses/; OFL fonts/glyph-mask sources retain their own full notices and compatibility mappings. No Windows/Apple font file or proprietary per-glyph font atlas is distributed. Mili lyrics and official translation are separate: LYRICS-NOTICE.md. Claude name/logo are Anthropic trademarks, not licensed by AGPL; this fan adaptation does not imply sponsorship. Preserve upstream notices in licenses/.\n`)
@@ -214,7 +234,7 @@ export async function buildPack(checkout, out, fontDir) {
   const fflateLicense = readFileSync(join(here, 'node_modules/fflate/LICENSE'), 'utf8')
   for (const name of ['README.md', 'NOTICE.md']) {
     const path = join(out, name)
-    writeFileSync(path, readFileSync(path, 'utf8').replace(/0\.9\.5/g, '0.9.6') + '\nPlugin 0.9.6 adds bounded synchronous-generator preparation. The original start/middle/end/transition prewarm is performed per shot before music starts, preserving the original 2048-square galaxy map and all particle counts. The bridge dynamic const-assignment probe is replaced by a static TypeError with the same intended message; original quoted code remains unchanged.\n')
+    writeFileSync(path, readFileSync(path, 'utf8').replace(/0\.9\.5/g, '0.9.7') + '\nPlugin 0.9.6 adds bounded synchronous-generator preparation. The original start/middle/end/transition prewarm is performed per shot before music starts, preserving the original 2048-square galaxy map and all particle counts. The bridge dynamic const-assignment probe is replaced by a static TypeError with the same intended message; original quoted code remains unchanged.\nPlugin 0.9.7 adds a warmup() stage that runs after preparation and before playback at the final 640×360 internal size, so the opening frames no longer pay shader-compile and render-target cost inside the realtime frame watchdog. Shot count, chapter layout, particle counts and per-shot prewarm times are unchanged; the original quoted source is unchanged.\n')
   }
   writeFileSync(join(out, 'licenses/FFLATE-MIT.txt'), fflateLicense)
   const provenance = { repo: 'https://github.com/FrostNovaOrg/world-execute-web', commit: UPSTREAM_COMMIT, adaptedOn: '2026-10-07', sourceUrl, edit: 'main', chapters: 16, registeredModules: 17, expectedShots: 305, duration: timing.audio.duration, originalLineIndices: 129, cueCount: cues.length, bundleSha256: sha(scene), bundleBytes: Buffer.byteLength(scene), features: featureProvenance, quotes: { ...quoteProvenance, count: Object.keys(quotes).length }, modules: Object.fromEntries(Object.entries(modules).sort(([a],[b]) => a.localeCompare(b,'en'))), noAudioOrKeyService: true, fontSources: Object.keys(assets).filter(k => k.startsWith('font-')) }

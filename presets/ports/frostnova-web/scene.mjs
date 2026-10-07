@@ -77,3 +77,29 @@ export function* prepare(info, gl) {
   engine.renderFrame(0)
   if (engine.errors.length) throw new Error(engine.errors[0])
 }
+
+// prepare() walks all 305 shots at a small internal size, which is what the
+// original page does, but the internal resize to 640 invalidates every render
+// target and recompiles the size-dependent shaders. The very first frames that
+// actually play would then pay that cost inside the panel's realtime frame
+// watchdog, which reads as a stall rather than as first-use GPU work. Warm the
+// opening at the final size, on the plugin's own pre-playback deadline.
+export function warmup(info, gl) {
+  if (!engine) throw new Error('Call setup before warmup')
+  const innerWidth = Math.max(320, Math.round(Math.min(info.width, 640) * scale / 2) * 2)
+  engine.renderer.setSize(info.width, info.height, false)
+  engine.setSize(innerWidth, Math.round(innerWidth * info.height / info.width))
+  width = info.width; height = info.height
+  const shots = engine.timeline.shots, frame = 1 / 60
+  for (const shot of shots.slice(0, 3)) {
+    const end = Math.min(shot.end, engine.duration) - frame
+    for (const t of [shot.start, Math.min(shot.start + frame, end), (shot.start + end) / 2]) {
+      engine.renderFrame(Math.max(0, Math.min(engine.duration, t)))
+      if (engine.errors.length) throw new Error(engine.errors[0])
+    }
+  }
+  engine.renderFrame(0)
+  if (engine.errors.length) throw new Error(engine.errors[0])
+  // Leave the adaptive quality counter alone: warmup is not realtime playback.
+  slow = 0
+}

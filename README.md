@@ -4,7 +4,19 @@ English · [简体中文](README.zh.md)
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊 / workshop](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.6**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.9.7**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+
+**0.9.7 heavy 3D startup:** optional `warmup(info, gl)` runs once, after
+`prepare()`, on the final output size and before playback, so one-off GPU work
+(shader compilation, render-target allocation) is paid on the panel's own
+20-second deadline instead of stalling the first visible frame. The stall
+watchdog is now graded: the first 10 seconds of playback get an 8-second stall
+window and are not charged to the slow-frame quota, then the unchanged 1500 ms
+limit and 45-frame quota apply, so a scene that stalls mid-song is still
+stopped. `setup()` is 5 seconds and `prepare()` 300 seconds in total (10 s per
+step, 512 steps). Existing scene APIs remain compatible; the graded deadlines
+also apply to scenes without `warmup()`. A frame keeps the deadline assigned
+when requested, including when it crosses the initial 10-second boundary.
 
 **0.9.6 heavy 3D preparation:** optional `function* prepare(info, gl)` prewarms
 resources/shaders before playback, with progress, cancellation, a 10-second

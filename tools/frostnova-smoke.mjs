@@ -146,15 +146,23 @@ window.qaStart = async loaded => {
   try {await film.load(source.text,{output:pack.canvas.output,size:pack.canvas.size,assets:scene.assets,transfer:scene.transfer});}
   catch(e){disposeSceneAssets(scene);throw e;}
   const loadMs=performance.now()-started;
+  const warming=messages.find(m=>m.type==='warming'),ready=messages.findLast(m=>m.type==='ready');
   return {setupMs:preparation[0]?.wallMs??loadMs,loadMs,prepareMs:preparation.length?loadMs-preparation[0].wallMs:0,prepareSteps:preparation.at(-1)?.step??0,sourceSha256:await hash(new TextEncoder().encode(source.text)),
     assets:Object.keys(scene.assets),imageAssets:scene.transfer.length,cueCount:film.lyrics.length,
-    limits:{setupTimeoutMs:SCENE_LIMITS.setupTimeoutMs,hardTimeoutMs:SCENE_LIMITS.hardTimeoutMs,frameBudgetMs:PIXEL_SCENE_LIMITS.frameBudgetMs,prepareStepTimeoutMs:SCENE_LIMITS.prepareStepTimeoutMs,prepareTotalTimeoutMs:SCENE_LIMITS.prepareTotalTimeoutMs,prepareMaxSteps:SCENE_LIMITS.prepareMaxSteps}};
+    warmedUp:messages.some(m=>m?.type==='warming'),
+    warmupMs:warming&&ready?ready.receivedAtMs-warming.receivedAtMs:0,
+    limits:{setupTimeoutMs:SCENE_LIMITS.setupTimeoutMs,warmupTimeoutMs:SCENE_LIMITS.warmupTimeoutMs,
+      hardTimeoutMs:SCENE_LIMITS.hardTimeoutMs,firstFrameTimeoutMs:SCENE_LIMITS.firstFrameTimeoutMs,
+      firstFrameGraceMs:SCENE_LIMITS.firstFrameGraceMs,frameBudgetMs:PIXEL_SCENE_LIMITS.frameBudgetMs,
+      prepareStepTimeoutMs:SCENE_LIMITS.prepareStepTimeoutMs,prepareTotalTimeoutMs:SCENE_LIMITS.prepareTotalTimeoutMs,prepareMaxSteps:SCENE_LIMITS.prepareMaxSteps}};
 };
 window.qaFrame = async ({t,compareKey,saveReference=false}) => {
   if(!film||film.state!=='ready')throw new Error(film?.error||'Film is not ready');
   const started=performance.now();film.request(t,...film.size,{paused:true});
+  const request=film.pending&&{firstUseGrace:film.pending.firstUseGrace,timeoutMs:film.pending.timeoutMs};
   while(film.pending && film.state==='ready') {
-    // Invoke the real production watchdog, with its unchanged 1500 ms limit.
+    // Invoke the real production watchdog: the widened first-use window while it
+    // is open, the unchanged steady-state limit afterwards.
     film.request(t,...film.size,{paused:true});
     await wait(5);
   }
@@ -178,7 +186,8 @@ window.qaFrame = async ({t,compareKey,saveReference=false}) => {
   let litPixels=0,min=765,max=0;
   for(let i=0;i<pixels.length;i+=4){const sum=pixels[i]+pixels[i+1]+pixels[i+2];if(sum>60)litPixels++;min=Math.min(min,sum);max=Math.max(max,sum);}
   return {t,width:film.bitmap.width,height:film.bitmap.height,sha256:await hash(pixels),litPixels,range:max-min,
-    wallMs:performance.now()-started,workerMs:message?.ms,slowFrames:film.slow,frameId:message?.id,filmState:film.state,pixelDiff};
+    wallMs:performance.now()-started,workerMs:message?.ms,slowFrames:film.slow,graceFrames:film.graceFrames,graceSlow:film.graceSlow,
+    firstUseGrace:request?.firstUseGrace,timeoutMs:request?.timeoutMs,frameId:message?.id,filmState:film.state,pixelDiff};
 };
 window.qaStop = () => {const beforeStop={state:film?.state,pending:film?.pending,preparePending:film?.preparePending,prepareProgress:film?.prepareProgress};film?.stop();return {workers,terminated,outputs,closedOutputs,worker:!!film?.worker,bitmap:!!film?.bitmap,pending:!!film?.pending,beforeStop,preparation,failures:[...failures],commands,messages};};
 window.qaIsolation = async () => {
@@ -258,6 +267,9 @@ try {
   assert.equal(report.setup.sourceSha256, report.sceneSha256)
   assert.equal(report.setup.limits.setupTimeoutMs, SCENE_LIMITS.setupTimeoutMs)
   assert.equal(report.setup.limits.hardTimeoutMs, SCENE_LIMITS.hardTimeoutMs)
+  assert.equal(report.setup.limits.firstFrameTimeoutMs, SCENE_LIMITS.firstFrameTimeoutMs)
+  // The scene declares warmup(); the worker must have announced and run that stage.
+  assert.equal(report.setup.warmedUp, true, 'The FrostNova scene must run its warmup() stage before playback.')
   const chapters = report.expectedChapters
   const chapterShots = chapter => metadata.shots.filter(s => s.chapter === chapter)
   const keyShots = new Set(chapters.map(ch => { const list=chapterShots(ch); return list[Math.floor(list.length/2)].id }))
@@ -327,6 +339,21 @@ try {
   report.coverage={shots:sweep.length,chapters:chapters.map(ch=>({chapter:ch,shots:sweep.filter(f=>f.chapter===ch).length,
     litShots:sweep.filter(f=>f.chapter===ch&&f.litPixels>10).length,hashes:new Set(sweep.filter(f=>f.chapter===ch).map(f=>f.sha256)).size})),transitionTypes:joinTypes}
   assert.equal(sweep.length,selectedShots.length)
+  // Graded-watchdog evidence: the opening frames are allowed to be slow, the rest
+  // are not. These numbers decide whether the pack is publishable, so record them.
+  report.watchdog = {
+    frames: report.frames.length,
+    firstUseFrames: report.frames.filter(f=>f.firstUseGrace).length,
+    firstUseSlowFrames: report.frames.filter(f=>f.firstUseGrace&&f.workerMs>PIXEL_SCENE_LIMITS.frameBudgetMs).length,
+    steadyFrames: report.frames.filter(f=>!f.firstUseGrace).length,
+    steadySlowFrames: report.frames.filter(f=>!f.firstUseGrace&&f.workerMs>PIXEL_SCENE_LIMITS.frameBudgetMs).length,
+    maximumSlowQuota: Math.max(0, ...report.frames.map(f => f.slowFrames ?? 0)),
+    slowestWorkerFrameMs: Math.round(Math.max(0, ...report.frames.map(f => f.workerMs ?? 0)) * 10) / 10,
+    slowestWallFrameMs: Math.round(Math.max(0, ...report.frames.map(f => f.wallMs ?? 0)) * 10) / 10,
+    steadyStateLimitMs: SCENE_LIMITS.hardTimeoutMs,
+    firstUseLimitMs: SCENE_LIMITS.firstFrameTimeoutMs,
+  }
+  assert.ok(report.frames.every(f=>Number.isFinite(f.workerMs)&&f.workerMs<=f.timeoutMs),'Every worker frame must meet its request deadline.')
   if(!probeTimes.length)assert.ok(report.coverage.chapters.filter(c=>c.chapter!=='warning').every(c=>c.litShots>0),'Every song chapter has visible rendered geometry/text.')
   // The unchanged upstream also differs by one RGB code in 33/230400 pixels
   // after a seek on this GPU. Preserve the exact hashes and measure that tiny

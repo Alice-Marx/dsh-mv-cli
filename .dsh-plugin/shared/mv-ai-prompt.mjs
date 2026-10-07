@@ -136,6 +136,8 @@ ${bullet([
   'lyric 为 { text, en, zh, start, end, progress, words: [{ text, start, end }], word } 或 null（words 来自增强 LRC 的 <mm:ss.xx> 逐词时间，否则自动估计；word 是正在唱的词的下标）；next 为下一句（没有 words）。',
   'section 为 { kind, label, start, end, index, progress }（来自 x-dsh-mv-ai.sections）或 null；beat 在 mv.json 设置 canvas.bpm 时为 { bpm, index, bar, phase, pulse }，否则 null。',
   '可选 function setup(info)：开始前调用一次，info = { title, artist, duration, sections, bpm, beatOffset }。',
+  `如果初始化很慢（读很多数据、生成大量数组），把它拆进可选的 function* prepare(info)：每做完一块 yield { progress: 0..1, label: '简短说明' }，面板会显示进度并等你准备好，最多 ${SCENE_LIMITS.prepareStepTimeoutMs / 1000} 秒/步、${SCENE_LIMITS.prepareTotalTimeoutMs / 1000} 秒总计、${SCENE_LIMITS.prepareMaxSteps} 步。`,
+  `一次性的大 GPU 开销（编译着色器、分配渲染目标）请放进可选的 function warmup(info, gl)：它在开画前、最终尺寸上调用一次，${SCENE_LIMITS.warmupTimeoutMs / 1000} 秒上限，且不能更改输出画布尺寸。不要把耗时工作放进第一帧 render()。`,
   '画面完全由 t 和 ctx 决定（同一时刻画面相同），这样拖动进度时也正确。',
   '不要在画面里放音乐或歌词以外的版权内容；只用 ASCII / 常见符号，中文字符占两格。',
 ])}

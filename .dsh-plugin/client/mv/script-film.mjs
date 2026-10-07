@@ -7,6 +7,17 @@
  * for too many frames is terminated and the panel falls back to the generic
  * renderer.
  *
+ * Two stages run before the first frame is accepted: `prepare()` cooperatively
+ * yields progress, and the optional synchronous `warmup()` pays one-off GPU
+ * first-use cost on the final output surface. Both have their own deadlines.
+ *
+ * The stall watchdog is graded. Inside SCENE_LIMITS.firstFrameGraceMs after
+ * `ready`, a pending frame may take SCENE_LIMITS.firstFrameTimeoutMs (GPU
+ * drivers legitimately compile and allocate on first use) and frames slower
+ * than the frame budget are not charged to the steady-state slow-frame quota.
+ * After that window the unchanged hardTimeoutMs and slowFramesAllowed apply, so
+ * a scene that stalls or crawls during steady state is still stopped.
+ *
  * Bitmap outputs ("pixels" and "webgl"): the script paints an
  * OffscreenCanvas of canvas.size in the worker; frames come back as
  * ImageBitmaps and draw() letterboxes them onto the panel's visible 2D canvas.
@@ -70,10 +81,13 @@ export class ScriptFilm extends GenericFilm {
     this.onFail = onFail
     this.onPrepare = onPrepare
     this.worker = null
-    this.state = 'idle' // idle | loading | preparing | ready | failed
+    this.state = 'idle' // idle | loading | preparing | warming | ready | failed
     this.frame = null
     this.pending = null
     this.slow = 0
+    this.graceFrames = 0
+    this.graceSlow = 0
+    this.readyAt = 0
     this.nextId = 1
     this.error = ''
     this.output = 'text'
@@ -82,13 +96,27 @@ export class ScriptFilm extends GenericFilm {
     this.setupTimer = null
     this.prepareTimer = null
     this.prepareTotalTimer = null
+    this.warmupTimer = null
+    this.warmupId = null
     this.preparePending = null
     this.prepareProgress = 0
+    this.prepared = false
     this.loadReject = null
   }
 
   /** Song structure for ctx.section / ctx.beat (from mv.json). */
   setStructure({ sections = [], bpm = 0, beatOffset = 0 } = {}) { this.sections = sections; this.bpm = bpm; this.beatOffset = beatOffset }
+
+  /**
+   * True while the one-off first-use window after `ready` is still open, where a
+   * slow frame is expected GPU work rather than a stalled scene. A clock that
+   * reads before `ready` (never in practice, but the clock is injectable) does
+   * not reopen the window.
+   */
+  inFirstFrameGrace(now = this.now()) { const elapsed = now - this.readyAt; return this.state === 'ready' && elapsed >= 0 && elapsed < SCENE_LIMITS.firstFrameGraceMs }
+
+  /** Milliseconds of first-use allowance already spent, negative before `ready`. */
+  firstUseElapsed() { return this.now() - this.readyAt }
 
   /** Start the script; resolves when it is ready, rejects with the reason. */
   load(source, { output = 'text', size = [1280, 720], assets = {}, transfer = [] } = {}) {
@@ -112,9 +140,10 @@ export class ScriptFilm extends GenericFilm {
         clearTimeout(this.setupTimer)
         this.setupTimer = null
       }
-      const clearPrepareTimers = () => {
+      const clearPrepareTimers = ({ keepProgress = false } = {}) => {
         clearTimeout(this.prepareTimer); clearTimeout(this.prepareTotalTimer)
         this.prepareTimer = null; this.prepareTotalTimer = null; this.preparePending = null
+        if (!keepProgress) this.prepareProgress = 0
       }
       const reportPreparation = status => { try { this.onPrepare(status) } catch { /* UI callbacks cannot stall the preparation protocol. */ } }
       const sendPreparationStep = id => {
@@ -147,7 +176,21 @@ export class ScriptFilm extends GenericFilm {
           reject(error)
           return
         }
-        if (this.state === 'loading' || this.state === 'preparing') {
+        if (this.state === 'loading' || this.state === 'preparing' || this.state === 'warming') {
+          // 0.9.7: warmup() announces itself so it gets its own deadline instead of
+          // being charged to the last prepare step's timeout.
+          if (msg.type === 'warming') {
+            const expected = this.state === 'loading' ? 0 : this.preparePending
+            if (msg.bitmap !== undefined || this.state === 'warming' || !Number.isSafeInteger(msg.id) || msg.id !== expected) {
+              closeBitmap(msg.bitmap); reject(this.fail(invalidWorkerMessage('准备完成后的预热通知不正确。'))); return
+            }
+            this.warmupId = msg.id
+            clearSetupTimer()
+            clearPrepareTimers({ keepProgress: true })
+            this.state = 'warming'
+            this.warmupTimer = setTimeout(() => reject(this.fail(`场景预热超过 ${SCENE_LIMITS.warmupTimeoutMs} ms，已停止。请让 warmup() 更快，或用 prepare() 分步预热。`)), SCENE_LIMITS.warmupTimeoutMs)
+            return
+          }
           if (msg.type === 'preparing') {
             const expected = this.state === 'loading' ? 0 : this.preparePending
             const valid = Number.isSafeInteger(msg.id) && msg.id === expected && msg.id <= SCENE_LIMITS.prepareMaxSteps && msg.bitmap === undefined && Number.isFinite(msg.progress) && msg.progress >= this.prepareProgress && msg.progress <= 1 && typeof msg.label === 'string' && msg.label.length <= 160 && (this.state !== 'loading' || msg.progress === 0)
@@ -158,6 +201,7 @@ export class ScriptFilm extends GenericFilm {
             clearTimeout(this.prepareTimer); this.prepareTimer = null
             if (this.state === 'loading') {
               this.state = 'preparing'
+              this.prepared = true
               // This independent deadline is never renewed by progress messages.
               this.prepareTotalTimer = setTimeout(() => reject(this.fail(`场景准备总计超过 ${SCENE_LIMITS.prepareTotalTimeoutMs} ms，已停止。`)), SCENE_LIMITS.prepareTotalTimeoutMs)
             }
@@ -167,17 +211,24 @@ export class ScriptFilm extends GenericFilm {
             sendPreparationStep(msg.id + 1)
             return
           }
-          if (msg.type !== 'ready' || typeof msg.error !== 'string' || msg.bitmap !== undefined || (this.state === 'preparing' && (!Number.isSafeInteger(msg.id) || msg.id !== this.preparePending))) {
+          if (msg.type !== 'ready' || typeof msg.error !== 'string' || msg.bitmap !== undefined
+            || (this.state === 'preparing' && (!Number.isSafeInteger(msg.id) || msg.id !== this.preparePending))
+            || (this.state === 'warming' && msg.id !== this.warmupId)
+            || (this.prepared && !Number.isSafeInteger(msg.id))) {
             closeBitmap(msg.bitmap)
             clearSetupTimer()
             reject(this.fail(invalidWorkerMessage('初始化响应格式不正确。')))
             return
           }
           clearSetupTimer()
-          const prepared = this.state === 'preparing'
-          clearPrepareTimers()
+          // A warmup stage may sit between the last prepare step and ready, so this
+          // remembers that preparation ran rather than reading the current state.
+          const prepared = this.prepared
+          clearPrepareTimers({ keepProgress: prepared })
+          clearTimeout(this.warmupTimer); this.warmupTimer = null
           if (msg.error) { reject(this.fail(`场景脚本无法加载：${msg.error.split('\n')[0]}`)); return }
           this.state = 'ready'
+          this.readyAt = this.now()
           this.loadReject = null
           if (prepared) { this.prepareProgress = 1; reportPreparation({ step: msg.id, progress: 1, label: '', done: true }) }
           resolve()
@@ -208,6 +259,11 @@ export class ScriptFilm extends GenericFilm {
     }
     if (msg.type !== 'frame') { closeBitmap(msg.bitmap); this.fail(invalidWorkerMessage(`未知响应类型 ${String(msg.type)}。`)); return }
     if (!Number.isFinite(msg.ms) || msg.ms < 0) { closeBitmap(msg.bitmap); this.fail(invalidWorkerMessage('帧耗时必须是非负有限数。')); return }
+    if (this.now() - pending.at > pending.timeoutMs || msg.ms > pending.timeoutMs) {
+      closeBitmap(msg.bitmap)
+      this.fail(this.frameTimeoutReason(pending))
+      return
+    }
     if (isBitmapSceneOutput(this.output)) {
       const bitmap = msg.bitmap
       if (!bitmap || typeof bitmap !== 'object' || typeof bitmap.close !== 'function' || (typeof globalThis.ImageBitmap === 'function' && !(bitmap instanceof globalThis.ImageBitmap)) || !Number.isInteger(bitmap.width) || !Number.isInteger(bitmap.height) || bitmap.width !== this.size[0] || bitmap.height !== this.size[1]) {
@@ -226,6 +282,14 @@ export class ScriptFilm extends GenericFilm {
       this.frame = msg.frame
     }
     const budget = isBitmapSceneOutput(this.output) ? PIXEL_SCENE_LIMITS.frameBudgetMs : SCENE_LIMITS.frameBudgetMs
+    // 0.9.7: inside the first-use window a slow frame is expected GPU work, not a
+    // crawling scene. Count it separately so it can neither mask nor be masked by
+    // steady state; the quota below is only ever charged after `ready` settles.
+    if (pending.firstUseGrace) {
+      this.graceFrames++
+      if (msg.ms > budget) this.graceSlow++
+      return
+    }
     if (msg.ms > budget) { if (++this.slow > SCENE_LIMITS.slowFramesAllowed) this.fail(`场景脚本太慢（一帧 ${Math.round(msg.ms)} ms，预算 ${budget} ms）。`) }
     else this.slow = Math.max(0, this.slow - 1)
   }
@@ -242,8 +306,11 @@ export class ScriptFilm extends GenericFilm {
   stop({ keepState = false } = {}) {
     clearTimeout(this.setupTimer)
     this.setupTimer = null
-    clearTimeout(this.prepareTimer); clearTimeout(this.prepareTotalTimer)
+    clearTimeout(this.prepareTimer); clearTimeout(this.prepareTotalTimer); clearTimeout(this.warmupTimer)
     this.prepareTimer = null; this.prepareTotalTimer = null; this.preparePending = null; this.prepareProgress = 0
+    this.warmupTimer = null
+    this.warmupId = null
+    this.prepared = false
     const reject = this.loadReject
     this.loadReject = null
     reject?.(new Error(keepState ? this.error : '场景脚本加载已取消。'))
@@ -255,6 +322,8 @@ export class ScriptFilm extends GenericFilm {
     closeBitmap(this.bitmap)
     this.bitmap = null
     this.slow = 0
+    this.graceFrames = 0
+    this.graceSlow = 0
     if (!keepState) { this.state = 'idle'; this.error = '' }
   }
 
@@ -262,15 +331,25 @@ export class ScriptFilm extends GenericFilm {
     if (this.state !== 'ready' || !this.worker) return
     const now = this.now()
     if (this.pending) {
-      if (now - this.pending.at > SCENE_LIMITS.hardTimeoutMs) this.fail(`场景脚本 ${SCENE_LIMITS.hardTimeoutMs} ms 没有返回（可能是死循环），已停止。`)
+      // 0.9.7: graded watchdog. A GPU legitimately compiles shaders and allocates
+      // render targets on first use, so the first-use window gets its own, much
+      // wider limit; steady state keeps the unchanged hardTimeoutMs.
+      if (now - this.pending.at > this.pending.timeoutMs) this.fail(this.frameTimeoutReason(this.pending))
       return
     }
     const at = t + (opts.offset ?? 0)
     const ctx = sceneContext({ t, duration: this.duration, title: this.title, artist: this.artist, cue: this.cue(at), next: this.nextCue(at), bands: this.energy(t), ready: Boolean(opts.ready), paused: Boolean(opts.paused), sections: this.sections ?? [], bpm: this.bpm ?? 0, beatOffset: this.beatOffset ?? 0 })
     const id = this.nextId++
-    this.pending = { id, at: now, cols: w, rows: h }
+    const firstUseGrace = this.inFirstFrameGrace(now)
+    this.pending = { id, at: now, cols: w, rows: h, firstUseGrace, timeoutMs: firstUseGrace ? SCENE_LIMITS.firstFrameTimeoutMs : SCENE_LIMITS.hardTimeoutMs }
     try { this.worker.postMessage({ type: 'frame', id, t, cols: w, rows: h, ctx }) }
     catch (error) { this.fail(`无法向场景脚本请求帧：${error?.message ?? error}`) }
+  }
+
+  frameTimeoutReason(pending) {
+    return pending.firstUseGrace
+      ? `场景脚本首帧 ${pending.timeoutMs} ms 没有返回，已停止。请在场景里加 warmup(info, gl) 预热，或让 setup()/prepare() 分步完成初始化。`
+      : `场景脚本 ${pending.timeoutMs} ms 没有返回（可能是死循环），已停止。`
   }
 
   /** Same interface as Film / GenericFilm: a Canvas for time t. */
@@ -289,9 +368,16 @@ export class ScriptFilm extends GenericFilm {
           x += k; i += 1
         }
       }
-    } else if (this.state === 'loading' || this.state === 'preparing' || this.state === 'ready') c.center(Math.floor(h / 2), this.state === 'preparing' ? `准备 ${Math.round(this.prepareProgress * 100)}%` : '…', DIM)
+    } else if (this.state === 'loading' || this.state === 'preparing' || this.state === 'warming' || this.state === 'ready') c.center(Math.floor(h / 2), this.waitingLabel, DIM)
     if (opts.help) this.help(c, opts.offset ?? 0, opts.helpLines)
     return c
+  }
+
+  /** Placeholder shown while the scene is still loading / preparing / warming up. */
+  get waitingLabel() {
+    if (this.state === 'preparing') return `准备 ${Math.round(this.prepareProgress * 100)}%`
+    if (this.state === 'warming') return '预热…'
+    return '…'
   }
 
   /** Bitmap scenes: paint the newest frame letterboxed onto the panel's visible 2D canvas. */
@@ -309,11 +395,11 @@ export class ScriptFilm extends GenericFilm {
       g.imageSmoothingQuality = 'high'
       g.drawImage(this.bitmap, Math.round((cw - dw) / 2), Math.round((ch - dh) / 2), dw, dh)
       if (opts.subtitles === true) bitmapSubtitles(g, this.cue(t - (opts.offset ?? 0)), Math.round((cw - dw) / 2), Math.round((ch - dh) / 2), dw, dh)
-    } else if (this.state === 'loading' || this.state === 'preparing' || this.state === 'ready') {
+    } else if (this.state === 'loading' || this.state === 'preparing' || this.state === 'warming' || this.state === 'ready') {
       g.fillStyle = '#556'
       g.font = `${Math.max(12, Math.round(ch / 30))}px monospace`
       g.textAlign = 'center'; g.textBaseline = 'middle'
-      g.fillText(this.state === 'preparing' ? `准备 ${Math.round(this.prepareProgress * 100)}%` : '…', cw / 2, ch / 2)
+      g.fillText(this.waitingLabel, cw / 2, ch / 2)
     }
   }
 }

@@ -7,7 +7,7 @@ import { resolve, join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { UPSTREAM_COMMIT } from './build.mjs'
+import { UPSTREAM_COMMIT, WORKSHOP_VERSION } from './build.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url)), root = resolve(here, '../../..')
 const [upstreamArg, fontsArg, notesArg, outArg] = process.argv.slice(2)
@@ -61,5 +61,5 @@ function walk(at,sub='') {
   }
 }
 walk(out)
-writeFileSync(join(out,'SHA256SUMS.json'),JSON.stringify({format:'frostnova-corresponding-source',version:'1.0.0',upstreamCommit:UPSTREAM_COMMIT,files:hashes},null,2)+'\n')
+writeFileSync(join(out,'SHA256SUMS.json'),JSON.stringify({format:'frostnova-corresponding-source',version:WORKSHOP_VERSION,upstreamCommit:UPSTREAM_COMMIT,files:hashes},null,2)+'\n')
 console.log(JSON.stringify({out,files:hashes.length+1,bytes:hashes.reduce((n,f)=>n+f.size,0),upstreamFiles:inventory.length}))
