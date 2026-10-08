@@ -1,0 +1,19 @@
+{
+  "name": "nyankomintsu-workshop-build-tools",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/noto-sans-kr": "5.3.0",
+    "@fontsource/noto-sans-tc": "5.3.0",
+    "@fontsource/noto-serif-kr": "5.3.0",
+    "@fontsource/noto-serif-tc": "5.3.0",
+    "@fontsource/source-serif-4": "5.3.0",
+    "acorn": "8.15.0",
+    "esbuild": "0.28.2",
+    "playwright": "1.62.1"
+  }
+}

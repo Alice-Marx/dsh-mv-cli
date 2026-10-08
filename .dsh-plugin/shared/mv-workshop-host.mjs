@@ -18,7 +18,7 @@ import { assetParts, isAbsolutePackPath } from './mv-pack.mjs'
 import { loadPack, packFilePath } from './mv-pack-host.mjs'
 import { parseLyrics } from './mv-lyrics.mjs'
 import {
-  COVER_NAMES, FINGERPRINT_KIND, WORKSHOP_INDEX_URL, WORKSHOP_LIMITS, WORKSHOP_REPO, WORKSHOP_TIMING_FILE, WORKSHOP_TIMING_FORMAT,
+  COVER_NAMES, FINGERPRINT_KIND, WORKSHOP_DEFAULT_MIRROR, WORKSHOP_INDEX_URL, WORKSHOP_LIMITS, WORKSHOP_REPO, WORKSHOP_TIMING_FILE, WORKSHOP_TIMING_FORMAT,
   insideDir, normalizeLyricLine, normalizeWorkshopDir, packRequires, parseWorkshopIndex, publishLinks, sameDir, validateWorkshopPack, workshopFileUrl,
 } from './mv-workshop.mjs'
 
@@ -186,7 +186,7 @@ export function workshopMirrorUrl(base, githubUrl) {
  * %LOCALAPPDATA%\dsh-mv\workshop. Folders used before keep being scanned (workshop.extraDirs) until their
  * packs are moved, so the library keeps finding packs left where they were.
  */
-export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = workshopDir(), configDir = () => '', settings = null, platform = process.platform, publishRoot = join(dirname(fixedRoot ?? defaultRoot), 'workshop-publish'), get = getBytes, env = process.env, proxy = () => '', mirror = () => '', retrySleep = pauseDownload, userAgent = 'dsh-mv-cli', now = () => new Date(), cacheMs = 5 * 60_000, open = dir => openFolder(dir, { platform }) } = {}) {
+export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = workshopDir(), configDir = () => '', settings = null, platform = process.platform, publishRoot = join(dirname(fixedRoot ?? defaultRoot), 'workshop-publish'), get = getBytes, env = process.env, proxy = () => '', mirror = () => WORKSHOP_DEFAULT_MIRROR, retrySleep = pauseDownload, userAgent = 'dsh-mv-cli', now = () => new Date(), cacheMs = 5 * 60_000, open = dir => openFolder(dir, { platform }) } = {}) {
   let cached = null
   const store = settings ?? (fixedRoot ? null : createSettingsStore())
   const configured = () => { const v = String(configDir() ?? '').trim(); if (!v) return null; try { return normalizeWorkshopDir(v, platform) } catch { return null } }
@@ -490,6 +490,20 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
       }
     }
   }
+  for (const face of pack.canvas?.fonts ?? []) {
+    if (!copiedAssets.has(face.file)) {
+      copiedAssets.add(face.file)
+      try { assetEntries.push({ path: face.file, bytes: Buffer.from(await readBytes(packFilePath(packDir, face.file))) }) }
+      catch (error) { assetErrors.push(`无法保留 canvas.fonts 字体 ${face.file}：${error?.message ?? error}`) }
+    }
+    if (!files.has(face.licenseFile)) {
+      try {
+        const path = packFilePath(packDir, face.licenseFile), entry = await stat(path)
+        if (!entry.isFile() || entry.size > WORKSHOP_LIMITS.fileBytes) throw new Error('许可文本缺失或超过 512 KiB')
+        files.set(face.licenseFile, await readText(path))
+      } catch (error) { assetErrors.push(`无法保留字体许可 ${face.licenseFile}：${error?.message ?? error}`) }
+    }
+  }
   // Preserve companion attribution, not arbitrary files or hidden audio.
   for (const parent of new Set([...copiedAssets].map(ref => dirname(ref)).filter(dir => dir !== '.'))) {
     for (const name of ['NOTICE.md', 'LICENSE.txt', 'LICENSE.md', ...(parent.replace(/\\/g, '/') === 'fonts' ? ['OFL_spacemono.txt', 'OFL_anton.txt'] : [])]) {
@@ -518,7 +532,7 @@ export async function preparePublish(request, { publishRoot, now = () => new Dat
     audio: { ...(duration ? { duration: Math.round(duration * 1000) / 1000 } : {}), ...(request.fingerprint ? { fingerprint: { kind: FINGERPRINT_KIND, values: request.fingerprint } } : {}) },
     ...(timing ? { lyricsTiming: WORKSHOP_TIMING_FILE } : {}),
     ...(lyrics ? { lyricsLicense, lyricsCredit, ...(lyricsSource ? { lyricsSource } : {}) } : {}),
-    ...(pack.canvas?.renderer === 'dsh-pv' && (pack.canvas.assets?.['font-head'] || pack.canvas.assets?.['font-banner']) ? {
+    ...(pack.canvas?.fonts?.length || pack.canvas?.renderer === 'dsh-pv' && (pack.canvas.assets?.['font-head'] || pack.canvas.assets?.['font-banner']) ? {
       fontsLicense: originalWorkshop.fontsLicense, fontsCredit: originalWorkshop.fontsCredit, fontsNotice: originalWorkshop.fontsNotice,
     } : {}),
     ...(raw['x-dsh-mv-workshop']?.source ? { source: raw['x-dsh-mv-workshop'].source } : {}),

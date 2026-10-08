@@ -9,12 +9,12 @@ import { parseLyrics } from './mv/lyrics.mjs'
 import { LiveSpectrum, spectrumFromJson, silentEnergy } from './mv/spectrum.mjs'
 import { KNOWN_AUDIO, formatOffset, loadOffsets, saveOffsets, resetOffsets, sha256Hex, roundOffset } from './mv/sync.mjs'
 import { openMediaStore, getMedia, putMedia, deleteMedia } from './mv/media-store.mjs'
-import { DEFAULT_DURATION, FilmClock, frameTime, keyAction, stepCue, stepOffset } from './mv/player-state.mjs'
+import { DEFAULT_DURATION, FilmClock, frameTime, keyAction, stepCue, stepOffset, prerollCountdown, preparationText } from './mv/player-state.mjs'
 import { GenericFilm, genericChapters, timeText } from './mv/generic-film.mjs'
 import { ScriptFilm, isBitmapSceneOutput } from './mv/script-film.mjs'
 import { ScenePlayGate } from './mv/scene-play-gate.mjs'
 import { DshPvFilm, DSHPV_CHAPTERS, DSHPV_DURATION } from './mv/dshpv/film.mjs'
-import { hasDshPvAssets, loadDshPv, disposeDshPvData, loadSceneAssets, disposeSceneAssets, packAssetReader } from './mv/dshpv/assets.mjs'
+import { hasDshPvAssets, loadDshPv, disposeDshPvData, loadSceneAssets, disposeSceneAssets, packAssetReader, loadSceneFonts, packFontReader } from './mv/dshpv/assets.mjs'
 import { loadDshPvFonts } from './mv/dshpv/fonts.mjs'
 import { matchBand } from './mv/dshpv/band.mjs'
 import { CalibEditor } from './mv-calib.jsx'
@@ -87,7 +87,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       script: new ScriptFilm({
         energy: t => state.energy(t),
         onPrepare: progress => {
-          if (!state.disposed && state.film === state.script) setScenePreparing(`正在预热 3D 资源… ${Math.round(progress.progress * 100)}%${progress.label ? ` · ${progress.label}` : ''}`)
+          if (!state.disposed && state.film === state.script) setScenePreparing(preparationText(progress))
         },
         onFail: reason => {
           if (state.film === state.script) state.film = state.generic
@@ -101,7 +101,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       renderer: new GridRenderer(canvas.current, { fontSize }),
       clock: new FilmClock({ audio: audio.current }),
       live, energy: silentEnergy, fileEnergy: null, started: false, help: false, sha: '',
-      sceneLoad: null, sceneOwner: null, playGate: new ScenePlayGate(),
+      sceneLoad: null, sceneOwner: null, audioOwner: null, playGate: new ScenePlayGate(),
     }
     state.energy = () => live.energy()
     state.film = state.generic
@@ -111,8 +111,11 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       raf = requestAnimationFrame(frame)
       const box = stage.current
       if (!box) return
+      state.clock.tick()
+      const clockError = state.clock.takeError()
+      if (clockError) setError(`无法开始音频播放：${clockError?.message ?? clockError}`)
       const raw = state.clock.time()
-      const { t, ready } = frameTime(raw, state.started, state.clock.duration)
+      const { t, ready } = frameTime(raw, state.started, state.clock.duration, state.clock.preroll)
       const playing = state.clock.playing
       let cols = 0, rows = 0
       if (state.film === state.script && isBitmapSceneOutput(state.script.output)) {
@@ -121,14 +124,14 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         const dpr = Math.min(2, globalThis.devicePixelRatio || 1)
         const w = Math.max(64, Math.round(box.clientWidth * dpr)), h = Math.max(36, Math.round(box.clientHeight * dpr))
         if (el.width !== w || el.height !== h) { el.width = w; el.height = h }
-        state.script.draw(el.getContext('2d'), Math.max(0, t), { paused: !playing && state.started, ready, offset: offsetsRef.current.subtitleOffset, subtitles: packRef.current?.pack?.canvas?.subtitles === true })
+        state.script.draw(el.getContext('2d'), t, { paused: !playing && state.started, ready, offset: offsetsRef.current.subtitleOffset, subtitles: packRef.current?.pack?.canvas?.subtitles === true })
       } else if (state.film === state.dshpv) {
         // dsh-pv draws pixels (1280x720, letterboxed), not the character grid
         const el = pixel.current
         const dpr = Math.min(2, globalThis.devicePixelRatio || 1)
         const w = Math.max(64, Math.round(box.clientWidth * dpr)), h = Math.max(36, Math.round(box.clientHeight * dpr))
         if (el.width !== w || el.height !== h) { el.width = w; el.height = h }
-        state.dshpv.draw(el.getContext('2d'), Math.max(0, t), { paused: !playing && state.started, offset: offsetsRef.current.subtitleOffset })
+        state.dshpv.draw(el.getContext('2d'), t, { paused: !playing && state.started, offset: offsetsRef.current.subtitleOffset })
       } else {
         ({ cols, rows } = state.renderer.fit(box.clientWidth, box.clientHeight))
         const picture = state.film.render(t, cols, rows, {
@@ -136,13 +139,14 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         })
         state.renderer.draw(picture)
       }
-      if (now - lastStatus > 250) { lastStatus = now; setStatus({ t: raw, playing, cols, rows }) }
+      if (now - lastStatus > 250) { lastStatus = now; setStatus({ t: raw, playing, cols, rows, preroll: state.clock.inPreroll }) }
     }
     raf = requestAnimationFrame(frame)
     const onFs = () => setFullscreen(document.fullscreenElement === wrap.current)
     document.addEventListener('fullscreenchange', onFs)
     return () => {
-      state.disposed = true; state.dshpvOwner = null
+      state.disposed = true; state.dshpvOwner = null; state.audioOwner = null
+      state.playGate.cancel(); state.clock.dispose()
       disposeDshPvData(state.dshpvData); state.dshpvFonts?.dispose()
       state.dshpvData = null; state.dshpvFonts = null
       cancelAnimationFrame(raf); document.removeEventListener('fullscreenchange', onFs); live.close(); state.script.stop()
@@ -158,15 +162,22 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     if (engine.current?.sha) saveOffsets(engine.current.sha, value)
   }, [])
 
-  const useAudioFile = React.useCallback(async (file, { remember = true, packOffset = 0 } = {}) => {
+  const useAudioFile = React.useCallback(async (file, { remember = true, packOffset = 0, preservePlayRequest = false } = {}) => {
     setError('')
     const state = engine.current
+    const owner = Symbol('audio load'), sceneOwner = state.sceneOwner
+    state.audioOwner = owner
+    if (!preservePlayRequest) state.playGate.cancel()
+    state.clock.pause()
+    const isCurrent = () => !state.disposed && state.audioOwner === owner && state.sceneOwner === sceneOwner
     setDecodeFail(null)
     try {
       const bytes = await file.arrayBuffer()
+      if (!isCurrent()) return
       const sniff = sniffAudio(new Uint8Array(bytes, 0, Math.min(4096, bytes.byteLength)))
       if (!file.type && sniff.format !== 'unknown') file = new File([bytes], file.name, { type: audioMimeOf(sniff) })
       const sha = await sha256Hex(bytes)
+      if (!isCurrent()) return
       const old = audio.current.src
       audio.current.src = URL.createObjectURL(file)
       if (old?.startsWith('blob:')) URL.revokeObjectURL(old)
@@ -176,11 +187,14 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       if (!loaded.saved && !loaded.known && packOffset) loaded.audioOffset = packOffset
       setOffsets({ audioOffset: loaded.audioOffset, subtitleOffset: loaded.subtitleOffset })
       state.clock.audioOffset = loaded.audioOffset
+      state.clock.reset()
       state.started = false
+      setStatus(value => ({ ...value, t: state.clock.time(), playing: false, preroll: state.clock.inPreroll }))
       setAudioInfo({ name: file.name, sha, known: loaded.known, saved: loaded.saved, duration: null, label: sniff.label })
       setAudioFile(file)
       const slot = mediaSlot(packRef.current, 'audio')
       if (remember && slot) await putMedia(dbRef.current, slot, { file, name: file.name, sha })
+      if (!isCurrent()) return
       // Workshop packs: check the user's audio against the duration / fingerprint the pack was made for.
       const ws = packRef.current?.pack?.workshop
       if (ws && !packRef.current?.pack?.audio) {
@@ -191,7 +205,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         }).catch(() => { if (engine.current?.sha === sha) setMatchNote({ level: 'unknown', message: '无法在面板里解码这个音频来检查是否匹配。' }) })
       } else fpRef.current = null
     } catch (failure) {
-      setError(`无法读取音频：${failure?.message ?? failure}`)
+      if (isCurrent()) setError(`无法读取音频：${failure?.message ?? failure}`)
     }
   }, [])
 
@@ -250,6 +264,8 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     state.sceneOwner = dshpvOwner
     state.playGate.cancel(); state.clock.pause(); state.script.stop()
     clearAudio()
+    state.clock.reset(pack.pack.canvas?.preroll ?? 0)
+    setStatus(value => ({ ...value, t: state.clock.time(), playing: false, preroll: state.clock.inPreroll }))
     if (isScript(pack)) setScenePreparing('正在加载场景资源…')
     else setScenePreparing('')
     const releaseDshPv = () => {
@@ -320,6 +336,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
       if (isScript(pack)) {
         if (!pack.files?.scene?.exists || pack.files.scene.tooLarge || !api) setSceneNote(`找不到可用的场景脚本（${pack.pack.canvas.script}），改用通用画面。`)
         else {
+          let sceneAssets = null
           try {
             const { text } = await fetchPackText(api, pack.manifestPath, 'scene', { isCancelled: () => cancelled })
             if (cancelled) return
@@ -328,13 +345,18 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
             const requested = pack.pack.canvas?.output
             const output = isBitmapSceneOutput(requested) ? requested : 'text'
             const names = Object.keys(pack.pack.canvas?.assets ?? {})
-            const { assets, transfer } = names.length ? await loadSceneAssets(packAssetReader(api, pack.manifestPath, pack.pack), pack.pack, { images: isBitmapSceneOutput(output) }) : { assets: {}, transfer: [] }
-            if (cancelled) { disposeSceneAssets({ transfer }); return }
+            sceneAssets = names.length ? await loadSceneAssets(packAssetReader(api, pack.manifestPath, pack.pack), pack.pack, { images: isBitmapSceneOutput(output) }) : { assets: {}, transfer: [] }
+            if (cancelled) { disposeSceneAssets(sceneAssets); return }
+            const hasFonts = Boolean(pack.pack.canvas?.fonts?.length)
+            if (hasFonts) setScenePreparing('正在读取场景字体…')
+            const loadedFonts = hasFonts ? await loadSceneFonts(packFontReader(api, pack.manifestPath), pack.pack) : { fonts: [], transfer: [] }
+            if (cancelled) { disposeSceneAssets(sceneAssets); return }
             state.film = state.script
             if (isBitmapSceneOutput(output)) setPixelScene(true)
-            await state.script.load(text, { output, size: pack.pack.canvas?.size ?? [1280, 720], assets, transfer })
+            await state.script.load(text, { output, size: pack.pack.canvas?.size ?? [1280, 720], context: pack.pack.canvas?.context ?? {}, assets: sceneAssets.assets, fonts: loadedFonts.fonts, transfer: [...sceneAssets.transfer, ...loadedFonts.transfer] })
             if (cancelled) { state.script.stop(); return }
           } catch (failure) {
+            disposeSceneAssets(sceneAssets ?? {})
             if (cancelled) return
             if (state.film === state.script) state.film = state.generic
             setPixelScene(false)
@@ -372,7 +394,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
         if (cancelled) return
         if (l?.text && rememberedTrackApplies(pack, l, bundledLoaded.lyrics)) await useLyricsText(l.name, l.text, { remember: false })
         if (sp?.text && rememberedTrackApplies(pack, sp, bundledLoaded.spectrum)) await useSpectrumText(sp.name, sp.text, { remember: false })
-        if (a?.file && !state.sha) await useAudioFile(a.file, { remember: false })
+        if (a?.file && !state.sha) await useAudioFile(a.file, { remember: false, preservePlayRequest: true })
         if (!a?.file) setMatchNote({ level: 'info', message: bundledLoaded.lyrics ? '包内歌词与译文已自动加载；只需选择你自己的音乐文件，插件会检查歌曲时长是否匹配。' : '这是创意工坊的包，不带音频：请选择你自己的歌曲文件。没有可用的包内歌词轨时，可另选本地歌词。' })
         return
       }
@@ -384,7 +406,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
             onProgress: (done, total) => { if (!cancelled) setPackStatus(`正在从 MV 包读取音频… ${Math.round(done / Math.max(1, total) * 100)}%`) },
           })
           if (cancelled) return
-          await useAudioFile(file, { remember: false, packOffset: pack.pack.audio.offset ?? 0 })
+          await useAudioFile(file, { remember: false, packOffset: pack.pack.audio.offset ?? 0, preservePlayRequest: true })
           setPackStatus('')
         } catch (failure) {
           if (!cancelled) { setPackStatus(''); setError(`无法读取 MV 包的音频：${failure?.message ?? failure}`) }
@@ -404,12 +426,15 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   }, [pack.id, pack.loadedAt])
 
   const clearAudio = () => {
+    engine.current.audioOwner = null
+    engine.current.playGate.cancel(); engine.current.clock.pause()
     const old = audio.current.src
     audio.current.removeAttribute('src'); audio.current.load?.()
     if (old?.startsWith('blob:')) URL.revokeObjectURL(old)
     engine.current.sha = ''
     setAudioFile(null)
     engine.current.clock.audioOffset = 0
+    engine.current.clock.reset()
     setAudioInfo(null)
     setOffsets({ audioOffset: 0, subtitleOffset: 0 })
   }
@@ -434,7 +459,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     try { state.live.ensure() } catch { /* no Web Audio: spectrum stays flat */ }
     try {
       await state.playGate.play(state.sceneLoad, () => !state.disposed && state.sceneOwner === owner, async () => {
-        if (state.clock.time() >= state.clock.duration - 0.5) state.clock.seek(0)
+        if (state.clock.time() >= state.clock.duration - 0.5) state.clock.seek(state.clock.minimumTime)
         state.started = true
         await state.clock.play()
       })
@@ -448,15 +473,15 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     const t = state.clock.time()
     switch (action.type) {
       case 'toggle': if (state.playGate.pending || state.clock.playing) pause(); else void play(); return true
-      case 'seekBy': state.clock.seek(Math.max(-60, t + action.delta)); return true
-      case 'restart': state.clock.seek(0); void play(); return true
+      case 'seekBy': state.playGate.cancel(); state.clock.seek(Math.max(-60, t + action.delta)); if (state.clock.preroll) state.started = true; return true
+      case 'restart': pause(); state.clock.seek(state.clock.minimumTime); void play(); return true
       case 'chapter': {
         const list = state.film === state.dshpv ? DSHPV_CHAPTERS.filter((_, i) => i % 2 === 0) : chaptersOf(packRef.current, state.clock.duration)
         const at = list[Math.min(list.length - 1, action.index)]?.[0]
-        if (at !== undefined) { state.clock.seek(at); void play() }
+        if (at !== undefined) { pause(); state.clock.seek(at); void play() }
         return true
       }
-      case 'cue': { const at = stepCue(state.film.times, t, action.direction); if (at !== null) { state.clock.seek(at); state.started = true } return true }
+      case 'cue': { const at = stepCue(state.film.times, t, action.direction); if (at !== null) { state.playGate.cancel(); state.clock.seek(at); state.started = true } return true }
       case 'subtitleOffset': applyOffsets({ ...offsetsRef.current, subtitleOffset: stepOffset(offsetsRef.current.subtitleOffset, action.delta) }); return true
       case 'audioOffset': applyOffsets({ ...offsetsRef.current, audioOffset: stepOffset(offsetsRef.current.audioOffset, action.delta) }); return true
       case 'volume': audio.current.volume = Math.min(1, Math.max(0, Math.round((audio.current.volume + action.delta) * 100) / 100)); return true
@@ -516,7 +541,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
 
   const player = React.useMemo(() => ({
     time: () => engine.current?.clock.time() ?? 0,
-    seek: t => { const state = engine.current; if (!state) return; state.clock.seek(t); state.started = true },
+    seek: t => { const state = engine.current; if (!state) return; state.playGate.cancel(); state.clock.seek(t); state.started = true },
     play: () => { if (!engine.current?.clock.playing) void play() },
     pause,
     playing: () => Boolean(engine.current?.clock.playing),
@@ -533,6 +558,8 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
   const pixelActive = dshActive || pixelScene
   const chapterList = dshActive ? DSHPV_CHAPTERS : chaptersOf(pack, duration)
   const chapter = chapterList.reduce((current, item) => (item[0] <= Math.max(0, status.t) ? item : current), chapterList[0])
+  const preroll = pack.pack.canvas?.preroll ?? 0
+  const countdown = prerollCountdown(status.t, status.preroll ? preroll : 0)
 
   React.useImperativeHandle(ref, () => ({
     toggle: () => act({ type: 'toggle' }), pause, focus: () => wrap.current?.focus(),
@@ -540,7 +567,7 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
     time: () => engine.current?.clock.time() ?? 0,
     duration: () => engine.current?.clock.duration ?? 0,
     playing: () => Boolean(engine.current?.clock.playing),
-    seek: t => player.seek(Math.max(0, t)),
+    seek: t => player.seek(Math.max(engine.current?.clock.minimumTime ?? 0, t)),
     seekBy: delta => act({ type: 'seekBy', delta }),
     fullscreen: () => toggleFullscreen(),
     /** PNG (base64, ≤ 960 px wide) of the current frame, for a workshop cover. */
@@ -646,12 +673,12 @@ export const CanvasMv = React.forwardRef(function CanvasMv({ defaultFontSize = 1
           {status.playing ? <Icon.pause /> : <Icon.play />}
         </button>
         <div className="mv-seek-wrap">
-          <span className="mv-time">{timeText(status.t)}</span>
-          <input className="mv-seek" type="range" min={0} max={Math.max(1, duration)} step={0.1} value={Math.max(0, Math.min(duration, status.t))}
-            onChange={event => { engine.current.clock.seek(Number(event.target.value)); engine.current.started = true }} aria-label="进度" />
+          <span className="mv-time" aria-live={countdown !== null ? 'polite' : undefined}>{countdown !== null ? `前奏 ${countdown}s` : timeText(status.t)}</span>
+          <input className="mv-seek" type="range" min={-preroll} max={Math.max(1, duration)} step={0.1} value={Math.max(-preroll, Math.min(duration, status.t))}
+            onChange={event => player.seek(Number(event.target.value))} aria-label="进度" aria-valuetext={countdown !== null ? `静默前奏倒计时 ${countdown} 秒` : undefined} />
           <span className="mv-time">{timeText(Math.round(duration))}</span>
         </div>
-        <span className="mv-chip" title="当前章节（1–5 跳转）">{chapter[1]} {chapter[2]}</span>
+        <span className="mv-chip" title="当前章节（1–5 跳转）">{countdown !== null ? '静默前奏' : <>{chapter[1]} {chapter[2]}</>}</span>
         <span className="mv-volume">
           <button type="button" className="mv-icon-button" aria-label={volume.muted ? '取消静音' : '静音'} title="静音（M）" onClick={() => act({ type: 'mute' })}>{volume.muted || volume.level === 0 ? <Icon.mute /> : <Icon.volume />}</button>
           <input type="range" min={0} max={1} step={0.05} value={volume.muted ? 0 : volume.level} aria-label="音量" onChange={event => setLevel(Number(event.target.value))} />

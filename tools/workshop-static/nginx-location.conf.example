@@ -1,0 +1,15 @@
+# Insert ONLY inside the existing HTTPS server block after confirming its routes.
+# Do not replace the server block, certificate, proxy settings, or OpenClaw route.
+location = /dsh-mv-workshop {
+    return 308 /dsh-mv-workshop/;
+}
+
+location ^~ /dsh-mv-workshop/ {
+    alias /srv/dsh-mv-workshop/public/;
+    autoindex off;
+    disable_symlinks on;
+    limit_except GET HEAD {
+        deny all;
+    }
+    add_header X-Content-Type-Options nosniff always;
+}

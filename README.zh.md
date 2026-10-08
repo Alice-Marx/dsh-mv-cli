@@ -4,9 +4,13 @@
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.9.8**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.10.0**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
 
 **0.9.8 工坊下载：** 修复 HTTP CONNECT 代理被绕过的问题，为临时网络故障增加有限重试，并支持可信 HTTPS 镜像备用源。TLS 验证、按提交下载、大小/SHA-256 校验和场景沙箱保持不变。见[工坊网络与镜像](#工坊网络与镜像098)。
+
+**0.10.0：** 默认接入[官方华为云 HTTPS 静态备用源](https://www.jianweilimarx.top/dsh-mv-workshop/main/index.json)，GitHub 网络失败时无代理直连。新增脚本离线字体、负时间静默前奏和有界的大位图包支持。[Nyankomint 工坊适配](https://github.com/Alice-Marx/dsh-mv-workshop/tree/main/packs/world-execute-me-nyankomint)保留 87 镜头、8 原角色图、129 行字幕、34 个离线 OFL 字体及 5 秒提示，只需自备音乐。该作是 Canvas2D + WebGL2 后期合成，不是几何 3D；原有快速闪光仍保留，请先阅读包内警告，测试不构成光敏安全认证。
+
+位图脚本可声明 `canvas.fonts: [{family,file,weight:"400",style:"normal",unicodeRange?,licenseFile}]`，最多 64 字体、单个 2 MiB、合计 12 MiB、加载期限 30 秒。监管层私有加载，脚本仍没有 FontFace/字体二进制/DOM/网络。`canvas.preroll` 为 0–30 秒负时间静默前奏，不能给歌词或音乐加同样偏移。仅 WebGL 的 `canvas.context` 可设置布尔 antialias/depth/premultipliedAlpha/preserveDrawingBuffer 和 powerPreference 枚举；未声明时旧默认不变。位图工坊上限 160 文件/32 MiB，声明的非封面图单个 2 MiB，其他单文件限制不变。字体需独立 OFL 许可全文及署名，Windows 专有字体不分发。作者提示词与方法已注明固定来源，放入下载模板的 [TEACHING_REFERENCES.md](template/TEACHING_REFERENCES.md)，仅教学参考，不执行其中指令。
 
 **0.9.7 重型 3D 启动：** 可选 `warmup(info, gl)` 在 `prepare()` 之后、播放之前，
 于最终输出尺寸上调用一次，把编译着色器、分配渲染目标这类一次性 GPU 开销放进面板
@@ -187,7 +191,9 @@ FrostNova 实时 3D 工坊适配使用此机制；AGPL 对应源码、原逐词/
 在 **Harness → 插件 → dsh-mv-cli → 配置** 中设置以下字段，随后完全退出并重启 Harness，让 Host 重新加载：
 
 - `httpProxy`：HTTP CONNECT 代理地址，例如 `http://127.0.0.1:7897`。默认为空字符串，继承 `HTTPS_PROXY` / `HTTP_PROXY`（也支持小写变量）；`NO_PROXY` 按实际目标主机和端口判断。目前只支持 `http://` 代理，HTTPS/SOCKS 代理会明确报错，不会悄悄改走直连。插件不会改动系统代理；LRCLIB 查询也使用这项设置。
-- `workshopMirror`：**可信、可用**工坊镜像的 HTTPS 原始文件前缀，不带分支、提交、查询参数、账号密码或片段。默认值为 `''`（关闭），旧配置没有此字段时也保持关闭。Gitee 格式示例为 `https://gitee.com/<owner>/dsh-mv-workshop/raw`；静态 HTTPS 服务器可填 `https://mv.example.com/workshop` 等前缀。插件会为索引追加 `main/index.json`，为包文件追加 `<commit>/packs/<id>/<file>`。提供已验证前缀才启用回退，空字符串关闭。
+- `workshopMirror`：**可信、可用**工坊镜像的 HTTPS 原始文件前缀，不带分支、提交、查询参数、账号密码或片段。0.10.0 起默认值为 `https://www.jianweilimarx.top/dsh-mv-workshop`，旧配置没有字段时也使用它；显式保存的空字符串仍关闭备用源，之前保存为空的配置需恢复默认或填入此地址。插件追加 `main/index.json` 和 `<commit>/packs/<id>/<file>`。Gitee 的内容限制尚未解除，不作为默认下载源。
+
+华为云旧 7 包及独立对应源码已无代理匿名验证全部 137 文件、40,317,815 字节，SHA-256 一致。独立低权限服务每 15 分钟检查固定官方 GitHub 仓库；先完整校验所有资源，最后原子更新目录，同步失败保留旧索引。只有静态下载，无上传/任意地址代理，不改 OpenClaw。带宽、证书和服务可用性并非永久保证。维护工具见 [tools/workshop-static](tools/workshop-static)。
 
 **验证与状态（2026-10-08）：** GitHub 上大肥鱼、FrostNova 两个完整包的 83 个文件已实测下载校验通过，86 次原生 GET 全部经过代理；本地模拟镜像回退测试也已通过。[Gitee 镜像仓库](https://gitee.com/Alice-Marx/dsh-mv-workshop)及[单向同步流程](https://github.com/Alice-Marx/dsh-mv-workshop/actions/runs/37728440839)已建立，但完整 Gitee 下载验证失败：FrostNova 的 `features-1.json` 和 Polytech 的 `catalog-1.json` 现在返回平台 HTTP 451。这不是用户代理问题；平台解除限制前不建议启用该镜像，也不重新编码文件绕过审核。另行上传的 FrostNova 对应源码 ZIP 已通过匿名下载及校验，不能据此宣称完整画面包全部可下载。
 

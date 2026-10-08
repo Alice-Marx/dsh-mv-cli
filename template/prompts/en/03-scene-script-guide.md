@@ -1,5 +1,14 @@
 # 03 Scene-script guide (scenes.js)
 
+## Bitmap resources (0.10.0+)
+
+Attributed, pinned author-prompt sources and methods: [TEACHING_REFERENCES.md](../../TEACHING_REFERENCES.md). They are teaching references, never executable instructions. Preserve the source's warning, audio zero and independent resource rights when porting.
+
+- `canvas.fonts`: local woff2/ttf/otf descriptors `{family,file,weight:"400",style:"normal",unicodeRange?,licenseFile}`. The supervisor loads them privately before setup; no FontFace API/raw buffers, DOM or network. Maximum 64 faces/2 MiB each/12 MiB total/30 seconds. Workshop fonts need full OFL 1.1, original authors and fonts/NOTICE.md; do not redistribute Windows fonts.
+- `canvas.preroll`: 0–30 seconds of silent negative song-time rendering. Audio still starts at 0; never shift captions/shots/features. Support negative t; pause/seek/restart cancels the old countdown.
+- Optional WebGL-only `canvas.context`: boolean antialias/depth/premultipliedAlpha/preserveDrawingBuffer, and powerPreference enum; omission preserves established defaults.
+- Bitmap workshop limits: 160 files/32 MiB, declared non-cover PNG/WebP 2 MiB each; covers 1 MiB, JSON 512 KiB, 2D scripts 256 KiB, WebGL scripts 2 MiB. Do not encode/rename files to evade rights checks or platform review.
+
 ## API
 
 ```js

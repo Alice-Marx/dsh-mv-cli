@@ -35,11 +35,11 @@ async function packAndScene(path) {
     else source = await readFile(state.path, 'utf8')
   }
   if (loaded.warnings.length) for (const w of loaded.warnings) if (/不存在/.test(w)) problems.push(w)
-  const assets = {}
+  const assets = {}, unavailableBitmapAssets = []
   for (const name of Object.keys(pack.canvas?.assets ?? {})) {
     if (!loaded.files.assets?.[name]?.exists) { problems.push(`canvas.assets.${name} 的文件缺失或太大`); continue }
     const refs = assetParts(pack, name)
-    if (!refs.every(ref => /\.json$/i.test(ref))) { warnings.push(`Host 预览不能解码 canvas.assets.${name} 的图片；请在面板验证。`); continue }
+    if (!refs.every(ref => /\.json$/i.test(ref))) { warnings.push(`Host 预览不能解码 canvas.assets.${name} 的图片；请在面板验证。`); unavailableBitmapAssets.push(name); continue }
     try {
       const shards = await Promise.all(refs.map(ref => readFile(packFilePath(packDir, ref), 'utf8').then(JSON.parse)))
       if (shards.length === 1) assets[name] = shards[0]
@@ -53,7 +53,7 @@ async function packAndScene(path) {
       }
     } catch (error) { problems.push(`无法解析 canvas.assets.${name}：${error.message}`) }
   }
-  return { loaded, cues, source, assets, problems, warnings: warnings.filter(w => !problems.includes(w)) }
+  return { loaded, cues, source, assets, unavailableBitmapAssets, problems, warnings: warnings.filter(w => !problems.includes(w)) }
 }
 
 export async function validatePackForAgent({ path }) {
@@ -62,10 +62,11 @@ export async function validatePackForAgent({ path }) {
   const { loaded, cues, source, assets } = state
   const problems = [...state.problems], warnings = [...state.warnings]
   const pack = loaded.pack
-  let frames = []
+  let frames = [], requiresBrowserValidation = Boolean(pack.canvas?.fonts?.length)
   if (source !== null) {
     const d = pack.duration ?? 180
-    const result = checkScene(source, { times: [0, d * 0.25, d * 0.5, d * 0.75, Math.max(0, d - 1)].map(t => Math.round(t * 10) / 10), cols: 100, rows: 32, cues, info: { title: pack.title, artist: pack.artist ?? '', duration: d, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0, assets }, output: pack.canvas?.output ?? 'text', size: pack.canvas?.size ?? [1280, 720] })
+    const result = checkScene(source, { times: [0, d * 0.25, d * 0.5, d * 0.75, Math.max(0, d - 1)].map(t => Math.round(t * 10) / 10), cols: 100, rows: 32, cues, unavailableBitmapAssets: state.unavailableBitmapAssets, info: { title: pack.title, artist: pack.artist ?? '', duration: d, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0, assets }, output: pack.canvas?.output ?? 'text', size: pack.canvas?.size ?? [1280, 720] })
+    requiresBrowserValidation ||= result.requiresBrowserValidation === true
     problems.push(...result.problems.filter(p => /出错|超时|无法|没有定义|不能|超过 \d+ KB|空的/.test(p)))
     warnings.push(...result.problems.filter(p => !/出错|超时|无法|没有定义|不能|超过 \d+ KB|空的/.test(p)))
     frames = result.frames.map(frame => ({ t: frame.t, ms: frame.ms }))
@@ -77,7 +78,7 @@ export async function validatePackForAgent({ path }) {
     manifestPath: loaded.manifestPath,
     title: pack.title, renderer: pack.canvas?.renderer ?? 'generic', output: pack.canvas?.output ?? 'text', ...(pack.canvas?.output === 'webgl' ? { gpuValidated: false, validation: 'webgl-call-recording' } : {}),
     lyrics: cues.length ? { cues: cues.length, first: cues[0].time, last: cues[cues.length - 1].time } : null,
-    frames, problems, warnings,
+    frames, problems, warnings, ...(requiresBrowserValidation ? { requiresBrowserValidation: true } : {}),
   }
 }
 
@@ -86,9 +87,9 @@ export async function previewFrameForAgent({ path, t = 0, cols = 100, rows = 32 
   try { state = await packAndScene(path) } catch (error) { return { ok: false, problems: errorText(error) } }
   if (state.source === null) return { ok: false, problems: [...state.problems, 'canvas.renderer 不是 script，没有可预览的场景脚本。'] }
   const pack = state.loaded.pack
-  const result = checkScene(state.source, { times: [Number(t) || 0], cols, rows, cues: state.cues, info: { title: pack.title, artist: pack.artist ?? '', duration: pack.duration ?? 180, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0, assets: state.assets }, output: pack.canvas?.output ?? 'text', size: pack.canvas?.size ?? [1280, 720] })
+  const result = checkScene(state.source, { times: [Number(t) || 0], cols, rows, cues: state.cues, unavailableBitmapAssets: state.unavailableBitmapAssets, info: { title: pack.title, artist: pack.artist ?? '', duration: pack.duration ?? 180, sections: pack.sections ?? [], bpm: pack.canvas?.bpm ?? 0, beatOffset: pack.canvas?.beatOffset ?? 0, assets: state.assets }, output: pack.canvas?.output ?? 'text', size: pack.canvas?.size ?? [1280, 720] })
   const frame = result.frames[0]
-  return { ok: Boolean(frame) && result.ok && !state.problems.length, t: Number(t) || 0, cols: result.cols, rows: result.rows, ms: frame?.ms, problems: [...state.problems, ...result.problems], frame: frame?.text ?? '', ...(pack.canvas?.output === 'webgl' ? { gpuValidated: false, validation: 'webgl-call-recording', drawCalls: frame?.drawCalls } : {}) }
+  return { ok: Boolean(frame) && result.ok && !state.problems.length, t: Number(t) || 0, cols: result.cols, rows: result.rows, ms: frame?.ms, problems: [...state.problems, ...result.problems], frame: frame?.text ?? '', ...(result.requiresBrowserValidation || pack.canvas?.fonts?.length ? { requiresBrowserValidation: true } : {}), ...(pack.canvas?.output === 'webgl' ? { gpuValidated: false, validation: 'webgl-call-recording', drawCalls: frame?.drawCalls } : {}) }
 }
 
 const pathParam = { type: 'string', description: 'Absolute path of the MV pack folder or its mv.json.' }

@@ -5,7 +5,7 @@
  * A reader maps an asset name to a list of byte arrays (JSON shards, merged in order) or null.
  */
 import { unwrapRemote } from '../../remote-state.mjs'
-import { MV_PACK_LIMITS } from '../../../shared/mv-pack.mjs'
+import { MV_PACK_LIMITS, MV_FONT_LIMITS, checkSceneFont } from '../../../shared/mv-pack.mjs'
 import { DSHPV_RASTER_LIMITS, rasterImageDimensions, validateRasterAtlases, validateRasterTimeline } from './raster.mjs'
 
 export const DSHPV_DATA = ['timeline', 'chat', 'band']
@@ -77,6 +77,45 @@ export function disposeDshPvData(data) {
     disposedImages.add(image)
     try { image.close?.() } catch { /* already transferred or closed */ }
   }
+}
+
+/** Manifest-indexed binary font reader. It never accepts a path or a URL from a scene. */
+export function packFontReader(api, manifestPath) {
+  return async index => {
+    if (!Number.isInteger(index) || index < 0 || index >= MV_FONT_LIMITS.maxFaces) throw new Error('MV 字体索引无效')
+    const parts = []
+    let offset = 0, size = null
+    for (;;) {
+      const chunk = unwrapRemote(await api.packRead({ manifestPath, role: 'font', font: index, offset, length: CHUNK }), `无法读取 MV 字体 ${index}。`)
+      if (!Number.isSafeInteger(chunk.size) || chunk.size < 12 || chunk.size > MV_FONT_LIMITS.fileBytes || size !== null && chunk.size !== size || chunk.offset !== offset || !Number.isInteger(chunk.bytes) || chunk.bytes < 0 || chunk.bytes > CHUNK || offset + chunk.bytes > chunk.size || typeof chunk.done !== 'boolean') throw new Error(`MV 字体 ${index} 的块大小/偏移无效`)
+      size = chunk.size
+      if (typeof chunk.base64 !== 'string' || chunk.base64.length > 4 * Math.ceil(chunk.bytes / 3)) throw new Error(`MV 字体 ${index} 的编码长度无效`)
+      const bytes = fromBase64(chunk.base64)
+      if (bytes.byteLength !== chunk.bytes || !chunk.bytes && offset < size || chunk.done !== (offset + chunk.bytes === size)) throw new Error(`MV 字体 ${index} 的字节长度/完成状态不一致`)
+      parts.push(bytes); offset += bytes.byteLength
+      if (chunk.done) return join(parts)
+    }
+  }
+}
+
+/** Private FontFace supervisor inputs; no font network access and no buffers in setup(info). */
+export async function loadSceneFonts(read, pack) {
+  const descriptors = pack?.canvas?.fonts ?? []
+  if (!Array.isArray(descriptors) || descriptors.length > MV_FONT_LIMITS.maxFaces) throw new Error('MV 字体数量超过限制')
+  const fonts = [], transfer = []
+  let total = 0
+  for (const [index, face] of descriptors.entries()) {
+    const value = await read(index)
+    const bytes = value instanceof Uint8Array ? value : value instanceof ArrayBuffer ? new Uint8Array(value) : null
+    const errors = checkSceneFont(bytes, face.file).errors
+    if (errors.length) throw new Error(errors.join('；'))
+    total += bytes.byteLength
+    if (total > MV_FONT_LIMITS.totalBytes) throw new Error('MV 字体总大小超过 12 MiB')
+    const buffer = bytes.slice().buffer
+    fonts.push({ family: face.family, weight: face.weight, style: face.style, ...(face.unicodeRange ? { unicodeRange: face.unicodeRange } : {}), bytes: buffer })
+    transfer.push(buffer)
+  }
+  return { fonts, transfer }
 }
 
 function parseRasterShards(files, dec) {

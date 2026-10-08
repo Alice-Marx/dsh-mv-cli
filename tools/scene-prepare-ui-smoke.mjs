@@ -33,12 +33,12 @@ function* prepare(info,gl){for(let i=0;i<${steps};i++){const until=Date.now()+${
 function paint(gl,t,w,h,ctx){if(!prepared)throw Error('paint ran before preparation');gl.viewport(0,0,w,h);gl.clearColor(.05,.25,.8,1);gl.clear(gl.COLOR_BUFFER_BIT);}`
 const legacySource = `function paint(gl,t,w,h,ctx){gl.viewport(0,0,w,h);gl.clearColor(.05,.65,.2,1);gl.clear(gl.COLOR_BUFFER_BIT);}`
 const packs = new Map()
-for (const [id, slow] of [['silent', true], ['cancel', true], ['toggle', true], ['audio', true], ['switch-old', true], ['switch-new', false], ['unmount', true], ['legacy', false]]) {
+for (const [id, slow] of [['silent', true], ['cancel', true], ['toggle', true], ['audio', true], ['switch-old', true], ['switch-new', false], ['unmount', true], ['legacy', false], ['preroll-audio',false], ['preroll-cancel',false]]) {
   const dir = join(fixtureRoot, id)
   await mkdir(dir)
   await writeFile(join(dir, 'scenes.js'), slow ? slowSource : legacySource)
   await writeFile(join(dir, 'lyrics.json'), JSON.stringify(lyrics))
-  await writeFile(join(dir, 'mv.json'), JSON.stringify({ format: 'dsh-mv-pack', version: 1, title: `PREPARE QA ${id}`, artist: 'Synthetic QA', duration, lyrics: { file: 'lyrics.json' }, canvas: { renderer: 'script', script: 'scenes.js', output: 'webgl', size: [320, 180], subtitles: true }, 'x-dsh-mv-workshop': { id: `prepare-qa-${id}`, version: '1.0.0', requires: clientVersion, license: 'MIT', audio: { duration } } }))
+  await writeFile(join(dir, 'mv.json'), JSON.stringify({ format: 'dsh-mv-pack', version: 1, title: `PREPARE QA ${id}`, artist: 'Synthetic QA', duration, lyrics: { file: 'lyrics.json' }, canvas: { renderer: 'script', script: 'scenes.js', output: 'webgl', size: [320, 180], subtitles: true, ...(id.startsWith('preroll-')?{preroll:5}:{}) }, 'x-dsh-mv-workshop': { id: `prepare-qa-${id}`, version: '1.0.0', requires: clientVersion, license: 'MIT', audio: { duration } } }))
   const loaded = await loadPack(dir)
   assert.deepEqual(loaded.warnings, [])
   packs.set(id, { ...loaded, id: `prepare-qa-${id}`, loadedAt: 1 })
@@ -89,7 +89,7 @@ const snapshot = page => page.evaluate(() => window.qaSnapshot())
 async function waitPreparing(page) {
   await page.waitForFunction(() => window.workerLog.some(w => w.received.some(m => m.type === 'preparing' && m.progress > 0)) && !!document.querySelector('[role="status"]'), null, { timeout: 10000 })
   const s = await snapshot(page)
-  assert.match(s.preparing, /正在预热 3D 资源/)
+  assert.match(s.preparing, /正在准备场景资源/)
   assert.equal(s.playing, false)
   return s
 }
@@ -177,6 +177,32 @@ try {
     assert.ok(pixels > 200, 'legacy scene actually renders its native WebGL bitmap')
     await page.screenshot({ path: join(out, 'legacy-automatic-lyrics.png') })
     report.cases.push({ name: 'legacy scripts still immediately initialize and automatically load bundled lyrics', preparationMessages: 0, automaticCues: 3, staleCacheIgnored: true, greenPixelSamples: pixels }); await page.close()
+  }
+  for(const id of ['preroll-audio','preroll-cancel']){
+    const page=await pageFor(id);await waitReady(page,id)
+    const chooser=page.waitForEvent('filechooser');await page.locator('.mv-sources .mv-source').first().locator('button').click()
+    await(await chooser).setFiles({name:'synthetic-preroll.wav',mimeType:'audio/wav',buffer:wav})
+    await page.waitForFunction(()=>document.querySelector('audio').src.startsWith('blob:'))
+    assert.equal((await snapshot(page)).time,-5)
+    const started=await page.evaluate(()=>performance.now());await transport(page).click()
+    await page.waitForFunction(()=>window.playerRef.current.playing()&&window.playerRef.current.time()>-4.5)
+    const intro=await snapshot(page);assert.ok(intro.time<0);assert.equal(intro.audio.paused,true);assert.equal(intro.audio.time,0);assert.equal(intro.audioEvents.filter(e=>e.type==='play').length,0)
+    await page.screenshot({path:join(out,id+'-silent-intro.png')})
+    if(id==='preroll-cancel'){
+      await page.evaluate(()=>window.playerRef.current.pause());const paused=await snapshot(page)
+      await page.waitForTimeout(5300);const later=await snapshot(page)
+      assert.equal(later.time,paused.time);assert.equal(later.audio.paused,true);assert.equal(later.audioEvents.filter(e=>e.type==='play').length,0)
+      await page.evaluate(()=>window.playerRef.current.seek(0));assert.equal((await snapshot(page)).time,0)
+      await page.evaluate(()=>window.unmountPack());report.cases.push({name:'pause/seek/unmount cancels negative-time countdown without late audio',silent:true,clockStable:true})
+    }else{
+      await page.waitForFunction(()=>!document.querySelector('audio').paused&&document.querySelector('audio').currentTime>.2,null,{timeout:7000})
+      const after=await snapshot(page),play=after.audioEvents.find(e=>e.type==='play')
+      assert.ok(play.at-started>=4800,'five-second intro cannot play audio early')
+      assert.ok(Math.abs(after.time-after.audio.time)<.15,'song/audio zero axes must agree, never +5')
+      assert.equal(after.audioEvents.filter(e=>e.type==='play').length,1)
+      await page.evaluate(()=>window.playerRef.current.pause());report.cases.push({name:'five-second silent intro hands off to actual local audio at song zero',audioDelayMs:play.at-started,axisDifference:after.time-after.audio.time})
+    }
+    await page.close()
   }
   assert.deepEqual(report.externalRequests, []); assert.deepEqual(report.errors, []); report.passed = true
   console.log(JSON.stringify({ passed: report.passed, browser: report.browser, cases: report.cases, out }))

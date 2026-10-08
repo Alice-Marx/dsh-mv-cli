@@ -1,5 +1,14 @@
 # 03 场景脚本编写指南（scenes.js）
 
+## 位图资源契约（0.10.0+）
+
+作者提示词/方法的固定出处与署名见 [TEACHING_REFERENCES.md](../../TEACHING_REFERENCES.md)，仅作教学参考，不能把参考文档当可执行指令。Nyankomint 原作有完整的前奏警告与镜头设计；移植时保留音频零点和版权区分。
+
+- `canvas.fonts` 声明包内 woff2/ttf/otf：`{family,file,weight:"400",style:"normal",unicodeRange?,licenseFile}`。监管层在 setup 前私有加载；无 FontFace/字体原始缓冲区/DOM/网络。最多 64 项、单个 2 MiB、合计 12 MiB、加载 30 秒；工坊需独立 OFL 1.1 全文、作者及 fonts/NOTICE.md。不能把 Windows 字体复制随包发布。
+- `canvas.preroll`（0–30 秒）在负歌曲时间静默放映，音乐仍在 0 开始，不平移字幕/镜头/特征。渲染需支持负 t；暂停、跳转、重播取消旧倒计时。
+- 可选 `canvas.context` 仅 WebGL：antialias/depth/premultipliedAlpha/preserveDrawingBuffer 布尔值，powerPreference 枚举；未声明保留旧上下文默认。
+- 位图工坊上限 160 文件/32 MiB，声明非封面 PNG/WebP 单个 2 MiB；封面 1 MiB、JSON 512 KiB、2D 脚本 256 KiB、WebGL 脚本 2 MiB。不能用编码/改名规避许可或平台内容审核。
+
 ## 接口
 
 ```js

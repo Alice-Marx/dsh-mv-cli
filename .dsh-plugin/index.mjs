@@ -21,7 +21,7 @@ import { createEngineManager, createJobManager } from './shared/mv-engine.mjs'
 import { parseEngineInfo, parseEngineInstall, parseEngineModel, parseEngineTranscribe, parseJobCancel, parseJobRead } from './shared/mv-engine-protocol.mjs'
 import { createLrclibClient, parseLyricsLookup } from './shared/mv-lrclib.mjs'
 import { parseAnalysisRead, parsePackWriteText, readAnalysis, writePackText } from './shared/mv-pack-edit.mjs'
-import { parseWorkshopDirInfo, parseWorkshopDirMove, parseWorkshopDirOpen, parseWorkshopDirSet, parseWorkshopId, parseWorkshopIndexRequest, parseWorkshopInstalled, parseWorkshopPublish } from './shared/mv-workshop.mjs'
+import { WORKSHOP_DEFAULT_MIRROR, parseWorkshopDirInfo, parseWorkshopDirMove, parseWorkshopDirOpen, parseWorkshopDirSet, parseWorkshopId, parseWorkshopIndexRequest, parseWorkshopInstalled, parseWorkshopPublish } from './shared/mv-workshop.mjs'
 import { createWorkshopManager } from './shared/mv-workshop-host.mjs'
 
 /** Cordis plugin name; equals the profile entry id in cordis.patch.yml. */
@@ -37,7 +37,7 @@ export const Config = z.object({
   uvPath: z.string().default('').description('可选：uv.exe 的完整路径，用于一键安装歌词引擎。留空时在 PATH 和常见位置查找。'),
   hfEndpoint: z.string().default('').description('可选：Hugging Face 镜像地址（例如 https://hf-mirror.com），只在下载模型时使用。'),
   httpProxy: z.string().default('').description('可选：工坊和 LRCLIB 使用的 HTTP CONNECT 代理，如 http://127.0.0.1:7897。留空继承 HTTPS_PROXY/HTTP_PROXY；NO_PROXY 按实际下载主机匹配。不支持 socks:// 或 https:// 代理。'),
-  workshopMirror: z.string().default('').description('可选：可信且可完整下载的工坊 HTTPS 备用源前缀。默认留空关闭；GitHub 网络失败后自动直连已配置备用源，仍按相同 commit 和 SHA-256 校验。'),
+  workshopMirror: z.string().default(WORKSHOP_DEFAULT_MIRROR).description('工坊 HTTPS 备用源前缀。默认官方华为云静态镜像；GitHub 网络失败后直连，不沿用代理，仍按相同 commit 和 SHA-256 校验。显式填空字符串关闭备用源；Gitee 尚未默认启用。'),
   workshopDir: z.string().default('').description('可选：创意工坊 MV 包的默认安装文件夹（例如 F:\\MV\\workshop）。留空时为 %LOCALAPPDATA%\\dsh-mv\\workshop。也可以在面板「创意工坊」页底部直接更改，面板里的设置保存在 %LOCALAPPDATA%\\dsh-mv\\settings.json，优先于这里。'),
   agentTools: z.boolean().default(true).description('向 Harness 的 Agent 提供只读工具 mv_pack_validate / mv_pack_preview_frame（用于 AI 制作 MV 包）。'),
 }).description('MV 放映室')
@@ -127,7 +127,7 @@ export function apply(ctx, config = {}) {
   ctx.effect(() => () => engine.disposeAll(), 'dsh-mv: lyrics engine jobs')
   const proxy = () => String(config.httpProxy ?? '')
   const lrclib = createLrclibClient({ proxy, userAgent: `dsh-mv-cli/${HOST_PLUGIN_VERSION ?? ''} (https://github.com/Alice-Marx/dsh-mv-cli)` })
-  const workshop = createWorkshopManager({ configDir: () => String(config.workshopDir ?? ''), proxy, mirror: () => String(config.workshopMirror ?? ''), userAgent: `dsh-mv-cli/${HOST_PLUGIN_VERSION ?? ''} (https://github.com/Alice-Marx/dsh-mv-cli)` })
+  const workshop = createWorkshopManager({ configDir: () => String(config.workshopDir ?? ''), proxy, mirror: () => String(config.workshopMirror ?? WORKSHOP_DEFAULT_MIRROR), userAgent: `dsh-mv-cli/${HOST_PLUGIN_VERSION ?? ''} (https://github.com/Alice-Marx/dsh-mv-cli)` })
   registerMvRemote(ctx, mvRemoteServices(config, defaultPackOps, { aiPacks, ffmpeg, toolsState: () => ({ ...tools }), engine, lrclib, workshop }))
   const logger = optionalService(ctx, 'logger')
   logger?.info?.(`dsh-mv ${HOST_PLUGIN_VERSION ?? ''} loaded`)

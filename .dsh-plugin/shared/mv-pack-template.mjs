@@ -5,7 +5,7 @@
  * The example scenes and prompts live in template/** and are generated into mv-template-assets.gen.mjs.
  */
 import { EXAMPLE_SCENE, SCENE_LIMITS } from './mv-scene.mjs'
-import { MV_RENDERERS_BUILTIN, MV_PACK_FORMAT, MV_PACK_SCHEMA_FILE, MV_PACK_VERSION } from './mv-pack.mjs'
+import { MV_RENDERERS_BUILTIN, MV_PACK_FORMAT, MV_PACK_SCHEMA_FILE, MV_PACK_VERSION, MV_FONT_LIMITS } from './mv-pack.mjs'
 import { TEMPLATE_ASSETS } from './mv-template-assets.gen.mjs'
 
 export const TEMPLATE_FOLDER = 'dsh-mv-pack-template'
@@ -64,12 +64,27 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
         output: { enum: ['text', 'pixels', 'webgl'], default: 'text', description: 'text: render(t, cols, rows, ctx); pixels (0.9.1+): paint(g, t, width, height, ctx) on Canvas2D; webgl (0.9.2+): setup(info, gl), paint(gl, t, width, height, ctx) on sandbox-owned WebGL2. Bundle dependencies before importing.' },
         size: { type: 'array', items: { type: 'integer' }, minItems: 2, maxItems: 2, default: [1280, 720], description: 'Bitmap scenes: canvas size [width, height] (160–1920 × 90–1080), letterboxed in the panel.' },
         subtitles: { type: 'boolean', default: false, description: '0.9.3+: opt-in player overlay of local or installed workshop lyric cues; only renderer "script" with output "pixels" or "webgl". Keep off if the scene draws its own subtitles.' },
+        preroll: { type: 'number', minimum: 0, maximum: 30, default: 0, description: '0.10.0+: silent negative song-time intro before audio starts at 0. Only script bitmap output; never shifts lyrics/audio.' },
+        context: { type: 'object', additionalProperties: false, description: '0.10.0+: bounded WebGL2 creation attributes. Defaults unchanged; no alpha/stencil/custom context access.', properties: {
+          antialias: { type: 'boolean' }, depth: { type: 'boolean' }, premultipliedAlpha: { type: 'boolean' }, preserveDrawingBuffer: { type: 'boolean' }, powerPreference: { enum: ['default', 'low-power', 'high-performance'] },
+        } },
+        fonts: { type: 'array', maxItems: MV_FONT_LIMITS.maxFaces, description: '0.10.0+: local offline script bitmap fonts, privately loaded before setup; not exposed as FontFace APIs. Workshop distribution requires independent OFL notices.', items: {
+          type: 'object', additionalProperties: false, required: ['family', 'file', 'licenseFile'], properties: {
+            family: { type: 'string', minLength: 1, maxLength: MV_FONT_LIMITS.maxFamilyChars, pattern: '^[A-Za-z][A-Za-z0-9 _-]*$' },
+            file: { type: 'string', maxLength: 1024, pattern: '^(?!.*(?:[:\\\\]|(?:^|/)\\.\\.(?:/|$)))[^/][^:]*\\.(?:woff2|ttf|otf)$' },
+            weight: { type: 'string', pattern: '^[1-9]00$', default: '400' }, style: { enum: ['normal', 'italic', 'oblique'], default: 'normal' },
+            unicodeRange: { type: 'string', maxLength: MV_FONT_LIMITS.maxRangeChars, pattern: '^\\s*[Uu]\\+(?:[0-9A-Fa-f]{1,6}(?:-[0-9A-Fa-f]{1,6})?|[0-9A-Fa-f]{0,5}\\?{1,6})(?:\\s*,\\s*[Uu]\\+(?:[0-9A-Fa-f]{1,6}(?:-[0-9A-Fa-f]{1,6})?|[0-9A-Fa-f]{0,5}\\?{1,6})){0,255}\\s*$', description: 'Host also validates wildcard length, Unicode bounds and interval bounds.' },
+            licenseFile: { type: 'string', maxLength: 1024, pattern: '^(?!.*(?:[:\\\\]|(?:^|/)\\.\\.(?:/|$)))[^/][^:]*\\.(?:txt|md)$' },
+          },
+        } },
         script: { type: 'string', pattern: '\\.m?js$', description: 'Scene script (.js) for renderer "script": defines render(t, cols, rows, ctx). Runs sandboxed in the panel.' },
         fontSize: { type: 'number', minimum: 8, maximum: 32 },
         bpm: { type: 'number', minimum: 20, maximum: 400, description: 'Song tempo for scene scripts: ctx.beat = { bpm, index, bar, phase, pulse }.' },
         beatOffset: { type: 'number', minimum: -60, maximum: 60, description: 'Time of the first beat in seconds (default 0).' },
       },
-      allOf: [{ if: { required: ['assets'], properties: { assets: { anyOf: [{ required: ['font-head'] }, { required: ['font-banner'] }] } } }, then: { required: ['renderer'], properties: { renderer: { const: 'dsh-pv' } } } }],
+      allOf: [{ if: { required: ['assets'], properties: { assets: { anyOf: [{ required: ['font-head'] }, { required: ['font-banner'] }] } } }, then: { required: ['renderer'], properties: { renderer: { const: 'dsh-pv' } } } },
+        { if: { anyOf: [{ required: ['fonts'] }, { required: ['preroll'] }] }, then: { required: ['renderer', 'output'], properties: { renderer: { const: 'script' }, output: { enum: ['pixels', 'webgl'] } } } },
+        { if: { required: ['context'] }, then: { required: ['renderer', 'output'], properties: { renderer: { const: 'script' }, output: { const: 'webgl' } } } }],
     },
     'x-dsh-mv-workshop': {
       type: 'object', additionalProperties: true,
@@ -84,7 +99,7 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
         lyricsCredit: { type: 'string', minLength: 1, maxLength: 500, description: 'Required lyric author and translator attribution, kept with the installed pack.' },
         lyricsSource: { type: 'string', maxLength: 300, pattern: '^https://[^\\s"<>]{3,300}$', description: 'Optional HTTPS source or authorization/guideline link; not a remote lyric file to load.' },
         lyricsTiming: { type: 'string', description: 'Optional lyrics.timing.json: pure cue times and normalized-text hashes only, never text.' },
-        fontsLicense: { const: 'OFL-1.1', description: 'Required when dsh-pv includes its supported OFL font files; not inherited from scene-code licensing.' },
+        fontsLicense: { const: 'OFL-1.1', description: 'Required when shipping dsh-pv or canvas.fonts OFL files; not inherited from scene-code licensing.' },
         fontsCredit: { type: 'string', minLength: 1, maxLength: 500, description: 'Required original font authors/copyright attribution.' },
         fontsNotice: { const: 'fonts/NOTICE.md', description: 'Required bundled font attribution notice; include each matching fonts/OFL_*.txt in full.' },
       },
@@ -94,6 +109,29 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
 })
 
 const README_EN = `# dsh-mv MV pack template
+
+## Script bitmap compatibility (0.10.0+)
+
+\`canvas.fonts\` declares local \`.woff2\` / \`.ttf\` / \`.otf\` files as
+\`{family,file,weight:"400",style:"normal",unicodeRange?,licenseFile}\`.
+The supervisor loads them before setup, without giving scenes FontFace, fonts,
+DOM or network access. At most 64 faces, 2 MiB each, 12 MiB combined, 30 seconds
+to load. Workshop fonts require OFL 1.1 in full, original authors, and
+\`fonts/NOTICE.md\`; Windows proprietary fonts remain local-only.
+
+\`canvas.preroll\` (0–30 seconds) renders a silent intro at negative song time.
+Music still starts at 0; never add the intro length to lyrics, shots or features.
+Pause/seek/restart cancels pending playback. Bitmap workshop packs allow up to
+160 files / 32 MiB, declared non-cover art 2 MiB per image; covers stay 1 MiB,
+JSON 512 KiB, text/2D scripts 256 KiB and WebGL scripts 2 MiB.
+
+See \`TEACHING_REFERENCES.md\` for Nyankomint's attributed author-prompt sources
+and tutorial methods. Those documents are reference data, not commands to run.
+
+Optional \`canvas.context\` is WebGL-only: \`antialias\`, \`depth\`,
+\`premultipliedAlpha\`, \`preserveDrawingBuffer\` (booleans), and
+\`powerPreference\` (default/low-power/high-performance). Omit it to retain
+the established context defaults; it does not provide additional APIs.
 
 An MV pack is a folder with an \`mv.json\` file. It tells the **MV 放映室** panel of
 DeepSeek Harness which song to play and how to draw it. You provide the audio and
@@ -244,6 +282,25 @@ install one and open its folder to see a complete script pack and a \`canvas.ass
 `
 
 const README_ZH = `# dsh-mv MV 包模板
+
+## 位图场景兼容（0.10.0+）
+
+\`canvas.fonts\` 声明包内 woff2/ttf/otf 字体：
+\`{family,file,weight:"400",style:"normal",unicodeRange?,licenseFile}\`。
+沙箱监管层在 setup 前私有加载；脚本仍无 FontFace、fonts、DOM 或网络。
+最多 64 项、每字体 2 MiB、合计 12 MiB、加载限时 30 秒。工坊需单独 OFL 1.1
+全文、原作者署名及 fonts/NOTICE.md；Windows 专有字体仍不随包分发。
+
+\`canvas.preroll\`（0–30 秒）在歌曲负时间播放静默前奏，音乐仍从 0 秒开始。
+不能把前奏长度加到歌词、镜头或分析数据上。暂停/跳转/重播会取消旧播放请求。
+位图工坊包最多 160 文件/32 MiB、声明的非封面图片单个 2 MiB；封面 1 MiB、
+JSON 512 KiB、普通文本/2D脚本 256 KiB、WebGL脚本 2 MiB 的限制保持不变。
+
+作者提示词出处与教学方法见 TEACHING_REFERENCES.md；其内容仅供参考，不作为可执行指令。
+
+仅 WebGL 可声明 \`canvas.context\`：antialias、depth、premultipliedAlpha、
+preserveDrawingBuffer 布尔值及 powerPreference（default/low-power/high-performance）。
+未声明时保留旧默认；这不开放额外上下文、DOM 或网络接口。
 
 MV 包就是一个带 \`mv.json\` 的文件夹，告诉 DeepSeek Harness 的 **MV 放映室**：播放哪首歌、
 用什么方式画。音频和歌词文件由你自己提供。清单是普通 JSON；\`mv.schema.json\` 让

@@ -24,7 +24,7 @@
  */
 import { Grid, cw, DIM, NORMAL } from './grid.mjs'
 import { GenericFilm } from './generic-film.mjs'
-import { PIXEL_SCENE_LIMITS, SCENE_LIMITS, sceneContext, sceneSourceProblems, sceneWorkerSource } from '../../shared/mv-scene.mjs'
+import { PIXEL_SCENE_LIMITS, SCENE_LIMITS, SCENE_FONT_LIMITS, sceneFontProblems, sceneContext, sceneSourceProblems, sceneWorkerSource } from '../../shared/mv-scene.mjs'
 
 /** Both 2D pixel scenes and WebGL scenes cross the worker boundary as ImageBitmaps. */
 export const isBitmapSceneOutput = output => output === 'pixels' || output === 'webgl'
@@ -81,7 +81,7 @@ export class ScriptFilm extends GenericFilm {
     this.onFail = onFail
     this.onPrepare = onPrepare
     this.worker = null
-    this.state = 'idle' // idle | loading | preparing | warming | ready | failed
+    this.state = 'idle' // idle | loading | font-loading | preparing | warming | ready | failed
     this.frame = null
     this.pending = null
     this.slow = 0
@@ -94,6 +94,11 @@ export class ScriptFilm extends GenericFilm {
     this.size = [1280, 720]
     this.bitmap = null
     this.setupTimer = null
+    this.fontTimer = null
+    this.fontCount = 0
+    this.fontLoaded = 0
+    this.fontProgressSeen = false
+    this.fontsComplete = true
     this.prepareTimer = null
     this.prepareTotalTimer = null
     this.warmupTimer = null
@@ -119,7 +124,7 @@ export class ScriptFilm extends GenericFilm {
   firstUseElapsed() { return this.now() - this.readyAt }
 
   /** Start the script; resolves when it is ready, rejects with the reason. */
-  load(source, { output = 'text', size = [1280, 720], assets = {}, transfer = [] } = {}) {
+  load(source, { output = 'text', size = [1280, 720], assets = {}, fonts = [], transfer = [], context = {} } = {}) {
     this.stop()
     const rejected = reason => { if (Array.isArray(transfer)) transfer.forEach(closeBitmap); return Promise.reject(this.fail(reason)) }
     this.output = isBitmapSceneOutput(output) ? output : 'text'
@@ -127,10 +132,17 @@ export class ScriptFilm extends GenericFilm {
     if (isBitmapSceneOutput(this.output) && (!Number.isInteger(this.size[0]) || !Number.isInteger(this.size[1]) || this.size[0] <= 0 || this.size[1] <= 0 || this.size[0] > PIXEL_SCENE_LIMITS.maxWidth || this.size[1] > PIXEL_SCENE_LIMITS.maxHeight)) {
       return rejected('位图场景的 canvas.size 必须是两个正整数，且不超过 1920×1080。')
     }
+    const fontProblems = sceneFontProblems(fonts, { output: this.output })
+    if (fontProblems.length) return rejected(fontProblems.join(' '))
+    // Transfer each binary once (also when callers omit it from transfer) so
+    // private font loading does not allocate a second copy of every file.
+    const transferList = [...new Set([...(Array.isArray(transfer) ? transfer : []), ...fonts.map(font => font.bytes)])]
+    this.fontCount = fonts.length
+    this.fontsComplete = fonts.length === 0
     const problems = sceneSourceProblems(source, { output: this.output })
     if (problems.length) return rejected(problems.join(' '))
     let worker
-    try { worker = this.createWorker(sceneWorkerSource(source, { output: this.output })) } catch (error) { return rejected(`无法创建场景沙箱（Web Worker）：${error?.message ?? error}`) }
+    try { worker = this.createWorker(sceneWorkerSource(source, { output: this.output, context })) } catch (error) { return rejected(`无法创建场景沙箱（Web Worker）：${error?.message ?? error}`) }
     if (!worker) return rejected('这个环境不支持 Web Worker，无法运行场景脚本。')
     this.worker = worker
     this.state = 'loading'
@@ -140,6 +152,7 @@ export class ScriptFilm extends GenericFilm {
         clearTimeout(this.setupTimer)
         this.setupTimer = null
       }
+      const beginSetupTimer = () => { this.setupTimer = setTimeout(() => reject(this.fail('场景脚本加载超时。')), SCENE_LIMITS.setupTimeoutMs) }
       const clearPrepareTimers = ({ keepProgress = false } = {}) => {
         clearTimeout(this.prepareTimer); clearTimeout(this.prepareTotalTimer)
         this.prepareTimer = null; this.prepareTotalTimer = null; this.preparePending = null
@@ -153,7 +166,8 @@ export class ScriptFilm extends GenericFilm {
         try { worker.postMessage({ type: 'prepare-next', id }) }
         catch (error) { reject(this.fail(`无法准备场景脚本：${error?.message ?? error}`)) }
       }
-      this.setupTimer = setTimeout(() => reject(this.fail('场景脚本加载超时。')), SCENE_LIMITS.setupTimeoutMs)
+      if (this.fontCount) this.fontTimer = setTimeout(() => reject(this.fail(`离线字体加载总计超过 ${SCENE_FONT_LIMITS.loadMs} ms，已停止。`)), SCENE_FONT_LIMITS.loadMs)
+      else beginSetupTimer()
       worker.onerror = event => {
         if (this.worker !== worker) return
         clearSetupTimer()
@@ -176,6 +190,24 @@ export class ScriptFilm extends GenericFilm {
           reject(error)
           return
         }
+        if (msg.type === 'font-loading') {
+          const first = !this.fontProgressSeen
+          const valid = (this.state === 'loading' || this.state === 'font-loading') && this.fontCount > 0 && !this.fontsComplete
+            && msg.bitmap === undefined && Number.isSafeInteger(msg.loaded) && msg.total === this.fontCount
+            && msg.loaded >= 0 && msg.loaded <= this.fontCount && msg.progress === msg.loaded / this.fontCount
+            && typeof msg.label === 'string' && msg.label.length <= 160 && typeof msg.done === 'boolean'
+            && (first ? msg.loaded === 0 && !msg.done : msg.loaded === this.fontLoaded + 1 && msg.done === (msg.loaded === this.fontCount))
+          if (!valid) { closeBitmap(msg.bitmap); reject(this.fail(invalidWorkerMessage('离线字体进度或完成通知不正确。'))); return }
+          this.fontProgressSeen = true; this.fontLoaded = msg.loaded
+          if (msg.done) {
+            clearTimeout(this.fontTimer); this.fontTimer = null
+            this.fontsComplete = true; this.state = 'loading'
+            beginSetupTimer()
+          } else this.state = 'font-loading'
+          reportPreparation({ phase: 'font-loading', step: msg.loaded, loaded: msg.loaded, total: msg.total, progress: msg.progress, label: msg.label, done: msg.done })
+          return
+        }
+        if (!this.fontsComplete) { closeBitmap(msg.bitmap); reject(this.fail(invalidWorkerMessage('离线字体尚未加载完成。'))); return }
         if (this.state === 'loading' || this.state === 'preparing' || this.state === 'warming') {
           // 0.9.7: warmup() announces itself so it gets its own deadline instead of
           // being charged to the last prepare step's timeout.
@@ -237,7 +269,8 @@ export class ScriptFilm extends GenericFilm {
         this.receive(msg)
       }
       const info = { title: this.title, artist: this.artist, duration: this.duration, sections: this.sections ?? [], bpm: this.bpm ?? 0, assets, ...(isBitmapSceneOutput(this.output) ? { width: this.size[0], height: this.size[1] } : {}) }
-      try { worker.postMessage({ type: 'init', info }, Array.isArray(transfer) ? transfer : []) }
+      // Never put font descriptors or buffers into info/assets passed to user setup.
+      try { worker.postMessage({ type: 'init', info, ...(fonts.length ? { fonts } : {}) }, transferList) }
       catch (error) { clearSetupTimer(); reject(this.fail(`无法初始化场景脚本：${error?.message ?? error}`)) }
     }).catch(error => { if (Array.isArray(transfer)) transfer.forEach(closeBitmap); throw error })
   }
@@ -306,6 +339,8 @@ export class ScriptFilm extends GenericFilm {
   stop({ keepState = false } = {}) {
     clearTimeout(this.setupTimer)
     this.setupTimer = null
+    clearTimeout(this.fontTimer); this.fontTimer = null
+    this.fontCount = 0; this.fontLoaded = 0; this.fontProgressSeen = false; this.fontsComplete = true
     clearTimeout(this.prepareTimer); clearTimeout(this.prepareTotalTimer); clearTimeout(this.warmupTimer)
     this.prepareTimer = null; this.prepareTotalTimer = null; this.preparePending = null; this.prepareProgress = 0
     this.warmupTimer = null
@@ -368,13 +403,14 @@ export class ScriptFilm extends GenericFilm {
           x += k; i += 1
         }
       }
-    } else if (this.state === 'loading' || this.state === 'preparing' || this.state === 'warming' || this.state === 'ready') c.center(Math.floor(h / 2), this.waitingLabel, DIM)
+    } else if (this.state === 'loading' || this.state === 'font-loading' || this.state === 'preparing' || this.state === 'warming' || this.state === 'ready') c.center(Math.floor(h / 2), this.waitingLabel, DIM)
     if (opts.help) this.help(c, opts.offset ?? 0, opts.helpLines)
     return c
   }
 
   /** Placeholder shown while the scene is still loading / preparing / warming up. */
   get waitingLabel() {
+    if (this.state === 'font-loading' || this.state === 'loading' && !this.fontsComplete) return `字体加载 ${Math.round(this.fontLoaded / Math.max(1, this.fontCount) * 100)}%`
     if (this.state === 'preparing') return `准备 ${Math.round(this.prepareProgress * 100)}%`
     if (this.state === 'warming') return '预热…'
     return '…'
@@ -395,7 +431,7 @@ export class ScriptFilm extends GenericFilm {
       g.imageSmoothingQuality = 'high'
       g.drawImage(this.bitmap, Math.round((cw - dw) / 2), Math.round((ch - dh) / 2), dw, dh)
       if (opts.subtitles === true) bitmapSubtitles(g, this.cue(t - (opts.offset ?? 0)), Math.round((cw - dw) / 2), Math.round((ch - dh) / 2), dw, dh)
-    } else if (this.state === 'loading' || this.state === 'preparing' || this.state === 'warming' || this.state === 'ready') {
+    } else if (this.state === 'loading' || this.state === 'font-loading' || this.state === 'preparing' || this.state === 'warming' || this.state === 'ready') {
       g.fillStyle = '#556'
       g.font = `${Math.max(12, Math.round(ch / 30))}px monospace`
       g.textAlign = 'center'; g.textBaseline = 'middle'

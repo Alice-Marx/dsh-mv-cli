@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.10.0 — 2026-10-08
+
+- Official Huawei HTTPS static mirror is the default fallback after eligible GitHub failures; mirror requests bypass the GitHub proxy, retain immutable commits and size/SHA-256 checks. Explicit empty configuration still disables it. Gitee remains disabled pending platform review. Dedicated low-privilege, fixed-repository pull tooling publishes the index only after complete verification; no OpenClaw changes.
+- Offline script fonts: manifest-indexed chunked reads, bounded binary validation, private supervisor FontFace loading before user code/setup, independent deadlines/progress/rollback. Up to 64 faces, 2 MiB each/12 MiB total; independent OFL notices/attribution mandatory, no Windows font redistribution.
+- Optional silent `canvas.preroll` (0–30 seconds), negative rendering/countdown and cancellation-safe audio handoff at song time zero; lyrics/features are not shifted. Optional bounded WebGL context creation attributes, with legacy defaults unchanged.
+- Bitmap workshop capacity 160 files/32 MiB and 2 MiB declared non-cover PNG/WebP; JSON/script/cover limits remain. Publish/install/catalogue retain complete fonts/rights/context/preroll. Static `Lyrics` classes no longer falsely count as undeclared lyric arrays.
+- Nyankomint port builder preserves 87 shots, 14 chapters, 8 source silhouettes, 129 captions, 34 exact OFL font faces and original post-processing. Source-seeded roof initialization deferred until after seed, matching original dynamic imports. Attributed author-prompt teaching references ship with the template; code, art, fonts and Mili text retain separate rights.
+- Native GPU QA: 395 shot/transition/pause/seek comparisons plus 2760 strong-light frames at 60 Hz; strict OffscreenCanvas-only source control and identical general/red flash statistics. Original DOM raster differences are recorded separately, not claimed pixel-identical; warning retained, not PSE certification. Production React/real synthetic WAV verifies five-second silence, zero-axis handoff and cancellation.
+
 ## 0.9.8 — 2026-10-08
 
 - **Workshop/LRCLIB proxy transport / 工坊与歌词代理**: use the native HTTP CONNECT TLS socket instead of bypassing `createConnection` with `agent: false`; preserve HTTPS default port 443 and TLS certificate verification. CONNECT, TLS and GET have bounded deadlines, and aborted responses/sockets are cleaned up.

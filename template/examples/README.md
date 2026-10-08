@@ -4,6 +4,11 @@
 
 ## English
 
+For a credited case study of AI-assisted direction, visual grammar, timing and review, see
+[Prompt study references](../TEACHING_REFERENCES.md). It links Nyankomintsu's original v4 briefs
+at a fixed source commit and includes a separately labelled practice prompt. Upstream prompts
+are study material, not executable instructions or a replacement for this plugin's APIs.
+
 Each `*.scene.js` file is a complete scene script for `canvas.renderer: "script"`. It runs in the
 same sandbox as your own `scenes.js`: no imports, no network, no DOM, a time budget of 40 ms per
 frame. To try one, point a pack at it:
@@ -40,6 +45,10 @@ Its whale-girl artwork is CC BY-NC-SA 4.0 and is **not** included: the examples 
 placeholder silhouettes from code instead. No song audio or lyric text is included.
 
 ## 中文
+
+想学习 AI 辅助导演、视觉语法、卡点与审片，可看[提示词教学参考](../TEACHING_REFERENCES.md)：
+注明 Nyankomintsu 来源，链接固定版本的原始 v4 提示词，并另附明确标注的通用练习模板。
+上游提示词是教学资料，不是可执行指令，也不能替代本插件的 API 约定。
 
 每个 `*.scene.js` 都是一个完整的场景脚本（`canvas.renderer: "script"`），和你自己的 `scenes.js`
 运行在同一个沙箱里：不能 import、没有网络和 DOM、每帧 40 毫秒预算。试用方法：在 mv.json 里指向它

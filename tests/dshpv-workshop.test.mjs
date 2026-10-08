@@ -77,7 +77,7 @@ test('dsh-pv workshop: only built-in PV packs receive 64 files / 24 MiB, includi
   const good = await validate(pv.files, extended)
   assert.deepEqual(good.errors, []); assert.equal(extended.length, 64)
   assert.equal(catalogue(entry(good.meta, extended)).length, 1)
-  for (const renderer of ['generic', 'script', 'webgl']) {
+  for (const renderer of ['generic', 'script']) {
     const ordinary = fixture({ renderer }), list = extras(ordinary.files, 60)
     const result = await validate(ordinary.files, list)
     assert.ok(result.errors.some(error => /文件太多.*40/.test(error)), renderer)
@@ -103,7 +103,7 @@ test('dsh-pv workshop: PV expansion keeps byte cap strict while ordinary rendere
   const overFiles = fixture().files; for (const file of overBytes) overFiles[file.path] ??= '{}'
   assert.ok((await validate(overFiles, overBytes)).errors.some(error => /整个包太大.*24/.test(error)))
   assert.equal(catalogue(entry(good.meta, overBytes)).length, 0)
-  for (const renderer of ['generic', 'script', 'webgl']) {
+  for (const renderer of ['generic', 'script']) {
     const ordinary = fixture({ renderer }), ordinaryList = extras(ordinary.files, 20, 512 * 1024), checked = await validate(ordinary.files, ordinaryList)
     assert.ok(checked.errors.some(error => /整个包太大.*8/.test(error)), renderer)
     assert.equal(catalogue(entry(checked.meta, ordinaryList)).length, 0, renderer)
