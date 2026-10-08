@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.8 — 2026-10-08
+
+- **Workshop/LRCLIB proxy transport / 工坊与歌词代理**: use the native HTTP CONNECT TLS socket instead of bypassing `createConnection` with `agent: false`; preserve HTTPS default port 443 and TLS certificate verification. CONNECT, TLS and GET have bounded deadlines, and aborted responses/sockets are cleaned up.
+- **Bounded downloads / 有限下载重试**: transient workshop network/HTTP failures get at most three attempts with backoff. Integrity failures and invalid certificates do not trigger an insecure retry or source switch; installed packs remain intact on failed downloads.
+- **Trusted mirror fallback / 可信镜像回退**: GitHub remains primary; a configured HTTPS raw prefix can supply the same index and commit-pinned files after eligible failures. Mirror requests connect directly without the GitHub proxy, then remain on that source for the cached index/current installation. Size/SHA-256 checks and pack validation are unchanged. The index is unsigned; hashes are not publisher authentication.
+- New plugin fields `httpProxy` (empty inherits proxy environment variables) and `workshopMirror` (defaults to `''`, disabled; a trusted, available HTTPS prefix enables fallback); destination-aware `NO_PROXY`, explicit errors for unsupported HTTPS/SOCKS proxies, no system-proxy changes. Gitee raw redirects are bounded and restricted; static HTTPS mirror prefixes are also supported.
+- Verified both complete GitHub packs (dsh PV/FrostNova: 83 files, 86 native GET requests through the proxy) and locally simulated fallback. Gitee synchronization is established, but full anonymous pack verification encountered platform HTTP 451 on FrostNova/Polytech data; the mirror stays disabled pending platform resolution, without review-bypass changes. A separately verified FrostNova source ZIP does not establish full visual-pack availability.
+- Documentation covers one-way, read-only GitHub → Gitee synchronization, service/cache limits and separate Release/corresponding-source distribution. No MV pack versions, music distribution or resource licence terms change in this plugin patch.
+
 ## 0.9.7 — 2026-10-07
 
 - **`warmup(info, gl)` 场景契约**：可选的同步预热阶段，在 `setup()` / `prepare()` 之后、

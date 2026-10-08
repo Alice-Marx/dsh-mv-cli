@@ -78,23 +78,106 @@ export function openFolder(dir, { platform = process.platform, run = spawn } = {
 const sha256 = data => createHash('sha256').update(data).digest('hex')
 const json = value => `${JSON.stringify(value, null, 2)}\n`
 
-/** GET a URL as bytes (200 only; size-capped; HTTPS proxy from the environment). */
-export async function getBytes(url, { proxy = null, timeoutMs = 20_000, userAgent = 'dsh-mv-cli', maxBytes = WORKSHOP_LIMITS.indexBytes, request = https.request } = {}) {
+const downloadError = (message, code, details = {}) => Object.assign(new Error(message), { code, ...details })
+const pauseDownload = ms => new Promise(resolve => setTimeout(resolve, ms))
+const rawPrefix = `https://raw.githubusercontent.com/${WORKSHOP_REPO}/`
+
+/** HTTPS only; redirects cannot leak proxy/URL credentials to unrelated hosts. */
+export async function getBytes(url, { proxy = null, timeoutMs = 20_000, userAgent = 'dsh-mv-cli', maxBytes = WORKSHOP_LIMITS.indexBytes, request = https.request, connectTunnel = tunnel, redirects = 3 } = {}) {
   const target = new URL(url)
-  if (target.protocol !== 'https:') throw new Error('只允许 https 下载')
-  const options = { method: 'GET', headers: { 'User-Agent': userAgent, Accept: '*/*' }, timeout: timeoutMs }
-  if (proxy) { const socket = await tunnel(proxy, target.hostname, { timeoutMs }); options.createConnection = () => socket; options.agent = false }
-  return new Promise((resolve, reject) => {
-    const req = request(target, options, res => {
-      if (res.statusCode !== 200) { res.resume(); reject(new Error(`GitHub 返回 ${res.statusCode}：${target.pathname}`)); return }
-      const chunks = []; let size = 0
-      res.on('data', chunk => { size += chunk.length; if (size > maxBytes) { req.destroy(new Error(`下载内容超过 ${Math.round(maxBytes / 1024)} KB`)); return } chunks.push(chunk) })
-      res.on('end', () => resolve(Buffer.concat(chunks)))
-    })
-    req.on('timeout', () => req.destroy(new Error('连接 GitHub 超时（如需代理，请设置 HTTPS_PROXY）')))
-    req.on('error', reject)
-    req.end()
+  if (target.protocol !== 'https:' || target.username || target.password) throw downloadError('只允许不含认证信息的 https 下载', 'ERR_DOWNLOAD_URL')
+  const budget = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 20_000
+  const options = { method: 'GET', defaultPort: 443, headers: { 'User-Agent': userAgent, Accept: '*/*' }, timeout: budget }
+  let socket
+  if (proxy) {
+    socket = await connectTunnel(proxy, target.hostname, { timeoutMs: budget, targetPort: Number(target.port || 443) })
+    options.createConnection = () => socket
+    // agent:false would construct a default Agent and ignore this TLS tunnel.
+  }
+  const result = await new Promise((resolve, reject) => {
+    let req, timer, settled = false
+    const finish = (error, value) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      if (error) req?.destroy()
+      socket?.destroy()
+      if (error) reject(error); else resolve(value)
+    }
+    try {
+      req = request(target, options, res => {
+        res.once('error', error => finish(error))
+        res.once('aborted', () => finish(downloadError('下载响应中断', 'ECONNRESET')))
+        if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
+          if (typeof res.headers?.location !== 'string' || !res.headers.location.trim()) { finish(downloadError('下载重定向缺少地址', 'ERR_DOWNLOAD_REDIRECT')); return }
+          let next
+          try { next = new URL(res.headers.location, target) } catch { finish(downloadError('下载重定向地址无效', 'ERR_DOWNLOAD_REDIRECT')); return }
+          const allowed = next.host === target.host || (target.hostname === 'gitee.com' && next.hostname === 'raw.giteeusercontent.com' && !next.port)
+          if (!redirects || next.protocol !== 'https:' || next.username || next.password || !allowed) {
+            finish(downloadError('拒绝不安全或过多的下载重定向', 'ERR_DOWNLOAD_REDIRECT')); return
+          }
+          res.resume()
+          finish(null, { redirect: next.href })
+          req?.destroy()
+          return
+        }
+        if (res.statusCode !== 200) {
+          res.resume()
+          const retryAfter = Number(res.headers?.['retry-after'])
+          const reason = res.statusCode === 451 ? '服务器内容访问限制（HTTP 451，非代理配置错误）' : `下载服务器返回 HTTP ${res.statusCode}`
+          finish(downloadError(`${reason}：${target.hostname}${target.pathname}`, 'ERR_DOWNLOAD_HTTP', { statusCode: res.statusCode, retryAfterMs: Number.isFinite(retryAfter) ? Math.min(5000, Math.max(0, retryAfter * 1000)) : 0 }))
+          return
+        }
+        const chunks = []; let size = 0
+        res.on('data', chunk => {
+          if (settled) return
+          size += chunk.length
+          if (size > maxBytes) { finish(downloadError(`下载内容超过 ${Math.round(maxBytes / 1024)} KB`, 'ERR_DOWNLOAD_SIZE')); return }
+          chunks.push(chunk)
+        })
+        res.once('end', () => {
+          if (res.complete === false) finish(downloadError('下载响应不完整', 'ECONNRESET'))
+          else finish(null, { bytes: Buffer.concat(chunks) })
+        })
+        res.once('close', () => { if (!settled && res.complete === false) finish(downloadError('下载响应中断', 'ECONNRESET')) })
+      })
+      if (!settled) timer = setTimeout(() => finish(downloadError('下载请求超时', 'ETIMEDOUT')), budget)
+      req.once('timeout', () => finish(downloadError('下载请求超时', 'ETIMEDOUT')))
+      req.once('error', error => finish(error))
+      req.end()
+    } catch (error) { finish(error) }
   })
+  if (result.redirect) return getBytes(result.redirect, { proxy, timeoutMs: budget, userAgent, maxBytes, request, connectTunnel, redirects: redirects - 1 })
+  return result.bytes
+}
+
+export function retryableDownloadError(error) {
+  return ['ECONNRESET', 'ETIMEDOUT', 'ESOCKETTIMEDOUT', 'EPIPE', 'ECONNREFUSED', 'ENETUNREACH', 'EHOSTUNREACH', 'EAI_AGAIN', 'ENOTFOUND'].includes(error?.code)
+    || [408, 429, 500, 502, 503, 504].includes(error?.statusCode)
+}
+
+/** At most three attempts; never retry certificate, integrity or configuration errors. */
+export async function getBytesWithRetry(url, options, { get = getBytes, retries = 2, sleep = pauseDownload } = {}) {
+  const limit = Math.min(2, Math.max(0, Math.floor(Number(retries) || 0)))
+  for (let attempt = 0; ; attempt++) {
+    try { return await get(url, options) }
+    catch (error) {
+      if (attempt >= limit || !retryableDownloadError(error)) throw error
+      await sleep(Math.min(5000, Math.max(250 * 2 ** attempt, Number(error.retryAfterMs) || 0)))
+    }
+  }
+}
+
+/** An explicitly trusted repository raw prefix or commit-addressable static mirror. */
+export function workshopMirrorUrl(base, githubUrl) {
+  const value = String(base ?? '').trim()
+  if (!value) return null
+  let target
+  try { target = new URL(value) } catch { throw downloadError('工坊备用源地址无效', 'ERR_WORKSHOP_MIRROR') }
+  if (target.protocol !== 'https:' || target.username || target.password || target.search || target.hash) throw downloadError('工坊备用源必须是无认证、无查询参数的 HTTPS 地址', 'ERR_WORKSHOP_MIRROR')
+  const original = new URL(githubUrl)
+  if (!original.href.startsWith(rawPrefix) || original.search || original.hash) throw downloadError('备用源只用于官方工坊文件', 'ERR_WORKSHOP_MIRROR')
+  return `${target.href.replace(/\/+$/, '')}/${original.href.slice(rawPrefix.length)}`
 }
 
 /**
@@ -103,7 +186,7 @@ export async function getBytes(url, { proxy = null, timeoutMs = 20_000, userAgen
  * %LOCALAPPDATA%\dsh-mv\workshop. Folders used before keep being scanned (workshop.extraDirs) until their
  * packs are moved, so the library keeps finding packs left where they were.
  */
-export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = workshopDir(), configDir = () => '', settings = null, platform = process.platform, publishRoot = join(dirname(fixedRoot ?? defaultRoot), 'workshop-publish'), get = getBytes, env = process.env, proxy = () => '', userAgent = 'dsh-mv-cli', now = () => new Date(), cacheMs = 5 * 60_000, open = dir => openFolder(dir, { platform }) } = {}) {
+export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = workshopDir(), configDir = () => '', settings = null, platform = process.platform, publishRoot = join(dirname(fixedRoot ?? defaultRoot), 'workshop-publish'), get = getBytes, env = process.env, proxy = () => '', mirror = () => '', retrySleep = pauseDownload, userAgent = 'dsh-mv-cli', now = () => new Date(), cacheMs = 5 * 60_000, open = dir => openFolder(dir, { platform }) } = {}) {
   let cached = null
   const store = settings ?? (fixedRoot ? null : createSettingsStore())
   const configured = () => { const v = String(configDir() ?? '').trim(); if (!v) return null; try { return normalizeWorkshopDir(v, platform) } catch { return null } }
@@ -111,14 +194,33 @@ export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = wo
   async function currentRoot() { if (fixedRoot) return fixedRoot; const p = await prefs(); return p.dir ?? configured() ?? defaultRoot }
   async function roots() { const root = await currentRoot(); const extra = (await prefs()).extraDirs.filter(d => !sameDir(d, root, platform)); return [root, ...extra.filter((d, i) => extra.findIndex(x => sameDir(x, d, platform)) === i)] }
   const covers = new Map()
-  const options = maxBytes => ({ proxy: proxyFromEnv(env, proxy()), userAgent, maxBytes })
+  // A domestic backup deliberately bypasses an inherited, possibly stopped proxy.
+  const options = (url, maxBytes, backup = false) => ({ proxy: backup ? null : proxyFromEnv(env, proxy(), url), userAgent, maxBytes })
+  const eligibleForMirror = error => retryableDownloadError(error) || [403, 404].includes(error?.statusCode) && error?.code === 'ERR_DOWNLOAD_HTTP'
+  const sourceUrl = (url, source) => source === 'mirror' ? workshopMirrorUrl(mirror(), url) : url
+  async function download(url, maxBytes, route = { source: 'github' }) {
+    // Validate a configured source even if GitHub succeeds; never silently accept bad settings.
+    const backupUrl = workshopMirrorUrl(mirror(), url)
+    const fetch = (target, backup) => getBytesWithRetry(target, options(target, maxBytes, backup), { get, sleep: retrySleep })
+    if (route.source === 'mirror' && backupUrl) return fetch(backupUrl, true)
+    try { return await fetch(url, false) }
+    catch (primaryError) {
+      if (backupUrl && eligibleForMirror(primaryError)) {
+        try { const bytes = await fetch(backupUrl, true); route.source = 'mirror'; return bytes }
+        catch (backupError) { throw new Error(`GitHub 与备用源都下载失败。GitHub：${primaryError.message}；备用源：${backupError.message}`, { cause: backupError }) }
+      }
+      if (eligibleForMirror(primaryError)) throw new Error(`无法下载工坊文件：${primaryError.message}。请检查网络、插件 httpProxy 或 HTTPS_PROXY；也可配置 workshopMirror 国内备用源。修改系统环境变量后需重启 Harness。`, { cause: primaryError })
+      throw primaryError
+    }
+  }
 
   async function index(refresh = false) {
     if (!refresh && cached && now().getTime() - cached.at < cacheMs) return cached.value
-    const bytes = await get(WORKSHOP_INDEX_URL, options(WORKSHOP_LIMITS.indexBytes))
+    const route = { source: 'github' }
+    const bytes = await download(WORKSHOP_INDEX_URL, WORKSHOP_LIMITS.indexBytes, route)
     let value
     try { value = parseWorkshopIndex(JSON.parse(bytes.toString('utf8'))) } catch (error) { throw new Error(`工坊索引无法解析：${error.message}`) }
-    cached = { at: now().getTime(), value }
+    cached = { at: now().getTime(), value, source: route.source }
     return value
   }
 
@@ -164,7 +266,7 @@ export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = wo
     currentRoot,
     async index({ refresh }) {
       const value = await index(refresh)
-      return { ...value, installed: await installed(), source: WORKSHOP_INDEX_URL }
+      return { ...value, installed: await installed(), source: sourceUrl(WORKSHOP_INDEX_URL, cached.source), downloadSource: cached.source }
     },
     installed: async () => ({ installed: await installed() }),
     async cover({ id }) {
@@ -174,7 +276,8 @@ export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = wo
       const file = entry.files.find(f => f.path === entry.cover)
       const key = `${id}@${file.sha256}`
       if (!covers.has(key)) {
-        const bytes = await get(workshopFileUrl(value.commit, id, file.path), options(WORKSHOP_LIMITS.coverBytes))
+        const bytes = await download(workshopFileUrl(value.commit, id, file.path), Math.max(file.size, 1), { source: cached.source })
+        if (bytes.length !== file.size) throw new Error('封面大小不符')
         if (sha256(bytes) !== file.sha256) throw new Error('封面校验失败（sha256 不符）')
         if (covers.size > 200) covers.clear()
         covers.set(key, bytes.toString('base64'))
@@ -189,9 +292,12 @@ export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = wo
       const root = await currentRoot()
       await mkdir(root, { recursive: true })
       const temp = join(root, `.tmp-${id}-${randomBytes(4).toString('hex')}`)
+      const route = { source: cached.source }
       try {
         for (const file of entry.files) {
-          const bytes = await get(workshopFileUrl(value.commit, id, file.path), options(Math.max(file.size, 1)))
+          let bytes
+          try { bytes = await download(workshopFileUrl(value.commit, id, file.path), Math.max(file.size, 1), route) }
+          catch (error) { throw new Error(`安装「${id}」失败，文件 ${file.path}：${error.message}`, { cause: error }) }
           if (bytes.length !== file.size) throw new Error(`${file.path} 大小不符（索引 ${file.size}，下载 ${bytes.length}）`)
           if (sha256(bytes) !== file.sha256) throw new Error(`${file.path} 校验失败（sha256 与索引不符），已取消安装`)
           const target = join(temp, ...file.path.split('/'))
@@ -208,7 +314,7 @@ export function createWorkshopManager({ root: fixedRoot = null, defaultRoot = wo
         // An older copy kept in a previous install folder is replaced by this one.
         for (const old of (await roots()).slice(1)) { try { await stat(join(old, id, STATE_FILE)); await rm(join(old, id), { recursive: true, force: true }) } catch { /* not there */ } }
         await forgetEmptyDirs()
-        return { id, version: entry.version, manifestPath: join(dir, 'mv.json'), files: entry.files.length, warnings: result.warnings }
+        return { id, version: entry.version, manifestPath: join(dir, 'mv.json'), files: entry.files.length, warnings: result.warnings, downloadSource: route.source }
       } catch (error) {
         await rm(temp, { recursive: true, force: true }).catch(() => {})
         throw error

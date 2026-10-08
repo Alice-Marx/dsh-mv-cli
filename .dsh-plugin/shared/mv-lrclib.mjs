@@ -6,6 +6,7 @@
 import https from 'node:https'
 import http from 'node:http'
 import tls from 'node:tls'
+import { isIP } from 'node:net'
 import { LRCLIB_FIELDS, parseLyricsLookup } from './mv-calib-protocol.mjs'
 
 export { LRCLIB_FIELDS, parseLyricsLookup }
@@ -41,54 +42,141 @@ export function pickLrclib(records, { title = '', duration = null } = {}) {
   return scored[0] ? { ...scored[0].r, durationDiff: scored[0].diff } : null
 }
 
-export function proxyFromEnv(env = process.env, configured = '') {
+const networkError = (message, code, details = {}) => Object.assign(new Error(message), { code, ...details })
+
+function targetAuthority(target) {
+  const value = String(target || 'lrclib.net').trim()
+  try {
+    const url = new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(value) ? value : `https://${value}`)
+    return { hostname: url.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, ''), port: url.port || (url.protocol === 'http:' ? '80' : '443') }
+  } catch { throw networkError('下载目标地址无效', 'ERR_PROXY_TARGET') }
+}
+
+/** NO_PROXY uses exact hosts or domain suffixes, optionally restricted to a port. */
+export function bypassProxy(target, noProxy = '') {
+  const { hostname, port } = targetAuthority(target)
+  return String(noProxy).split(/[\s,]+/).filter(Boolean).some(entry => {
+    if (entry === '*') return true
+    let name = entry.toLowerCase(), matchPort = ''
+    const ipv6 = /^\[([^\]]+)\](?::(\d+))?$/.exec(name)
+    if (ipv6) { name = ipv6[1]; matchPort = ipv6[2] || '' }
+    else {
+      const authority = /^([^:]+):(\d+)$/.exec(name)
+      if (authority) { name = authority[1]; matchPort = authority[2] }
+    }
+    name = name.replace(/^\*?\./, '').replace(/\.$/, '')
+    return (!matchPort || matchPort === port) && !!name && (hostname === name || (!isIP(hostname) && hostname.endsWith(`.${name}`)))
+  })
+}
+
+export function proxyFromEnv(env = process.env, configured = '', target = 'lrclib.net') {
   const value = String(configured || env.HTTPS_PROXY || env.https_proxy || env.HTTP_PROXY || env.http_proxy || '').trim()
   if (!value) return null
   const noProxy = String(env.NO_PROXY || env.no_proxy || '')
-  if (/(^|,)\s*(\*|\.?lrclib\.net)\s*(,|$)/i.test(noProxy)) return null
-  try { const url = new URL(/^[a-z]+:\/\//i.test(value) ? value : `http://${value}`); return url.protocol === 'http:' ? url : null } catch { return null }
+  if (bypassProxy(target, noProxy)) return null
+  let url
+  try { url = new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(value) ? value : `http://${value}`) }
+  catch { throw networkError('代理地址无效；请使用 http://主机:端口', 'ERR_PROXY_URL') }
+  if (url.protocol !== 'http:') throw networkError(`不支持 ${url.protocol} 代理；目前只支持 http:// 代理，HTTPS 下载通过 CONNECT 加密隧道`, 'ERR_PROXY_PROTOCOL')
+  if (!url.hostname || url.pathname !== '/' || url.search || url.hash) throw networkError('代理地址无效；只能包含主机、端口及可选的代理认证', 'ERR_PROXY_URL')
+  return url
 }
 
 /** CONNECT tunnel through an HTTP proxy → a TLS socket to host:443. */
-export function tunnel(proxy, host, { timeoutMs = 12_000, connectRequest = http.request } = {}) {
+export function tunnel(proxy, host, { timeoutMs = 12_000, targetPort = 443, connectRequest = http.request, tlsConnect = tls.connect } = {}) {
   return new Promise((resolve, reject) => {
-    const headers = { Host: `${host}:443` }
-    if (proxy.username) headers['Proxy-Authorization'] = `Basic ${Buffer.from(`${decodeURIComponent(proxy.username)}:${decodeURIComponent(proxy.password)}`).toString('base64')}`
-    const req = connectRequest({ host: proxy.hostname, port: Number(proxy.port || 80), method: 'CONNECT', path: `${host}:443`, headers, timeout: timeoutMs })
-    req.once('connect', (res, socket) => {
-      if (res.statusCode !== 200) { socket.destroy(); reject(new Error(`代理拒绝连接：HTTP ${res.statusCode}`)); return }
-      const secure = tls.connect({ socket, servername: host })
-      secure.once('secureConnect', () => resolve(secure))
-      secure.once('error', reject)
-    })
-    req.once('timeout', () => req.destroy(new Error('代理连接超时')))
-    req.once('error', reject)
-    req.end()
+    let req, socket, secure, timer, settled = false, phase = 'connect'
+    const budget = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 12_000
+    const fail = error => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      secure?.destroy()
+      socket?.destroy()
+      req?.destroy()
+      reject(error)
+    }
+    const deadline = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => fail(networkError(phase === 'tls' ? '代理隧道的 TLS 握手超时' : '代理 CONNECT 连接超时', 'ETIMEDOUT', { phase })), budget)
+    }
+    try {
+      if (proxy.protocol !== 'http:') throw networkError('目前只支持 http:// CONNECT 代理', 'ERR_PROXY_PROTOCOL')
+      const authority = `${host.includes(':') && !host.startsWith('[') ? `[${host}]` : host}:${targetPort}`
+      const headers = { Host: authority }
+      if (proxy.username) headers['Proxy-Authorization'] = `Basic ${Buffer.from(`${decodeURIComponent(proxy.username)}:${decodeURIComponent(proxy.password)}`).toString('base64')}`
+      req = connectRequest({ host: proxy.hostname, port: Number(proxy.port || 80), method: 'CONNECT', path: authority, headers, timeout: budget })
+      deadline()
+      req.once('connect', (res, connection, head) => {
+        socket = connection
+        if (settled) { socket.destroy(); return }
+        if (res.statusCode !== 200) { fail(networkError(`代理拒绝连接：HTTP ${res.statusCode}`, 'ERR_PROXY_CONNECT', { statusCode: res.statusCode })); return }
+        phase = 'tls'
+        deadline()
+        try {
+          // CONNECT may have consumed the start of the TLS stream with its headers.
+          if (head?.length) socket.unshift(head)
+          secure = tlsConnect({ socket, servername: host })
+          secure.once('secureConnect', () => {
+            if (settled) return
+            settled = true
+            clearTimeout(timer)
+            resolve(secure)
+          })
+          secure.once('error', fail)
+          secure.once('close', () => { if (!settled) fail(networkError('TLS 握手完成前代理连接被关闭', 'ECONNRESET', { phase: 'tls' })) })
+        } catch (error) { fail(error) }
+      })
+      req.once('timeout', () => { if (phase === 'connect') fail(networkError('代理 CONNECT 连接超时', 'ETIMEDOUT', { phase })) })
+      req.once('error', fail)
+      req.once('close', () => { if (!settled && phase === 'connect') fail(networkError('代理 CONNECT 完成前连接被关闭', 'ECONNRESET', { phase })) })
+      req.end()
+    } catch (error) { fail(error) }
   })
 }
 
 /** GET a JSON URL (status 200 → value, 404 → null). */
-export async function getJson(url, { proxy = null, timeoutMs = 12_000, userAgent = 'dsh-mv-cli', request = https.request } = {}) {
+export async function getJson(url, { proxy = null, timeoutMs = 12_000, userAgent = 'dsh-mv-cli', request = https.request, connectTunnel = tunnel } = {}) {
   const target = new URL(url)
-  const options = { method: 'GET', headers: { 'User-Agent': userAgent, Accept: 'application/json' }, timeout: timeoutMs }
+  if (target.protocol !== 'https:') throw new Error('只允许 https 下载')
+  const budget = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 12_000
+  const options = { method: 'GET', defaultPort: 443, headers: { 'User-Agent': userAgent, Accept: 'application/json' }, timeout: budget }
+  let socket
   if (proxy) {
-    const socket = await tunnel(proxy, target.hostname, { timeoutMs })
+    socket = await connectTunnel(proxy, target.hostname, { timeoutMs: budget, targetPort: Number(target.port || 443) })
     options.createConnection = () => socket
-    options.agent = false
+    // agent:false creates a new Agent and ignores createConnection in Node.
+    // Omitting it makes ClientRequest consume this already-verified TLS socket.
   }
   return new Promise((resolve, reject) => {
-    const req = request(target, options, res => {
-      const chunks = []
-      res.on('data', chunk => chunks.push(chunk))
-      res.on('end', () => {
-        if (res.statusCode === 404) return resolve(null)
-        if (res.statusCode !== 200) return reject(new Error(`LRCLIB 返回 ${res.statusCode}`))
-        try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))) } catch (error) { reject(error) }
+    let req, timer, settled = false
+    const finish = (error, value) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      if (error) req?.destroy()
+      socket?.destroy()
+      if (error) reject(error); else resolve(value)
+    }
+    try {
+      req = request(target, options, res => {
+        const chunks = []
+        res.on('data', chunk => chunks.push(chunk))
+        res.once('error', error => finish(error))
+        res.once('aborted', () => finish(networkError('LRCLIB 响应中断', 'ECONNRESET')))
+        res.once('end', () => {
+          if (res.complete === false) return finish(networkError('LRCLIB 响应不完整', 'ECONNRESET'))
+          if (res.statusCode === 404) return finish(null, null)
+          if (res.statusCode !== 200) return finish(new Error(`LRCLIB 返回 ${res.statusCode}`))
+          try { finish(null, JSON.parse(Buffer.concat(chunks).toString('utf8'))) } catch (error) { finish(error) }
+        })
+        res.once('close', () => { if (!settled && res.complete === false) finish(networkError('LRCLIB 响应中断', 'ECONNRESET')) })
       })
-    })
-    req.on('timeout', () => req.destroy(new Error('LRCLIB 请求超时')))
-    req.on('error', reject)
-    req.end()
+      if (!settled) timer = setTimeout(() => finish(networkError('LRCLIB 请求超时', 'ETIMEDOUT')), budget)
+      req.once('timeout', () => finish(networkError('LRCLIB 请求超时', 'ETIMEDOUT')))
+      req.once('error', error => finish(error))
+      req.end()
+    } catch (error) { finish(error) }
   })
 }
 

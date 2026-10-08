@@ -132,7 +132,7 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
         <label className="mv-check" style={{ height: 'auto' }}><input type="checkbox" checked={onlyInstalled} onChange={event => setOnlyInstalled(event.target.checked)} /><span>只看已安装</span></label>
         <span className="mv-caption">{index ? `${shown.length} / ${packs.length} 个包${updates.size ? ` · ${updates.size} 个有更新` : ''}` : ''}</span>
       </div>
-      {error && <Alert kind="error"><p className="mv-wrap" style={{ whiteSpace: 'pre-wrap' }}>{error}{/404/.test(error) ? '\n工坊仓库可能还没有发布内容（index.json 不存在）。' : /超时|ENOTFOUND|ECONN/.test(error) ? '\n连不上 raw.githubusercontent.com：检查网络，或在系统环境变量里设置 HTTPS_PROXY。' : ''}</p></Alert>}
+      {error && <Alert kind="error"><p className="mv-wrap" style={{ whiteSpace: 'pre-wrap' }}>{error}{/HTTP 451/.test(error) ? '\n下载源有平台内容访问限制，请联系仓库维护者处理；更改代理或关闭 TLS 校验不能解决。' : /404/.test(error) ? '\n工坊文件不存在；请刷新索引，或检查备用源是否同步完成。' : /超时|ENOTFOUND|ECONN|TLS|socket disconnected/i.test(error) && !/httpProxy|备用源/.test(error) ? '\n下载连接中断：检查插件 httpProxy、HTTPS_PROXY 或 workshopMirror；修改系统环境变量后需重启 Harness。' : ''}</p></Alert>}
       {note && <Alert kind="ok" actions={<button type="button" className="mv-link" onClick={() => setNote('')}>知道了</button>}><p className="mv-wrap">{note}</p></Alert>}
       {current ? (
         <div className="mv-ws-detail">
