@@ -8,8 +8,10 @@ import React from 'react'
 import { errorText } from './mv-info.mjs'
 import { Alert, Icon } from './mv-ui.jsx'
 import { loadPackFromHost, relocatePacks, rememberPack } from './mv-pack-state.mjs'
-import { durationText, tooOld, installWorkshopPack, installedState, loadWorkshop, moveWorkshopPacks, openWorkshopDir, publishWorkshopPack, setWorkshopDir, sizeText, uninstallWorkshopPack, workshopCover, workshopDirInfo } from './mv-workshop-state.mjs'
-import { WORKSHOP_REPO, compareVersions, filterWorkshop, workshopSlug } from '../shared/mv-workshop.mjs'
+import { durationText, tooOld, emptyWorkshopCommunity, installWorkshopPack, installedState, loadWorkshop, loadWorkshopCommunity, moveWorkshopPacks, openWorkshopDir, publicWorkshopCommunity, publishWorkshopPack, setWorkshopDir, sizeText, uninstallWorkshopPack, workshopCover, workshopDirInfo } from './mv-workshop-state.mjs'
+import { WORKSHOP_REPO, compareVersions, workshopSlug } from '../shared/mv-workshop.mjs'
+import { hasWorkshopMetrics, selectWorkshopPacks } from '../shared/mv-workshop-community.mjs'
+import { WorkshopCommunityStatus, WorkshopStatistics, WorkshopTrophy } from './mv-workshop-community.jsx'
 import { CLIENT_VERSION } from './remote-state.mjs'
 
 export { tooOld }
@@ -58,6 +60,7 @@ export function SourceLink({ url, compact = false }) {
 const copy = async text => { try { await globalThis.navigator?.clipboard?.writeText(text); return true } catch { return false } }
 
 export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null, canvas = () => null, initialIndex = null }) {
+  const communityEnabled = typeof api?.workshopCommunity === 'function'
   const [index, setIndex] = React.useState(initialIndex)
   const [loading, setLoading] = React.useState(!initialIndex)
   const [error, setError] = React.useState('')
@@ -65,12 +68,21 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
   const [query, setQuery] = React.useState('')
   const [license, setLicense] = React.useState('')
   const [renderer, setRenderer] = React.useState('')
-  const [onlyInstalled, setOnlyInstalled] = React.useState(false)
+  const [installation, setInstallation] = React.useState('any')
+  const [lyrics, setLyrics] = React.useState('any')
+  const [tag, setTag] = React.useState('')
+  const [compatibleOnly, setCompatibleOnly] = React.useState(false)
+  const [onlyAcclaimed, setOnlyAcclaimed] = React.useState(false)
+  const [sort, setSort] = React.useState('updated')
+  const [community, setCommunity] = React.useState(() => emptyWorkshopCommunity())
+  const [communityLoading, setCommunityLoading] = React.useState(false)
+  const [communityError, setCommunityError] = React.useState('')
   const [selected, setSelected] = React.useState(null)
   const [busy, setBusy] = React.useState('')
   const [confirmUninstall, setConfirmUninstall] = React.useState('')
   const [publishing, setPublishing] = React.useState(false)
   const covers = React.useRef(new Map())
+  const communityRequest = React.useRef(0)
 
   const refresh = React.useCallback(async (force = false) => {
     setLoading(true); setError('')
@@ -80,10 +92,57 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
   }, [api])
   React.useEffect(() => { if (!initialIndex) void refresh(false) }, [refresh])
 
+  const refreshCommunity = React.useCallback(async () => {
+    const request = ++communityRequest.current
+    setCommunityLoading(true); setCommunityError('')
+    setCommunity(previous => publicWorkshopCommunity(['ready', 'stale'].includes(previous.status) ? { ...previous, status: 'stale' } : previous))
+    try {
+      const next = await loadWorkshopCommunity(api)
+      if (request === communityRequest.current) setCommunity(next)
+    } catch (failure) {
+      if (request === communityRequest.current) {
+        setCommunityError(errorText(failure, '\u793e\u533a\u7edf\u8ba1\u6682\u65f6\u4e0d\u53ef\u7528\u3002'))
+        setCommunity(previous => ['ready', 'stale'].includes(previous.status) ? publicWorkshopCommunity({ ...previous, status: 'stale' }) : emptyWorkshopCommunity('offline'))
+      }
+    } finally {
+      if (request === communityRequest.current) setCommunityLoading(false)
+    }
+  }, [api])
+  React.useEffect(() => {
+    setCommunity(emptyWorkshopCommunity())
+    setCommunityLoading(false); setCommunityError('')
+    if (communityEnabled) void refreshCommunity()
+    return () => { communityRequest.current++ }
+  }, [refreshCommunity, communityEnabled])
+
   const { map: installed, updates } = installedState(index)
   const packs = index?.packs ?? []
-  const shown = filterWorkshop(packs, { query, license, renderer, installed, onlyInstalled })
+  const tags = [...new Set(packs.flatMap(pack => pack.tags ?? []))].sort((a, b) => a.localeCompare(b, 'zh-CN'))
+  const licenses = [...new Set([...LICENSES, ...packs.map(pack => pack.license).filter(Boolean)])]
+  const renderers = [...new Set([...Object.keys(RENDERERS), ...packs.map(pack => pack.renderer).filter(Boolean)])]
+  const communityKnown = communityEnabled && ['ready', 'stale'].includes(community.status)
+  const communityRecords = communityKnown ? Object.values(community.packs) : []
+  const metricsAvailable = communityEnabled && hasWorkshopMetrics(community)
+  const sortAvailable = {
+    catalogue: true, updated: true, title: true,
+    downloads: metricsAvailable && communityRecords.some(record => record.downloadCount !== null),
+    likes: metricsAvailable && communityRecords.some(record => record.likeCount !== null),
+    popular: metricsAvailable && communityRecords.some(record => record.popularityScore !== null),
+  }
+  const effectiveSort = sortAvailable[sort] ? sort : 'updated'
+  React.useEffect(() => { if (sort !== effectiveSort) setSort(effectiveSort) }, [sort, effectiveSort])
+  React.useEffect(() => { if (!communityKnown) setOnlyAcclaimed(false) }, [communityKnown])
+  const shown = selectWorkshopPacks(packs, {
+    query, license, renderer, installed, installation, updates, lyrics, tag,
+    compatibleOnly, clientVersion: CLIENT_VERSION, onlyAcclaimed: communityEnabled && onlyAcclaimed, sort: effectiveSort,
+  }, communityEnabled ? community : null)
   const current = selected ? packs.find(p => p.id === selected) : null
+  const communityRecord = id => communityKnown ? community.packs[id] ?? null : null
+  const hasFilters = Boolean(query || license || renderer || tag || installation !== 'any' || lyrics !== 'any' || compatibleOnly || onlyAcclaimed)
+  const clearFilters = () => {
+    setQuery(''); setLicense(''); setRenderer(''); setTag('')
+    setInstallation('any'); setLyrics('any'); setCompatibleOnly(false); setOnlyAcclaimed(false)
+  }
 
   const open = async manifestPath => {
     const loaded = await loadPackFromHost(api, manifestPath)
@@ -111,26 +170,79 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
   const canPublish = active && !active.empty && active.manifestPath
   return (
     <div className="mv-dialog mv-ws" role="dialog" aria-label="创意工坊">
-      <div className="mv-row" style={{ justifyContent: 'space-between' }}>
+      <div className="mv-row mv-ws-heading">
         <h2 style={{ margin: 0 }}>创意工坊 <span className="mv-caption">社区 MV 包 · <a href={REPO_URL} target="_blank" rel="noreferrer">{WORKSHOP_REPO}</a></span></h2>
         <div className="mv-row">
-          <button type="button" className="mv-button mv-button-secondary mv-button-small" disabled={loading} onClick={() => void refresh(true)}>{loading ? '读取中…' : '刷新'}</button>
+          <button type="button" className="mv-button mv-button-secondary mv-button-small" disabled={loading} onClick={() => { void refresh(true); if (communityEnabled) void refreshCommunity() }}>{loading ? '读取中…' : '刷新'}</button>
           <button type="button" className="mv-button mv-button-small" disabled={!canPublish} title={canPublish ? `把当前的 MV 包「${active.pack.title}」发布到工坊` : '先在曲库里打开你自己的 MV 包'} onClick={() => setPublishing(value => !value)}>发布到工坊…</button>
           <button type="button" className="mv-icon-button" aria-label="关闭创意工坊" onClick={onClose}><Icon.close /></button>
         </div>
       </div>
+      {communityEnabled && <WorkshopCommunityStatus community={community} loading={communityLoading} error={communityError} />}
       <TrustNote />
       {publishing && canPublish && <PublishDialog api={api} pack={active} canvas={canvas} onClose={() => setPublishing(false)} />}
-      <div className="mv-row mv-ws-filters">
-        <input className="mv-ws-search" value={query} placeholder="搜索歌名、歌手、作者、标签" aria-label="搜索工坊" onChange={event => setQuery(event.target.value)} />
-        <select value={license} aria-label="按许可证筛选" onChange={event => setLicense(event.target.value)}>
-          <option value="">全部许可证</option>{LICENSES.map(l => <option key={l} value={l}>{l}</option>)}
-        </select>
-        <select value={renderer} aria-label="按渲染方式筛选" onChange={event => setRenderer(event.target.value)}>
-          <option value="">全部类型</option>{Object.entries(RENDERERS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-        <label className="mv-check" style={{ height: 'auto' }}><input type="checkbox" checked={onlyInstalled} onChange={event => setOnlyInstalled(event.target.checked)} /><span>只看已安装</span></label>
-        <span className="mv-caption">{index ? `${shown.length} / ${packs.length} 个包${updates.size ? ` · ${updates.size} 个有更新` : ''}` : ''}</span>
+      <div className="mv-ws-search-row">
+        <input className="mv-ws-search" value={query} maxLength={500} placeholder="搜索歌名、歌手、作者、标签" aria-label="搜索工坊" onChange={event => setQuery(event.target.value.replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, 500))} />
+        <label className="mv-ws-filter mv-ws-sort">
+          <span>{'\u6392\u5e8f'}</span>
+          <select value={effectiveSort} aria-label={'\u5de5\u574a\u6392\u5e8f'} onChange={event => setSort(event.target.value)}>
+            <option value="updated">{'\u6700\u8fd1\u66f4\u65b0'}</option>
+            <option value="title">{'\u540d\u79f0'}</option>
+            <option value="catalogue">{'\u76ee\u5f55\u987a\u5e8f'}</option>
+            {communityEnabled && <>
+              <option value="downloads" disabled={!sortAvailable.downloads}>{'\u4e0b\u8f7d\u6570'}</option>
+              <option value="likes" disabled={!sortAvailable.likes}>{'\u70b9\u8d5e\u6570'}</option>
+              <option value="popular" disabled={!sortAvailable.popular}>{'\u70ed\u95e8'}</option>
+            </>}
+          </select>
+        </label>
+      </div>
+      <div className="mv-ws-filters">
+        <label className="mv-ws-filter">
+          <span>{'\u7c7b\u578b'}</span>
+          <select value={renderer} aria-label="按渲染方式筛选" onChange={event => setRenderer(event.target.value)}>
+            <option value="">{'\u5168\u90e8\u7c7b\u578b'}</option>{renderers.map(value => <option key={value} value={value}>{RENDERERS[value] ?? value}</option>)}
+          </select>
+        </label>
+        <label className="mv-ws-filter">
+          <span>{'\u8bb8\u53ef\u8bc1'}</span>
+          <select value={license} aria-label="按许可证筛选" onChange={event => setLicense(event.target.value)}>
+            <option value="">{'\u5168\u90e8\u8bb8\u53ef\u8bc1'}</option>{licenses.map(value => <option key={value} value={value}>{value}</option>)}
+          </select>
+        </label>
+        <label className="mv-ws-filter">
+          <span>{'\u6807\u7b7e'}</span>
+          <select value={tag} aria-label={'\u6309\u6807\u7b7e\u7b5b\u9009'} onChange={event => setTag(event.target.value)}>
+            <option value="">{'\u5168\u90e8\u6807\u7b7e'}</option>{tags.map(value => <option key={value} value={value}>{'#' + value}</option>)}
+          </select>
+        </label>
+        <label className="mv-ws-filter">
+          <span>{'\u6b4c\u8bcd'}</span>
+          <select value={lyrics} aria-label={'\u6309\u6b4c\u8bcd\u5185\u5bb9\u7b5b\u9009'} onChange={event => setLyrics(event.target.value)}>
+            <option value="any">{'\u5168\u90e8\u6b4c\u8bcd\u5185\u5bb9'}</option>
+            <option value="included">{'\u542b\u6b4c\u8bcd\u4e0e\u8bd1\u6587'}</option>
+            <option value="timing">{'\u4ec5\u6b4c\u8bcd\u65f6\u95f4\u8f74'}</option>
+            <option value="none">{'\u65e0\u6b4c\u8bcd\u8f68'}</option>
+          </select>
+        </label>
+        <label className="mv-ws-filter">
+          <span>{'\u5b89\u88c5\u72b6\u6001'}</span>
+          <select value={installation} aria-label={'\u6309\u5b89\u88c5\u72b6\u6001\u7b5b\u9009'} onChange={event => setInstallation(event.target.value)}>
+            <option value="any">{'\u5168\u90e8\u5b89\u88c5\u72b6\u6001'}</option>
+            <option value="installed">{'\u5df2\u5b89\u88c5'}</option>
+            <option value="updates">{'\u6709\u66f4\u65b0'}</option>
+          </select>
+        </label>
+      </div>
+      <div className="mv-row mv-ws-filter-checks">
+        <label className="mv-check"><input type="checkbox" checked={compatibleOnly} onChange={event => setCompatibleOnly(event.target.checked)} /><span>{'\u53ea\u770b\u53ef\u517c\u5bb9'}</span></label>
+        {communityEnabled && <label className="mv-check"><input type="checkbox" checked={onlyAcclaimed} disabled={!communityKnown} onChange={event => setOnlyAcclaimed(event.target.checked)} /><span>{'\u5e7f\u53d7\u597d\u8bc4'}</span></label>}
+        {communityEnabled && !communityKnown && <span className="mv-caption">{'\u793e\u533a\u6392\u540d\u4e0e\u5956\u676f\u7b5b\u9009\u9700\u771f\u5b9e\u793e\u533a\u6570\u636e'}</span>}
+        {effectiveSort === 'popular' && <span className="mv-caption">{'\u70ed\u95e8\u6392\u540d\u4f7f\u7528\u793e\u533a\u63d0\u4f9b\u7684\u70ed\u5ea6\u5206\u6570'}</span>}
+      </div>
+      <div className="mv-row mv-ws-results">
+        <button type="button" className="mv-button mv-button-secondary mv-button-small" disabled={!hasFilters} onClick={clearFilters}>{'\u6e05\u9664\u7b5b\u9009'}</button>
+        <span className="mv-caption" role="status" aria-live="polite">{index ? shown.length + ' / ' + packs.length + '\u4e2a\u5305' + (updates.size ? ' \u00b7 ' + updates.size + '\u4e2a\u6709\u66f4\u65b0' : '') : ''}</span>
       </div>
       {error && <Alert kind="error"><p className="mv-wrap" style={{ whiteSpace: 'pre-wrap' }}>{error}{/HTTP 451/.test(error) ? '\n下载源有平台内容访问限制，请联系仓库维护者处理；更改代理或关闭 TLS 校验不能解决。' : /404/.test(error) ? '\n工坊文件不存在；请刷新索引，或检查备用源是否同步完成。' : /超时|ENOTFOUND|ECONN|TLS|socket disconnected/i.test(error) && !/httpProxy|备用源/.test(error) ? '\n下载连接中断：检查插件 httpProxy、HTTPS_PROXY 或 workshopMirror；修改系统环境变量后需重启 Harness。' : ''}</p></Alert>}
       {note && <Alert kind="ok" actions={<button type="button" className="mv-link" onClick={() => setNote('')}>知道了</button>}><p className="mv-wrap">{note}</p></Alert>}
@@ -141,6 +253,10 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
             <button type="button" className="mv-link" onClick={() => setSelected(null)}>← 返回列表</button>
             <h3 style={{ margin: '6px 0 2px' }}>{current.title}</h3>
             <p className="mv-caption" style={{ marginTop: 0 }}>{current.artist || '未知艺术家'} · 作者 {current.author || '—'} · v{current.version}</p>
+            {communityEnabled && <div className="mv-ws-detail-community">
+              <WorkshopTrophy record={communityRecord(current.id)} policy={community.policy} />
+              <WorkshopStatistics title={current.title} record={communityRecord(current.id)} />
+            </div>}
             <p className="mv-wrap">{current.description || '（没有简介）'}</p>
             {current.source && <p className="mv-wrap"><SourceLink url={current.source} /></p>}
             <div className="mv-row">
@@ -171,22 +287,29 @@ export function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null
       ) : (
         <div className="mv-ws-grid" aria-busy={loading}>
           {shown.map(pack => (
-            <div key={pack.id} role="button" tabIndex={0} className="mv-ws-card" onClick={() => setSelected(pack.id)} title={pack.description}
-              onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelected(pack.id) } }}>
-              <Cover api={api} pack={pack} cache={covers} />
-              <span className="mv-card-title">{pack.title}</span>
-              <span className="mv-card-sub">{pack.artist || '未知艺术家'} · {durationText(pack.duration)}</span>
-              <span className="mv-card-sub">by {pack.author || '—'} · {pack.license}</span>
-              {pack.lyrics && <span className="mv-card-sub">歌词与译文已包含 · 只需自备音乐</span>}
+            <article key={pack.id} className="mv-ws-card" data-pack-id={pack.id} aria-labelledby={'mv-ws-pack-title-' + pack.id}>
+              <button type="button" className="mv-ws-card-open" onClick={() => setSelected(pack.id)} title={pack.description} aria-label={'\u67e5\u770b\u300a' + pack.title + '\u300b\u8be6\u60c5'}>
+                <Cover api={api} pack={pack} cache={covers} />
+                <span className="mv-ws-card-intro">
+                  <span className="mv-card-title" id={'mv-ws-pack-title-' + pack.id}>{pack.title}</span>
+                  <span className="mv-card-sub">{pack.artist || '未知艺术家'} · {durationText(pack.duration)}</span>
+                  <span className="mv-card-sub">by {pack.author || '—'} · {pack.license}</span>
+                  {pack.lyrics && <span className="mv-card-sub">歌词与译文已包含 · 只需自备音乐</span>}
+                </span>
+              </button>
+              {communityEnabled && <div className="mv-ws-card-community">
+                <WorkshopTrophy record={communityRecord(pack.id)} policy={community.policy} compact />
+                <WorkshopStatistics title={pack.title} record={communityRecord(pack.id)} compact />
+              </div>}
               {pack.source && <span className="mv-card-sub"><SourceLink url={pack.source} compact /></span>}
               {installed[pack.id] && <span className={`mv-ws-badge${updates.has(pack.id) ? ' mv-ws-badge-update' : ''}`}>{updates.has(pack.id) ? '有更新' : '已安装'}</span>}
-            </div>
+            </article>
           ))}
           {index && !shown.length && <p className="mv-caption">{packs.length ? '没有符合条件的包。' : '工坊里还没有包。'}</p>}
         </div>
       )}
       <WorkshopDirSettings api={api} active={active} onRecent={onRecent} onLoaded={onLoaded} onChanged={() => void refresh(false)} />
-      <p className="mv-caption">工坊没有服务器：目录来自仓库里由 GitHub Actions 生成的 index.json。想投稿？打开你的 MV 包后点「发布到工坊…」，或看 <a href={`${REPO_URL}/blob/main/CONTRIBUTING.zh.md`} target="_blank" rel="noreferrer">投稿说明</a>。</p>
+      <p className="mv-caption">{'\u5de5\u574a\u76ee\u5f55\u6765\u81ea\u4ed3\u5e93\u91cc\u7531 GitHub Actions \u751f\u6210\u7684 index.json\u3002\u60f3\u6295\u7a3f\uff1f\u6253\u5f00\u4f60\u7684 MV \u5305\u540e\u70b9\u300c\u53d1\u5e03\u5230\u5de5\u574a\u2026\u300d\uff0c\u6216\u770b '}<a href={REPO_URL + '/blob/main/CONTRIBUTING.zh.md'} target="_blank" rel="noreferrer">{'\u6295\u7a3f\u8bf4\u660e'}</a>{'\u3002'}</p>
     </div>
   )
 }

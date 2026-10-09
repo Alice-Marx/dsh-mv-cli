@@ -43,10 +43,10 @@ __export(index_exports, {
   registerUi: () => registerUi
 });
 module.exports = __toCommonJS(index_exports);
-var import_react11 = __toESM(require("react"), 1);
+var import_react12 = __toESM(require("react"), 1);
 
 // .dsh-plugin/client/mv-panel.jsx
-var import_react10 = __toESM(require("react"), 1);
+var import_react11 = __toESM(require("react"), 1);
 
 // .dsh-plugin/client/canvas-mv.jsx
 var import_react3 = __toESM(require("react"), 1);
@@ -200,10 +200,10 @@ var WORD_STAMP = /<(\d{1,3}):(\d{1,2}(?:[.:]\d{1,3})?)>/g;
 function splitWordStamps(line, shift = 0) {
   if (!/<\d{1,3}:\d{1,2}/.test(line)) return { text: line, words: null };
   const words = [];
-  let text4 = "", at = null, m, last = 0;
+  let text5 = "", at = null, m, last = 0;
   WORD_STAMP.lastIndex = 0;
   const push = (chunk) => {
-    text4 += chunk;
+    text5 += chunk;
     if (at !== null && chunk.trim()) words.push({ text: chunk.trim(), time: round3(at + shift) });
   };
   while (m = WORD_STAMP.exec(line)) {
@@ -212,13 +212,13 @@ function splitWordStamps(line, shift = 0) {
     last = m.index + m[0].length;
   }
   push(line.slice(last));
-  return { text: text4.replace(/\s+/g, " ").trim(), words: words.length ? words : null };
+  return { text: text5.replace(/\s+/g, " ").trim(), words: words.length ? words : null };
 }
-function parseLrc(text4, { duration = 1e9 } = {}) {
+function parseLrc(text5, { duration = 1e9 } = {}) {
   const byTime = /* @__PURE__ */ new Map();
   let offsetMs = 0;
   const order = [];
-  for (const raw of String(text4).replace(/^\uFEFF/, "").split(/\r?\n/)) {
+  for (const raw of String(text5).replace(/^\uFEFF/, "").split(/\r?\n/)) {
     const tag = /^\s*\[offset:\s*([+-]?\d+)\s*\]/i.exec(raw);
     if (tag) {
       offsetMs = Number(tag[1]);
@@ -271,8 +271,8 @@ function parseLrc(text4, { duration = 1e9 } = {}) {
 }
 var SRT_TIME = /(\d{1,2}):(\d{2}):(\d{2})[,.](\d{1,3})/;
 var srtSeconds = (m) => Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number(m[4].padEnd(3, "0")) / 1e3;
-function parseSrt(text4, { duration = 1e9 } = {}) {
-  const blocks = String(text4).replace(/^\uFEFF/, "").replace(/\r/g, "").split(/\n\s*\n/);
+function parseSrt(text5, { duration = 1e9 } = {}) {
+  const blocks = String(text5).replace(/^\uFEFF/, "").replace(/\r/g, "").split(/\n\s*\n/);
   const cues = [];
   for (const block2 of blocks) {
     const lines = block2.split("\n");
@@ -286,8 +286,8 @@ function parseSrt(text4, { duration = 1e9 } = {}) {
   }
   return finish(cues, duration);
 }
-function parseLyricsJson(text4, { duration = 1e9 } = {}) {
-  const data = typeof text4 === "string" ? JSON.parse(text4.replace(/^\uFEFF/, "")) : text4;
+function parseLyricsJson(text5, { duration = 1e9 } = {}) {
+  const data = typeof text5 === "string" ? JSON.parse(text5.replace(/^\uFEFF/, "")) : text5;
   const list = Array.isArray(data) ? data : Array.isArray(data?.lyrics) ? data.lyrics : null;
   if (!list) throw new Error("\u6B4C\u8BCD JSON \u5E94\u4E3A [{ time, end, en, zh }] \u6570\u7EC4\u3002");
   return finish(list.map((item) => ({
@@ -305,12 +305,12 @@ function jsonWords(value) {
 }
 var JS_GAP = String.raw`(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\r\n]*(?:\r\n?|\n|$))*`;
 var JS_LYRICS_DECL = new RegExp(`\\b(?:const|let|var)\\b${JS_GAP}LYRICS\\b${JS_GAP}=${JS_GAP}\\[`, "i");
-var looksLikeLyricsJs = (text4) => {
-  const body = String(text4);
+var looksLikeLyricsJs = (text5) => {
+  const body = String(text5);
   return !/^\s*[\[{]/.test(body) && JS_LYRICS_DECL.test(body);
 };
-function lyricModuleReader(text4) {
-  const source = String(text4).replace(/^\uFEFF/, "");
+function lyricModuleReader(text5) {
+  const source = String(text5).replace(/^\uFEFF/, "");
   if (source.length > 2 * 1024 * 1024) throw new Error("\u6B4C\u8BCD JS \u8D85\u8FC7 2 Mi \u5B57\u7B26\u9650\u5236\u3002");
   let at = 0, cached = null, items = 0, literalMode = false, regexAllowed = true;
   const numberPattern = /[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/iy;
@@ -492,8 +492,8 @@ function lyricModuleReader(text4) {
   }
   fail5("\u627E\u4E0D\u5230 const LYRICS = [...] \u6570\u636E\u58F0\u660E");
 }
-function parseLyricsJs(text4, options) {
-  const data = lyricModuleReader(text4);
+function parseLyricsJs(text5, options) {
+  const data = lyricModuleReader(text5);
   if (!data.every((item) => item !== null && typeof item === "object" && !Array.isArray(item))) throw new Error("\u6B4C\u8BCD JS \u7684 LYRICS \u5E94\u4E3A [{ t, en, cn }] \u6216 [{ time, en, zh }] \u9759\u6001\u5BF9\u8C61\u6570\u7EC4\u3002");
   const ordered = data.slice().sort((a, b) => Number(a.time ?? a.t) - Number(b.time ?? b.t));
   for (let i = 0; i < ordered.length; i++) {
@@ -505,9 +505,9 @@ function parseLyricsJs(text4, options) {
   }
   return parseLyricsJson(ordered, options);
 }
-function parseLyrics(name, text4, options) {
+function parseLyrics(name, text5, options) {
   const lower = String(name ?? "").toLowerCase();
-  const body = String(text4);
+  const body = String(text5);
   if (lower.endsWith(".js") || lower.endsWith(".mjs") || looksLikeLyricsJs(body)) return parseLyricsJs(body, options);
   if (lower.endsWith(".json")) return parseLyricsJson(body, options);
   if (lower.endsWith(".srt") || lower.endsWith(".vtt")) return parseSrt(body, options);
@@ -520,8 +520,8 @@ function parseLyrics(name, text4, options) {
 // .dsh-plugin/client/mv/spectrum.mjs
 var BANDS = 48;
 var SILENT = Object.freeze(new Array(BANDS).fill(0));
-function spectrumFromJson(text4) {
-  const data = typeof text4 === "string" ? JSON.parse(text4.replace(/^\uFEFF/, "")) : text4;
+function spectrumFromJson(text5) {
+  const data = typeof text5 === "string" ? JSON.parse(text5.replace(/^\uFEFF/, "")) : text5;
   const fps = Number(data?.fps);
   const frames = data?.frames;
   if (!Number.isFinite(fps) || fps <= 0 || !Array.isArray(frames) || !frames.length) throw new Error("spectrum.json \u683C\u5F0F\u65E0\u6548\uFF08\u9700\u8981 fps \u4E0E frames\uFF09\u3002");
@@ -669,9 +669,9 @@ async function tx(db, mode, fn) {
   const store = db.transaction(STORE, mode).objectStore(STORE);
   return request(fn(store));
 }
-async function putMedia(db, slot, record) {
+async function putMedia(db, slot, record2) {
   try {
-    await tx(db, "readwrite", (store) => store.put({ ...record, savedAt: Date.now() }, slot));
+    await tx(db, "readwrite", (store) => store.put({ ...record2, savedAt: Date.now() }, slot));
   } catch {
   }
 }
@@ -964,14 +964,14 @@ function cw(ch) {
   }
   return n;
 }
-var width = (text4) => {
+var width = (text5) => {
   let n = 0;
-  for (const ch of String(text4)) n += cw(ch);
+  for (const ch of String(text5)) n += cw(ch);
   return n;
 };
-function crop(text4, n) {
+function crop(text5, n) {
   let out = "", used = 0;
-  for (const ch of String(text4)) {
+  for (const ch of String(text5)) {
     const k = cw(ch);
     if (used + k > n) break;
     out += ch;
@@ -979,9 +979,9 @@ function crop(text4, n) {
   }
   return out;
 }
-function wrap(text4, n) {
+function wrap(text5, n) {
   const lines = [];
-  let rest = String(text4).trim();
+  let rest = String(text5).trim();
   if (n < 1) return [rest];
   while (rest) {
     if (width(rest) <= n) {
@@ -1003,12 +1003,12 @@ var Grid = class {
     this.cells = Array.from({ length: h }, () => Array.from({ length: w }, () => [" ", DIM]));
   }
   /** Write text from column x on row y (clipped at the edges; wide characters never split). */
-  put(x, y, text4, style = NORMAL) {
+  put(x, y, text5, style = NORMAL) {
     x = Math.trunc(x);
     y = Math.trunc(y);
     if (y < 0 || y >= this.h) return;
     const row = this.cells[y];
-    for (const ch of String(text4)) {
+    for (const ch of String(text5)) {
       const k = cw(ch);
       if (!k) continue;
       if (x >= 0 && x + k <= this.w) {
@@ -1018,8 +1018,8 @@ var Grid = class {
       x += k;
     }
   }
-  center(y, text4, style = NORMAL) {
-    this.put(Math.floor((this.w - width(text4)) / 2), y, text4, style);
+  center(y, text5, style = NORMAL) {
+    this.put(Math.floor((this.w - width(text5)) / 2), y, text5, style);
   }
   fill(y0, y1, style = DIM) {
     for (let y = Math.max(0, y0); y <= Math.min(this.h - 1, y1); y++) this.put(0, y, " ".repeat(this.w), style);
@@ -1367,12 +1367,12 @@ function stripModuleSyntax(source) {
 }
 function sceneSourceProblems(source, { output = "text" } = {}) {
   const problems = [];
-  const text4 = String(source ?? "");
-  if (!text4.trim()) problems.push("\u573A\u666F\u811A\u672C\u662F\u7A7A\u7684\u3002");
+  const text5 = String(source ?? "");
+  if (!text5.trim()) problems.push("\u573A\u666F\u811A\u672C\u662F\u7A7A\u7684\u3002");
   const limit = output === "webgl" ? SCENE_LIMITS.webglScriptBytes : SCENE_LIMITS.scriptBytes;
-  if (new TextEncoder().encode(text4).length > limit) problems.push(`\u573A\u666F\u811A\u672C\u8D85\u8FC7 ${limit / 1024} KB\u3002`);
+  if (new TextEncoder().encode(text5).length > limit) problems.push(`\u573A\u666F\u811A\u672C\u8D85\u8FC7 ${limit / 1024} KB\u3002`);
   const gap = String.raw`(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\r\n]*(?:\r\n?|\n|$))*`;
-  if (/^\s*import\s[^(]/m.test(text4) || new RegExp(`\\b(?:import|require)${gap}\\(`).test(text4)) problems.push("\u573A\u666F\u811A\u672C\u4E0D\u80FD import / require \u5176\u4ED6\u6A21\u5757\uFF08\u8FD0\u884C\u5728\u6CA1\u6709\u6587\u4EF6\u548C\u7F51\u7EDC\u7684\u6C99\u7BB1\u91CC\uFF09\u3002");
+  if (/^\s*import\s[^(]/m.test(text5) || new RegExp(`\\b(?:import|require)${gap}\\(`).test(text5)) problems.push("\u573A\u666F\u811A\u672C\u4E0D\u80FD import / require \u5176\u4ED6\u6A21\u5757\uFF08\u8FD0\u884C\u5728\u6CA1\u6709\u6587\u4EF6\u548C\u7F51\u7EDC\u7684\u6C99\u7BB1\u91CC\uFF09\u3002");
   return problems;
 }
 var SCENE_RUNTIME_SOURCE = String.raw`
@@ -1704,9 +1704,9 @@ function cueWords(cue) {
   if (Array.isArray(cue.words) && cue.words.length) {
     return cue.words.map((w, i, all) => ({ text: String(w.text ?? ""), start: r3(w.time), end: r3(all[i + 1]?.time ?? end) }));
   }
-  const text4 = String(cue.en || cue.zh || "");
+  const text5 = String(cue.en || cue.zh || "");
   const parts = [];
-  for (const token of text4.split(/\s+/).filter(Boolean)) {
+  for (const token of text5.split(/\s+/).filter(Boolean)) {
     if (CJK_CHAR.test(token)) for (const ch of token) parts.push(ch);
     else parts.push(token);
   }
@@ -1812,7 +1812,7 @@ var closeBitmap = (bitmap) => {
 var invalidWorkerMessage = (detail) => `\u573A\u666F\u811A\u672C\u8FD4\u56DE\u4E86\u65E0\u6548\u6D88\u606F\uFF1A${detail}`;
 function bitmapSubtitles(g, cue, x, y, w, h) {
   if (!cue || !(cue.en || cue.zh)) return;
-  const lines = [cue.en, cue.zh].filter(Boolean).map((text4) => String(text4).slice(0, 512));
+  const lines = [cue.en, cue.zh].filter(Boolean).map((text5) => String(text5).slice(0, 512));
   const fontSize = Math.max(12, Math.min(40, Math.round(h / 22)));
   const lineHeight = fontSize * 1.35, pad = Math.max(5, h * 0.025);
   const top = y + h - pad - lines.length * lineHeight;
@@ -1830,31 +1830,31 @@ function bitmapSubtitles(g, cue, x, y, w, h) {
     g.textBaseline = "middle";
     g.fillStyle = "rgba(0,0,0,0.65)";
     g.fillRect(x + w * 0.025, top - pad * 0.5, w * 0.95, lines.length * lineHeight + pad);
-    lines.forEach((text4, i) => {
+    lines.forEach((text5, i) => {
       let size = fontSize;
       const setFont = () => {
         g.font = `600 ${size}px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif`;
       };
       setFont();
-      const measured = g.measureText(text4).width;
+      const measured = g.measureText(text5).width;
       if (measured > maxWidth) {
         size = Math.max(10, fontSize * maxWidth / measured);
         setFont();
       }
-      if (g.measureText(text4).width > maxWidth) {
-        let lo = 0, hi = text4.length;
+      if (g.measureText(text5).width > maxWidth) {
+        let lo = 0, hi = text5.length;
         while (lo < hi) {
           const mid = Math.ceil((lo + hi) / 2);
-          if (g.measureText(text4.slice(0, mid) + "\u2026").width <= maxWidth) lo = mid;
+          if (g.measureText(text5.slice(0, mid) + "\u2026").width <= maxWidth) lo = mid;
           else hi = mid - 1;
         }
-        text4 = text4.slice(0, lo) + "\u2026";
+        text5 = text5.slice(0, lo) + "\u2026";
       }
       g.lineWidth = Math.max(2, size / 8);
       g.strokeStyle = "#000";
-      g.strokeText(text4, x + w / 2, top + (i + 0.5) * lineHeight, maxWidth);
+      g.strokeText(text5, x + w / 2, top + (i + 0.5) * lineHeight, maxWidth);
       g.fillStyle = i === 0 ? "#fff" : "#c4deff";
-      g.fillText(text4, x + w / 2, top + (i + 0.5) * lineHeight, maxWidth);
+      g.fillText(text5, x + w / 2, top + (i + 0.5) * lineHeight, maxWidth);
     });
   } finally {
     g.restore();
@@ -2379,9 +2379,9 @@ var part = (parts, ...names) => {
   return "";
 };
 var allText = (parts) => parts.map((p) => p[1]).join(" ");
-function wrap2(ctx, text4, width2) {
+function wrap2(ctx, text5, width2) {
   const out = [];
-  for (const para of String(text4).split("\n")) {
+  for (const para of String(text5).split("\n")) {
     let line = "";
     for (const ch of para) {
       if (ctx.measureText(line + ch).width > width2 && line) {
@@ -2568,10 +2568,10 @@ function drawPage(ctx, chat, row, env) {
     const input = part(comp.parts, "input"), ph = part(comp.parts, "placeholder");
     ctx.font = `16px ${SANS}`;
     ctx.fillStyle = input ? C.primary : C.tertiary;
-    const text4 = input || ph;
-    let shown = text4;
+    const text5 = input || ph;
+    let shown = text5;
     while (shown && ctx.measureText(shown).width > PAGE_W - 52) shown = shown.slice(0, -1);
-    ctx.fillText(shown + (shown !== text4 ? "\u2026" : ""), 26, cy + 14);
+    ctx.fillText(shown + (shown !== text5 ? "\u2026" : ""), 26, cy + 14);
     ctx.strokeStyle = C.secondary;
     ctx.lineWidth = 1.2;
     for (const cx of [32, 72]) {
@@ -2634,19 +2634,19 @@ var MAX_TYPE = 0.25;
 var MIN_TYPE = 0.06;
 var BEAT = 60 / 130;
 var INLINE = /<\d+:\d+(?:[.:]\d+)?>/g;
-function lineVariants(text4) {
-  const body = String(text4 ?? "");
+function lineVariants(text5) {
+  const body = String(text5 ?? "");
   return [.../* @__PURE__ */ new Set([body.trim(), body.split(/\s+/).filter(Boolean).join(" "), body.replace(INLINE, "").split(/\s+/).filter(Boolean).join(" ")])].filter(Boolean);
 }
-async function sha256Text(text4, subtle = globalThis.crypto?.subtle) {
-  const digest = await subtle.digest("SHA-256", new TextEncoder().encode(text4));
+async function sha256Text(text5, subtle = globalThis.crypto?.subtle) {
+  const digest = await subtle.digest("SHA-256", new TextEncoder().encode(text5));
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
-function applyPatch(text4, ops = []) {
-  let words = text4.split(/\s+/).filter(Boolean);
+function applyPatch(text5, ops = []) {
+  let words = text5.split(/\s+/).filter(Boolean);
   for (const op of ops) {
     if (op.op === "reorder_words") {
-      if (op.order.length !== words.length) return text4;
+      if (op.order.length !== words.length) return text5;
       words = op.order.map((k) => words[k]);
     } else if (op.op === "replace_words") words.splice(op.at, op.remove, ...op.insert);
   }
@@ -2684,17 +2684,17 @@ async function matchBand(band, cues, { duration = 211.913, hash = sha256Text } =
   }
   const lines = [];
   band.lines.forEach((ln) => {
-    let text4 = found.get(ln.sha256);
-    if (!text4) return;
-    if (ln.patch) text4 = applyPatch(text4, ln.patch);
-    for (const [a, b] of Object.entries(band.fixes ?? {})) text4 = text4.split(a).join(b);
+    let text5 = found.get(ln.sha256);
+    if (!text5) return;
+    if (ln.patch) text5 = applyPatch(text5, ln.patch);
+    for (const [a, b] of Object.entries(band.fixes ?? {})) text5 = text5.split(a).join(b);
     const words = ln.words.map(([c0, c1, onset, dur]) => {
-      const shown = text4.slice(c0, c1);
+      const shown = text5.slice(c0, c1);
       const td = shown.includes("-") ? dur : Math.min(MAX_TYPE, dur);
       return [c0, c1, onset, Math.max(MIN_TYPE, td)];
     });
     if (!words.length) return;
-    lines.push({ text: text4, start: words[0][2], end: ln.displayEnd, words });
+    lines.push({ text: text5, start: words[0][2], end: ln.displayEnd, words });
   });
   const total = band.lines.filter((ln) => ln.sha256).length;
   if (lines.length >= Math.max(8, total * 0.5)) return { lines: finish2(lines, duration), matched: lines.length, total };
@@ -2703,17 +2703,17 @@ async function matchBand(band, cues, { duration = 211.913, hash = sha256Text } =
 function fromCues(cues, duration = 211.913) {
   const out = [];
   for (const cue of cues ?? []) {
-    const text4 = cueText(cue);
-    if (!text4) continue;
+    const text5 = cueText(cue);
+    if (!text5) continue;
     const end = Number.isFinite(cue.end) ? cue.end : cue.time + 3;
     const span = Math.max(0.3, Math.min(4, (end - cue.time) * 0.6));
     const words = [];
     const re = /\S+/g;
     let m;
     const all = [];
-    while (m = re.exec(text4)) all.push([m.index, m.index + m[0].length]);
+    while (m = re.exec(text5)) all.push([m.index, m.index + m[0].length]);
     all.forEach(([c0, c1], k) => words.push([c0, c1, cue.time + span * k / Math.max(1, all.length), Math.max(MIN_TYPE, Math.min(MAX_TYPE, span / Math.max(1, all.length)))]));
-    if (words.length) out.push({ text: text4, start: cue.time, end, words });
+    if (words.length) out.push({ text: text5, start: cue.time, end, words });
   }
   return finish2(out, duration);
 }
@@ -2874,16 +2874,16 @@ function rasterImageDimensions(input) {
   const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
   if (!bytes.length || bytes.length > DSHPV_RASTER_LIMITS.imageBytes) fail("\u56FE\u96C6\u6587\u4EF6\u5927\u5C0F\u65E0\u6548");
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const text4 = (at2, length) => String.fromCharCode(...bytes.subarray(at2, at2 + length));
-  if (bytes.length >= 24 && bytes[0] === 137 && text4(1, 7) === "PNG\r\n\n" && text4(12, 4) === "IHDR") return checkDimensions(view.getUint32(16), view.getUint32(20));
-  if (bytes.length < 26 || text4(0, 4) !== "RIFF" || text4(8, 4) !== "WEBP") fail("\u56FE\u96C6\u5FC5\u987B\u662F PNG \u6216 WebP");
+  const text5 = (at2, length) => String.fromCharCode(...bytes.subarray(at2, at2 + length));
+  if (bytes.length >= 24 && bytes[0] === 137 && text5(1, 7) === "PNG\r\n\n" && text5(12, 4) === "IHDR") return checkDimensions(view.getUint32(16), view.getUint32(20));
+  if (bytes.length < 26 || text5(0, 4) !== "RIFF" || text5(8, 4) !== "WEBP") fail("\u56FE\u96C6\u5FC5\u987B\u662F PNG \u6216 WebP");
   if (view.getUint32(4, true) !== bytes.length - 8) fail("WebP RIFF \u6587\u4EF6\u5927\u5C0F\u4E0D\u5339\u914D");
   const uint24 = (at2) => bytes[at2] | bytes[at2 + 1] << 8 | bytes[at2 + 2] << 16;
   const seen = /* @__PURE__ */ new Set(), metadata = /* @__PURE__ */ new Set(["ICCP", "EXIF", "XMP "]);
   let at = 12, chunks = 0, metadataBytes = 0, logical = null, pixels = null, flags = 0;
   while (at < bytes.length) {
     if (++chunks > 16 || at + 8 > bytes.length) fail("WebP chunk \u6570\u91CF\u8FC7\u591A\u6216\u6587\u4EF6\u4E0D\u5B8C\u6574");
-    const kind = text4(at, 4), length = view.getUint32(at + 4, true), data = at + 8;
+    const kind = text5(at, 4), length = view.getUint32(at + 4, true), data = at + 8;
     if (data + length + (length & 1) > bytes.length) fail("WebP \u56FE\u96C6\u4E0D\u5B8C\u6574");
     if (length & 1 && bytes[data + length] !== 0) fail("WebP padding \u65E0\u6548");
     if (kind === "ANIM" || kind === "ANMF") fail("WebP \u56FE\u96C6\u4E0D\u80FD\u5305\u542B\u52A8\u753B");
@@ -3371,15 +3371,15 @@ var DshPvFilm = class {
       this.mosaic(ctx, img, [880, 70 + Math.round(u * 260), 1150, 600], { cell: 5, tint: "blue", alpha: 0.35 * (1 - u * 0.7), r });
     }
   }
-  banner(ctx, text4, age, color = ERR, alpha = 1) {
+  banner(ctx, text5, age, color = ERR, alpha = 1) {
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.font = fontOf(3, 150);
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    const n = Math.min(text4.length, Math.max(1, Math.floor(age * 40)));
+    const n = Math.min(text5.length, Math.max(1, Math.floor(age * 40)));
     ctx.fillStyle = mix(color, 0.9);
-    ctx.fillText(text4.slice(0, n), 640, 300);
+    ctx.fillText(text5.slice(0, n), 640, 300);
     ctx.fillStyle = "rgba(4,7,15,0.45)";
     for (let y = 200; y < 400; y += 4) ctx.fillRect(40, y, 1200, 1);
     ctx.restore();
@@ -3667,7 +3667,7 @@ function box(ctx, x0, y0, x1, y1, title, level, color, gain = 1) {
 }
 
 // .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.10.0" : "";
+var CLIENT_VERSION = true ? "0.11.0" : "";
 var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u653E\u6620\u5BA4\u3002";
 function isMissingRemoteMethod(message) {
   const value = String(message ?? "");
@@ -3746,22 +3746,22 @@ function isAbsolutePackPath(value) {
 }
 function checkSceneFont(value, path = "font.woff2") {
   const bytes = value instanceof Uint8Array ? value : value instanceof ArrayBuffer ? new Uint8Array(value) : null;
-  const invalid = (message) => ({ errors: [`${path}\uFF1A${message}`] });
-  if (!bytes || bytes.byteLength < 12 || bytes.byteLength > MV_FONT_LIMITS.fileBytes) return invalid("\u5B57\u4F53\u5927\u5C0F\u65E0\u6548\uFF08\u4E0A\u9650 2 MiB\uFF09");
+  const invalid2 = (message) => ({ errors: [`${path}\uFF1A${message}`] });
+  if (!bytes || bytes.byteLength < 12 || bytes.byteLength > MV_FONT_LIMITS.fileBytes) return invalid2("\u5B57\u4F53\u5927\u5C0F\u65E0\u6548\uFF08\u4E0A\u9650 2 MiB\uFF09");
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), signature = view.getUint32(0, false);
   if (extOf(path) === ".woff2") {
-    if (bytes.byteLength < 48 || signature !== 2001684018 || view.getUint32(8, false) !== bytes.byteLength || view.getUint16(12, false) < 1 || view.getUint16(12, false) > 128 || view.getUint16(14, false) !== 0 || view.getUint32(16, false) < 12 || view.getUint32(16, false) > 8 * 1024 * 1024 || view.getUint32(20, false) > bytes.byteLength - 48) return invalid("WOFF2 \u7B7E\u540D/\u957F\u5EA6/\u8868\u6570/\u89E3\u538B\u5927\u5C0F\u65E0\u6548");
-    if (![65536, 1330926671].includes(view.getUint32(4, false))) return invalid("\u4E0D\u652F\u6301\u7684 WOFF2 \u5B57\u4F53\u7C7B\u578B");
+    if (bytes.byteLength < 48 || signature !== 2001684018 || view.getUint32(8, false) !== bytes.byteLength || view.getUint16(12, false) < 1 || view.getUint16(12, false) > 128 || view.getUint16(14, false) !== 0 || view.getUint32(16, false) < 12 || view.getUint32(16, false) > 8 * 1024 * 1024 || view.getUint32(20, false) > bytes.byteLength - 48) return invalid2("WOFF2 \u7B7E\u540D/\u957F\u5EA6/\u8868\u6570/\u89E3\u538B\u5927\u5C0F\u65E0\u6548");
+    if (![65536, 1330926671].includes(view.getUint32(4, false))) return invalid2("\u4E0D\u652F\u6301\u7684 WOFF2 \u5B57\u4F53\u7C7B\u578B");
     for (const [offAt, lenAt] of [[28, 32], [40, 44]]) {
       const off = view.getUint32(offAt, false), len = view.getUint32(lenAt, false);
-      if (off > bytes.byteLength || len > bytes.byteLength - off || off === 0 && len !== 0) return invalid("WOFF2 \u6269\u5C55\u6570\u636E\u8303\u56F4\u65E0\u6548");
+      if (off > bytes.byteLength || len > bytes.byteLength - off || off === 0 && len !== 0) return invalid2("WOFF2 \u6269\u5C55\u6570\u636E\u8303\u56F4\u65E0\u6548");
     }
   } else {
     const count = view.getUint16(4, false), directory = 12 + count * 16;
-    if (![".ttf", ".otf"].includes(extOf(path)) || signature !== (extOf(path) === ".ttf" ? 65536 : 1330926671) || count < 1 || count > 128 || directory > bytes.byteLength) return invalid("SFNT \u7B7E\u540D/\u8868\u76EE\u5F55\u65E0\u6548");
+    if (![".ttf", ".otf"].includes(extOf(path)) || signature !== (extOf(path) === ".ttf" ? 65536 : 1330926671) || count < 1 || count > 128 || directory > bytes.byteLength) return invalid2("SFNT \u7B7E\u540D/\u8868\u76EE\u5F55\u65E0\u6548");
     for (let i = 0; i < count; i++) {
       const at = 12 + i * 16, off = view.getUint32(at + 8, false), len = view.getUint32(at + 12, false);
-      if (off < directory || off > bytes.byteLength || len > bytes.byteLength - off) return invalid("SFNT \u8868\u8303\u56F4\u65E0\u6548");
+      if (off < directory || off > bytes.byteLength || len > bytes.byteLength - off) return invalid2("SFNT \u8868\u8303\u56F4\u65E0\u6548");
     }
   }
   return { errors: [] };
@@ -3793,23 +3793,23 @@ function checkDshPvFont(value, name = "font.ttf") {
   return { errors };
 }
 function checkDshPvFontName(view, table, descriptor2, name) {
-  const invalid = (message) => [`${name}\uFF1ATTF name \u8868${message}`];
-  if (!table || table.length < 6) return invalid("\u7F3A\u5931\u6216\u65E0\u6548\uFF0C\u4E0D\u80FD\u786E\u8BA4\u53D7\u652F\u6301\u7684 OFL \u5B57\u4F53\u8EAB\u4EFD");
+  const invalid2 = (message) => [`${name}\uFF1ATTF name \u8868${message}`];
+  if (!table || table.length < 6) return invalid2("\u7F3A\u5931\u6216\u65E0\u6548\uFF0C\u4E0D\u80FD\u786E\u8BA4\u53D7\u652F\u6301\u7684 OFL \u5B57\u4F53\u8EAB\u4EFD");
   const { offset, length } = table, format = view.getUint16(offset), count = view.getUint16(offset + 2), strings = view.getUint16(offset + 4);
-  if (format > 1 || count < 1 || count > DSHPV_FONT_LIMITS.maxNameRecords || 6 + count * 12 > length || strings < 6 + count * 12 || strings > length) return invalid("\u8BB0\u5F55\u6570\u91CF / \u5B57\u7B26\u4E32\u8303\u56F4\u65E0\u6548");
+  if (format > 1 || count < 1 || count > DSHPV_FONT_LIMITS.maxNameRecords || 6 + count * 12 > length || strings < 6 + count * 12 || strings > length) return invalid2("\u8BB0\u5F55\u6570\u91CF / \u5B57\u7B26\u4E32\u8303\u56F4\u65E0\u6548");
   const families = /* @__PURE__ */ new Set(), styles = /* @__PURE__ */ new Set();
   for (let i = 0; i < count; i++) {
     const at = offset + 6 + i * 12, platform = view.getUint16(at), id = view.getUint16(at + 6), size = view.getUint16(at + 8), start = view.getUint16(at + 10);
-    if (size > DSHPV_FONT_LIMITS.maxNameChars * 2 || start > length - strings || size > length - strings - start) return invalid("\u5B57\u7B26\u4E32\u8D85\u51FA\u6587\u4EF6\u8303\u56F4\u6216\u8FC7\u957F");
+    if (size > DSHPV_FONT_LIMITS.maxNameChars * 2 || start > length - strings || size > length - strings - start) return invalid2("\u5B57\u7B26\u4E32\u8D85\u51FA\u6587\u4EF6\u8303\u56F4\u6216\u8FC7\u957F");
     if (![0, 3].includes(platform) || ![1, 2, 16, 17].includes(id)) continue;
-    if (size % 2) return invalid("Unicode \u5B57\u7B26\u4E32\u957F\u5EA6\u4E0D\u662F\u5076\u6570");
-    let text4 = "";
-    for (let pos = offset + strings + start; pos < offset + strings + start + size; pos += 2) text4 += String.fromCharCode(view.getUint16(pos));
-    if (/[\u0000-\u001f\u007f]/.test(text4)) return invalid("\u5B57\u4F53\u540D\u79F0\u542B\u63A7\u5236\u5B57\u7B26");
-    if (id === 1 || id === 16) families.add(text4.trim());
-    else styles.add(text4.trim());
+    if (size % 2) return invalid2("Unicode \u5B57\u7B26\u4E32\u957F\u5EA6\u4E0D\u662F\u5076\u6570");
+    let text5 = "";
+    for (let pos = offset + strings + start; pos < offset + strings + start + size; pos += 2) text5 += String.fromCharCode(view.getUint16(pos));
+    if (/[\u0000-\u001f\u007f]/.test(text5)) return invalid2("\u5B57\u4F53\u540D\u79F0\u542B\u63A7\u5236\u5B57\u7B26");
+    if (id === 1 || id === 16) families.add(text5.trim());
+    else styles.add(text5.trim());
   }
-  if (!families.size || !styles.size || [...families].some((family) => family !== descriptor2.sourceFamily) || [...styles].some((style) => style !== descriptor2.sourceStyle)) return invalid(`\u8EAB\u4EFD\u4E0D\u7B26\uFF08\u53EA\u652F\u6301 ${descriptor2.sourceFamily} ${descriptor2.sourceStyle}\uFF1B\u91CD\u547D\u540D Windows / \u5176\u4ED6\u5B57\u4F53\u4E0D\u80FD\u968F\u5305\u5206\u53D1\uFF09`);
+  if (!families.size || !styles.size || [...families].some((family) => family !== descriptor2.sourceFamily) || [...styles].some((style) => style !== descriptor2.sourceStyle)) return invalid2(`\u8EAB\u4EFD\u4E0D\u7B26\uFF08\u53EA\u652F\u6301 ${descriptor2.sourceFamily} ${descriptor2.sourceStyle}\uFF1B\u91CD\u547D\u540D Windows / \u5176\u4ED6\u5B57\u4F53\u4E0D\u80FD\u968F\u5305\u5206\u53D1\uFF09`);
   return [];
 }
 function parseManifestPath(value) {
@@ -4198,9 +4198,9 @@ function skinClasses(settings, env) {
   const mode = modes[skin];
   return `mv-skin-${skin} ${resolveDark(mode, env) ? "mv-dark" : "mv-light"}${mode === "auto" ? " mv-follow" : ""}`;
 }
-function coverHue(text4) {
+function coverHue(text5) {
   let h = 2166136261;
-  for (const ch of String(text4 ?? "")) h = Math.imul(h ^ ch.codePointAt(0), 16777619);
+  for (const ch of String(text5 ?? "")) h = Math.imul(h ^ ch.codePointAt(0), 16777619);
   return (h >>> 0) % 360;
 }
 function coverInitials(title) {
@@ -4293,16 +4293,16 @@ var KEY_HELP = Object.freeze([
   ["H", "\u753B\u9762\u5185\u5E2E\u52A9"]
 ]);
 function KeyHelp() {
-  return /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("h3", null, "\u952E\u76D8\u5FEB\u6377\u952E"), /* @__PURE__ */ import_react.default.createElement("p", null, "\u5148\u70B9\u4E00\u4E0B\u753B\u9762\uFF0C\u518D\u4F7F\u7528\uFF1A"), /* @__PURE__ */ import_react.default.createElement("div", { className: "mv-keys" }, KEY_HELP.map(([key, text4]) => /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, { key }, /* @__PURE__ */ import_react.default.createElement("kbd", null, key), /* @__PURE__ */ import_react.default.createElement("span", null, text4)))));
+  return /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("h3", null, "\u952E\u76D8\u5FEB\u6377\u952E"), /* @__PURE__ */ import_react.default.createElement("p", null, "\u5148\u70B9\u4E00\u4E0B\u753B\u9762\uFF0C\u518D\u4F7F\u7528\uFF1A"), /* @__PURE__ */ import_react.default.createElement("div", { className: "mv-keys" }, KEY_HELP.map(([key, text5]) => /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, { key }, /* @__PURE__ */ import_react.default.createElement("kbd", null, key), /* @__PURE__ */ import_react.default.createElement("span", null, text5)))));
 }
 
 // .dsh-plugin/shared/mv-align.mjs
 var LOW_CONFIDENCE = 0.5;
 var CJK2 = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uac00-\ud7af]/;
 var round = (v, d = 3) => Math.round(v * 10 ** d) / 10 ** d;
-function tokenize2(text4) {
+function tokenize2(text5) {
   const out = [];
-  const norm = String(text4 ?? "").normalize("NFKC").toLowerCase().replace(/[’`]/g, "'");
+  const norm = String(text5 ?? "").normalize("NFKC").toLowerCase().replace(/[’`]/g, "'");
   let word = "";
   const flush = () => {
     const w = word.replace(/^'+|'+$/g, "");
@@ -4319,9 +4319,9 @@ function tokenize2(text4) {
   flush();
   return out;
 }
-var isCjkText = (text4) => {
+var isCjkText = (text5) => {
   let cjk = 0, latin = 0;
-  for (const ch of String(text4)) {
+  for (const ch of String(text5)) {
     if (CJK2.test(ch)) cjk++;
     else if (/[a-z]/i.test(ch)) latin++;
   }
@@ -4504,9 +4504,9 @@ function linesFromWords(words, { maxTokens = 12, gap = 0.7 } = {}) {
   let current = [];
   const push = () => {
     if (!current.length) return;
-    const text4 = current.map((w) => w.w).join("").replace(/\s+/g, " ").trim();
-    const cjk = isCjkText(text4);
-    lines.push({ start: round(current[0].s), end: round(current.at(-1).e), text: cjk ? text4.replace(/\s+/g, "") : text4, alt: "", confidence: round(current.reduce((n, w) => n + (w.p ?? 0.5), 0) / current.length * 0.8, 2), source: "transcript" });
+    const text5 = current.map((w) => w.w).join("").replace(/\s+/g, " ").trim();
+    const cjk = isCjkText(text5);
+    lines.push({ start: round(current[0].s), end: round(current.at(-1).e), text: cjk ? text5.replace(/\s+/g, "") : text5, alt: "", confidence: round(current.reduce((n, w) => n + (w.p ?? 0.5), 0) / current.length * 0.8, 2), source: "transcript" });
     current = [];
   };
   for (const word of words ?? []) {
@@ -4518,8 +4518,8 @@ function linesFromWords(words, { maxTokens = 12, gap = 0.7 } = {}) {
   push();
   return lines;
 }
-function linesFromText(text4, { name = "lyrics.lrc" } = {}) {
-  const body = String(text4 ?? "");
+function linesFromText(text5, { name = "lyrics.lrc" } = {}) {
+  const body = String(text5 ?? "");
   if (looksLikeLyricsJs(body) || /\.(?:m?js)$/i.test(name) || /\[\d{1,3}:\d{1,2}([.:]\d{1,3})?\]/.test(body) || /-->/.test(body) || /^\s*\[\s*\{/.test(body)) {
     const ext = looksLikeLyricsJs(body) ? "x.js" : /-->/.test(body) ? "x.srt" : /^\s*\[\s*\{/.test(body) ? "x.json" : name;
     const cues = parseLyrics(ext, body);
@@ -4527,8 +4527,8 @@ function linesFromText(text4, { name = "lyrics.lrc" } = {}) {
   }
   const lines = body.split(/\r?\n/).map((line) => line.replace(/\[[a-z]+:[^\]]*\]/gi, "").trim()).filter((line) => line && !/^(作词|作曲|编曲|词|曲)\s*[:：]/.test(line));
   return { timed: false, lines: lines.map((line) => {
-    const [text5, alt = ""] = line.split(/\s+\/\s+/);
-    return { start: null, end: null, text: text5.trim(), alt: alt.trim(), confidence: 0, source: "lyrics" };
+    const [text6, alt = ""] = line.split(/\s+\/\s+/);
+    return { start: null, end: null, text: text6.trim(), alt: alt.trim(), confidence: 0, source: "lyrics" };
   }) };
 }
 var median = (values) => {
@@ -4607,10 +4607,10 @@ function setEnd(state, lines, i, t) {
   out[i] = touch({ ...lines[i], end });
   return out;
 }
-function splitText(text4, ratio = 0.5) {
-  const words = text4.split(/(\s+)/);
+function splitText(text5, ratio = 0.5) {
+  const words = text5.split(/(\s+)/);
   if (words.filter((w) => w.trim()).length >= 2) {
-    const target = text4.length * ratio;
+    const target = text5.length * ratio;
     let best = 0, bestDiff = Infinity, pos = 0;
     for (const part2 of words) {
       pos += part2.length;
@@ -4622,9 +4622,9 @@ function splitText(text4, ratio = 0.5) {
         }
       }
     }
-    return [text4.slice(0, best).trim(), text4.slice(best).trim()];
+    return [text5.slice(0, best).trim(), text5.slice(best).trim()];
   }
-  const chars = [...text4];
+  const chars = [...text5];
   const cut = Math.max(1, Math.round(chars.length * ratio));
   return [chars.slice(0, cut).join(""), chars.slice(cut).join("")];
 }
@@ -4772,8 +4772,8 @@ async function decodeToChannels(buffer, { OfflineContext = globalThis.OfflineAud
   channels.push(audio.numberOfChannels > 1 ? audio.getChannelData(1) : audio.getChannelData(0));
   return { channels, sampleRate: audio.sampleRate, duration: audio.duration };
 }
-var fromBase642 = (text4) => {
-  const binary = globalThis.atob(text4);
+var fromBase642 = (text5) => {
+  const binary = globalThis.atob(text5);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   return bytes;
@@ -4801,9 +4801,9 @@ var ascii = (b, from, to) => {
   for (let i = from; i < Math.min(to, b.length); i += 1) out += String.fromCharCode(b[i]);
   return out;
 };
-var indexOfAscii = (b, text4, from = 0, to = b.length) => {
-  outer: for (let i = from; i <= Math.min(to, b.length) - text4.length; i += 1) {
-    for (let j = 0; j < text4.length; j += 1) if (b[i + j] !== text4.charCodeAt(j)) continue outer;
+var indexOfAscii = (b, text5, from = 0, to = b.length) => {
+  outer: for (let i = from; i <= Math.min(to, b.length) - text5.length; i += 1) {
+    for (let j = 0; j < text5.length; j += 1) if (b[i + j] !== text5.charCodeAt(j)) continue outer;
     return i;
   }
   return -1;
@@ -4953,7 +4953,7 @@ function ffmpegArgs(source, target) {
   return ["-nostdin", "-hide_banner", "-loglevel", "error", "-y", "-i", source, "-map", "0:a:0", "-vn", "-sn", "-dn", "-map_metadata", "-1", "-ac", "2", "-ar", "44100", "-c:a", "pcm_s16le", "-bitexact", "-f", "wav", target];
 }
 function displayCommand(file, args) {
-  const quote = (text4) => /[\s"]/.test(text4) ? `"${text4}"` : text4;
+  const quote = (text5) => /[\s"]/.test(text5) ? `"${text5}"` : text5;
   return [file, ...args].map(quote).join(" ");
 }
 
@@ -5222,7 +5222,7 @@ var latin1 = (b, from, to) => {
 };
 var u32 = (b, at) => (b[at] << 24 | b[at + 1] << 16 | b[at + 2] << 8 | b[at + 3]) >>> 0;
 var u32le = (b, at) => (b[at] | b[at + 1] << 8 | b[at + 2] << 16 | b[at + 3] << 24) >>> 0;
-var clean2 = (text4) => String(text4 ?? "").replace(/\0+$/g, "").replace(/\0/g, " / ").trim();
+var clean2 = (text5) => String(text5 ?? "").replace(/\0+$/g, "").replace(/\0/g, " / ").trim();
 var utf8 = (b, from, to) => {
   try {
     return new TextDecoder("utf-8").decode(b.subarray(from, to));
@@ -5278,11 +5278,11 @@ function readId3v2(b, out) {
     if (frameSize <= 0 || at + header + frameSize > end) break;
     const key = names[id];
     if (key) {
-      const text4 = id3Text(b, at + header, at + header + frameSize);
+      const text5 = id3Text(b, at + header, at + header + frameSize);
       if (key === "length") {
-        const ms = Number(text4);
+        const ms = Number(text5);
         if (ms > 0) out.duration ?? (out.duration = ms / 1e3);
-      } else if (text4 && !out[key]) out[key] = text4;
+      } else if (text5 && !out[key]) out[key] = text5;
     }
     at += header + frameSize;
   }
@@ -5327,8 +5327,8 @@ function readMp4(b, out) {
         if (!key) return;
         walkBoxes(b, f, t, (inner, df, dt) => {
           if (inner === "data" && !out[key]) {
-            const text4 = clean2(utf8(b, df + 8, dt));
-            if (text4) out[key] = text4;
+            const text5 = clean2(utf8(b, df + 8, dt));
+            if (text5) out[key] = text5;
           }
         }, depth + 2);
       }, depth + 1);
@@ -5649,7 +5649,7 @@ async function runAutoMake(api, options, { onStep = () => {
   const duration = made.duration;
   const manifestPath = made.created.manifestPath;
   let synced = user.timed ? user.lines.map((line) => ({ ...line, source: "user", confidence: 0.8 })) : [];
-  let text4 = user.lines.map(({ text: text5, alt }) => ({ text: text5, alt }));
+  let text5 = user.lines.map(({ text: text6, alt }) => ({ text: text6, alt }));
   await step("lrclib", async () => {
     if (synced.length) return { skipped: true, reason: "\u4F60\u63D0\u4F9B\u7684\u6B4C\u8BCD\u5DF2\u5E26\u65F6\u95F4\u8F74" };
     if (!options.useLrclib) return { skipped: true, reason: "\u8BBE\u7F6E\u91CC\u5DF2\u5173\u95ED LRCLIB \u67E5\u8BE2" };
@@ -5665,8 +5665,8 @@ async function runAutoMake(api, options, { onStep = () => {
     if (found.synced) {
       const parsed = linesFromText(found.synced);
       synced = parsed.lines.map((line) => ({ ...line, source: "lrclib", confidence: 0.75 }));
-      if (!text4.length) text4 = parsed.lines.map(({ text: text5, alt }) => ({ text: text5, alt }));
-    } else if (found.plain && !text4.length) text4 = linesFromText(found.plain).lines.map(({ text: text5, alt }) => ({ text: text5, alt }));
+      if (!text5.length) text5 = parsed.lines.map(({ text: text6, alt }) => ({ text: text6, alt }));
+    } else if (found.plain && !text5.length) text5 = linesFromText(found.plain).lines.map(({ text: text6, alt }) => ({ text: text6, alt }));
     return { found: true, sent: found.sent ?? query, synced: Boolean(found.synced), plain: Boolean(found.plain), track: `${found.trackName ?? ""} \u2014 ${found.artistName ?? ""}`, id: found.id, durationDiff: found.durationDiff };
   });
   let words = null;
@@ -5675,7 +5675,7 @@ async function runAutoMake(api, options, { onStep = () => {
     const needed = !synced.length || options.verifySynced;
     if (!needed) return { skipped: true, reason: "\u5DF2\u6709\u65F6\u95F4\u8F74\uFF08LRCLIB\uFF09\uFF1B\u9700\u8981\u65F6\u53EF\u5728\u8BBE\u7F6E\u91CC\u6253\u5F00\u201C\u7528\u5F15\u64CE\u6838\u5BF9\u201D" };
     if (!options.useEngine) return { skipped: true, reason: "\u6B4C\u8BCD\u5F15\u64CE\u672A\u5B89\u88C5\u6216\u672A\u542F\u7528" };
-    const prompt = text4.map((line) => line.text).join(" ").slice(0, 600);
+    const prompt = text5.map((line) => line.text).join(" ").slice(0, 600);
     const started = unwrapRemote(await api.engineTranscribe({ manifestPath, model: options.model, language: options.language ?? "auto", separate: options.separate !== false, ...prompt ? { prompt } : {} }), "\u65E0\u6CD5\u542F\u52A8\u6B4C\u8BCD\u5F15\u64CE\u3002");
     const done = await followJob(api, started.jobId, { signal, onEvent: (event) => {
       if (event.type === "log" && event.message) onLog(event.message);
@@ -5689,8 +5689,8 @@ async function runAutoMake(api, options, { onStep = () => {
   result.transcript = transcript;
   await step("align", async () => {
     let lines;
-    if (words?.length && text4.length) {
-      const aligned = alignLines(text4, words, { duration });
+    if (words?.length && text5.length) {
+      const aligned = alignLines(text5, words, { duration });
       lines = synced.length ? mergeTimed(synced, aligned).lines : aligned;
       result.source = synced.length ? `${synced[0].source}+engine` : "engine";
     } else if (synced.length) {
@@ -5699,8 +5699,8 @@ async function runAutoMake(api, options, { onStep = () => {
     } else if (words?.length) {
       lines = linesFromWords(words);
       result.source = "engine-words";
-    } else if (text4.length) {
-      lines = fillGaps(text4.map((line) => ({ ...line, start: NaN, end: NaN, confidence: 0, source: "estimate" })), { duration });
+    } else if (text5.length) {
+      lines = fillGaps(text5.map((line) => ({ ...line, start: NaN, end: NaN, confidence: 0, source: "estimate" })), { duration });
       result.source = "estimate";
     } else lines = [];
     result.lines = lines;
@@ -5725,8 +5725,8 @@ function timingDocument({ lines, source, duration, offset = 0 }) {
 }
 async function saveCalibration(api, manifestPath, { lines, sections = null, title = "", artist = "", source = "user", duration = 0, offset = 0 }) {
   const writes = [];
-  const write = async (file, text4) => {
-    writes.push(unwrapRemote(await api.packWriteText({ manifestPath, file, text: text4 }), `\u65E0\u6CD5\u4FDD\u5B58 ${file}\u3002`));
+  const write = async (file, text5) => {
+    writes.push(unwrapRemote(await api.packWriteText({ manifestPath, file, text: text5 }), `\u65E0\u6CD5\u4FDD\u5B58 ${file}\u3002`));
   };
   if (lines.length) {
     await write("lyrics.lrc", linesToLrc(lines, { title, artist }));
@@ -6196,8 +6196,8 @@ function workshopSlug(title, artist = "", random = () => Math.random().toString(
   const base = `${artist ? `${artist}-` : ""}${title}`.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48).replace(/-+$/, "");
   return ID_PATTERN.test(base) ? base : `mv-${base ? `${base.slice(0, 20).replace(/-+$/, "")}-` : ""}${random()}`.replace(/-+/g, "-");
 }
-function normalizeLyricLine(text4) {
-  return String(text4 ?? "").normalize("NFKC").toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, "");
+function normalizeLyricLine(text5) {
+  return String(text5 ?? "").normalize("NFKC").toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, "");
 }
 function compareVersions(a, b) {
   const pa = String(a).split(".").map(Number), pb = String(b).split(".").map(Number);
@@ -6231,9 +6231,9 @@ function energyFingerprint(samples, sampleRate) {
   return out;
 }
 var encodeFingerprint = (bytes) => btoa(String.fromCharCode(...bytes));
-function decodeFingerprint(text4) {
+function decodeFingerprint(text5) {
   try {
-    const s = atob(String(text4));
+    const s = atob(String(text5));
     return Uint8Array.from(s, (c) => c.charCodeAt(0));
   } catch {
     return new Uint8Array(0);
@@ -6294,7 +6294,7 @@ async function retimeCues(cues, timing, hashOf) {
     if (Number.isFinite(line.e)) out[i].end = line.e;
     if (Array.isArray(line.w) && line.w.length) {
       const words = String(out[i].en || out[i].zh || "").split(/\s+/).filter(Boolean);
-      if (words.length === line.w.length) out[i].words = words.map((text4, k) => ({ text: text4, time: line.w[k] }));
+      if (words.length === line.w.length) out[i].words = words.map((text5, k) => ({ text: text5, time: line.w[k] }));
     }
     from = found + 1;
     matched++;
@@ -6332,9 +6332,9 @@ function parseWorkshopPublish(value) {
       return "";
     }
     if (typeof v !== "string" || v.length > n || /[\0\r]/.test(v)) throw new TypeError(`${name} \u65E0\u6548`);
-    const text4 = v.trim();
-    if (required && !text4) throw new TypeError(`${name} \u5FC5\u586B`);
-    return text4;
+    const text5 = v.trim();
+    if (required && !text5) throw new TypeError(`${name} \u5FC5\u586B`);
+    return text5;
   };
   if (typeof value.manifestPath !== "string" || !value.manifestPath.trim() || value.manifestPath.length > 1e3) throw new TypeError("manifestPath \u65E0\u6548");
   const version = str(value.version, 20, "version", true);
@@ -7746,7 +7746,7 @@ function templateFiles() {
     { path: "README.zh.md", text: README_ZH },
     { path: "lyrics.example.lrc", text: LRC_EXAMPLE },
     { path: "examples/scenes.example.js", text: EXAMPLE_SCENE },
-    ...Object.entries(TEMPLATE_ASSETS).map(([path, text4]) => ({ path, text: text4 }))
+    ...Object.entries(TEMPLATE_ASSETS).map(([path, text5]) => ({ path, text: text5 }))
   ];
 }
 
@@ -7847,8 +7847,8 @@ async function loadPackFromHost(api, path) {
   if (!loaded?.pack || typeof loaded.manifestPath !== "string") throw new Error("MV \u5305\u8BFB\u53D6\u7ED3\u679C\u683C\u5F0F\u65E0\u6548\u3002");
   return { id: `pack:${loaded.manifestPath}`, loadedAt: Date.now(), ...loaded };
 }
-var fromBase643 = (text4) => {
-  const binary = globalThis.atob(text4);
+var fromBase643 = (text5) => {
+  const binary = globalThis.atob(text5);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   return bytes;
@@ -7971,8 +7971,191 @@ function relocatePacks(moves, storage = globalThis.localStorage) {
   return next.slice(0, MV_PACK_LIMITS.recentPacks);
 }
 
+// .dsh-plugin/shared/mv-workshop-community.mjs
+var SNAPSHOT_KEYS = ["status", "fetchedAt", "viewer", "packs", "policy"];
+var METRIC_KEYS = ["downloadCount", "uniqueDownloadUsers", "likeCount", "likedByViewer", "popularityScore", "acclaimed"];
+var COUNTER_KEYS = ["downloadCount", "uniqueDownloadUsers", "likeCount"];
+var SELECTOR_KEYS = ["query", "license", "renderer", "installed", "installation", "updates", "lyrics", "tag", "compatibleOnly", "clientVersion", "onlyAcclaimed", "sort"];
+var CONTROL_TEXT = /[\u0000-\u001f\u007f]/;
+var ISO_TIME = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|[+-]\d{2}:\d{2})$/;
+function invalid(field) {
+  throw new TypeError(`Invalid workshop community ${field}`);
+}
+function record(value, field, allowed = null) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) invalid(field);
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) invalid(field);
+  const fields = /* @__PURE__ */ Object.create(null);
+  for (const key of Reflect.ownKeys(value)) {
+    const descriptor2 = Object.getOwnPropertyDescriptor(value, key);
+    if (typeof key !== "string" || !descriptor2?.enumerable || !Object.hasOwn(descriptor2, "value") || allowed !== null && !allowed.includes(key)) invalid(`${field} fields`);
+    fields[key] = descriptor2.value;
+  }
+  return fields;
+}
+function text3(value, field, limit) {
+  if (typeof value !== "string" || !value.trim() || value.length > limit || CONTROL_TEXT.test(value)) invalid(field);
+  return value;
+}
+function choice(value, values, field) {
+  if (!values.includes(value)) invalid(field);
+  return value;
+}
+function number(value, field, integer) {
+  if (value == null) return null;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || integer && !Number.isSafeInteger(value)) invalid(field);
+  return value === 0 ? 0 : value;
+}
+function timestamp(value, field) {
+  if (typeof value !== "string" || value.length > 29) invalid(field);
+  const match = ISO_TIME.exec(value);
+  if (match === null) invalid(field);
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText, , zone2] = match;
+  const year = Number(yearText), month = Number(monthText), day = Number(dayText);
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const monthDays = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (year < 1 || month < 1 || month > 12 || day < 1 || day > monthDays[month - 1] || Number(hourText) > 23 || Number(minuteText) > 59 || Number(secondText) > 59 || zone2 !== "Z" && (Number(zone2.slice(1, 3)) > 23 || Number(zone2.slice(4)) > 59)) invalid(field);
+  const time = Date.parse(value);
+  if (!Number.isFinite(time)) invalid(field);
+  const iso = new Date(time).toISOString();
+  if (!/^\d{4}-/.test(iso) || iso.startsWith("0000-")) invalid(field);
+  return iso;
+}
+function parseWorkshopCommunitySnapshot(value) {
+  const input = record(value, "snapshot", SNAPSHOT_KEYS);
+  const status = choice(input.status, ["ready", "stale", "unavailable", "offline"], "status");
+  const fetchedAt = input.fetchedAt == null ? null : timestamp(input.fetchedAt, "fetchedAt");
+  if (["ready", "stale"].includes(status) && fetchedAt === null) invalid("fetchedAt");
+  const rawViewer = record(input.viewer, "viewer", ["status", "name"]);
+  const viewerStatus = choice(rawViewer.status, ["unsupported", "signed-out", "authenticated"], "viewer status");
+  const viewerName = rawViewer.name == null ? null : text3(rawViewer.name, "viewer name", 120);
+  if (viewerStatus !== "authenticated" && viewerName !== null) invalid("signed-out viewer name");
+  let policy = null;
+  if (input.policy != null) {
+    const rawPolicy = record(input.policy, "policy", ["id", "description"]);
+    const id = text3(rawPolicy.id, "policy id", 80);
+    if (!/^[a-z0-9][a-z0-9._-]*$/.test(id)) invalid("policy id");
+    policy = { id, description: text3(rawPolicy.description, "policy description", 2e3) };
+  }
+  const rawPacks = record(input.packs, "packs");
+  const ids = Object.keys(rawPacks);
+  if (ids.length > WORKSHOP_LIMITS.maxPacks) invalid("pack count");
+  const entries = ids.map((id) => {
+    if (!ID_PATTERN.test(id)) invalid("pack id");
+    const raw = record(rawPacks[id], "pack metrics", METRIC_KEYS);
+    const counters = Object.fromEntries(COUNTER_KEYS.map((key) => [key, number(raw[key], key, true)]));
+    if (counters.downloadCount !== null && counters.uniqueDownloadUsers !== null && counters.uniqueDownloadUsers > counters.downloadCount) invalid("uniqueDownloadUsers exceeds downloadCount");
+    const likedByViewer = raw.likedByViewer == null ? null : raw.likedByViewer;
+    if (likedByViewer !== null && typeof likedByViewer !== "boolean") invalid("likedByViewer");
+    if (likedByViewer === true && viewerStatus !== "authenticated") invalid("likedByViewer without authenticated viewer");
+    let acclaimed = null;
+    if (raw.acclaimed != null) {
+      const award = record(raw.acclaimed, "award", ["awardedAt", "criterion"]);
+      const criterion = text3(award.criterion, "award criterion", 80);
+      if (policy === null || criterion !== policy.id) invalid("award policy");
+      acclaimed = { awardedAt: timestamp(award.awardedAt, "awardedAt"), criterion };
+    }
+    return [id, { ...counters, likedByViewer, popularityScore: number(raw.popularityScore, "popularityScore", false), acclaimed }];
+  });
+  return { status, fetchedAt, viewer: { status: viewerStatus, name: viewerName }, packs: Object.fromEntries(entries), policy };
+}
+function usableCommunity(value) {
+  if (value == null) return null;
+  try {
+    const parsed = parseWorkshopCommunitySnapshot(value);
+    return ["ready", "stale"].includes(parsed.status) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+function hasWorkshopMetrics(community) {
+  const usable = usableCommunity(community);
+  return usable !== null && Object.values(usable.packs).some((row) => [...COUNTER_KEYS, "popularityScore"].some((key) => row[key] !== null));
+}
+function workshopMetricText(value) {
+  return Number.isSafeInteger(value) && value >= 0 ? String(value) : "\u2014";
+}
+function optionText(value, field, limit) {
+  if (value === void 0) return "";
+  if (typeof value !== "string" || value.length > limit || CONTROL_TEXT.test(value)) invalid(`selector ${field}`);
+  return value;
+}
+function flag(value, field) {
+  if (value === void 0) return false;
+  if (typeof value !== "boolean") invalid(`selector ${field}`);
+  return value;
+}
+function installedPack(installed, id) {
+  return installed instanceof Set ? installed.has(id) : Boolean(Object.getOwnPropertyDescriptor(installed ?? {}, id)?.value);
+}
+function updatedTime(value) {
+  if (typeof value !== "string") return null;
+  try {
+    return Date.parse(timestamp(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00Z` : value, "updated"));
+  } catch {
+    return null;
+  }
+}
+function descendingKnown(a, b) {
+  if (a === null) return b === null ? 0 : 1;
+  if (b === null) return -1;
+  return a === b ? 0 : a > b ? -1 : 1;
+}
+function selectWorkshopPacks(packs, options = {}, community = null) {
+  if (!Array.isArray(packs) || packs.length > WORKSHOP_LIMITS.maxPacks) invalid("selector packs");
+  const input = record(options, "selector options", SELECTOR_KEYS);
+  const query = optionText(input.query, "query", 500);
+  const license = optionText(input.license, "license", 120);
+  const renderer = optionText(input.renderer, "renderer", 40);
+  const tag = optionText(input.tag, "tag", 24).trim().toLowerCase();
+  const clientVersion = optionText(input.clientVersion, "clientVersion", 40);
+  const installation = choice(input.installation ?? "any", ["any", "installed", "updates"], "installation");
+  const lyrics = choice(input.lyrics ?? "any", ["any", "included", "timing", "none"], "lyrics selection");
+  const sort = choice(input.sort ?? "catalogue", ["catalogue", "updated", "title", "downloads", "likes", "popular"], "sort");
+  const compatibleOnly = flag(input.compatibleOnly, "compatibleOnly");
+  const onlyAcclaimed = flag(input.onlyAcclaimed, "onlyAcclaimed");
+  const installed = input.installed ?? null;
+  if (installed !== null && !(installed instanceof Set)) record(installed, "installed");
+  const updates = input.updates ?? /* @__PURE__ */ new Set();
+  if (!(updates instanceof Set) || updates.size > WORKSHOP_LIMITS.maxPacks) invalid("updates");
+  const usable = usableCommunity(community);
+  const metric = (id) => usable !== null && Object.hasOwn(usable.packs, id) ? usable.packs[id] : null;
+  const selected = filterWorkshop(packs, { query, license, renderer }).filter((pack) => {
+    if (installation !== "any" && !installedPack(installed, pack.id)) return false;
+    if (installation === "updates" && !updates.has(pack.id)) return false;
+    if (lyrics === "included" && pack.lyrics !== true) return false;
+    if (lyrics === "timing" && (pack.timing !== true || pack.lyrics === true)) return false;
+    if (lyrics === "none" && (pack.lyrics === true || pack.timing === true)) return false;
+    if (tag && !(pack.tags ?? []).some((value) => typeof value === "string" && value.trim().toLowerCase() === tag)) return false;
+    if (compatibleOnly && pack.requires && (!VERSION_PATTERN.test(pack.requires) || !VERSION_PATTERN.test(clientVersion) || compareVersions(pack.requires, clientVersion) > 0)) return false;
+    return !onlyAcclaimed || metric(pack.id)?.acclaimed != null;
+  });
+  if (sort === "catalogue") return selected;
+  const metricKey = { downloads: "downloadCount", likes: "likeCount", popular: "popularityScore" }[sort];
+  return selected.map((pack, position) => ({ pack, position })).sort((a, b) => {
+    const result = sort === "title" ? (a.pack.title || a.pack.id).localeCompare(b.pack.title || b.pack.id, "zh-CN", { sensitivity: "base" }) : sort === "updated" ? descendingKnown(updatedTime(a.pack.updated), updatedTime(b.pack.updated)) : descendingKnown(metric(a.pack.id)?.[metricKey] ?? null, metric(b.pack.id)?.[metricKey] ?? null);
+    return result || a.position - b.position;
+  }).map((entry2) => entry2.pack);
+}
+
 // .dsh-plugin/client/mv-workshop-state.mjs
 var loadWorkshop = async (api, refresh = false) => unwrapRemote(await api.workshopIndex({ refresh }), "\u65E0\u6CD5\u8BFB\u53D6\u521B\u610F\u5DE5\u574A\u3002");
+var emptyWorkshopCommunity = (status = "unavailable") => parseWorkshopCommunitySnapshot({
+  status,
+  fetchedAt: null,
+  viewer: { status: "unsupported", name: null },
+  packs: {},
+  policy: null
+});
+var publicWorkshopCommunity = (snapshot) => ({
+  ...snapshot,
+  viewer: { status: "unsupported", name: null },
+  packs: Object.fromEntries(Object.entries(snapshot.packs).map(([id, record2]) => [id, { ...record2, likedByViewer: null }]))
+});
+async function loadWorkshopCommunity(api) {
+  if (typeof api?.workshopCommunity !== "function") return emptyWorkshopCommunity();
+  return publicWorkshopCommunity(parseWorkshopCommunitySnapshot(unwrapRemote(await api.workshopCommunity({}), "\u65E0\u6CD5\u8BFB\u53D6\u793E\u533A\u7EDF\u8BA1\u3002")));
+}
 var installWorkshopPack = async (api, id) => unwrapRemote(await api.workshopInstall({ id }), "\u5B89\u88C5\u5931\u8D25\u3002");
 var uninstallWorkshopPack = async (api, id) => unwrapRemote(await api.workshopUninstall({ id }), "\u5378\u8F7D\u5931\u8D25\u3002");
 var workshopCover = async (api, id) => unwrapRemote(await api.workshopCover({ id }), "");
@@ -7987,7 +8170,7 @@ function mediaSlot(pack, kind) {
   return id && !pack?.pack?.audio ? `workshop:${id}:${kind}` : null;
 }
 var legacyPresetSlot = (pack) => PRESET_PACKS.some((p) => p.id === pack?.pack?.workshop?.id);
-var rememberedTrackApplies = (pack, record, bundledLoaded) => !bundledLoaded || Boolean(record?.override === true && pack?.pack?.workshop?.version && record.packVersion === pack.pack.workshop.version);
+var rememberedTrackApplies = (pack, record2, bundledLoaded) => !bundledLoaded || Boolean(record2?.override === true && pack?.pack?.workshop?.version && record2.packVersion === pack.pack.workshop.version);
 async function fingerprintAudio(bytes, decode2 = decodeToChannels) {
   const { channels, sampleRate, duration } = await decode2(bytes);
   const [a, b] = channels;
@@ -8000,7 +8183,7 @@ function checkAudioForPack(workshop, actual) {
   return audioMatch({ duration: workshop?.audio?.duration, fingerprint: workshop?.audio?.fingerprint?.values }, actual);
 }
 var encoder = new TextEncoder();
-var lineHash = async (text4) => (await sha256Hex2(encoder.encode(text4))).slice(0, 16);
+var lineHash = async (text5) => (await sha256Hex2(encoder.encode(text5))).slice(0, 16);
 var retimeWithPack = (cues, timing, hash = lineHash) => retimeCues(cues, timing, hash);
 var durationText = (s) => {
   if (!(Number.isFinite(s) && s > 0)) return "\u2014";
@@ -8418,7 +8601,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
         else {
           let sceneAssets = null;
           try {
-            const { text: text4 } = await fetchPackText(api, pack.manifestPath, "scene", { isCancelled: () => cancelled });
+            const { text: text5 } = await fetchPackText(api, pack.manifestPath, "scene", { isCancelled: () => cancelled });
             if (cancelled) return;
             const requested = pack.pack.canvas?.output;
             const output = isBitmapSceneOutput(requested) ? requested : "text";
@@ -8437,7 +8620,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
             }
             state.film = state.script;
             if (isBitmapSceneOutput(output)) setPixelScene(true);
-            await state.script.load(text4, { output, size: pack.pack.canvas?.size ?? [1280, 720], context: pack.pack.canvas?.context ?? {}, assets: sceneAssets.assets, fonts: loadedFonts.fonts, transfer: [...sceneAssets.transfer, ...loadedFonts.transfer] });
+            await state.script.load(text5, { output, size: pack.pack.canvas?.size ?? [1280, 720], context: pack.pack.canvas?.context ?? {}, assets: sceneAssets.assets, fonts: loadedFonts.fonts, transfer: [...sceneAssets.transfer, ...loadedFonts.transfer] });
             if (cancelled) {
               state.script.stop();
               return;
@@ -8453,9 +8636,9 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       }
       if (pack.pack.workshop?.lyricsTiming && pack.files?.timing?.exists && !pack.files.timing.tooLarge && api) {
         try {
-          const { text: text4 } = await fetchPackText(api, pack.manifestPath, "timing", { isCancelled: () => cancelled });
+          const { text: text5 } = await fetchPackText(api, pack.manifestPath, "timing", { isCancelled: () => cancelled });
           if (cancelled) return;
-          timingRef.current = JSON.parse(text4);
+          timingRef.current = JSON.parse(text5);
         } catch {
           timingRef.current = null;
         }
@@ -8464,10 +8647,10 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       for (const role of ["lyrics", "spectrum"]) {
         if (!pack.pack[role] || !pack.files?.[role]?.exists || pack.files[role].tooLarge || !api) continue;
         try {
-          const { name, text: text4 } = await fetchPackText(api, pack.manifestPath, role, { isCancelled: () => cancelled });
+          const { name, text: text5 } = await fetchPackText(api, pack.manifestPath, role, { isCancelled: () => cancelled });
           if (cancelled) return;
-          if (role === "lyrics") bundledLoaded.lyrics = await useLyricsText(name, text4, { remember: false, shift: pack.pack.lyrics?.offset ?? 0 });
-          else bundledLoaded.spectrum = await useSpectrumText(name, text4, { remember: false, shift: pack.pack.spectrum?.offset ?? 0 });
+          if (role === "lyrics") bundledLoaded.lyrics = await useLyricsText(name, text5, { remember: false, shift: pack.pack.lyrics?.offset ?? 0 });
+          else bundledLoaded.spectrum = await useSpectrumText(name, text5, { remember: false, shift: pack.pack.spectrum?.offset ?? 0 });
         } catch (failure) {
           if (!cancelled) setError(`\u65E0\u6CD5\u8BFB\u53D6 MV \u5305\u7684 ${role}\uFF1A${failure?.message ?? failure}`);
         }
@@ -8832,16 +9015,16 @@ ${syncLabel}` : ""}` }, /* @__PURE__ */ import_react3.default.createElement("but
 });
 
 // .dsh-plugin/client/mv-info.mjs
-var text3 = (value) => typeof value === "string" ? value.trim() : "";
+var text4 = (value) => typeof value === "string" ? value.trim() : "";
 async function loadInfo(api) {
   const info = unwrapRemote(await api.info(), "\u65E0\u6CD5\u8BFB\u53D6 MV \u63D2\u4EF6\u72B6\u6001\u3002");
   if (!info || typeof info !== "object") throw new Error("MV \u63D2\u4EF6\u72B6\u6001\u683C\u5F0F\u65E0\u6548\u3002");
   return info;
 }
-var errorText = (error, fallback) => remoteErrorText(text3(error?.message), fallback);
+var errorText = (error, fallback) => remoteErrorText(text4(error?.message), fallback);
 
 // .dsh-plugin/client/mv-library.jsx
-var import_react7 = __toESM(require("react"), 1);
+var import_react8 = __toESM(require("react"), 1);
 
 // .dsh-plugin/client/mv-ai.jsx
 var import_react5 = __toESM(require("react"), 1);
@@ -8919,11 +9102,11 @@ function parseLyricsLookup(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) fail3("lyricsLookup must be an object");
   const extra = Object.keys(value).filter((k) => !LRCLIB_FIELDS.includes(k));
   if (extra.length) fail3(`lyricsLookup: unexpected fields: ${extra.join(", ")}`);
-  const text4 = (v, name, max = 300) => v === void 0 ? "" : typeof v === "string" && v.length <= max ? v.trim() : fail3(`${name} must be a string`);
-  const title = text4(value.title, "title");
+  const text5 = (v, name, max = 300) => v === void 0 ? "" : typeof v === "string" && v.length <= max ? v.trim() : fail3(`${name} must be a string`);
+  const title = text5(value.title, "title");
   if (!title) fail3("title is required");
   const duration = value.duration === void 0 || value.duration === null ? null : Number.isFinite(value.duration) && value.duration > 0 && value.duration < 36e3 ? value.duration : fail3("duration out of range");
-  return { title, artist: text4(value.artist, "artist"), album: text4(value.album, "album"), duration };
+  return { title, artist: text5(value.artist, "artist"), album: text5(value.album, "album"), duration };
 }
 var PACK_TEXT_FILES = Object.freeze({ "lyrics.lrc": 2 * 1048576, [MV_PACK_MANIFEST]: 512 * 1024, "timing.json": 8 * 1048576, "sections.json": 1048576 });
 var ANALYSIS_FILES = Object.freeze({ manifest: MV_PACK_MANIFEST, transcript: "analysis/transcript.json", vocals: "analysis/vocals.wav", timing: "timing.json", sections: "sections.json" });
@@ -9139,16 +9322,59 @@ function AiPackDialog({ api, harness, info, onClose, onLoaded, onRecent }) {
 }
 
 // .dsh-plugin/client/mv-workshop.jsx
+var import_react7 = __toESM(require("react"), 1);
+
+// .dsh-plugin/client/mv-workshop-community.jsx
 var import_react6 = __toESM(require("react"), 1);
+var TEXT = Object.freeze({
+  community: "\u793E\u533A\u7EDF\u8BA1",
+  loading: "\u793E\u533A\u7EDF\u8BA1\u8BFB\u53D6\u4E2D\u2026",
+  ready: "\u793E\u533A\u6570\u636E\u5DF2\u66F4\u65B0",
+  stale: "\u7F13\u5B58\u793E\u533A\u7EDF\u8BA1",
+  offline: "\u793E\u533A\u7EDF\u8BA1\u79BB\u7EBF",
+  unavailable: "\u793E\u533A\u7EDF\u8BA1\u6682\u4E0D\u53EF\u7528",
+  explanation: "\u201C\u2014\u201D\u8868\u793A\u6682\u65E0\u771F\u5B9E\u7EDF\u8BA1\uFF1B\u4E0B\u8F7D\u548C\u672C\u673A\u7BA1\u7406\u53EF\u7EE7\u7EED\u4F7F\u7528\u3002",
+  downloads: "\u6210\u529F\u4E0B\u8F7D",
+  users: "\u4E0B\u8F7D\u8005",
+  unique: "\u7531\u793E\u533A\u7EDF\u8BA1\u63D0\u4F9B\u7684\u53BB\u91CD\u4E0B\u8F7D\u8005",
+  likes: "\u70B9\u8D5E",
+  unavailableMetric: "\u6682\u65E0\u771F\u5B9E\u7EDF\u8BA1",
+  acclaimed: "\u5E7F\u53D7\u597D\u8BC4",
+  awarded: "\u6388\u4E88\u4E8E"
+});
+function CommunityIcon({ kind }) {
+  return /* @__PURE__ */ import_react6.default.createElement("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, kind === "downloads" && /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, /* @__PURE__ */ import_react6.default.createElement("path", { d: "M12 3v12m-4-4 4 4 4-4" }), /* @__PURE__ */ import_react6.default.createElement("path", { d: "M4 16v4h16v-4" })), kind === "users" && /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, /* @__PURE__ */ import_react6.default.createElement("circle", { cx: "9", cy: "8", r: "3" }), /* @__PURE__ */ import_react6.default.createElement("path", { d: "M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v1" })), kind === "likes" && /* @__PURE__ */ import_react6.default.createElement("path", { d: "M20.8 4.6a5.3 5.3 0 0 0-7.5 0L12 5.9l-1.3-1.3a5.3 5.3 0 0 0-7.5 7.5L12 21l8.8-8.9a5.3 5.3 0 0 0 0-7.5Z" }), kind === "trophy" && /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, /* @__PURE__ */ import_react6.default.createElement("path", { d: "M8 3h8v6a4 4 0 0 1-8 0V3ZM8 5H4v2a4 4 0 0 0 4 4M16 5h4v2a4 4 0 0 1-4 4M12 13v5M8 21h8M10 18h4v3" })));
+}
+function WorkshopCommunityStatus({ community, loading = false, error = "" }) {
+  const status = community?.status ?? "unavailable";
+  const known = status === "ready" || status === "stale";
+  return /* @__PURE__ */ import_react6.default.createElement("section", { className: "mv-ws-community", "aria-label": TEXT.community }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row mv-ws-community-heading" }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-ws-community-state" + (known ? " mv-ws-community-known" : ""), role: "status", "aria-live": "polite" }, loading ? TEXT.loading : TEXT[status] ?? TEXT.unavailable), known && community.fetchedAt && /* @__PURE__ */ import_react6.default.createElement("time", { className: "mv-caption", dateTime: community.fetchedAt }, community.fetchedAt.replace("T", " ").slice(0, 16), " UTC")), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, TEXT.explanation), error && /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption mv-ws-community-error" }, error));
+}
+function WorkshopStatistics({ title, record: record2 = null, compact = false }) {
+  const metrics = [
+    ["downloads", TEXT.downloads, record2?.downloadCount],
+    ["users", TEXT.users, record2?.uniqueDownloadUsers],
+    ["likes", TEXT.likes, record2?.likeCount]
+  ];
+  return /* @__PURE__ */ import_react6.default.createElement("dl", { className: "mv-ws-stats" + (compact ? " mv-ws-stats-compact" : ""), "aria-label": title + " " + TEXT.community }, metrics.map(([kind, label, value]) => /* @__PURE__ */ import_react6.default.createElement("div", { key: kind }, /* @__PURE__ */ import_react6.default.createElement("dt", { title: kind === "users" ? TEXT.unique : void 0 }, /* @__PURE__ */ import_react6.default.createElement(CommunityIcon, { kind }), /* @__PURE__ */ import_react6.default.createElement("span", null, label)), /* @__PURE__ */ import_react6.default.createElement("dd", { "aria-label": (kind === "users" ? TEXT.unique : label) + "\uFF1A" + (value == null ? TEXT.unavailableMetric : workshopMetricText(value)) }, workshopMetricText(value)))));
+}
+function WorkshopTrophy({ record: record2 = null, policy = null, compact = false }) {
+  const award = record2?.acclaimed;
+  if (!award || !policy || award.criterion !== policy.id) return null;
+  const description = TEXT.acclaimed + "\uFF1A" + policy.description + "\uFF1B" + TEXT.awarded + " " + award.awardedAt.slice(0, 10);
+  return /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-award" }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-ws-trophy", role: "img", "aria-label": description, title: description }, /* @__PURE__ */ import_react6.default.createElement(CommunityIcon, { kind: "trophy" }), /* @__PURE__ */ import_react6.default.createElement("span", null, TEXT.acclaimed)), !compact && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption mv-ws-award-rule" }, policy.description, " \xB7 ", TEXT.awarded, " ", award.awardedAt.slice(0, 10)));
+}
+
+// .dsh-plugin/client/mv-workshop.jsx
 var REPO_URL = `https://github.com/${WORKSHOP_REPO}`;
 var LICENSES = ["CC-BY-NC-SA-4.0", "CC-BY-NC-4.0", "CC-BY-SA-4.0", "CC-BY-4.0", "CC0-1.0", "MIT"];
 var RENDERERS = { webgl: "3D WebGL", script: "\u573A\u666F\u811A\u672C", generic: "\u901A\u7528\u753B\u9762", "dsh-pv": "dsh-pv", "world-execute-me": "world.execute(me)" };
 function TrustNote() {
-  return /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react6.default.createElement("b", null, "\u5173\u4E8E\u4FE1\u4EFB\uFF1A"), "\u5DE5\u574A\u91CC\u7684\u5305\u7531\u793E\u533A\u6295\u7A3F\uFF0C\u7ECF\u7EF4\u62A4\u8005\u5728 GitHub \u4E0A\u5BA1\u6838\u540E\u5408\u5E76\uFF1B\u63D2\u4EF6\u5B89\u88C5\u65F6\u6309\u7D22\u5F15\u6821\u9A8C\u6BCF\u4E2A\u6587\u4EF6\u7684 sha256\uFF0C\u5E76\u91CD\u65B0\u505A\u4E00\u904D\u68C0\u67E5\u3002 \u573A\u666F\u811A\u672C", /* @__PURE__ */ import_react6.default.createElement("b", null, "\u59CB\u7EC8\u5728\u6C99\u7BB1\u91CC\u8FD0\u884C"), "\uFF08\u72EC\u7ACB Web Worker\uFF0C\u6CA1\u6709\u7F51\u7EDC\u3001\u5B58\u50A8\u3001DOM \u548C\u6587\u4EF6\u8BBF\u95EE\uFF0C\u6BCF\u5E27\u9650\u65F6\uFF0C\u51FA\u9519\u81EA\u52A8\u6362\u56DE\u901A\u7528\u753B\u9762\uFF09\uFF0C\u4F46\u4ECD\u8BF7\u53EA\u5B89\u88C5\u4F60\u4FE1\u4EFB\u7684\u4F5C\u8005\u7684\u5305\u3002 \u5305\u91CC", /* @__PURE__ */ import_react6.default.createElement("b", null, "\u6CA1\u6709\u6B4C\u66F2\u97F3\u9891"), "\uFF1A\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u4E50\u3002\u5DF2\u6388\u6743\u6B4C\u8BCD\u3001\u8BD1\u6587\u548C\u753B\u9762\u8D44\u6E90\u53EF\u968F\u5305\u5B89\u88C5\u5E76\u81EA\u52A8\u52A0\u8F7D\u3002"));
+  return /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react7.default.createElement("b", null, "\u5173\u4E8E\u4FE1\u4EFB\uFF1A"), "\u5DE5\u574A\u91CC\u7684\u5305\u7531\u793E\u533A\u6295\u7A3F\uFF0C\u7ECF\u7EF4\u62A4\u8005\u5728 GitHub \u4E0A\u5BA1\u6838\u540E\u5408\u5E76\uFF1B\u63D2\u4EF6\u5B89\u88C5\u65F6\u6309\u7D22\u5F15\u6821\u9A8C\u6BCF\u4E2A\u6587\u4EF6\u7684 sha256\uFF0C\u5E76\u91CD\u65B0\u505A\u4E00\u904D\u68C0\u67E5\u3002 \u573A\u666F\u811A\u672C", /* @__PURE__ */ import_react7.default.createElement("b", null, "\u59CB\u7EC8\u5728\u6C99\u7BB1\u91CC\u8FD0\u884C"), "\uFF08\u72EC\u7ACB Web Worker\uFF0C\u6CA1\u6709\u7F51\u7EDC\u3001\u5B58\u50A8\u3001DOM \u548C\u6587\u4EF6\u8BBF\u95EE\uFF0C\u6BCF\u5E27\u9650\u65F6\uFF0C\u51FA\u9519\u81EA\u52A8\u6362\u56DE\u901A\u7528\u753B\u9762\uFF09\uFF0C\u4F46\u4ECD\u8BF7\u53EA\u5B89\u88C5\u4F60\u4FE1\u4EFB\u7684\u4F5C\u8005\u7684\u5305\u3002 \u5305\u91CC", /* @__PURE__ */ import_react7.default.createElement("b", null, "\u6CA1\u6709\u6B4C\u66F2\u97F3\u9891"), "\uFF1A\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u97F3\u4E50\u3002\u5DF2\u6388\u6743\u6B4C\u8BCD\u3001\u8BD1\u6587\u548C\u753B\u9762\u8D44\u6E90\u53EF\u968F\u5305\u5B89\u88C5\u5E76\u81EA\u52A8\u52A0\u8F7D\u3002"));
 }
 function Cover({ api, pack, large = false, cache }) {
-  const [src, setSrc] = import_react6.default.useState(() => cache.current.get(pack.id) ?? "");
-  import_react6.default.useEffect(() => {
+  const [src, setSrc] = import_react7.default.useState(() => cache.current.get(pack.id) ?? "");
+  import_react7.default.useEffect(() => {
     if (!pack.cover || cache.current.has(pack.id) || !api?.workshopCover) return;
     let alive = true;
     workshopCover(api, pack.id).then((value) => {
@@ -9163,36 +9389,46 @@ function Cover({ api, pack, large = false, cache }) {
     };
   }, [pack.id]);
   const style = large ? { width: "100%", aspectRatio: "16 / 10" } : void 0;
-  return src ? /* @__PURE__ */ import_react6.default.createElement("img", { className: "mv-ws-cover", src, alt: `${pack.title} \u5C01\u9762`, style }) : /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-ws-cover mv-ws-cover-empty", style, "aria-hidden": "true" }, ">_");
+  return src ? /* @__PURE__ */ import_react7.default.createElement("img", { className: "mv-ws-cover", src, alt: `${pack.title} \u5C01\u9762`, style }) : /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-ws-cover mv-ws-cover-empty", style, "aria-hidden": "true" }, ">_");
 }
 var sourceLabel = (url) => String(url ?? "").replace(/^https:\/\/(www\.)?(github\.com\/)?/, "").replace(/\/$/, "");
 function SourceLink({ url, compact = false }) {
   if (!url) return null;
-  return /* @__PURE__ */ import_react6.default.createElement("span", { className: `mv-ws-source${compact ? " mv-ws-source-compact" : ""}` }, "\u539F\u4F5C ", /* @__PURE__ */ import_react6.default.createElement("a", { href: url, target: "_blank", rel: "noreferrer", title: url, onClick: (event) => event.stopPropagation() }, sourceLabel(url)));
+  return /* @__PURE__ */ import_react7.default.createElement("span", { className: `mv-ws-source${compact ? " mv-ws-source-compact" : ""}` }, "\u539F\u4F5C ", /* @__PURE__ */ import_react7.default.createElement("a", { href: url, target: "_blank", rel: "noreferrer", title: url, onClick: (event) => event.stopPropagation() }, sourceLabel(url)));
 }
-var copy = async (text4) => {
+var copy = async (text5) => {
   try {
-    await globalThis.navigator?.clipboard?.writeText(text4);
+    await globalThis.navigator?.clipboard?.writeText(text5);
     return true;
   } catch {
     return false;
   }
 };
 function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null, canvas = () => null, initialIndex = null }) {
-  const [index, setIndex] = import_react6.default.useState(initialIndex);
-  const [loading, setLoading] = import_react6.default.useState(!initialIndex);
-  const [error, setError] = import_react6.default.useState("");
-  const [note, setNote] = import_react6.default.useState("");
-  const [query, setQuery] = import_react6.default.useState("");
-  const [license, setLicense] = import_react6.default.useState("");
-  const [renderer, setRenderer] = import_react6.default.useState("");
-  const [onlyInstalled, setOnlyInstalled] = import_react6.default.useState(false);
-  const [selected, setSelected] = import_react6.default.useState(null);
-  const [busy, setBusy] = import_react6.default.useState("");
-  const [confirmUninstall, setConfirmUninstall] = import_react6.default.useState("");
-  const [publishing, setPublishing] = import_react6.default.useState(false);
-  const covers = import_react6.default.useRef(/* @__PURE__ */ new Map());
-  const refresh = import_react6.default.useCallback(async (force = false) => {
+  const communityEnabled = typeof api?.workshopCommunity === "function";
+  const [index, setIndex] = import_react7.default.useState(initialIndex);
+  const [loading, setLoading] = import_react7.default.useState(!initialIndex);
+  const [error, setError] = import_react7.default.useState("");
+  const [note, setNote] = import_react7.default.useState("");
+  const [query, setQuery] = import_react7.default.useState("");
+  const [license, setLicense] = import_react7.default.useState("");
+  const [renderer, setRenderer] = import_react7.default.useState("");
+  const [installation, setInstallation] = import_react7.default.useState("any");
+  const [lyrics, setLyrics] = import_react7.default.useState("any");
+  const [tag, setTag] = import_react7.default.useState("");
+  const [compatibleOnly, setCompatibleOnly] = import_react7.default.useState(false);
+  const [onlyAcclaimed, setOnlyAcclaimed] = import_react7.default.useState(false);
+  const [sort, setSort] = import_react7.default.useState("updated");
+  const [community, setCommunity] = import_react7.default.useState(() => emptyWorkshopCommunity());
+  const [communityLoading, setCommunityLoading] = import_react7.default.useState(false);
+  const [communityError, setCommunityError] = import_react7.default.useState("");
+  const [selected, setSelected] = import_react7.default.useState(null);
+  const [busy, setBusy] = import_react7.default.useState("");
+  const [confirmUninstall, setConfirmUninstall] = import_react7.default.useState("");
+  const [publishing, setPublishing] = import_react7.default.useState(false);
+  const covers = import_react7.default.useRef(/* @__PURE__ */ new Map());
+  const communityRequest = import_react7.default.useRef(0);
+  const refresh = import_react7.default.useCallback(async (force = false) => {
     setLoading(true);
     setError("");
     try {
@@ -9203,13 +9439,85 @@ function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null, canva
       setLoading(false);
     }
   }, [api]);
-  import_react6.default.useEffect(() => {
+  import_react7.default.useEffect(() => {
     if (!initialIndex) void refresh(false);
   }, [refresh]);
+  const refreshCommunity = import_react7.default.useCallback(async () => {
+    const request2 = ++communityRequest.current;
+    setCommunityLoading(true);
+    setCommunityError("");
+    setCommunity((previous) => publicWorkshopCommunity(["ready", "stale"].includes(previous.status) ? { ...previous, status: "stale" } : previous));
+    try {
+      const next = await loadWorkshopCommunity(api);
+      if (request2 === communityRequest.current) setCommunity(next);
+    } catch (failure) {
+      if (request2 === communityRequest.current) {
+        setCommunityError(errorText(failure, "\u793E\u533A\u7EDF\u8BA1\u6682\u65F6\u4E0D\u53EF\u7528\u3002"));
+        setCommunity((previous) => ["ready", "stale"].includes(previous.status) ? publicWorkshopCommunity({ ...previous, status: "stale" }) : emptyWorkshopCommunity("offline"));
+      }
+    } finally {
+      if (request2 === communityRequest.current) setCommunityLoading(false);
+    }
+  }, [api]);
+  import_react7.default.useEffect(() => {
+    setCommunity(emptyWorkshopCommunity());
+    setCommunityLoading(false);
+    setCommunityError("");
+    if (communityEnabled) void refreshCommunity();
+    return () => {
+      communityRequest.current++;
+    };
+  }, [refreshCommunity, communityEnabled]);
   const { map: installed, updates } = installedState(index);
   const packs = index?.packs ?? [];
-  const shown = filterWorkshop(packs, { query, license, renderer, installed, onlyInstalled });
+  const tags = [...new Set(packs.flatMap((pack) => pack.tags ?? []))].sort((a, b) => a.localeCompare(b, "zh-CN"));
+  const licenses = [.../* @__PURE__ */ new Set([...LICENSES, ...packs.map((pack) => pack.license).filter(Boolean)])];
+  const renderers = [.../* @__PURE__ */ new Set([...Object.keys(RENDERERS), ...packs.map((pack) => pack.renderer).filter(Boolean)])];
+  const communityKnown = communityEnabled && ["ready", "stale"].includes(community.status);
+  const communityRecords = communityKnown ? Object.values(community.packs) : [];
+  const metricsAvailable = communityEnabled && hasWorkshopMetrics(community);
+  const sortAvailable = {
+    catalogue: true,
+    updated: true,
+    title: true,
+    downloads: metricsAvailable && communityRecords.some((record2) => record2.downloadCount !== null),
+    likes: metricsAvailable && communityRecords.some((record2) => record2.likeCount !== null),
+    popular: metricsAvailable && communityRecords.some((record2) => record2.popularityScore !== null)
+  };
+  const effectiveSort = sortAvailable[sort] ? sort : "updated";
+  import_react7.default.useEffect(() => {
+    if (sort !== effectiveSort) setSort(effectiveSort);
+  }, [sort, effectiveSort]);
+  import_react7.default.useEffect(() => {
+    if (!communityKnown) setOnlyAcclaimed(false);
+  }, [communityKnown]);
+  const shown = selectWorkshopPacks(packs, {
+    query,
+    license,
+    renderer,
+    installed,
+    installation,
+    updates,
+    lyrics,
+    tag,
+    compatibleOnly,
+    clientVersion: CLIENT_VERSION,
+    onlyAcclaimed: communityEnabled && onlyAcclaimed,
+    sort: effectiveSort
+  }, communityEnabled ? community : null);
   const current = selected ? packs.find((p) => p.id === selected) : null;
+  const communityRecord = (id) => communityKnown ? community.packs[id] ?? null : null;
+  const hasFilters = Boolean(query || license || renderer || tag || installation !== "any" || lyrics !== "any" || compatibleOnly || onlyAcclaimed);
+  const clearFilters = () => {
+    setQuery("");
+    setLicense("");
+    setRenderer("");
+    setTag("");
+    setInstallation("any");
+    setLyrics("any");
+    setCompatibleOnly(false);
+    setOnlyAcclaimed(false);
+  };
   const open = async (manifestPath) => {
     const loaded = await loadPackFromHost(api, manifestPath);
     onRecent(rememberPack(loaded));
@@ -9247,52 +9555,32 @@ function WorkshopDialog({ api, onClose, onLoaded, onRecent, active = null, canva
     }
   };
   const canPublish = active && !active.empty && active.manifestPath;
-  return /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-dialog mv-ws", role: "dialog", "aria-label": "\u521B\u610F\u5DE5\u574A" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row", style: { justifyContent: "space-between" } }, /* @__PURE__ */ import_react6.default.createElement("h2", { style: { margin: 0 } }, "\u521B\u610F\u5DE5\u574A ", /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, "\u793E\u533A MV \u5305 \xB7 ", /* @__PURE__ */ import_react6.default.createElement("a", { href: REPO_URL, target: "_blank", rel: "noreferrer" }, WORKSHOP_REPO))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: loading, onClick: () => void refresh(true) }, loading ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5237\u65B0"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: !canPublish, title: canPublish ? `\u628A\u5F53\u524D\u7684 MV \u5305\u300C${active.pack.title}\u300D\u53D1\u5E03\u5230\u5DE5\u574A` : "\u5148\u5728\u66F2\u5E93\u91CC\u6253\u5F00\u4F60\u81EA\u5DF1\u7684 MV \u5305", onClick: () => setPublishing((value) => !value) }, "\u53D1\u5E03\u5230\u5DE5\u574A\u2026"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u5173\u95ED\u521B\u610F\u5DE5\u574A", onClick: onClose }, /* @__PURE__ */ import_react6.default.createElement(Icon.close, null)))), /* @__PURE__ */ import_react6.default.createElement(TrustNote, null), publishing && canPublish && /* @__PURE__ */ import_react6.default.createElement(PublishDialog, { api, pack: active, canvas, onClose: () => setPublishing(false) }), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row mv-ws-filters" }, /* @__PURE__ */ import_react6.default.createElement("input", { className: "mv-ws-search", value: query, placeholder: "\u641C\u7D22\u6B4C\u540D\u3001\u6B4C\u624B\u3001\u4F5C\u8005\u3001\u6807\u7B7E", "aria-label": "\u641C\u7D22\u5DE5\u574A", onChange: (event) => setQuery(event.target.value) }), /* @__PURE__ */ import_react6.default.createElement("select", { value: license, "aria-label": "\u6309\u8BB8\u53EF\u8BC1\u7B5B\u9009", onChange: (event) => setLicense(event.target.value) }, /* @__PURE__ */ import_react6.default.createElement("option", { value: "" }, "\u5168\u90E8\u8BB8\u53EF\u8BC1"), LICENSES.map((l) => /* @__PURE__ */ import_react6.default.createElement("option", { key: l, value: l }, l))), /* @__PURE__ */ import_react6.default.createElement("select", { value: renderer, "aria-label": "\u6309\u6E32\u67D3\u65B9\u5F0F\u7B5B\u9009", onChange: (event) => setRenderer(event.target.value) }, /* @__PURE__ */ import_react6.default.createElement("option", { value: "" }, "\u5168\u90E8\u7C7B\u578B"), Object.entries(RENDERERS).map(([k, v]) => /* @__PURE__ */ import_react6.default.createElement("option", { key: k, value: k }, v))), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-check", style: { height: "auto" } }, /* @__PURE__ */ import_react6.default.createElement("input", { type: "checkbox", checked: onlyInstalled, onChange: (event) => setOnlyInstalled(event.target.checked) }), /* @__PURE__ */ import_react6.default.createElement("span", null, "\u53EA\u770B\u5DF2\u5B89\u88C5")), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, index ? `${shown.length} / ${packs.length} \u4E2A\u5305${updates.size ? ` \xB7 ${updates.size} \u4E2A\u6709\u66F4\u65B0` : ""}` : "")), error && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error, /HTTP 451/.test(error) ? "\n\u4E0B\u8F7D\u6E90\u6709\u5E73\u53F0\u5185\u5BB9\u8BBF\u95EE\u9650\u5236\uFF0C\u8BF7\u8054\u7CFB\u4ED3\u5E93\u7EF4\u62A4\u8005\u5904\u7406\uFF1B\u66F4\u6539\u4EE3\u7406\u6216\u5173\u95ED TLS \u6821\u9A8C\u4E0D\u80FD\u89E3\u51B3\u3002" : /404/.test(error) ? "\n\u5DE5\u574A\u6587\u4EF6\u4E0D\u5B58\u5728\uFF1B\u8BF7\u5237\u65B0\u7D22\u5F15\uFF0C\u6216\u68C0\u67E5\u5907\u7528\u6E90\u662F\u5426\u540C\u6B65\u5B8C\u6210\u3002" : /超时|ENOTFOUND|ECONN|TLS|socket disconnected/i.test(error) && !/httpProxy|备用源/.test(error) ? "\n\u4E0B\u8F7D\u8FDE\u63A5\u4E2D\u65AD\uFF1A\u68C0\u67E5\u63D2\u4EF6 httpProxy\u3001HTTPS_PROXY \u6216 workshopMirror\uFF1B\u4FEE\u6539\u7CFB\u7EDF\u73AF\u5883\u53D8\u91CF\u540E\u9700\u91CD\u542F Harness\u3002" : "")), note && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "ok", actions: /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setNote("") }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, note)), current ? /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-detail" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-detail-art" }, /* @__PURE__ */ import_react6.default.createElement(Cover, { api, pack: current, large: true, cache: covers })), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-detail-body" }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSelected(null) }, "\u2190 \u8FD4\u56DE\u5217\u8868"), /* @__PURE__ */ import_react6.default.createElement("h3", { style: { margin: "6px 0 2px" } }, current.title), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption", style: { marginTop: 0 } }, current.artist || "\u672A\u77E5\u827A\u672F\u5BB6", " \xB7 \u4F5C\u8005 ", current.author || "\u2014", " \xB7 v", current.version), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, current.description || "\uFF08\u6CA1\u6709\u7B80\u4ECB\uFF09"), current.source && /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react6.default.createElement(SourceLink, { url: current.source })), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, "\u8BB8\u53EF ", current.license), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, "\u65F6\u957F ", durationText(current.duration)), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, RENDERERS[current.renderer] ?? current.renderer), current.requires && /* @__PURE__ */ import_react6.default.createElement("span", { className: `mv-chip${tooOld(current) ? " mv-chip-warn" : ""}`, title: "\u80FD\u64AD\u653E\u8FD9\u4E2A\u5305\u7684\u6700\u4F4E\u63D2\u4EF6\u7248\u672C" }, "\u9700\u8981\u63D2\u4EF6 v", current.requires, "+"), current.sections > 0 && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip" }, current.sections, " \u4E2A\u6BB5\u843D"), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip", title: current.lyrics ? "\u6B4C\u8BCD\u548C\u8BD1\u6587\u968F\u5305\u4E0B\u8F7D\uFF0C\u6253\u5F00\u65F6\u81EA\u52A8\u52A0\u8F7D" : "\u65E7\u5305\u53EF\u53EA\u6709\u65F6\u95F4\u8F74\uFF0C\u6309\u54C8\u5E0C\u5339\u914D\u4F60\u81EA\u5DF1\u7684\u6B4C\u8BCD\u6587\u4EF6" }, current.lyrics ? "\u542B\u6B4C\u8BCD\u4E0E\u8BD1\u6587" : current.timing ? "\u4EC5\u6B4C\u8BCD\u65F6\u95F4\u8F74" : "\u65E0\u6B4C\u8BCD\u8F68"), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-chip", title: "\u7528\u6765\u68C0\u67E5\u4F60\u7684\u97F3\u9891\u662F\u5426\u662F\u540C\u4E00\u4E2A\u7248\u672C" }, current.fingerprint ? "\u5E26\u97F3\u9891\u6307\u7EB9" : "\u4EC5\u6309\u65F6\u957F\u5339\u914D"), current.tags.map((t) => /* @__PURE__ */ import_react6.default.createElement("span", { key: t, className: "mv-chip" }, "#", t))), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, current.files.length, " \u4E2A\u6587\u4EF6 \xB7 ", sizeText(current.size), current.updated ? ` \xB7 \u66F4\u65B0\u4E8E ${current.updated.slice(0, 10)}` : "", current.homepage ? /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, " \xB7 ", /* @__PURE__ */ import_react6.default.createElement("a", { href: current.homepage, target: "_blank", rel: "noreferrer" }, "\u4E3B\u9875")) : null, " \xB7 ", /* @__PURE__ */ import_react6.default.createElement("a", { href: `${REPO_URL}/tree/${index?.commit ?? "main"}/packs/${current.id}`, target: "_blank", rel: "noreferrer" }, "\u5728 GitHub \u4E0A\u67E5\u770B\u6E90\u7801")), /* @__PURE__ */ import_react6.default.createElement("ul", { className: "mv-caption mv-ws-files" }, current.files.map((f) => /* @__PURE__ */ import_react6.default.createElement("li", { key: f.path }, /* @__PURE__ */ import_react6.default.createElement("code", { title: f.path }, f.path), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-ws-size" }, sizeText(f.size)), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-faint mv-ws-sha", title: `sha256 ${f.sha256}` }, "sha256 ", f.sha256.slice(0, 12), "\u2026")))), tooOld(current) && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "warn" }, "\u8FD9\u4E2A\u5305\u9700\u8981 dsh-mv-cli v", current.requires, " \u6216\u66F4\u65B0\uFF08\u5F53\u524D v", CLIENT_VERSION, "\uFF09\u3002\u8BF7\u5148\u5728 DSH \u91CC\u66F4\u65B0\u63D2\u4EF6\u518D\u5B89\u88C5\u3002"), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row" }, !installed[current.id] && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(busy) || tooOld(current), onClick: () => void install(current) }, busy === `install:${current.id}` ? "\u6B63\u5728\u4E0B\u8F7D\u5E76\u6821\u9A8C\u2026" : "\u5B89\u88C5\u5230\u66F2\u5E93"), installed[current.id] && updates.has(current.id) && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(busy) || tooOld(current), onClick: () => void install(current) }, busy === `install:${current.id}` ? "\u6B63\u5728\u66F4\u65B0\u2026" : `\u66F4\u65B0\u5230 v${current.version}\uFF08\u5DF2\u88C5 v${installed[current.id].version}\uFF09`), installed[current.id] && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void open(installed[current.id].manifestPath).then(() => setNote(`\u5DF2\u6253\u5F00\u300C${current.title}\u300D\u3002`)).catch((failure) => setError(errorText(failure, "\u65E0\u6CD5\u6253\u5F00\u3002"))) }, "\u6253\u5F00"), installed[current.id] && confirmUninstall !== current.id && /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-danger", disabled: Boolean(busy), onClick: () => setConfirmUninstall(current.id) }, "\u5378\u8F7D"), confirmUninstall === current.id && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-row" }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, "\u786E\u5B9A\u5378\u8F7D\uFF1F\u4F1A\u5220\u9664\u63D2\u4EF6\u5DE5\u574A\u6587\u4EF6\u5939\u91CC\u7684\u8FD9\u4E2A\u5305\u3002"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-danger mv-button-small", onClick: () => void uninstall(current) }, "\u786E\u8BA4\u5378\u8F7D"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => setConfirmUninstall("") }, "\u53D6\u6D88"))))) : /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-grid", "aria-busy": loading }, shown.map((pack) => /* @__PURE__ */ import_react6.default.createElement(
-    "div",
-    {
-      key: pack.id,
-      role: "button",
-      tabIndex: 0,
-      className: "mv-ws-card",
-      onClick: () => setSelected(pack.id),
-      title: pack.description,
-      onKeyDown: (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          setSelected(pack.id);
-        }
-      }
-    },
-    /* @__PURE__ */ import_react6.default.createElement(Cover, { api, pack, cache: covers }),
-    /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-title" }, pack.title),
-    /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-sub" }, pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", " \xB7 ", durationText(pack.duration)),
-    /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-sub" }, "by ", pack.author || "\u2014", " \xB7 ", pack.license),
-    pack.lyrics && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-sub" }, "\u6B4C\u8BCD\u4E0E\u8BD1\u6587\u5DF2\u5305\u542B \xB7 \u53EA\u9700\u81EA\u5907\u97F3\u4E50"),
-    pack.source && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-card-sub" }, /* @__PURE__ */ import_react6.default.createElement(SourceLink, { url: pack.source, compact: true })),
-    installed[pack.id] && /* @__PURE__ */ import_react6.default.createElement("span", { className: `mv-ws-badge${updates.has(pack.id) ? " mv-ws-badge-update" : ""}` }, updates.has(pack.id) ? "\u6709\u66F4\u65B0" : "\u5DF2\u5B89\u88C5")
-  )), index && !shown.length && /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, packs.length ? "\u6CA1\u6709\u7B26\u5408\u6761\u4EF6\u7684\u5305\u3002" : "\u5DE5\u574A\u91CC\u8FD8\u6CA1\u6709\u5305\u3002")), /* @__PURE__ */ import_react6.default.createElement(WorkshopDirSettings, { api, active, onRecent, onLoaded, onChanged: () => void refresh(false) }), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, "\u5DE5\u574A\u6CA1\u6709\u670D\u52A1\u5668\uFF1A\u76EE\u5F55\u6765\u81EA\u4ED3\u5E93\u91CC\u7531 GitHub Actions \u751F\u6210\u7684 index.json\u3002\u60F3\u6295\u7A3F\uFF1F\u6253\u5F00\u4F60\u7684 MV \u5305\u540E\u70B9\u300C\u53D1\u5E03\u5230\u5DE5\u574A\u2026\u300D\uFF0C\u6216\u770B ", /* @__PURE__ */ import_react6.default.createElement("a", { href: `${REPO_URL}/blob/main/CONTRIBUTING.zh.md`, target: "_blank", rel: "noreferrer" }, "\u6295\u7A3F\u8BF4\u660E"), "\u3002"));
+  return /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-dialog mv-ws", role: "dialog", "aria-label": "\u521B\u610F\u5DE5\u574A" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row mv-ws-heading" }, /* @__PURE__ */ import_react7.default.createElement("h2", { style: { margin: 0 } }, "\u521B\u610F\u5DE5\u574A ", /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-caption" }, "\u793E\u533A MV \u5305 \xB7 ", /* @__PURE__ */ import_react7.default.createElement("a", { href: REPO_URL, target: "_blank", rel: "noreferrer" }, WORKSHOP_REPO))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: loading, onClick: () => {
+    void refresh(true);
+    if (communityEnabled) void refreshCommunity();
+  } }, loading ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5237\u65B0"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: !canPublish, title: canPublish ? `\u628A\u5F53\u524D\u7684 MV \u5305\u300C${active.pack.title}\u300D\u53D1\u5E03\u5230\u5DE5\u574A` : "\u5148\u5728\u66F2\u5E93\u91CC\u6253\u5F00\u4F60\u81EA\u5DF1\u7684 MV \u5305", onClick: () => setPublishing((value) => !value) }, "\u53D1\u5E03\u5230\u5DE5\u574A\u2026"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u5173\u95ED\u521B\u610F\u5DE5\u574A", onClick: onClose }, /* @__PURE__ */ import_react7.default.createElement(Icon.close, null)))), communityEnabled && /* @__PURE__ */ import_react7.default.createElement(WorkshopCommunityStatus, { community, loading: communityLoading, error: communityError }), /* @__PURE__ */ import_react7.default.createElement(TrustNote, null), publishing && canPublish && /* @__PURE__ */ import_react7.default.createElement(PublishDialog, { api, pack: active, canvas, onClose: () => setPublishing(false) }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-search-row" }, /* @__PURE__ */ import_react7.default.createElement("input", { className: "mv-ws-search", value: query, maxLength: 500, placeholder: "\u641C\u7D22\u6B4C\u540D\u3001\u6B4C\u624B\u3001\u4F5C\u8005\u3001\u6807\u7B7E", "aria-label": "\u641C\u7D22\u5DE5\u574A", onChange: (event) => setQuery(event.target.value.replace(/[\u0000-\u001f\u007f]/g, " ").slice(0, 500)) }), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-ws-filter mv-ws-sort" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6392\u5E8F"), /* @__PURE__ */ import_react7.default.createElement("select", { value: effectiveSort, "aria-label": "\u5DE5\u574A\u6392\u5E8F", onChange: (event) => setSort(event.target.value) }, /* @__PURE__ */ import_react7.default.createElement("option", { value: "updated" }, "\u6700\u8FD1\u66F4\u65B0"), /* @__PURE__ */ import_react7.default.createElement("option", { value: "title" }, "\u540D\u79F0"), /* @__PURE__ */ import_react7.default.createElement("option", { value: "catalogue" }, "\u76EE\u5F55\u987A\u5E8F"), communityEnabled && /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("option", { value: "downloads", disabled: !sortAvailable.downloads }, "\u4E0B\u8F7D\u6570"), /* @__PURE__ */ import_react7.default.createElement("option", { value: "likes", disabled: !sortAvailable.likes }, "\u70B9\u8D5E\u6570"), /* @__PURE__ */ import_react7.default.createElement("option", { value: "popular", disabled: !sortAvailable.popular }, "\u70ED\u95E8"))))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-filters" }, /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-ws-filter" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7C7B\u578B"), /* @__PURE__ */ import_react7.default.createElement("select", { value: renderer, "aria-label": "\u6309\u6E32\u67D3\u65B9\u5F0F\u7B5B\u9009", onChange: (event) => setRenderer(event.target.value) }, /* @__PURE__ */ import_react7.default.createElement("option", { value: "" }, "\u5168\u90E8\u7C7B\u578B"), renderers.map((value) => /* @__PURE__ */ import_react7.default.createElement("option", { key: value, value }, RENDERERS[value] ?? value)))), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-ws-filter" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u8BB8\u53EF\u8BC1"), /* @__PURE__ */ import_react7.default.createElement("select", { value: license, "aria-label": "\u6309\u8BB8\u53EF\u8BC1\u7B5B\u9009", onChange: (event) => setLicense(event.target.value) }, /* @__PURE__ */ import_react7.default.createElement("option", { value: "" }, "\u5168\u90E8\u8BB8\u53EF\u8BC1"), licenses.map((value) => /* @__PURE__ */ import_react7.default.createElement("option", { key: value, value }, value)))), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-ws-filter" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6807\u7B7E"), /* @__PURE__ */ import_react7.default.createElement("select", { value: tag, "aria-label": "\u6309\u6807\u7B7E\u7B5B\u9009", onChange: (event) => setTag(event.target.value) }, /* @__PURE__ */ import_react7.default.createElement("option", { value: "" }, "\u5168\u90E8\u6807\u7B7E"), tags.map((value) => /* @__PURE__ */ import_react7.default.createElement("option", { key: value, value }, "#" + value)))), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-ws-filter" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6B4C\u8BCD"), /* @__PURE__ */ import_react7.default.createElement("select", { value: lyrics, "aria-label": "\u6309\u6B4C\u8BCD\u5185\u5BB9\u7B5B\u9009", onChange: (event) => setLyrics(event.target.value) }, /* @__PURE__ */ import_react7.default.createElement("option", { value: "any" }, "\u5168\u90E8\u6B4C\u8BCD\u5185\u5BB9"), /* @__PURE__ */ import_react7.default.createElement("option", { value: "included" }, "\u542B\u6B4C\u8BCD\u4E0E\u8BD1\u6587"), /* @__PURE__ */ import_react7.default.createElement("option", { value: "timing" }, "\u4EC5\u6B4C\u8BCD\u65F6\u95F4\u8F74"), /* @__PURE__ */ import_react7.default.createElement("option", { value: "none" }, "\u65E0\u6B4C\u8BCD\u8F68"))), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-ws-filter" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u5B89\u88C5\u72B6\u6001"), /* @__PURE__ */ import_react7.default.createElement("select", { value: installation, "aria-label": "\u6309\u5B89\u88C5\u72B6\u6001\u7B5B\u9009", onChange: (event) => setInstallation(event.target.value) }, /* @__PURE__ */ import_react7.default.createElement("option", { value: "any" }, "\u5168\u90E8\u5B89\u88C5\u72B6\u6001"), /* @__PURE__ */ import_react7.default.createElement("option", { value: "installed" }, "\u5DF2\u5B89\u88C5"), /* @__PURE__ */ import_react7.default.createElement("option", { value: "updates" }, "\u6709\u66F4\u65B0")))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row mv-ws-filter-checks" }, /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react7.default.createElement("input", { type: "checkbox", checked: compatibleOnly, onChange: (event) => setCompatibleOnly(event.target.checked) }), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u53EA\u770B\u53EF\u517C\u5BB9")), communityEnabled && /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react7.default.createElement("input", { type: "checkbox", checked: onlyAcclaimed, disabled: !communityKnown, onChange: (event) => setOnlyAcclaimed(event.target.checked) }), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u5E7F\u53D7\u597D\u8BC4")), communityEnabled && !communityKnown && /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-caption" }, "\u793E\u533A\u6392\u540D\u4E0E\u5956\u676F\u7B5B\u9009\u9700\u771F\u5B9E\u793E\u533A\u6570\u636E"), effectiveSort === "popular" && /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-caption" }, "\u70ED\u95E8\u6392\u540D\u4F7F\u7528\u793E\u533A\u63D0\u4F9B\u7684\u70ED\u5EA6\u5206\u6570")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row mv-ws-results" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: !hasFilters, onClick: clearFilters }, "\u6E05\u9664\u7B5B\u9009"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-caption", role: "status", "aria-live": "polite" }, index ? shown.length + " / " + packs.length + "\u4E2A\u5305" + (updates.size ? " \xB7 " + updates.size + "\u4E2A\u6709\u66F4\u65B0" : "") : "")), error && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error, /HTTP 451/.test(error) ? "\n\u4E0B\u8F7D\u6E90\u6709\u5E73\u53F0\u5185\u5BB9\u8BBF\u95EE\u9650\u5236\uFF0C\u8BF7\u8054\u7CFB\u4ED3\u5E93\u7EF4\u62A4\u8005\u5904\u7406\uFF1B\u66F4\u6539\u4EE3\u7406\u6216\u5173\u95ED TLS \u6821\u9A8C\u4E0D\u80FD\u89E3\u51B3\u3002" : /404/.test(error) ? "\n\u5DE5\u574A\u6587\u4EF6\u4E0D\u5B58\u5728\uFF1B\u8BF7\u5237\u65B0\u7D22\u5F15\uFF0C\u6216\u68C0\u67E5\u5907\u7528\u6E90\u662F\u5426\u540C\u6B65\u5B8C\u6210\u3002" : /超时|ENOTFOUND|ECONN|TLS|socket disconnected/i.test(error) && !/httpProxy|备用源/.test(error) ? "\n\u4E0B\u8F7D\u8FDE\u63A5\u4E2D\u65AD\uFF1A\u68C0\u67E5\u63D2\u4EF6 httpProxy\u3001HTTPS_PROXY \u6216 workshopMirror\uFF1B\u4FEE\u6539\u7CFB\u7EDF\u73AF\u5883\u53D8\u91CF\u540E\u9700\u91CD\u542F Harness\u3002" : "")), note && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "ok", actions: /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setNote("") }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, note)), current ? /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-detail" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-detail-art" }, /* @__PURE__ */ import_react7.default.createElement(Cover, { api, pack: current, large: true, cache: covers })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-detail-body" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSelected(null) }, "\u2190 \u8FD4\u56DE\u5217\u8868"), /* @__PURE__ */ import_react7.default.createElement("h3", { style: { margin: "6px 0 2px" } }, current.title), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption", style: { marginTop: 0 } }, current.artist || "\u672A\u77E5\u827A\u672F\u5BB6", " \xB7 \u4F5C\u8005 ", current.author || "\u2014", " \xB7 v", current.version), communityEnabled && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-detail-community" }, /* @__PURE__ */ import_react7.default.createElement(WorkshopTrophy, { record: communityRecord(current.id), policy: community.policy }), /* @__PURE__ */ import_react7.default.createElement(WorkshopStatistics, { title: current.title, record: communityRecord(current.id) })), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, current.description || "\uFF08\u6CA1\u6709\u7B80\u4ECB\uFF09"), current.source && /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react7.default.createElement(SourceLink, { url: current.source })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-chip" }, "\u8BB8\u53EF ", current.license), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-chip" }, "\u65F6\u957F ", durationText(current.duration)), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-chip" }, RENDERERS[current.renderer] ?? current.renderer), current.requires && /* @__PURE__ */ import_react7.default.createElement("span", { className: `mv-chip${tooOld(current) ? " mv-chip-warn" : ""}`, title: "\u80FD\u64AD\u653E\u8FD9\u4E2A\u5305\u7684\u6700\u4F4E\u63D2\u4EF6\u7248\u672C" }, "\u9700\u8981\u63D2\u4EF6 v", current.requires, "+"), current.sections > 0 && /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-chip" }, current.sections, " \u4E2A\u6BB5\u843D"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-chip", title: current.lyrics ? "\u6B4C\u8BCD\u548C\u8BD1\u6587\u968F\u5305\u4E0B\u8F7D\uFF0C\u6253\u5F00\u65F6\u81EA\u52A8\u52A0\u8F7D" : "\u65E7\u5305\u53EF\u53EA\u6709\u65F6\u95F4\u8F74\uFF0C\u6309\u54C8\u5E0C\u5339\u914D\u4F60\u81EA\u5DF1\u7684\u6B4C\u8BCD\u6587\u4EF6" }, current.lyrics ? "\u542B\u6B4C\u8BCD\u4E0E\u8BD1\u6587" : current.timing ? "\u4EC5\u6B4C\u8BCD\u65F6\u95F4\u8F74" : "\u65E0\u6B4C\u8BCD\u8F68"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-chip", title: "\u7528\u6765\u68C0\u67E5\u4F60\u7684\u97F3\u9891\u662F\u5426\u662F\u540C\u4E00\u4E2A\u7248\u672C" }, current.fingerprint ? "\u5E26\u97F3\u9891\u6307\u7EB9" : "\u4EC5\u6309\u65F6\u957F\u5339\u914D"), current.tags.map((t) => /* @__PURE__ */ import_react7.default.createElement("span", { key: t, className: "mv-chip" }, "#", t))), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, current.files.length, " \u4E2A\u6587\u4EF6 \xB7 ", sizeText(current.size), current.updated ? ` \xB7 \u66F4\u65B0\u4E8E ${current.updated.slice(0, 10)}` : "", current.homepage ? /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, " \xB7 ", /* @__PURE__ */ import_react7.default.createElement("a", { href: current.homepage, target: "_blank", rel: "noreferrer" }, "\u4E3B\u9875")) : null, " \xB7 ", /* @__PURE__ */ import_react7.default.createElement("a", { href: `${REPO_URL}/tree/${index?.commit ?? "main"}/packs/${current.id}`, target: "_blank", rel: "noreferrer" }, "\u5728 GitHub \u4E0A\u67E5\u770B\u6E90\u7801")), /* @__PURE__ */ import_react7.default.createElement("ul", { className: "mv-caption mv-ws-files" }, current.files.map((f) => /* @__PURE__ */ import_react7.default.createElement("li", { key: f.path }, /* @__PURE__ */ import_react7.default.createElement("code", { title: f.path }, f.path), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-ws-size" }, sizeText(f.size)), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-faint mv-ws-sha", title: `sha256 ${f.sha256}` }, "sha256 ", f.sha256.slice(0, 12), "\u2026")))), tooOld(current) && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "warn" }, "\u8FD9\u4E2A\u5305\u9700\u8981 dsh-mv-cli v", current.requires, " \u6216\u66F4\u65B0\uFF08\u5F53\u524D v", CLIENT_VERSION, "\uFF09\u3002\u8BF7\u5148\u5728 DSH \u91CC\u66F4\u65B0\u63D2\u4EF6\u518D\u5B89\u88C5\u3002"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row" }, !installed[current.id] && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(busy) || tooOld(current), onClick: () => void install(current) }, busy === `install:${current.id}` ? "\u6B63\u5728\u4E0B\u8F7D\u5E76\u6821\u9A8C\u2026" : "\u5B89\u88C5\u5230\u66F2\u5E93"), installed[current.id] && updates.has(current.id) && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(busy) || tooOld(current), onClick: () => void install(current) }, busy === `install:${current.id}` ? "\u6B63\u5728\u66F4\u65B0\u2026" : `\u66F4\u65B0\u5230 v${current.version}\uFF08\u5DF2\u88C5 v${installed[current.id].version}\uFF09`), installed[current.id] && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void open(installed[current.id].manifestPath).then(() => setNote(`\u5DF2\u6253\u5F00\u300C${current.title}\u300D\u3002`)).catch((failure) => setError(errorText(failure, "\u65E0\u6CD5\u6253\u5F00\u3002"))) }, "\u6253\u5F00"), installed[current.id] && confirmUninstall !== current.id && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-danger", disabled: Boolean(busy), onClick: () => setConfirmUninstall(current.id) }, "\u5378\u8F7D"), confirmUninstall === current.id && /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-row" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-caption" }, "\u786E\u5B9A\u5378\u8F7D\uFF1F\u4F1A\u5220\u9664\u63D2\u4EF6\u5DE5\u574A\u6587\u4EF6\u5939\u91CC\u7684\u8FD9\u4E2A\u5305\u3002"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-danger mv-button-small", onClick: () => void uninstall(current) }, "\u786E\u8BA4\u5378\u8F7D"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => setConfirmUninstall("") }, "\u53D6\u6D88"))))) : /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-grid", "aria-busy": loading }, shown.map((pack) => /* @__PURE__ */ import_react7.default.createElement("article", { key: pack.id, className: "mv-ws-card", "data-pack-id": pack.id, "aria-labelledby": "mv-ws-pack-title-" + pack.id }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-ws-card-open", onClick: () => setSelected(pack.id), title: pack.description, "aria-label": "\u67E5\u770B\u300A" + pack.title + "\u300B\u8BE6\u60C5" }, /* @__PURE__ */ import_react7.default.createElement(Cover, { api, pack, cache: covers }), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-ws-card-intro" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-title", id: "mv-ws-pack-title-" + pack.id }, pack.title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", " \xB7 ", durationText(pack.duration)), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, "by ", pack.author || "\u2014", " \xB7 ", pack.license), pack.lyrics && /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, "\u6B4C\u8BCD\u4E0E\u8BD1\u6587\u5DF2\u5305\u542B \xB7 \u53EA\u9700\u81EA\u5907\u97F3\u4E50"))), communityEnabled && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-card-community" }, /* @__PURE__ */ import_react7.default.createElement(WorkshopTrophy, { record: communityRecord(pack.id), policy: community.policy, compact: true }), /* @__PURE__ */ import_react7.default.createElement(WorkshopStatistics, { title: pack.title, record: communityRecord(pack.id), compact: true })), pack.source && /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, /* @__PURE__ */ import_react7.default.createElement(SourceLink, { url: pack.source, compact: true })), installed[pack.id] && /* @__PURE__ */ import_react7.default.createElement("span", { className: `mv-ws-badge${updates.has(pack.id) ? " mv-ws-badge-update" : ""}` }, updates.has(pack.id) ? "\u6709\u66F4\u65B0" : "\u5DF2\u5B89\u88C5"))), index && !shown.length && /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, packs.length ? "\u6CA1\u6709\u7B26\u5408\u6761\u4EF6\u7684\u5305\u3002" : "\u5DE5\u574A\u91CC\u8FD8\u6CA1\u6709\u5305\u3002")), /* @__PURE__ */ import_react7.default.createElement(WorkshopDirSettings, { api, active, onRecent, onLoaded, onChanged: () => void refresh(false) }), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u5DE5\u574A\u76EE\u5F55\u6765\u81EA\u4ED3\u5E93\u91CC\u7531 GitHub Actions \u751F\u6210\u7684 index.json\u3002\u60F3\u6295\u7A3F\uFF1F\u6253\u5F00\u4F60\u7684 MV \u5305\u540E\u70B9\u300C\u53D1\u5E03\u5230\u5DE5\u574A\u2026\u300D\uFF0C\u6216\u770B ", /* @__PURE__ */ import_react7.default.createElement("a", { href: REPO_URL + "/blob/main/CONTRIBUTING.zh.md", target: "_blank", rel: "noreferrer" }, "\u6295\u7A3F\u8BF4\u660E"), "\u3002"));
 }
 var SOURCE_TEXT = { default: "\u9ED8\u8BA4\u4F4D\u7F6E", custom: "\u4F60\u8BBE\u7F6E\u7684\u4F4D\u7F6E", config: "\u63D2\u4EF6\u914D\u7F6E workshopDir", fixed: "\u56FA\u5B9A\u4F4D\u7F6E" };
 function WorkshopDirSettings({ api, active = null, onRecent = () => {
 }, onLoaded = () => {
 }, onChanged = () => {
 }, initialInfo = null, initialStep = null }) {
-  const [info, setInfo] = import_react6.default.useState(initialInfo);
-  const [editing, setEditing] = import_react6.default.useState(initialStep?.editing ?? false);
-  const [value, setValue] = import_react6.default.useState(initialStep?.value ?? "");
-  const [busy, setBusy] = import_react6.default.useState("");
-  const [error, setError] = import_react6.default.useState(initialStep?.error ?? "");
-  const [ask, setAsk] = import_react6.default.useState(initialStep?.ask ?? null);
-  const [progress, setProgress] = import_react6.default.useState(initialStep?.progress ?? null);
-  const [result, setResult] = import_react6.default.useState(initialStep?.result ?? null);
-  const reload = import_react6.default.useCallback(async () => {
+  const [info, setInfo] = import_react7.default.useState(initialInfo);
+  const [editing, setEditing] = import_react7.default.useState(initialStep?.editing ?? false);
+  const [value, setValue] = import_react7.default.useState(initialStep?.value ?? "");
+  const [busy, setBusy] = import_react7.default.useState("");
+  const [error, setError] = import_react7.default.useState(initialStep?.error ?? "");
+  const [ask, setAsk] = import_react7.default.useState(initialStep?.ask ?? null);
+  const [progress, setProgress] = import_react7.default.useState(initialStep?.progress ?? null);
+  const [result, setResult] = import_react7.default.useState(initialStep?.result ?? null);
+  const reload = import_react7.default.useCallback(async () => {
     try {
       setInfo(await workshopDirInfo(api));
     } catch (failure) {
       setError(errorText(failure, "\u65E0\u6CD5\u8BFB\u53D6\u5B89\u88C5\u4F4D\u7F6E\u3002"));
     }
   }, [api]);
-  import_react6.default.useEffect(() => {
+  import_react7.default.useEffect(() => {
     if (!initialInfo) void reload();
   }, [reload]);
   const apply2 = async (request2) => {
@@ -9349,21 +9637,21 @@ function WorkshopDirSettings({ api, active = null, onRecent = () => {
   };
   const fixed = info?.source === "fixed";
   const example = info?.platform === "win32" || !info ? "F:\\MV\\workshop" : "/home/me/mv-workshop";
-  return /* @__PURE__ */ import_react6.default.createElement("section", { className: "mv-ws-dir", "aria-label": "\u5DE5\u574A\u5B89\u88C5\u4F4D\u7F6E" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row", style: { justifyContent: "space-between" } }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-dir-text" }, /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, "\u5B89\u88C5\u4F4D\u7F6E"), /* @__PURE__ */ import_react6.default.createElement("code", { className: "mv-wrap", title: info?.dir }, info?.dir ?? "\u2026"), info && /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, SOURCE_TEXT[info.source] ?? info.source, " \xB7 ", info.packs, " \u4E2A\u5305", info.extraDirs?.length ? ` \xB7 \u53E6\u6709 ${info.extraDirs.reduce((n, d) => n + d.packs.length, 0)} \u4E2A\u5728\u65E7\u4F4D\u7F6E` : "")), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: !info || Boolean(busy), onClick: () => void open() }, "\u6253\u5F00\u6587\u4EF6\u5939"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: !info || fixed || Boolean(busy), onClick: () => {
+  return /* @__PURE__ */ import_react7.default.createElement("section", { className: "mv-ws-dir", "aria-label": "\u5DE5\u574A\u5B89\u88C5\u4F4D\u7F6E" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row", style: { justifyContent: "space-between" } }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-dir-text" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-caption" }, "\u5B89\u88C5\u4F4D\u7F6E"), /* @__PURE__ */ import_react7.default.createElement("code", { className: "mv-wrap", title: info?.dir }, info?.dir ?? "\u2026"), info && /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-caption" }, SOURCE_TEXT[info.source] ?? info.source, " \xB7 ", info.packs, " \u4E2A\u5305", info.extraDirs?.length ? ` \xB7 \u53E6\u6709 ${info.extraDirs.reduce((n, d) => n + d.packs.length, 0)} \u4E2A\u5728\u65E7\u4F4D\u7F6E` : "")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: !info || Boolean(busy), onClick: () => void open() }, "\u6253\u5F00\u6587\u4EF6\u5939"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: !info || fixed || Boolean(busy), onClick: () => {
     setEditing(true);
     setValue(info?.dir ?? "");
     setError("");
-  } }, "\u66F4\u6539\u2026"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: !info || fixed || Boolean(busy) || info?.source === "default" || info?.source === "config", title: info ? `\u6062\u590D\u4E3A ${info.defaultDir}` : "", onClick: () => void apply2({ reset: true, keep: true }) }, "\u6062\u590D\u9ED8\u8BA4"))), editing && /* @__PURE__ */ import_react6.default.createElement("form", { className: "mv-row mv-ws-dir-edit", onSubmit: (event) => {
+  } }, "\u66F4\u6539\u2026"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", disabled: !info || fixed || Boolean(busy) || info?.source === "default" || info?.source === "config", title: info ? `\u6062\u590D\u4E3A ${info.defaultDir}` : "", onClick: () => void apply2({ reset: true, keep: true }) }, "\u6062\u590D\u9ED8\u8BA4"))), editing && /* @__PURE__ */ import_react7.default.createElement("form", { className: "mv-row mv-ws-dir-edit", onSubmit: (event) => {
     event.preventDefault();
     void apply2({ dir: value, keep: true });
-  } }, /* @__PURE__ */ import_react6.default.createElement("input", { value, autoFocus: true, spellCheck: false, "aria-label": "\u65B0\u7684\u5B89\u88C5\u6587\u4EF6\u5939", placeholder: `\u4F8B\u5982 ${example}`, onChange: (event) => setValue(event.target.value) }), /* @__PURE__ */ import_react6.default.createElement("button", { type: "submit", className: "mv-button mv-button-small", disabled: busy === "set" || !value.trim() }, busy === "set" ? "\u6B63\u5728\u68C0\u67E5\u2026" : "\u4F7F\u7528\u8FD9\u4E2A\u6587\u4EF6\u5939"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => {
+  } }, /* @__PURE__ */ import_react7.default.createElement("input", { value, autoFocus: true, spellCheck: false, "aria-label": "\u65B0\u7684\u5B89\u88C5\u6587\u4EF6\u5939", placeholder: `\u4F8B\u5982 ${example}`, onChange: (event) => setValue(event.target.value) }), /* @__PURE__ */ import_react7.default.createElement("button", { type: "submit", className: "mv-button mv-button-small", disabled: busy === "set" || !value.trim() }, busy === "set" ? "\u6B63\u5728\u68C0\u67E5\u2026" : "\u4F7F\u7528\u8FD9\u4E2A\u6587\u4EF6\u5939"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => {
     setEditing(false);
     setError("");
-  } }, "\u53D6\u6D88"), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption", style: { flexBasis: "100%" } }, "\u586B\u5199\u5B8C\u6574\u8DEF\u5F84\uFF0C\u53EF\u4EE5\u662F\u5176\u4ED6\u78C1\u76D8\uFF08\u4F8B\u5982 ", example, "\uFF09\u3002\u6587\u4EF6\u5939\u4E0D\u5B58\u5728\u4F1A\u81EA\u52A8\u521B\u5EFA\uFF0C\u5E76\u5148\u6D4B\u8BD5\u80FD\u5426\u5199\u5165\u3002")), ask && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "warn", actions: /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-small", onClick: () => void move(ask.packs) }, "\u79FB\u52A8\u5230\u65B0\u4F4D\u7F6E"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: keep }, "\u7559\u5728\u539F\u5904")) }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, "\u539F\u6765\u7684\u4F4D\u7F6E ", /* @__PURE__ */ import_react6.default.createElement("code", null, ask.previous), " \u91CC\u6709 ", ask.packs.length, " \u4E2A\u5DF2\u5B89\u88C5\u7684\u5305\uFF08", ask.packs.slice(0, 4).map((p) => p.title || p.id).join("\u3001"), ask.packs.length > 4 ? " \u7B49" : "", "\uFF09\u3002\u8981\u79FB\u52A8\u5230\u65B0\u4F4D\u7F6E\u5417\uFF1F\u79FB\u52A8\u4F1A\u5148\u590D\u5236\u5E76\u6821\u9A8C sha256\uFF0C\u6210\u529F\u540E\u624D\u5220\u9664\u65E7\u6587\u4EF6\u3002\u7559\u5728\u539F\u5904\u7684\u5305\u4ECD\u4F1A\u51FA\u73B0\u5728\u66F2\u5E93\u91CC\u3002")), progress && /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-dir-progress", role: "status" }, /* @__PURE__ */ import_react6.default.createElement("progress", { max: progress.total, value: progress.done }), " ", /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, "\u6B63\u5728\u79FB\u52A8 ", progress.done + (progress.id ? 1 : 0), " / ", progress.total, progress.id ? `\uFF1A${progress.id}` : "")), !ask && !progress && info?.extraDirs?.length > 0 && !result && /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption mv-wrap" }, "\u65E7\u4F4D\u7F6E\u91CC\u8FD8\u6709\u5305\uFF1A", info.extraDirs.map((d) => `${d.dir}\uFF08${d.packs.length} \u4E2A\uFF09`).join("\uFF1B"), "\u3002", /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-link", disabled: Boolean(busy), onClick: () => void move(info.extraDirs.flatMap((d) => d.packs.map((id) => ({ id })))) }, "\u5168\u90E8\u79FB\u52A8\u5230\u5F53\u524D\u4F4D\u7F6E")), error && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, error)), result && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: result.failed?.length ? "warn" : "ok", actions: /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setResult(null) }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, result.text), result.failed?.length > 0 && /* @__PURE__ */ import_react6.default.createElement("ul", { className: "mv-caption" }, result.failed.map((f) => /* @__PURE__ */ import_react6.default.createElement("li", { key: f.id, className: "mv-wrap" }, f.id, "\uFF1A", f.error)))));
+  } }, "\u53D6\u6D88"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-caption", style: { flexBasis: "100%" } }, "\u586B\u5199\u5B8C\u6574\u8DEF\u5F84\uFF0C\u53EF\u4EE5\u662F\u5176\u4ED6\u78C1\u76D8\uFF08\u4F8B\u5982 ", example, "\uFF09\u3002\u6587\u4EF6\u5939\u4E0D\u5B58\u5728\u4F1A\u81EA\u52A8\u521B\u5EFA\uFF0C\u5E76\u5148\u6D4B\u8BD5\u80FD\u5426\u5199\u5165\u3002")), ask && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "warn", actions: /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-small", onClick: () => void move(ask.packs) }, "\u79FB\u52A8\u5230\u65B0\u4F4D\u7F6E"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: keep }, "\u7559\u5728\u539F\u5904")) }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, "\u539F\u6765\u7684\u4F4D\u7F6E ", /* @__PURE__ */ import_react7.default.createElement("code", null, ask.previous), " \u91CC\u6709 ", ask.packs.length, " \u4E2A\u5DF2\u5B89\u88C5\u7684\u5305\uFF08", ask.packs.slice(0, 4).map((p) => p.title || p.id).join("\u3001"), ask.packs.length > 4 ? " \u7B49" : "", "\uFF09\u3002\u8981\u79FB\u52A8\u5230\u65B0\u4F4D\u7F6E\u5417\uFF1F\u79FB\u52A8\u4F1A\u5148\u590D\u5236\u5E76\u6821\u9A8C sha256\uFF0C\u6210\u529F\u540E\u624D\u5220\u9664\u65E7\u6587\u4EF6\u3002\u7559\u5728\u539F\u5904\u7684\u5305\u4ECD\u4F1A\u51FA\u73B0\u5728\u66F2\u5E93\u91CC\u3002")), progress && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-dir-progress", role: "status" }, /* @__PURE__ */ import_react7.default.createElement("progress", { max: progress.total, value: progress.done }), " ", /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-caption" }, "\u6B63\u5728\u79FB\u52A8 ", progress.done + (progress.id ? 1 : 0), " / ", progress.total, progress.id ? `\uFF1A${progress.id}` : "")), !ask && !progress && info?.extraDirs?.length > 0 && !result && /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption mv-wrap" }, "\u65E7\u4F4D\u7F6E\u91CC\u8FD8\u6709\u5305\uFF1A", info.extraDirs.map((d) => `${d.dir}\uFF08${d.packs.length} \u4E2A\uFF09`).join("\uFF1B"), "\u3002", /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", disabled: Boolean(busy), onClick: () => void move(info.extraDirs.flatMap((d) => d.packs.map((id) => ({ id })))) }, "\u5168\u90E8\u79FB\u52A8\u5230\u5F53\u524D\u4F4D\u7F6E")), error && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, error)), result && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: result.failed?.length ? "warn" : "ok", actions: /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setResult(null) }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, result.text), result.failed?.length > 0 && /* @__PURE__ */ import_react7.default.createElement("ul", { className: "mv-caption" }, result.failed.map((f) => /* @__PURE__ */ import_react7.default.createElement("li", { key: f.id, className: "mv-wrap" }, f.id, "\uFF1A", f.error)))));
 }
 function PublishDialog({ api, pack, canvas = () => null, onClose }) {
   const ws = pack.pack.workshop ?? {};
-  const [form, setForm] = import_react6.default.useState(() => ({
+  const [form, setForm] = import_react7.default.useState(() => ({
     id: ws.id ?? workshopSlug(pack.pack.title, pack.pack.artist),
     version: ws.version ?? "1.0.0",
     license: ws.license ?? "",
@@ -9376,11 +9664,11 @@ function PublishDialog({ api, pack, canvas = () => null, onClose }) {
     lyricsCredit: ws.lyricsCredit ?? "",
     lyricsSource: ws.lyricsSource ?? ""
   }));
-  const [busy, setBusy] = import_react6.default.useState("");
-  const [error, setError] = import_react6.default.useState("");
-  const [result, setResult] = import_react6.default.useState(null);
-  const [agreed, setAgreed] = import_react6.default.useState(false);
-  const [copied, setCopied] = import_react6.default.useState("");
+  const [busy, setBusy] = import_react7.default.useState("");
+  const [error, setError] = import_react7.default.useState("");
+  const [result, setResult] = import_react7.default.useState(null);
+  const [agreed, setAgreed] = import_react7.default.useState(false);
+  const [copied, setCopied] = import_react7.default.useState("");
   const set = (key, value) => {
     setForm((f) => ({ ...f, [key]: value }));
     setResult(null);
@@ -9424,13 +9712,13 @@ function PublishDialog({ api, pack, canvas = () => null, onClose }) {
       setBusy("");
     }
   };
-  const doCopy = async (label, text4) => {
-    setCopied(await copy(text4) ? label : "");
+  const doCopy = async (label, text5) => {
+    setCopied(await copy(text5) ? label : "");
     setTimeout(() => setCopied(""), 2e3);
   };
-  return /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u53D1\u5E03\u5230\u5DE5\u574A" }, /* @__PURE__ */ import_react6.default.createElement("strong", null, "\u53D1\u5E03\u300C", pack.pack.title, "\u300D\u5230\u521B\u610F\u5DE5\u574A"), /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-caption" }, "\u63D2\u4EF6\u4F1A\uFF1A\u68C0\u67E5\u5305 \u2192 ", /* @__PURE__ */ import_react6.default.createElement("b", null, "\u4EC5\u53BB\u6389\u6B4C\u66F2\u97F3\u9891"), "\uFF0C\u4FDD\u7559\u5DF2\u6388\u6743\u6B4C\u8BCD\u3001\u8BD1\u6587\u3001\u65F6\u95F4\u8F74\u3001\u9891\u8C31\u4E0E\u753B\u9762\u8D44\u6E90 \u2192 \u751F\u6210 README \u548C\u5C01\u9762 \u2192 \u653E\u8FDB\u672C\u673A\u7684\u53D1\u5E03\u6587\u4EF6\u5939\u3002\u6B4C\u8BCD JS \u53EA\u63D0\u53D6\u9759\u6001\u6570\u636E\uFF0C\u4E0D\u6267\u884C\u4EE3\u7801\u3002 \u7136\u540E\u7531\u4F60\u5728\u6D4F\u89C8\u5668\u91CC\u628A\u6587\u4EF6\u4E0A\u4F20\u5230 GitHub \u5E76\u521B\u5EFA Pull Request\uFF1B", /* @__PURE__ */ import_react6.default.createElement("b", null, "\u63D2\u4EF6\u4E0D\u4F1A\u66FF\u4F60\u63D0\u4EA4\u4EFB\u4F55\u4E1C\u897F"), "\u3002"), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react6.default.createElement("span", null, "\u5305 id\uFF08\u6587\u4EF6\u5939\u540D\uFF09"), /* @__PURE__ */ import_react6.default.createElement("input", { value: form.id, spellCheck: false, onChange: (event) => set("id", event.target.value.toLowerCase()) })), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react6.default.createElement("span", null, "\u7248\u672C"), /* @__PURE__ */ import_react6.default.createElement("input", { value: form.version, spellCheck: false, onChange: (event) => set("version", event.target.value) })), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react6.default.createElement("span", null, "\u8BB8\u53EF\u8BC1"), /* @__PURE__ */ import_react6.default.createElement("input", { list: "mv-ws-licenses", value: form.license, spellCheck: false, onChange: (event) => set("license", event.target.value) }), /* @__PURE__ */ import_react6.default.createElement("datalist", { id: "mv-ws-licenses" }, LICENSES.map((l) => /* @__PURE__ */ import_react6.default.createElement("option", { key: l, value: l })))), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react6.default.createElement("span", null, "\u4F5C\u8005\uFF08GitHub \u7528\u6237\u540D\u6216\u7F72\u540D\uFF09"), /* @__PURE__ */ import_react6.default.createElement("input", { value: form.author, spellCheck: false, onChange: (event) => set("author", event.target.value) }))), pack.pack.lyrics && /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react6.default.createElement("span", null, "\u6B4C\u8BCD\u4E0E\u8BD1\u6587\u4F7F\u7528\u6761\u6B3E\uFF08\u4E0D\u81EA\u52A8\u7EE7\u627F\u4EE3\u7801\u8BB8\u53EF\uFF09"), /* @__PURE__ */ import_react6.default.createElement("input", { value: form.lyricsLicense, maxLength: 120, onChange: (event) => set("lyricsLicense", event.target.value) })), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react6.default.createElement("span", null, "\u6B4C\u8BCD / \u8BD1\u6587\u7F72\u540D"), /* @__PURE__ */ import_react6.default.createElement("input", { value: form.lyricsCredit, maxLength: 500, onChange: (event) => set("lyricsCredit", event.target.value) })), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react6.default.createElement("span", null, "\u6B4C\u8BCD\u6388\u6743 / \u6765\u6E90\u94FE\u63A5\uFF08https\uFF0C\u53EF\u9009\uFF09"), /* @__PURE__ */ import_react6.default.createElement("input", { value: form.lyricsSource, maxLength: 300, onChange: (event) => set("lyricsSource", event.target.value) }))), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react6.default.createElement("span", null, "\u7B80\u4ECB"), /* @__PURE__ */ import_react6.default.createElement("input", { value: form.description, maxLength: 500, onChange: (event) => set("description", event.target.value) })), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-field", style: { marginTop: 8 } }, /* @__PURE__ */ import_react6.default.createElement("span", null, "\u6807\u7B7E\uFF08\u9017\u53F7\u5206\u9694\uFF0C\u6700\u591A 8 \u4E2A\uFF09"), /* @__PURE__ */ import_react6.default.createElement("input", { value: form.tags, onChange: (event) => set("tags", event.target.value) })), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row", style: { marginTop: 6 } }, /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react6.default.createElement("input", { type: "checkbox", checked: form.fingerprint, onChange: (event) => set("fingerprint", event.target.checked) }), /* @__PURE__ */ import_react6.default.createElement("span", null, "\u9644\u5E26\u97F3\u9891\u6307\u7EB9 ", /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-caption" }, "\u2014 \u7528\u5F53\u524D\u52A0\u8F7D\u7684\u97F3\u9891\u5728\u672C\u673A\u8BA1\u7B97\uFF1A\u6BCF 0.5 \u79D2\u4E00\u4E2A\u97F3\u91CF\u503C\uFF0C\u53EA\u80FD\u7528\u6765\u5224\u65AD\u522B\u4EBA\u7684\u97F3\u9891\u662F\u4E0D\u662F\u540C\u4E00\u7248\u672C\uFF0C\u65E0\u6CD5\u8FD8\u539F\u97F3\u9891"))), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react6.default.createElement("input", { type: "checkbox", checked: form.cover, onChange: (event) => set("cover", event.target.checked) }), /* @__PURE__ */ import_react6.default.createElement("span", null, "\u7528\u5F53\u524D\u753B\u9762\u505A\u5C01\u9762"))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row", style: { marginTop: 8 } }, /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(busy) || !form.id || !form.license.trim() || !form.author.trim() || Boolean(pack.pack.lyrics) && (!form.lyricsLicense.trim() || !form.lyricsCredit.trim()), onClick: () => void prepare() }, busy || "\u68C0\u67E5\u5E76\u6253\u5305"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: onClose }, "\u53D6\u6D88")), error && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, error)), result && !result.ok && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, "\u6CA1\u6709\u901A\u8FC7\u68C0\u67E5\uFF0C\u8BF7\u4FEE\u6539\u540E\u91CD\u8BD5\uFF1A", "\n", result.errors.join("\n"))), result?.ok && /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-ws-publish" }, /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "ok" }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap" }, "\u5DF2\u901A\u8FC7\u68C0\u67E5\u5E76\u6253\u5305\u5230\uFF1A", /* @__PURE__ */ import_react6.default.createElement("code", null, result.dir), result.stripped.length > 0 && /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, /* @__PURE__ */ import_react6.default.createElement("br", null), "\u5DF2\u53BB\u6389\uFF1A", result.stripped.join("\uFF1B")), result.lyricLines ? /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, /* @__PURE__ */ import_react6.default.createElement("br", null), "\u5DF2\u5305\u542B\u6B4C\u8BCD\u4E0E\u8BD1\u6587\uFF1A", result.lyricLines, " \u884C\uFF0C\u5B89\u88C5\u540E\u81EA\u52A8\u52A0\u8F7D") : result.timingLines ? /* @__PURE__ */ import_react6.default.createElement(import_react6.default.Fragment, null, /* @__PURE__ */ import_react6.default.createElement("br", null), "\u4EC5\u6B4C\u8BCD\u65F6\u95F4\u8F74\uFF1A", result.timingLines, " \u884C") : null)), result.warnings.length > 0 && /* @__PURE__ */ import_react6.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react6.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, result.warnings.join("\n"))), /* @__PURE__ */ import_react6.default.createElement("ul", { className: "mv-caption mv-ws-files" }, result.files.map((f) => /* @__PURE__ */ import_react6.default.createElement("li", { key: f.path }, /* @__PURE__ */ import_react6.default.createElement("code", { title: f.path }, f.path), /* @__PURE__ */ import_react6.default.createElement("span", { className: "mv-ws-size" }, sizeText(f.size)), /* @__PURE__ */ import_react6.default.createElement("span", null)))), /* @__PURE__ */ import_react6.default.createElement("ol", { className: "mv-caption mv-ws-steps" }, /* @__PURE__ */ import_react6.default.createElement("li", null, "\u590D\u5236\u4E0A\u9762\u7684\u6587\u4EF6\u5939\u8DEF\u5F84\uFF0C\u5728\u8D44\u6E90\u7BA1\u7406\u5668\u91CC\u6253\u5F00\u5B83\u3002", /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void doCopy("dir", result.dir) }, copied === "dir" ? "\u5DF2\u590D\u5236" : "\u590D\u5236\u8DEF\u5F84")), /* @__PURE__ */ import_react6.default.createElement("li", null, "\u70B9\u4E0B\u9762\u7684\u6309\u94AE\uFF0C\u6D4F\u89C8\u5668\u4F1A\u6253\u5F00\u5DE5\u574A\u4ED3\u5E93 ", /* @__PURE__ */ import_react6.default.createElement("code", null, "packs/", result.id, "/"), " \u7684\u4E0A\u4F20\u9875\u9762\uFF08\u9700\u8981\u767B\u5F55 GitHub\uFF1BGitHub \u4F1A\u81EA\u52A8 fork\uFF09\u3002"), /* @__PURE__ */ import_react6.default.createElement("li", null, "\u628A\u6587\u4EF6\u5939\u91CC\u7684 ", result.files.length, " \u4E2A\u6587\u4EF6\u62D6\u8FDB\u9875\u9762\uFF0C\u9009\u300CCreate a new branch \u2026 and start a pull request\u300D\uFF0C\u6807\u9898\u548C\u8BF4\u660E\u53EF\u4EE5\u7C98\u8D34\u4E0B\u9762\u7684\u5185\u5BB9\uFF0C\u7136\u540E\u7531\u4F60\u786E\u8BA4\u63D0\u4EA4\u3002", /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void doCopy("pr", `${result.prTitle}
+  return /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u53D1\u5E03\u5230\u5DE5\u574A" }, /* @__PURE__ */ import_react7.default.createElement("strong", null, "\u53D1\u5E03\u300C", pack.pack.title, "\u300D\u5230\u521B\u610F\u5DE5\u574A"), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u63D2\u4EF6\u4F1A\uFF1A\u68C0\u67E5\u5305 \u2192 ", /* @__PURE__ */ import_react7.default.createElement("b", null, "\u4EC5\u53BB\u6389\u6B4C\u66F2\u97F3\u9891"), "\uFF0C\u4FDD\u7559\u5DF2\u6388\u6743\u6B4C\u8BCD\u3001\u8BD1\u6587\u3001\u65F6\u95F4\u8F74\u3001\u9891\u8C31\u4E0E\u753B\u9762\u8D44\u6E90 \u2192 \u751F\u6210 README \u548C\u5C01\u9762 \u2192 \u653E\u8FDB\u672C\u673A\u7684\u53D1\u5E03\u6587\u4EF6\u5939\u3002\u6B4C\u8BCD JS \u53EA\u63D0\u53D6\u9759\u6001\u6570\u636E\uFF0C\u4E0D\u6267\u884C\u4EE3\u7801\u3002 \u7136\u540E\u7531\u4F60\u5728\u6D4F\u89C8\u5668\u91CC\u628A\u6587\u4EF6\u4E0A\u4F20\u5230 GitHub \u5E76\u521B\u5EFA Pull Request\uFF1B", /* @__PURE__ */ import_react7.default.createElement("b", null, "\u63D2\u4EF6\u4E0D\u4F1A\u66FF\u4F60\u63D0\u4EA4\u4EFB\u4F55\u4E1C\u897F"), "\u3002"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u5305 id\uFF08\u6587\u4EF6\u5939\u540D\uFF09"), /* @__PURE__ */ import_react7.default.createElement("input", { value: form.id, spellCheck: false, onChange: (event) => set("id", event.target.value.toLowerCase()) })), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7248\u672C"), /* @__PURE__ */ import_react7.default.createElement("input", { value: form.version, spellCheck: false, onChange: (event) => set("version", event.target.value) })), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u8BB8\u53EF\u8BC1"), /* @__PURE__ */ import_react7.default.createElement("input", { list: "mv-ws-licenses", value: form.license, spellCheck: false, onChange: (event) => set("license", event.target.value) }), /* @__PURE__ */ import_react7.default.createElement("datalist", { id: "mv-ws-licenses" }, LICENSES.map((l) => /* @__PURE__ */ import_react7.default.createElement("option", { key: l, value: l })))), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u4F5C\u8005\uFF08GitHub \u7528\u6237\u540D\u6216\u7F72\u540D\uFF09"), /* @__PURE__ */ import_react7.default.createElement("input", { value: form.author, spellCheck: false, onChange: (event) => set("author", event.target.value) }))), pack.pack.lyrics && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-form" }, /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6B4C\u8BCD\u4E0E\u8BD1\u6587\u4F7F\u7528\u6761\u6B3E\uFF08\u4E0D\u81EA\u52A8\u7EE7\u627F\u4EE3\u7801\u8BB8\u53EF\uFF09"), /* @__PURE__ */ import_react7.default.createElement("input", { value: form.lyricsLicense, maxLength: 120, onChange: (event) => set("lyricsLicense", event.target.value) })), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6B4C\u8BCD / \u8BD1\u6587\u7F72\u540D"), /* @__PURE__ */ import_react7.default.createElement("input", { value: form.lyricsCredit, maxLength: 500, onChange: (event) => set("lyricsCredit", event.target.value) })), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6B4C\u8BCD\u6388\u6743 / \u6765\u6E90\u94FE\u63A5\uFF08https\uFF0C\u53EF\u9009\uFF09"), /* @__PURE__ */ import_react7.default.createElement("input", { value: form.lyricsSource, maxLength: 300, onChange: (event) => set("lyricsSource", event.target.value) }))), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-field" }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7B80\u4ECB"), /* @__PURE__ */ import_react7.default.createElement("input", { value: form.description, maxLength: 500, onChange: (event) => set("description", event.target.value) })), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-field", style: { marginTop: 8 } }, /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6807\u7B7E\uFF08\u9017\u53F7\u5206\u9694\uFF0C\u6700\u591A 8 \u4E2A\uFF09"), /* @__PURE__ */ import_react7.default.createElement("input", { value: form.tags, onChange: (event) => set("tags", event.target.value) })), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row", style: { marginTop: 6 } }, /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react7.default.createElement("input", { type: "checkbox", checked: form.fingerprint, onChange: (event) => set("fingerprint", event.target.checked) }), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u9644\u5E26\u97F3\u9891\u6307\u7EB9 ", /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-caption" }, "\u2014 \u7528\u5F53\u524D\u52A0\u8F7D\u7684\u97F3\u9891\u5728\u672C\u673A\u8BA1\u7B97\uFF1A\u6BCF 0.5 \u79D2\u4E00\u4E2A\u97F3\u91CF\u503C\uFF0C\u53EA\u80FD\u7528\u6765\u5224\u65AD\u522B\u4EBA\u7684\u97F3\u9891\u662F\u4E0D\u662F\u540C\u4E00\u7248\u672C\uFF0C\u65E0\u6CD5\u8FD8\u539F\u97F3\u9891"))), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-check" }, /* @__PURE__ */ import_react7.default.createElement("input", { type: "checkbox", checked: form.cover, onChange: (event) => set("cover", event.target.checked) }), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7528\u5F53\u524D\u753B\u9762\u505A\u5C01\u9762"))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row", style: { marginTop: 8 } }, /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button", disabled: Boolean(busy) || !form.id || !form.license.trim() || !form.author.trim() || Boolean(pack.pack.lyrics) && (!form.lyricsLicense.trim() || !form.lyricsCredit.trim()), onClick: () => void prepare() }, busy || "\u68C0\u67E5\u5E76\u6253\u5305"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: onClose }, "\u53D6\u6D88")), error && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, error)), result && !result.ok && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, "\u6CA1\u6709\u901A\u8FC7\u68C0\u67E5\uFF0C\u8BF7\u4FEE\u6539\u540E\u91CD\u8BD5\uFF1A", "\n", result.errors.join("\n"))), result?.ok && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-ws-publish" }, /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "ok" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, "\u5DF2\u901A\u8FC7\u68C0\u67E5\u5E76\u6253\u5305\u5230\uFF1A", /* @__PURE__ */ import_react7.default.createElement("code", null, result.dir), result.stripped.length > 0 && /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("br", null), "\u5DF2\u53BB\u6389\uFF1A", result.stripped.join("\uFF1B")), result.lyricLines ? /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("br", null), "\u5DF2\u5305\u542B\u6B4C\u8BCD\u4E0E\u8BD1\u6587\uFF1A", result.lyricLines, " \u884C\uFF0C\u5B89\u88C5\u540E\u81EA\u52A8\u52A0\u8F7D") : result.timingLines ? /* @__PURE__ */ import_react7.default.createElement(import_react7.default.Fragment, null, /* @__PURE__ */ import_react7.default.createElement("br", null), "\u4EC5\u6B4C\u8BCD\u65F6\u95F4\u8F74\uFF1A", result.timingLines, " \u884C") : null)), result.warnings.length > 0 && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, result.warnings.join("\n"))), /* @__PURE__ */ import_react7.default.createElement("ul", { className: "mv-caption mv-ws-files" }, result.files.map((f) => /* @__PURE__ */ import_react7.default.createElement("li", { key: f.path }, /* @__PURE__ */ import_react7.default.createElement("code", { title: f.path }, f.path), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-ws-size" }, sizeText(f.size)), /* @__PURE__ */ import_react7.default.createElement("span", null)))), /* @__PURE__ */ import_react7.default.createElement("ol", { className: "mv-caption mv-ws-steps" }, /* @__PURE__ */ import_react7.default.createElement("li", null, "\u590D\u5236\u4E0A\u9762\u7684\u6587\u4EF6\u5939\u8DEF\u5F84\uFF0C\u5728\u8D44\u6E90\u7BA1\u7406\u5668\u91CC\u6253\u5F00\u5B83\u3002", /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void doCopy("dir", result.dir) }, copied === "dir" ? "\u5DF2\u590D\u5236" : "\u590D\u5236\u8DEF\u5F84")), /* @__PURE__ */ import_react7.default.createElement("li", null, "\u70B9\u4E0B\u9762\u7684\u6309\u94AE\uFF0C\u6D4F\u89C8\u5668\u4F1A\u6253\u5F00\u5DE5\u574A\u4ED3\u5E93 ", /* @__PURE__ */ import_react7.default.createElement("code", null, "packs/", result.id, "/"), " \u7684\u4E0A\u4F20\u9875\u9762\uFF08\u9700\u8981\u767B\u5F55 GitHub\uFF1BGitHub \u4F1A\u81EA\u52A8 fork\uFF09\u3002"), /* @__PURE__ */ import_react7.default.createElement("li", null, "\u628A\u6587\u4EF6\u5939\u91CC\u7684 ", result.files.length, " \u4E2A\u6587\u4EF6\u62D6\u8FDB\u9875\u9762\uFF0C\u9009\u300CCreate a new branch \u2026 and start a pull request\u300D\uFF0C\u6807\u9898\u548C\u8BF4\u660E\u53EF\u4EE5\u7C98\u8D34\u4E0B\u9762\u7684\u5185\u5BB9\uFF0C\u7136\u540E\u7531\u4F60\u786E\u8BA4\u63D0\u4EA4\u3002", /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void doCopy("pr", `${result.prTitle}
 
-${result.prBody}`) }, copied === "pr" ? "\u5DF2\u590D\u5236" : "\u590D\u5236 PR \u6807\u9898\u548C\u8BF4\u660E")), /* @__PURE__ */ import_react6.default.createElement("li", null, "\u7EF4\u62A4\u8005\u5BA1\u6838\u3001CI \u68C0\u67E5\u901A\u8FC7\u5E76\u5408\u5E76\u540E\uFF0C\u5305\u4F1A\u51FA\u73B0\u5728\u6240\u6709\u4EBA\u7684\u521B\u610F\u5DE5\u574A\u91CC\u3002")), /* @__PURE__ */ import_react6.default.createElement("label", { className: "mv-check", style: { height: "auto" } }, /* @__PURE__ */ import_react6.default.createElement("input", { type: "checkbox", checked: agreed, onChange: (event) => setAgreed(event.target.checked) }), /* @__PURE__ */ import_react6.default.createElement("span", null, "\u6211\u786E\u8BA4\u6709\u6743\u6309\u5404\u8D44\u6E90\u58F0\u660E\u7684\u4F7F\u7528\u6761\u6B3E\u5206\u4EAB\u8FD9\u4E9B\u6587\u4EF6\uFF08\u4EE3\u7801\uFF1A", /* @__PURE__ */ import_react6.default.createElement("b", null, form.license), pack.pack.lyrics ? `\uFF1B\u6B4C\u8BCD\uFF1A${form.lyricsLicense}` : "", "\uFF09\uFF0C\u5305\u91CC\u6CA1\u6709\u6B4C\u66F2\u97F3\u9891\u6216\u65E0\u6743\u5206\u4EAB\u7684\u7D20\u6750\u3002")), /* @__PURE__ */ import_react6.default.createElement("div", { className: "mv-row", style: { marginTop: 6 } }, agreed ? /* @__PURE__ */ import_react6.default.createElement("a", { className: "mv-button", href: result.links.upload, target: "_blank", rel: "noreferrer" }, "\u5728 GitHub \u4E0A\u63D0\u4EA4\u2026") : /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button", disabled: true }, "\u5728 GitHub \u4E0A\u63D0\u4EA4\u2026"), /* @__PURE__ */ import_react6.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => void doCopy("link", result.links.upload) }, copied === "link" ? "\u5DF2\u590D\u5236\u94FE\u63A5" : "\u590D\u5236\u4E0A\u4F20\u94FE\u63A5"), /* @__PURE__ */ import_react6.default.createElement("a", { className: "mv-link", href: result.links.contributing, target: "_blank", rel: "noreferrer" }, "\u6295\u7A3F\u8BF4\u660E"))));
+${result.prBody}`) }, copied === "pr" ? "\u5DF2\u590D\u5236" : "\u590D\u5236 PR \u6807\u9898\u548C\u8BF4\u660E")), /* @__PURE__ */ import_react7.default.createElement("li", null, "\u7EF4\u62A4\u8005\u5BA1\u6838\u3001CI \u68C0\u67E5\u901A\u8FC7\u5E76\u5408\u5E76\u540E\uFF0C\u5305\u4F1A\u51FA\u73B0\u5728\u6240\u6709\u4EBA\u7684\u521B\u610F\u5DE5\u574A\u91CC\u3002")), /* @__PURE__ */ import_react7.default.createElement("label", { className: "mv-check", style: { height: "auto" } }, /* @__PURE__ */ import_react7.default.createElement("input", { type: "checkbox", checked: agreed, onChange: (event) => setAgreed(event.target.checked) }), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6211\u786E\u8BA4\u6709\u6743\u6309\u5404\u8D44\u6E90\u58F0\u660E\u7684\u4F7F\u7528\u6761\u6B3E\u5206\u4EAB\u8FD9\u4E9B\u6587\u4EF6\uFF08\u4EE3\u7801\uFF1A", /* @__PURE__ */ import_react7.default.createElement("b", null, form.license), pack.pack.lyrics ? `\uFF1B\u6B4C\u8BCD\uFF1A${form.lyricsLicense}` : "", "\uFF09\uFF0C\u5305\u91CC\u6CA1\u6709\u6B4C\u66F2\u97F3\u9891\u6216\u65E0\u6743\u5206\u4EAB\u7684\u7D20\u6750\u3002")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-row", style: { marginTop: 6 } }, agreed ? /* @__PURE__ */ import_react7.default.createElement("a", { className: "mv-button", href: result.links.upload, target: "_blank", rel: "noreferrer" }, "\u5728 GitHub \u4E0A\u63D0\u4EA4\u2026") : /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button", disabled: true }, "\u5728 GitHub \u4E0A\u63D0\u4EA4\u2026"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: () => void doCopy("link", result.links.upload) }, copied === "link" ? "\u5DF2\u590D\u5236\u94FE\u63A5" : "\u590D\u5236\u4E0A\u4F20\u94FE\u63A5"), /* @__PURE__ */ import_react7.default.createElement("a", { className: "mv-link", href: result.links.contributing, target: "_blank", rel: "noreferrer" }, "\u6295\u7A3F\u8BF4\u660E"))));
 }
 
 // .dsh-plugin/client/mv-library.jsx
@@ -9450,17 +9738,17 @@ var hue = (title) => ({ "--mv-hue": coverHue(title) });
 function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = null, info = null, initialAi = false, initialWorkshop = false, canvas = () => null, workshopIndex = null, navRequest = null, onView = null, playing = false, onPlay = () => {
 }, onShowPlayer = () => {
 } }) {
-  const [layout, setLayout] = import_react7.default.useState(loadLibraryView);
-  const [collapsed, setCollapsed] = import_react7.default.useState(loadLibraryCollapsed);
-  const [importing, setImporting] = import_react7.default.useState(false);
-  const [aiOpen, setAiOpen] = import_react7.default.useState(initialAi);
-  const [workshopOpen, setWorkshopOpen] = import_react7.default.useState(initialWorkshop);
-  const [path, setPath] = import_react7.default.useState("");
-  const [busy, setBusy] = import_react7.default.useState("");
-  const [note, setNote] = import_react7.default.useState("");
-  const [error, setError] = import_react7.default.useState("");
+  const [layout, setLayout] = import_react8.default.useState(loadLibraryView);
+  const [collapsed, setCollapsed] = import_react8.default.useState(loadLibraryCollapsed);
+  const [importing, setImporting] = import_react8.default.useState(false);
+  const [aiOpen, setAiOpen] = import_react8.default.useState(initialAi);
+  const [workshopOpen, setWorkshopOpen] = import_react8.default.useState(initialWorkshop);
+  const [path, setPath] = import_react8.default.useState("");
+  const [busy, setBusy] = import_react8.default.useState("");
+  const [note, setNote] = import_react8.default.useState("");
+  const [error, setError] = import_react8.default.useState("");
   const pick = directoryPicker();
-  import_react7.default.useEffect(() => {
+  import_react8.default.useEffect(() => {
     if (!navRequest) return;
     if (!navRequest.view) setCollapsed(saveLibraryCollapsed(false));
     setWorkshopOpen(navRequest.view === "workshop");
@@ -9469,7 +9757,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
     setError("");
   }, [navRequest]);
   const view = workshopOpen ? "workshop" : aiOpen ? "ai" : importing ? "import" : null;
-  import_react7.default.useEffect(() => {
+  import_react8.default.useEffect(() => {
     onView?.(view);
   }, [view]);
   const importPath = async (value) => {
@@ -9544,7 +9832,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
   };
   const presetRow = (preset) => {
     const have = recent.some((item) => item.workshop === preset.id);
-    return /* @__PURE__ */ import_react7.default.createElement("div", { key: preset.id, className: "mv-preset", role: "listitem" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-thumb mv-track-art", style: { "--mv-hue": preset.hue }, "aria-hidden": "true" }, preset.cover), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-preset-main" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-title" }, preset.title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-artist" }, preset.artist, " \xB7 ", preset.kind, " \xB7 \u539F\u4F5C ", /* @__PURE__ */ import_react7.default.createElement("a", { href: preset.source, target: "_blank", rel: "noreferrer" }, preset.sourceLabel))), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: Boolean(busy) || !api?.workshopInstall, onClick: () => void installPreset(preset) }, busy === `preset:${preset.id}` ? "\u6B63\u5728\u5B89\u88C5\u2026" : have ? "\u6253\u5F00" : "\u4E00\u952E\u5B89\u88C5"));
+    return /* @__PURE__ */ import_react8.default.createElement("div", { key: preset.id, className: "mv-preset", role: "listitem" }, /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-thumb mv-track-art", style: { "--mv-hue": preset.hue }, "aria-hidden": "true" }, preset.cover), /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-preset-main" }, /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-track-title" }, preset.title), /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-track-artist" }, preset.artist, " \xB7 ", preset.kind, " \xB7 \u539F\u4F5C ", /* @__PURE__ */ import_react8.default.createElement("a", { href: preset.source, target: "_blank", rel: "noreferrer" }, preset.sourceLabel))), /* @__PURE__ */ import_react8.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: Boolean(busy) || !api?.workshopInstall, onClick: () => void installPreset(preset) }, busy === `preset:${preset.id}` ? "\u6B63\u5728\u5B89\u88C5\u2026" : have ? "\u6253\u5F00" : "\u4E00\u952E\u5B89\u88C5"));
   };
   const moved = active.moved ?? null;
   const empty = recent.length === 0;
@@ -9579,9 +9867,9 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       return { id, manifestPath: item.manifestPath, title: item.title || item.manifestPath, artist: item.artist, type: item.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305", kind: item.workshop ? "workshop" : "pack", cover: initials(item.title), hue: coverHue(item.title), duration: item.duration || (active.id === id ? activeDuration : 0), tip: item.manifestPath };
     })
   ];
-  const trackRow = (row, number) => {
+  const trackRow = (row, number2) => {
     const current = active.id === row.id;
-    return /* @__PURE__ */ import_react7.default.createElement("div", { key: row.id, role: "listitem", className: "mv-track", "aria-current": current ? "true" : void 0, "data-playing": current && playing ? "true" : void 0 }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-n" }, current && playing ? /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-eq", "aria-label": "\u6B63\u5728\u64AD\u653E" }, /* @__PURE__ */ import_react7.default.createElement("i", null), /* @__PURE__ */ import_react7.default.createElement("i", null), /* @__PURE__ */ import_react7.default.createElement("i", null)) : number), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-thumb mv-track-art", style: { "--mv-hue": row.hue }, "aria-hidden": "true" }, row.cover), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-track-main", title: row.tip, "aria-pressed": current, onClick: () => onSelect(row.id) }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-title" }, row.title), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-artist" }, row.artist || "\u672A\u77E5\u827A\u672F\u5BB6")), /* @__PURE__ */ import_react7.default.createElement("span", { className: `mv-track-type mv-track-type-${row.kind}` }, row.type), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-len" }, row.duration > 0 ? fmtTime(row.duration) : "\u2014"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-actions" }, /* @__PURE__ */ import_react7.default.createElement(
+    return /* @__PURE__ */ import_react8.default.createElement("div", { key: row.id, role: "listitem", className: "mv-track", "aria-current": current ? "true" : void 0, "data-playing": current && playing ? "true" : void 0 }, /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-track-n" }, current && playing ? /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-eq", "aria-label": "\u6B63\u5728\u64AD\u653E" }, /* @__PURE__ */ import_react8.default.createElement("i", null), /* @__PURE__ */ import_react8.default.createElement("i", null), /* @__PURE__ */ import_react8.default.createElement("i", null)) : number2), /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-thumb mv-track-art", style: { "--mv-hue": row.hue }, "aria-hidden": "true" }, row.cover), /* @__PURE__ */ import_react8.default.createElement("button", { type: "button", className: "mv-track-main", title: row.tip, "aria-pressed": current, onClick: () => onSelect(row.id) }, /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-track-title" }, row.title), /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-track-artist" }, row.artist || "\u672A\u77E5\u827A\u672F\u5BB6")), /* @__PURE__ */ import_react8.default.createElement("span", { className: `mv-track-type mv-track-type-${row.kind}` }, row.type), /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-track-len" }, row.duration > 0 ? fmtTime(row.duration) : "\u2014"), /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-track-actions" }, /* @__PURE__ */ import_react8.default.createElement(
       "button",
       {
         type: "button",
@@ -9596,8 +9884,8 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
           }
         }
       },
-      current && playing ? /* @__PURE__ */ import_react7.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react7.default.createElement(Icon.play, null)
-    ), row.manifestPath && /* @__PURE__ */ import_react7.default.createElement(
+      current && playing ? /* @__PURE__ */ import_react8.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react8.default.createElement(Icon.play, null)
+    ), row.manifestPath && /* @__PURE__ */ import_react8.default.createElement(
       "button",
       {
         type: "button",
@@ -9609,12 +9897,12 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
           if (current) onSelect(EMPTY_ID);
         }
       },
-      /* @__PURE__ */ import_react7.default.createElement(Icon.close, null)
+      /* @__PURE__ */ import_react8.default.createElement(Icon.close, null)
     )));
   };
   const activeRow = rows.find((row) => row.id === active.id) ?? { id: active.id, manifestPath: "", title: active.pack?.title ?? "", artist: active.pack?.artist ?? "", type: active.empty ? "\u2014" : "MV \u5305", kind: "pack", cover: initials(active.pack?.title), hue: coverHue(active.pack?.title), duration: activeDuration, tip: active.manifestPath ?? "" };
   const warnings = active.warnings ?? [];
-  return /* @__PURE__ */ import_react7.default.createElement("section", { className: "mv-library-section", "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-head" }, /* @__PURE__ */ import_react7.default.createElement(
+  return /* @__PURE__ */ import_react8.default.createElement("section", { className: "mv-library-section", "aria-label": "\u66F2\u5E93" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-lib-head" }, /* @__PURE__ */ import_react8.default.createElement(
     "button",
     {
       type: "button",
@@ -9625,8 +9913,8 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       "aria-label": collapsed ? "\u5C55\u5F00\u66F2\u5E93" : "\u6536\u8D77\u66F2\u5E93",
       onClick: () => setCollapsed(saveLibraryCollapsed(!collapsed))
     },
-    /* @__PURE__ */ import_react7.default.createElement(Icon.chevron, null)
-  ), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93 ", /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-lib-count" }, recent.length, " \u9996", collapsed ? " \xB7 \u5DF2\u6536\u8D77" : "")), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-spacer" }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-segmented mv-segmented-small mv-lib-layout", role: "radiogroup", "aria-label": "\u66F2\u5E93\u663E\u793A\u65B9\u5F0F" }, [["list", "\u5217\u8868", Icon.list], ["grid", "\u7F51\u683C", Icon.grid]].map(([value, label, Ico]) => /* @__PURE__ */ import_react7.default.createElement(
+    /* @__PURE__ */ import_react8.default.createElement(Icon.chevron, null)
+  ), /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-section-label" }, "\u66F2\u5E93 ", /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-lib-count" }, recent.length, " \u9996", collapsed ? " \xB7 \u5DF2\u6536\u8D77" : "")), /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-spacer" }), /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-segmented mv-segmented-small mv-lib-layout", role: "radiogroup", "aria-label": "\u66F2\u5E93\u663E\u793A\u65B9\u5F0F" }, [["list", "\u5217\u8868", Icon.list], ["grid", "\u7F51\u683C", Icon.grid]].map(([value, label, Ico]) => /* @__PURE__ */ import_react8.default.createElement(
     "button",
     {
       key: value,
@@ -9637,11 +9925,11 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       "aria-label": `${label}\u89C6\u56FE`,
       onClick: () => setLayout(saveLibraryView(value))
     },
-    /* @__PURE__ */ import_react7.default.createElement(Ico, null),
-    /* @__PURE__ */ import_react7.default.createElement("span", null, label)
-  )))), moved && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "info", actions: /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: Boolean(busy) || !api?.workshopInstall, onClick: () => void installPreset(moved) }, busy === `preset:${moved.id}` ? "\u6B63\u5728\u5B89\u88C5\u2026" : "\u4ECE\u521B\u610F\u5DE5\u574A\u5B89\u88C5") }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, "\u300C", moved.title, "\u300D\u5728 0.9.0 \u8D77\u4E0D\u518D\u5185\u7F6E\uFF0C\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A\uFF08\u539F\u4F5C ", /* @__PURE__ */ import_react7.default.createElement("a", { href: moved.source, target: "_blank", rel: "noreferrer" }, moved.sourceLabel), "\uFF09\u3002\u5B89\u88C5\u540E\u4F1A\u6CBF\u7528\u4F60\u4E4B\u524D\u4E3A\u5B83\u9009\u62E9\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u3002")), collapsed ? /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-tracks mv-tracks-mini", role: "list", "aria-label": "\u6B63\u5728\u64AD\u653E" }, active.empty ? /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u66F2\u5E93\u662F\u7A7A\u7684\uFF1A\u5C55\u5F00\u540E\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5 MV\u3002") : trackRow(activeRow, "\u25B8")) : layout === "list" ? /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-lib-body" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-lib-tools", role: "toolbar", "aria-label": "\u66F2\u5E93\u64CD\u4F5C" }, tools.map((tool) => /* @__PURE__ */ import_react7.default.createElement("button", { key: tool.key, type: "button", className: `mv-lib-tool mv-lib-tool-${tool.key}`, "aria-expanded": tool.expanded, disabled: tool.disabled, title: tool.title, onClick: tool.onClick }, /* @__PURE__ */ import_react7.default.createElement(tool.Icon, null), /* @__PURE__ */ import_react7.default.createElement("span", null, tool.label)))), !empty && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-tracks", role: "list", "aria-label": "\u66F2\u76EE" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-track mv-track-head", "aria-hidden": "true" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-n" }, "#"), /* @__PURE__ */ import_react7.default.createElement("span", null), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u6807\u9898"), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7C7B\u578B"), /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-track-len" }, "\u65F6\u957F"), /* @__PURE__ */ import_react7.default.createElement("span", null)), rows.map((row, index) => trackRow(row, index + 1)))) : /* @__PURE__ */ import_react7.default.createElement("div", { id: "mv-lib-body", className: "mv-library" }, recent.map((item) => {
+    /* @__PURE__ */ import_react8.default.createElement(Ico, null),
+    /* @__PURE__ */ import_react8.default.createElement("span", null, label)
+  )))), moved && /* @__PURE__ */ import_react8.default.createElement(Alert, { kind: "info", actions: /* @__PURE__ */ import_react8.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: Boolean(busy) || !api?.workshopInstall, onClick: () => void installPreset(moved) }, busy === `preset:${moved.id}` ? "\u6B63\u5728\u5B89\u88C5\u2026" : "\u4ECE\u521B\u610F\u5DE5\u574A\u5B89\u88C5") }, /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-wrap" }, "\u300C", moved.title, "\u300D\u5728 0.9.0 \u8D77\u4E0D\u518D\u5185\u7F6E\uFF0C\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A\uFF08\u539F\u4F5C ", /* @__PURE__ */ import_react8.default.createElement("a", { href: moved.source, target: "_blank", rel: "noreferrer" }, moved.sourceLabel), "\uFF09\u3002\u5B89\u88C5\u540E\u4F1A\u6CBF\u7528\u4F60\u4E4B\u524D\u4E3A\u5B83\u9009\u62E9\u7684\u97F3\u9891\u548C\u6B4C\u8BCD\u3002")), collapsed ? /* @__PURE__ */ import_react8.default.createElement("div", { id: "mv-lib-body", className: "mv-tracks mv-tracks-mini", role: "list", "aria-label": "\u6B63\u5728\u64AD\u653E" }, active.empty ? /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-caption" }, "\u66F2\u5E93\u662F\u7A7A\u7684\uFF1A\u5C55\u5F00\u540E\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5 MV\u3002") : trackRow(activeRow, "\u25B8")) : layout === "list" ? /* @__PURE__ */ import_react8.default.createElement("div", { id: "mv-lib-body", className: "mv-lib-body" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-lib-tools", role: "toolbar", "aria-label": "\u66F2\u5E93\u64CD\u4F5C" }, tools.map((tool) => /* @__PURE__ */ import_react8.default.createElement("button", { key: tool.key, type: "button", className: `mv-lib-tool mv-lib-tool-${tool.key}`, "aria-expanded": tool.expanded, disabled: tool.disabled, title: tool.title, onClick: tool.onClick }, /* @__PURE__ */ import_react8.default.createElement(tool.Icon, null), /* @__PURE__ */ import_react8.default.createElement("span", null, tool.label)))), !empty && /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-tracks", role: "list", "aria-label": "\u66F2\u76EE" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-track mv-track-head", "aria-hidden": "true" }, /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-track-n" }, "#"), /* @__PURE__ */ import_react8.default.createElement("span", null), /* @__PURE__ */ import_react8.default.createElement("span", null, "\u6807\u9898"), /* @__PURE__ */ import_react8.default.createElement("span", null, "\u7C7B\u578B"), /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-track-len" }, "\u65F6\u957F"), /* @__PURE__ */ import_react8.default.createElement("span", null)), rows.map((row, index) => trackRow(row, index + 1)))) : /* @__PURE__ */ import_react8.default.createElement("div", { id: "mv-lib-body", className: "mv-library" }, recent.map((item) => {
     const id = `pack:${item.manifestPath}`;
-    return /* @__PURE__ */ import_react7.default.createElement(
+    return /* @__PURE__ */ import_react8.default.createElement(
       "div",
       {
         key: item.manifestPath,
@@ -9658,7 +9946,7 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
           }
         }
       },
-      /* @__PURE__ */ import_react7.default.createElement(
+      /* @__PURE__ */ import_react8.default.createElement(
         "button",
         {
           type: "button",
@@ -9671,13 +9959,13 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
             if (active.id === id) onSelect(EMPTY_ID);
           }
         },
-        /* @__PURE__ */ import_react7.default.createElement(Icon.close, null)
+        /* @__PURE__ */ import_react8.default.createElement(Icon.close, null)
       ),
-      /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art", style: hue(item.title) }, initials(item.title)),
-      /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-title" }, item.title || item.manifestPath),
-      /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-sub" }, item.artist ? `${item.artist} \xB7 ` : "", item.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305")
+      /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-card-art", style: hue(item.title) }, initials(item.title)),
+      /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-card-title" }, item.title || item.manifestPath),
+      /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-card-sub" }, item.artist ? `${item.artist} \xB7 ` : "", item.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305")
     );
-  }), /* @__PURE__ */ import_react7.default.createElement(
+  }), /* @__PURE__ */ import_react8.default.createElement(
     "button",
     {
       type: "button",
@@ -9691,9 +9979,9 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       },
       title: "\u6D4F\u89C8\u793E\u533A\u6295\u7A3F\u7684 MV \u5305\uFF0C\u4E00\u952E\u5B89\u88C5\u5230\u66F2\u5E93\uFF1B\u4E5F\u53EF\u4EE5\u628A\u4F60\u7684 MV \u5305\u53D1\u5E03\u5230\u5DE5\u574A"
     },
-    /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react7.default.createElement(Icon.shop, null)),
-    /* @__PURE__ */ import_react7.default.createElement("span", null, "\u521B\u610F\u5DE5\u574A")
-  ), /* @__PURE__ */ import_react7.default.createElement(
+    /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react8.default.createElement(Icon.shop, null)),
+    /* @__PURE__ */ import_react8.default.createElement("span", null, "\u521B\u610F\u5DE5\u574A")
+  ), /* @__PURE__ */ import_react8.default.createElement(
     "button",
     {
       type: "button",
@@ -9707,14 +9995,14 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       },
       title: "\u9009\u4E00\u9996\u4F60\u7684\u6B4C\uFF0C\u8BA9 Harness \u7684 Agent \u5199\u6B4C\u8BCD\u65F6\u95F4\u8F74\u3001mv.json \u548C ASCII \u573A\u666F\u811A\u672C"
     },
-    /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react7.default.createElement(Icon.spark, null)),
-    /* @__PURE__ */ import_react7.default.createElement("span", null, "\u7528 AI \u5236\u4F5C\u65B0 MV")
-  ), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-card mv-card-ghost", "aria-expanded": importing, onClick: () => {
+    /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react8.default.createElement(Icon.spark, null)),
+    /* @__PURE__ */ import_react8.default.createElement("span", null, "\u7528 AI \u5236\u4F5C\u65B0 MV")
+  ), /* @__PURE__ */ import_react8.default.createElement("button", { type: "button", className: "mv-card mv-card-ghost", "aria-expanded": importing, onClick: () => {
     setImporting((value) => !value);
     setAiOpen(false);
     setWorkshopOpen(false);
     setError("");
-  } }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react7.default.createElement(Icon.plus, null)), /* @__PURE__ */ import_react7.default.createElement("span", null, "\u5BFC\u5165 MV \u5305")), /* @__PURE__ */ import_react7.default.createElement(
+  } }, /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react8.default.createElement(Icon.plus, null)), /* @__PURE__ */ import_react8.default.createElement("span", null, "\u5BFC\u5165 MV \u5305")), /* @__PURE__ */ import_react8.default.createElement(
     "button",
     {
       type: "button",
@@ -9723,9 +10011,9 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
       onClick: () => void writeTemplate(),
       title: pick ? "\u9009\u62E9\u4E00\u4E2A\u6587\u4EF6\u5939\uFF0C\u5728\u5176\u4E2D\u65B0\u5EFA dsh-mv-pack-template\uFF08\u4E0D\u4F1A\u8986\u76D6\u5DF2\u6709\u6587\u4EF6\uFF09" : `\u4E0B\u8F7D ${TEMPLATE_ZIP_NAME}`
     },
-    /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react7.default.createElement(Icon.folder, null)),
-    /* @__PURE__ */ import_react7.default.createElement("span", null, busy === "template" ? "\u6B63\u5728\u5199\u5165\u2026" : "\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09")
-  )), empty && !collapsed && !workshopOpen && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-empty-lib", role: "region", "aria-label": "\u66F2\u5E93\u662F\u7A7A\u7684" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-empty-head" }, /* @__PURE__ */ import_react7.default.createElement("span", { className: "mv-empty-icon", "aria-hidden": "true" }, /* @__PURE__ */ import_react7.default.createElement(Icon.shop, null)), /* @__PURE__ */ import_react7.default.createElement("div", null, /* @__PURE__ */ import_react7.default.createElement("h3", null, "\u66F2\u5E93\u8FD8\u662F\u7A7A\u7684"), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u63D2\u4EF6\u672C\u8EAB\u4E0D\u5E26\u4EFB\u4F55 MV\uFF1A\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u793E\u533A\u505A\u597D\u7684 MV \u5305\uFF08\u4E0D\u542B\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u7528\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2\u6587\u4EF6\u64AD\u653E\uFF09\u3002\u4E0B\u9762\u4E24\u4E2A\u662F\u4EE5\u524D\u5185\u7F6E\u7684 world.execute(me) MV\uFF0C\u70B9\u4E00\u4E0B\u5C31\u80FD\u88C5\u597D\u3002")), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button", onClick: toggleWorkshop }, "\u6253\u5F00\u521B\u610F\u5DE5\u574A")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-presets", role: "list", "aria-label": "\u63A8\u8350" }, PRESET_PACKS.map(presetRow)), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u4E5F\u53EF\u4EE5\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u5199\u4E00\u4E2A\u81EA\u5DF1\u7684 MV \u5305\u518D\u300C\u5BFC\u5165\u300D\u3002")), workshopOpen && /* @__PURE__ */ import_react7.default.createElement(WorkshopDialog, { api, active, canvas, initialIndex: workshopIndex, onClose: () => setWorkshopOpen(false), onLoaded, onRecent }), aiOpen && /* @__PURE__ */ import_react7.default.createElement(AiPackDialog, { api, harness, info, onClose: () => setAiOpen(false), onLoaded, onRecent }), importing && /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-dialog", role: "dialog", "aria-label": "\u5BFC\u5165 MV \u5305" }, /* @__PURE__ */ import_react7.default.createElement("h2", null, "\u5BFC\u5165 MV \u5305"), /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u9009\u62E9\u542B mv.json \u7684\u6587\u4EF6\u5939\uFF0C\u6216\u7C98\u8D34 mv.json / \u6587\u4EF6\u5939\u7684\u7EDD\u5BF9\u8DEF\u5F84\u3002\u53EA\u8BFB\u53D6\u6E05\u5355\uFF0C\u4E0D\u8FD0\u884C\u4EFB\u4F55\u7A0B\u5E8F\u3002"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "mv-field-row" }, /* @__PURE__ */ import_react7.default.createElement(
+    /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-card-art" }, /* @__PURE__ */ import_react8.default.createElement(Icon.folder, null)),
+    /* @__PURE__ */ import_react8.default.createElement("span", null, busy === "template" ? "\u6B63\u5728\u5199\u5165\u2026" : "\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09")
+  )), empty && !collapsed && !workshopOpen && /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-empty-lib", role: "region", "aria-label": "\u66F2\u5E93\u662F\u7A7A\u7684" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-empty-head" }, /* @__PURE__ */ import_react8.default.createElement("span", { className: "mv-empty-icon", "aria-hidden": "true" }, /* @__PURE__ */ import_react8.default.createElement(Icon.shop, null)), /* @__PURE__ */ import_react8.default.createElement("div", null, /* @__PURE__ */ import_react8.default.createElement("h3", null, "\u66F2\u5E93\u8FD8\u662F\u7A7A\u7684"), /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-caption" }, "\u63D2\u4EF6\u672C\u8EAB\u4E0D\u5E26\u4EFB\u4F55 MV\uFF1A\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u793E\u533A\u505A\u597D\u7684 MV \u5305\uFF08\u4E0D\u542B\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u7528\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2\u6587\u4EF6\u64AD\u653E\uFF09\u3002\u4E0B\u9762\u4E24\u4E2A\u662F\u4EE5\u524D\u5185\u7F6E\u7684 world.execute(me) MV\uFF0C\u70B9\u4E00\u4E0B\u5C31\u80FD\u88C5\u597D\u3002")), /* @__PURE__ */ import_react8.default.createElement("button", { type: "button", className: "mv-button", onClick: toggleWorkshop }, "\u6253\u5F00\u521B\u610F\u5DE5\u574A")), /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-presets", role: "list", "aria-label": "\u63A8\u8350" }, PRESET_PACKS.map(presetRow)), /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-caption" }, "\u4E5F\u53EF\u4EE5\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u5199\u4E00\u4E2A\u81EA\u5DF1\u7684 MV \u5305\u518D\u300C\u5BFC\u5165\u300D\u3002")), workshopOpen && /* @__PURE__ */ import_react8.default.createElement(WorkshopDialog, { api, active, canvas, initialIndex: workshopIndex, onClose: () => setWorkshopOpen(false), onLoaded, onRecent }), aiOpen && /* @__PURE__ */ import_react8.default.createElement(AiPackDialog, { api, harness, info, onClose: () => setAiOpen(false), onLoaded, onRecent }), importing && /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-dialog", role: "dialog", "aria-label": "\u5BFC\u5165 MV \u5305" }, /* @__PURE__ */ import_react8.default.createElement("h2", null, "\u5BFC\u5165 MV \u5305"), /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-caption" }, "\u9009\u62E9\u542B mv.json \u7684\u6587\u4EF6\u5939\uFF0C\u6216\u7C98\u8D34 mv.json / \u6587\u4EF6\u5939\u7684\u7EDD\u5BF9\u8DEF\u5F84\u3002\u53EA\u8BFB\u53D6\u6E05\u5355\uFF0C\u4E0D\u8FD0\u884C\u4EFB\u4F55\u7A0B\u5E8F\u3002"), /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-field-row" }, /* @__PURE__ */ import_react8.default.createElement(
     "input",
     {
       value: path,
@@ -9738,11 +10026,11 @@ function Library({ api, active, recent, onSelect, onLoaded, onRecent, harness = 
         if (event.key === "Enter" && path.trim()) void importPath(path);
       }
     }
-  ), pick && /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void chooseFolder() }, "\u9009\u62E9\u6587\u4EF6\u5939\u2026"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button", disabled: !path.trim() || Boolean(busy), onClick: () => void importPath(path) }, busy === "import" ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5BFC\u5165"), /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => setImporting(false) }, "\u53D6\u6D88")), pick && /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-caption" }, "\u6CA1\u6709\u73B0\u6210\u7684\u5305\uFF1F", /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: downloadZip }, "\u4E0B\u8F7D\u6A21\u677F zip"))), warnings.length > 0 && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, warnings.join("\n"))), error && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error)), note && /* @__PURE__ */ import_react7.default.createElement(Alert, { kind: "ok", actions: /* @__PURE__ */ import_react7.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setNote("") }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react7.default.createElement("p", { className: "mv-wrap" }, note)));
+  ), pick && /* @__PURE__ */ import_react8.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(busy), onClick: () => void chooseFolder() }, "\u9009\u62E9\u6587\u4EF6\u5939\u2026"), /* @__PURE__ */ import_react8.default.createElement("button", { type: "button", className: "mv-button", disabled: !path.trim() || Boolean(busy), onClick: () => void importPath(path) }, busy === "import" ? "\u8BFB\u53D6\u4E2D\u2026" : "\u5BFC\u5165"), /* @__PURE__ */ import_react8.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => setImporting(false) }, "\u53D6\u6D88")), pick && /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-caption" }, "\u6CA1\u6709\u73B0\u6210\u7684\u5305\uFF1F", /* @__PURE__ */ import_react8.default.createElement("button", { type: "button", className: "mv-link", onClick: downloadZip }, "\u4E0B\u8F7D\u6A21\u677F zip"))), warnings.length > 0 && /* @__PURE__ */ import_react8.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-wrap" }, warnings.join("\n"))), error && /* @__PURE__ */ import_react8.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, error)), note && /* @__PURE__ */ import_react8.default.createElement(Alert, { kind: "ok", actions: /* @__PURE__ */ import_react8.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setNote("") }, "\u77E5\u9053\u4E86") }, /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-wrap" }, note)));
 }
 
 // .dsh-plugin/client/mv.css
-var mv_default = '/* MV \u653E\u6620\u5BA4 \u2014 opaque surface that follows Harness light/dark (body[data-ds-dark-theme]). */\n.mv-root {\n  --mv-fb-bg: #ffffff; --mv-fb-text: #14151a; --mv-fb-muted: #4b4e59; --mv-fb-faint: #6b6e79; --mv-fb-border: rgba(20, 21, 26, .12);\n  --mv-fb-danger: #d92d20; --mv-fb-ok: #15803d;\n  --mv-accent: #e8890c; --mv-accent-strong: #c96f00; --mv-accent-ink: #1b1204;\n  --mv-bg: var(--dsw-alias-bg-base, var(--mv-fb-bg));\n  --mv-text: var(--dsw-alias-label-primary, var(--mv-fb-text));\n  --mv-muted: var(--dsw-alias-label-secondary, var(--mv-fb-muted));\n  --mv-faint: var(--dsw-alias-label-tertiary, var(--mv-fb-faint));\n  --mv-border: var(--dsw-alias-border-l2, var(--mv-fb-border));\n  --mv-danger: var(--dsw-alias-state-error-primary, var(--mv-fb-danger));\n  --mv-ok: var(--dsw-alias-state-success-primary, var(--mv-fb-ok));\n  --mv-surface: color-mix(in srgb, var(--mv-text) 4%, var(--mv-bg));\n  --mv-surface-2: color-mix(in srgb, var(--mv-text) 8%, var(--mv-bg));\n  --mv-hover: color-mix(in srgb, var(--mv-text) 10%, var(--mv-bg));\n  --mv-accent-soft: color-mix(in srgb, var(--mv-accent) 16%, var(--mv-bg));\n  --mv-danger-soft: color-mix(in srgb, var(--mv-danger) 10%, var(--mv-bg));\n  --mv-warn-soft: color-mix(in srgb, #f59e0b 16%, var(--mv-bg));\n  --mv-radius: 12px;\n  color-scheme: light;\n  position: relative; isolation: isolate;\n  /* The Harness centre column is `display:flex; flex-direction:column; overflow:hidden`: the panel must be\n     its own scroll container (it fills the column and scrolls; mv-panel.jsx pins the height elsewhere). */\n  flex: 1 1 auto; min-height: 0; height: 100%; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;\n  box-sizing: border-box; padding: 18px 22px 28px;\n  background: var(--mv-bg); color: var(--mv-text);\n  font-size: 13px; line-height: 20px;\n  font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif;\n}\n@media (prefers-color-scheme: dark) {\n  .mv-root { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; color-scheme: dark; }\n}\nbody[data-ds-dark-theme] .mv-root, .mv-root.mv-dark { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; --mv-accent: #ffaf5f; --mv-accent-strong: #ffc285; color-scheme: dark; }\n.mv-root *, .mv-root *::before, .mv-root *::after { box-sizing: border-box; }\n.mv-root :where(button, input, select, textarea) { font: inherit; color: inherit; }\n.mv-root code { font-family: "Cascadia Mono", Consolas, Menlo, monospace; font-size: 12px; }\n.mv-root :focus-visible { outline: 2px solid var(--mv-accent); outline-offset: 2px; }\n\n/* ---- header ---- */\n.mv-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }\n.mv-title { margin: 0; font-size: 20px; line-height: 28px; font-weight: 650; letter-spacing: .2px; }\n.mv-title small { font-size: 12px; font-weight: 400; color: var(--mv-faint); margin-left: 8px; }\n.mv-spacer { flex: 1; }\n.mv-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px; line-height: 20px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-pill-warn { background: var(--mv-warn-soft); color: var(--mv-text); border: 1px solid color-mix(in srgb, #f59e0b 45%, transparent); }\n.mv-pill-ok { color: var(--mv-ok); }\n.mv-icon-button { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--mv-border); background: var(--mv-bg); cursor: pointer; padding: 0; color: var(--mv-muted); }\n.mv-icon-button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-icon-button[aria-pressed="true"] { background: var(--mv-accent-soft); color: var(--mv-text); border-color: var(--mv-accent); }\n\n/* ---- popover ---- */\n.mv-pop-anchor { position: relative; display: inline-flex; }\n.mv-popover { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: min(440px, 86vw); padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-bg); border: 1px solid var(--mv-border); box-shadow: 0 12px 32px rgba(0, 0, 0, .22); font-size: 12.5px; line-height: 19px; }\n.mv-popover h3 { margin: 0 0 6px; font-size: 13px; }\n.mv-popover p { margin: 6px 0; color: var(--mv-muted); }\n.mv-popover ul { margin: 4px 0 8px; padding-left: 18px; color: var(--mv-muted); }\n.mv-keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 6px 0; }\n.mv-keys kbd { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--mv-border); background: var(--mv-surface); white-space: nowrap; justify-self: start; }\n\n/* ---- library ---- */\n.mv-section-label { font-size: 12px; font-weight: 600; color: var(--mv-faint); margin: 0 0 8px; letter-spacing: .3px; }\n.mv-library { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; margin: 0 -2px 6px; scrollbar-width: thin; }\n.mv-card { flex: 0 0 196px; min-height: 84px; text-align: left; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; position: relative; }\n.mv-card:hover { background: var(--mv-hover); }\n.mv-card[aria-pressed="true"] { border-color: var(--mv-accent); box-shadow: inset 0 0 0 1px var(--mv-accent); background: var(--mv-accent-soft); }\n.mv-card-art { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-size: 13px; font-weight: 700; background: #111; color: #ffaf5f; margin-bottom: 4px; }\n.mv-card-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-sub { font-size: 12px; color: var(--mv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-ghost { background: transparent; border-style: dashed; color: var(--mv-muted); align-items: center; justify-content: center; text-align: center; flex-basis: 132px; }\n.mv-card-ghost .mv-card-art { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-card-remove { position: absolute; right: 6px; top: 6px; width: 22px; height: 22px; border-radius: 999px; border: 0; background: transparent; color: var(--mv-faint); cursor: pointer; display: none; }\n.mv-card:hover .mv-card-remove, .mv-card:focus-within .mv-card-remove { display: grid; place-items: center; }\n.mv-card-remove:hover { background: var(--mv-surface-2); color: var(--mv-text); }\n\n/* ---- now playing hero ---- */\n.mv-hero { display: grid; grid-template-columns: 1fr auto; gap: 12px 16px; align-items: center; padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin-bottom: 14px; }\n.mv-hero-title { font-size: 18px; line-height: 26px; font-weight: 650; margin: 0; }\n.mv-hero-sub { color: var(--mv-muted); margin: 2px 0 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }\n.mv-hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }\n.mv-segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--mv-surface-2); gap: 2px; }\n.mv-segmented button { border: 0; background: transparent; padding: 5px 12px; border-radius: 8px; cursor: pointer; color: var(--mv-muted); white-space: nowrap; }\n.mv-segmented button:hover:not(:disabled) { color: var(--mv-text); }\n.mv-segmented button[aria-checked="true"] { background: var(--mv-bg); color: var(--mv-text); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }\n.mv-segmented button:disabled { opacity: .45; cursor: not-allowed; }\n.mv-segmented-small button { padding: 3px 10px; font-size: 12px; }\n.mv-play-big { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 20px 0 16px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); font-weight: 650; font-size: 14px; cursor: pointer; box-shadow: 0 2px 8px color-mix(in srgb, var(--mv-accent) 40%, transparent); }\n.mv-play-big:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-play-big:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }\n.mv-play-big svg { width: 18px; height: 18px; }\n.mv-hero-hint { grid-column: 1 / -1; margin: 0; font-size: 12px; color: var(--mv-muted); }\n\n/* ---- generic pieces ---- */\n.mv-caption { color: var(--mv-muted); font-size: 12px; margin: 4px 0; }\n.mv-faint { color: var(--mv-faint); }\n.mv-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 18px; padding: 1px 8px; border-radius: 999px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-button { display: inline-flex; align-items: center; gap: 6px; height: 30px; border: 1px solid transparent; background: var(--mv-accent); color: var(--mv-accent-ink); border-radius: 8px; padding: 0 12px; cursor: pointer; font-weight: 600; white-space: nowrap; }\n.mv-button:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-button:disabled { opacity: .5; cursor: not-allowed; }\n.mv-button-secondary { background: var(--mv-bg); color: var(--mv-text); border-color: var(--mv-border); font-weight: 500; }\n.mv-button-secondary:hover:not(:disabled) { background: var(--mv-hover); }\n.mv-button-danger { background: var(--mv-bg); color: var(--mv-danger); border-color: color-mix(in srgb, var(--mv-danger) 45%, transparent); font-weight: 500; }\n.mv-button-danger:hover:not(:disabled) { background: var(--mv-danger-soft); }\n.mv-button-small { height: 26px; padding: 0 10px; font-size: 12px; }\n.mv-link { border: 0; background: none; color: var(--mv-accent-strong); cursor: pointer; padding: 0 2px; text-decoration: underline; text-underline-offset: 2px; }\n.mv-link:disabled { opacity: .5; cursor: default; }\n.mv-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }\n.mv-card-box { padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin: 0 0 12px; }\n.mv-card-box h2 { margin: 0 0 8px; font-size: 14px; line-height: 20px; }\n\n/* Inline status / problems */\n.mv-alert { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--mv-border); background: var(--mv-bg); }\n.mv-alert-icon { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; font-size: 12px; font-weight: 700; margin-top: 1px; }\n.mv-alert-body { flex: 1; min-width: 0; }\n.mv-alert-body p { margin: 0; }\n.mv-alert-body .mv-row { margin-top: 6px; }\n.mv-alert-error { border-color: color-mix(in srgb, var(--mv-danger) 40%, transparent); background: var(--mv-danger-soft); }\n.mv-alert-error .mv-alert-icon { background: var(--mv-danger); color: #fff; }\n.mv-alert-warn { border-color: color-mix(in srgb, #f59e0b 50%, transparent); background: var(--mv-warn-soft); }\n.mv-alert-warn .mv-alert-icon { background: #f59e0b; color: #1b1204; }\n.mv-alert-ok .mv-alert-icon { background: var(--mv-ok); color: #fff; }\n.mv-alert-info .mv-alert-icon { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-error { color: var(--mv-danger); white-space: pre-wrap; margin: 6px 0; }\n.mv-wrap { word-break: break-all; }\n\n/* Media source rows (canvas) */\n.mv-sources { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin: 0 0 12px; }\n.mv-source { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); min-width: 0; }\n.mv-source-icon { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--mv-surface-2); font-size: 14px; }\n.mv-source-main { flex: 1; min-width: 0; }\n.mv-source-label { font-size: 11.5px; color: var(--mv-faint); line-height: 16px; }\n.mv-source-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-source-empty .mv-source-value { color: var(--mv-muted); }\n\n/* Onboarding */\n.mv-onboard { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 16px; border-radius: var(--mv-radius); border: 1px solid color-mix(in srgb, var(--mv-accent) 45%, transparent); background: var(--mv-accent-soft); margin: 0 0 12px; }\n.mv-onboard h2 { margin: 0 0 4px; font-size: 15px; }\n.mv-onboard ol { margin: 6px 0 10px; padding-left: 18px; color: var(--mv-muted); }\n.mv-onboard-badge { width: 40px; height: 40px; border-radius: 10px; background: #111; color: #ffaf5f; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; }\n\n/* Stage + player bar */\n.mv-stage-wrap { background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; outline: none; padding: 6px; position: relative; }\n.mv-stage-wrap:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); }\n.mv-stage { height: min(62vh, 720px); min-height: 340px; resize: vertical; overflow: hidden; display: flex; align-items: center; justify-content: center; }\n.mv-stage canvas { display: block; }\n.mv-fullscreen { border-radius: 0; padding: 0; width: 100vw; height: 100vh; }\n.mv-fullscreen .mv-stage { height: 100vh; resize: none; }\n.mv-playerbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); margin-bottom: 12px; }\n.mv-round { width: 38px; height: 38px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); display: grid; place-items: center; cursor: pointer; flex: 0 0 auto; }\n.mv-round:hover { background: var(--mv-accent-strong); }\n.mv-round svg { width: 18px; height: 18px; }\n.mv-seek-wrap { flex: 1 1 260px; display: flex; align-items: center; gap: 10px; min-width: 200px; }\n.mv-seek { flex: 1; accent-color: var(--mv-accent); }\n.mv-time { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--mv-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }\n.mv-volume { display: inline-flex; align-items: center; gap: 6px; }\n.mv-volume input { width: 84px; accent-color: var(--mv-accent); }\n.mv-stepper { display: inline-flex; align-items: center; border: 1px solid var(--mv-border); border-radius: 8px; overflow: hidden; background: var(--mv-bg); height: 28px; }\n.mv-stepper button { border: 0; background: transparent; width: 26px; height: 100%; cursor: pointer; color: var(--mv-muted); }\n.mv-stepper button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-stepper span { padding: 0 8px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; border-left: 1px solid var(--mv-border); border-right: 1px solid var(--mv-border); line-height: 26px; }\n\n/* Collapsible settings */\n.mv-details { border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); margin: 0 0 12px; }\n.mv-details > summary { cursor: pointer; padding: 10px 14px; list-style: none; display: flex; align-items: center; gap: 8px; font-weight: 600; user-select: none; }\n.mv-details > summary::-webkit-details-marker { display: none; }\n.mv-details > summary::before { content: "\u25B8"; color: var(--mv-faint); transition: transform .15s; display: inline-block; }\n.mv-details[open] > summary::before { transform: rotate(90deg); }\n.mv-details > summary .mv-caption { font-weight: 400; margin: 0; }\n.mv-details-body { padding: 4px 14px 14px; }\n.mv-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px 14px; margin: 6px 0; }\n.mv-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; min-width: 0; }\n.mv-field > span:first-child { color: var(--mv-muted); }\n.mv-field input, .mv-field select { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); min-width: 0; width: 100%; }\n.mv-field input:disabled { opacity: .55; }\n.mv-field-help { font-size: 11.5px; color: var(--mv-faint); }\n.mv-field-row { display: flex; gap: 6px; }\n.mv-field-row input { flex: 1; }\n.mv-wide { grid-column: 1 / -1; }\n.mv-check { display: inline-flex; gap: 8px; align-items: center; font-size: 12.5px; align-self: end; height: 30px; }\n.mv-check input { accent-color: var(--mv-accent); width: 15px; height: 15px; }\n\n/* Confirmation */\n.mv-confirm { margin: 0 0 12px; padding: 14px 16px; border: 1px solid var(--mv-accent); border-radius: var(--mv-radius); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-confirm > strong { display: block; font-size: 14px; margin-bottom: 6px; }\n.mv-confirm ul { margin: 8px 0; padding-left: 20px; color: var(--mv-muted); }\n.mv-confirm code { word-break: break-all; }\n.mv-cmd { display: block; margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: var(--mv-surface-2); white-space: pre-wrap; word-break: break-all; }\n.mv-argv { margin: 4px 0 6px; padding-left: 24px; font-size: 12px; }\n\n/* Terminal */\n.mv-term-pane { margin: 0 0 12px; }\n.mv-term-screen { height: min(66vh, 740px); min-height: 300px; resize: vertical; overflow: hidden; padding: 6px; background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; }\n.mv-term-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); }\n.mv-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mv-ok); display: inline-block; }\n.mv-dot-off { background: var(--mv-faint); }\n.mv-console-list { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }\n.mv-console-item { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); font-size: 12.5px; }\n.mv-placeholder { display: grid; place-items: center; text-align: center; min-height: 140px; border-radius: var(--mv-radius); border: 1px dashed var(--mv-border); color: var(--mv-muted); background: var(--mv-surface); padding: 24px; margin: 0 0 12px; }\n.mv-placeholder b { color: var(--mv-text); font-size: 14px; }\n\n/* Import dialog */\n.mv-dialog { margin: 0 0 12px; padding: 14px 16px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-dialog h2 { margin: 0 0 6px; font-size: 14px; }\n.mv-hidden { display: none !important; }\n.mv-card-ai { border-color: var(--mv-accent); color: var(--mv-text); flex-basis: 150px; }\n.mv-card-ai .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent); }\n.mv-card-ai[aria-expanded="true"] { background: var(--mv-accent-soft); border-style: solid; }\n.mv-ai .mv-form { margin: 8px 0 10px; }\n.mv-ai textarea:disabled { opacity: .6; }\n\n/* 0.5.0 calibration editor + auto stepper + engine card */\n.mv-calib .mv-details-body { outline: none; }\n.mv-calib .mv-details-body:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); border-radius: 8px; }\n.mv-calib-tools { flex-wrap: wrap; gap: 6px; align-items: center; }\n.mv-calib-offset { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }\n.mv-calib-offset input { width: 120px; }\n.mv-calib-wave { width: 100%; height: 120px; display: block; border: 1px solid var(--mv-border); border-radius: 8px; margin-top: 8px; touch-action: none; cursor: pointer; }\n.mv-calib-hint { margin: 4px 0 6px; }\n.mv-calib-lines { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; border: 1px solid var(--mv-border); border-radius: 8px; }\n.mv-calib-lines li { display: flex; gap: 10px; align-items: center; padding: 3px 8px; font-size: 12.5px; cursor: pointer; border-left: 3px solid transparent; }\n.mv-calib-lines li:hover { background: var(--mv-hover); }\n.mv-calib-lines li.mv-uncertain { background: rgba(230, 180, 34, 0.16); border-left-color: #e6b422; }\n.mv-calib-lines li.mv-selected { border-left-color: var(--mv-accent); background: var(--mv-hover); }\n.mv-calib-lines li.mv-active .mv-calib-text { font-weight: 600; }\n.mv-calib-time { font-variant-numeric: tabular-nums; color: var(--mv-muted); min-width: 58px; }\n.mv-calib-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.mv-calib-edit { flex: 1; display: flex; gap: 6px; }\n.mv-calib-edit input { flex: 1; min-width: 0; }\n.mv-calib-flag { color: #b88a00; font-weight: 700; }\n.mv-steps { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; }\n.mv-steps li { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; }\n.mv-step-dot { width: 18px; text-align: center; flex: none; }\n.mv-steps li.mv-step-running { font-weight: 600; }\n.mv-steps li.mv-step-failed { color: var(--mv-danger, #d33); }\n.mv-steps li.mv-step-skipped, .mv-steps li.mv-step-pending { color: var(--mv-muted); }\n.mv-engine-card { border: 1px solid var(--mv-border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }\n.mv-progress { height: 6px; border-radius: 3px; background: var(--mv-border); overflow: hidden; }\n.mv-progress > span { display: block; height: 100%; background: var(--mv-accent); }\n.mv-log { max-height: 110px; overflow: auto; font: 11px/1.4 "Cascadia Mono", Consolas, monospace; white-space: pre-wrap; color: var(--mv-muted); margin: 0; }\n.mv-auto { border: 1px solid var(--mv-border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; margin: 10px 0; }\n.mv-auto .mv-check { height: auto; align-items: flex-start; align-self: auto; }\n.mv-auto .mv-check input { margin-top: 2px; flex: none; }\n.mv-auto .mv-field { min-width: 150px; }\n.mv-stage canvas.mv-pixel { width: 100%; height: 100%; }\n.mv-card-art-dshpv { font-family: var(--mv-mono, monospace); font-size: 13px; letter-spacing: .02em; background: linear-gradient(135deg, #0d1528, #1a2a6c); color: #c4d4ff; }\n\n/* 0.7.0 MV \u521B\u610F\u5DE5\u574A */\n.mv-card-ws .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent-strong); }\n.mv-ws { display: flex; flex-direction: column; gap: 10px; }\n.mv-ws-filters { gap: 8px; }\n.mv-ws-filters select, .mv-ws-search { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); color: var(--mv-text); }\n.mv-ws-search { flex: 1 1 220px; min-width: 160px; }\n.mv-ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }\n.mv-ws-card { position: relative; text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); cursor: pointer; color: var(--mv-text); min-width: 0; }\n.mv-ws-card:hover { background: var(--mv-hover); }\n.mv-ws-cover { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: #0a0c10; margin-bottom: 6px; }\n.mv-ws-cover-empty { display: grid; place-items: center; color: #ffaf5f; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; font-size: 20px; }\n.mv-ws-badge { position: absolute; top: 14px; right: 14px; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: rgba(10, 12, 16, .78); color: #4ade80; }\n.mv-ws-badge-update { color: #ffaf5f; }\n.mv-ws-detail { display: grid; grid-template-columns: minmax(220px, 380px) 1fr; gap: 16px; align-items: start; }\n@media (max-width: 720px) { .mv-ws-detail { grid-template-columns: 1fr; } }\n.mv-ws-detail-body { min-width: 0; }\n.mv-ws-files { margin: 6px 0; padding-left: 18px; max-height: 140px; overflow: auto; }\n.mv-ws-files code { font-size: 11.5px; }\n.mv-ws-steps { padding-left: 18px; }\n.mv-ws-steps li { margin: 3px 0; }\n.mv-ws-publish { margin-top: 8px; }\na.mv-button { text-decoration: none; }\n\n/* 0.9.0: empty library \u2192 \u521B\u610F\u5DE5\u574A, one-click installs of the former presets, original-work links */\n.mv-empty-lib { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px dashed var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); }\n.mv-empty-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }\n.mv-empty-head > div { flex: 1 1 260px; min-width: 0; }\n.mv-empty-head h3 { margin: 0 0 2px; font-size: 15px; }\n.mv-empty-icon { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--mv-surface-2, var(--mv-hover)); }\n.mv-empty-icon svg { width: 22px; height: 22px; }\n.mv-presets { display: flex; flex-direction: column; gap: 6px; }\n.mv-preset { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-bg); min-width: 0; }\n.mv-preset .mv-track-art { flex: none; width: 36px; height: 36px; }\n.mv-preset-main { display: flex; flex-direction: column; min-width: 0; flex: 1; }\n.mv-preset-main .mv-track-artist { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-ws-source a, .mv-preset a { color: var(--mv-accent, inherit); text-decoration: underline; text-underline-offset: 2px; }\n.mv-ws-source-compact { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-canvas-host[hidden] { display: none !important; }\n\n/* 0.9.1: workshop packs that need a newer plugin */\n.mv-chip.mv-chip-warn { background: var(--mv-warn-soft); color: var(--mv-text); box-shadow: inset 0 0 0 1px color-mix(in srgb, #f59e0b 45%, transparent); }\n\n/* 0.9.1: workshop install location */\n.mv-ws-dir { margin-top: 12px; border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }\n.mv-ws-dir-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 260px; }\n.mv-ws-dir-text code { font-size: 13px; color: var(--mv-text); word-break: break-all; }\n.mv-ws-dir-edit { flex-wrap: wrap; }\n.mv-ws-dir-edit input { flex: 1 1 280px; min-width: 0; }\n.mv-ws-dir-progress { display: flex; align-items: center; gap: 8px; }\n.mv-ws-dir-progress progress { flex: 1 1 auto; accent-color: var(--mv-accent); }\n.mv-ws-dir .mv-alert, .mv-ws-dir [role="alert"] { margin: 0; }\n';
+var mv_default = '/* MV \u653E\u6620\u5BA4 \u2014 opaque surface that follows Harness light/dark (body[data-ds-dark-theme]). */\n.mv-root {\n  --mv-fb-bg: #ffffff; --mv-fb-text: #14151a; --mv-fb-muted: #4b4e59; --mv-fb-faint: #6b6e79; --mv-fb-border: rgba(20, 21, 26, .12);\n  --mv-fb-danger: #d92d20; --mv-fb-ok: #15803d;\n  --mv-accent: #e8890c; --mv-accent-strong: #c96f00; --mv-accent-ink: #1b1204;\n  --mv-bg: var(--dsw-alias-bg-base, var(--mv-fb-bg));\n  --mv-text: var(--dsw-alias-label-primary, var(--mv-fb-text));\n  --mv-muted: var(--dsw-alias-label-secondary, var(--mv-fb-muted));\n  --mv-faint: var(--dsw-alias-label-tertiary, var(--mv-fb-faint));\n  --mv-border: var(--dsw-alias-border-l2, var(--mv-fb-border));\n  --mv-danger: var(--dsw-alias-state-error-primary, var(--mv-fb-danger));\n  --mv-ok: var(--dsw-alias-state-success-primary, var(--mv-fb-ok));\n  --mv-surface: color-mix(in srgb, var(--mv-text) 4%, var(--mv-bg));\n  --mv-surface-2: color-mix(in srgb, var(--mv-text) 8%, var(--mv-bg));\n  --mv-hover: color-mix(in srgb, var(--mv-text) 10%, var(--mv-bg));\n  --mv-accent-soft: color-mix(in srgb, var(--mv-accent) 16%, var(--mv-bg));\n  --mv-danger-soft: color-mix(in srgb, var(--mv-danger) 10%, var(--mv-bg));\n  --mv-warn-soft: color-mix(in srgb, #f59e0b 16%, var(--mv-bg));\n  --mv-radius: 12px;\n  color-scheme: light;\n  position: relative; isolation: isolate;\n  /* The Harness centre column is `display:flex; flex-direction:column; overflow:hidden`: the panel must be\n     its own scroll container (it fills the column and scrolls; mv-panel.jsx pins the height elsewhere). */\n  flex: 1 1 auto; min-height: 0; height: 100%; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;\n  box-sizing: border-box; padding: 18px 22px 28px;\n  background: var(--mv-bg); color: var(--mv-text);\n  font-size: 13px; line-height: 20px;\n  font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei UI", "PingFang SC", sans-serif;\n}\n@media (prefers-color-scheme: dark) {\n  .mv-root { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; color-scheme: dark; }\n}\nbody[data-ds-dark-theme] .mv-root, .mv-root.mv-dark { --mv-fb-bg: #151517; --mv-fb-text: #eceef2; --mv-fb-muted: #b4b8c2; --mv-fb-faint: #8d919c; --mv-fb-border: rgba(255, 255, 255, .14); --mv-fb-danger: #f97066; --mv-fb-ok: #4ade80; --mv-accent: #ffaf5f; --mv-accent-strong: #ffc285; color-scheme: dark; }\n.mv-root *, .mv-root *::before, .mv-root *::after { box-sizing: border-box; }\n.mv-root :where(button, input, select, textarea) { font: inherit; color: inherit; }\n.mv-root code { font-family: "Cascadia Mono", Consolas, Menlo, monospace; font-size: 12px; }\n.mv-root :focus-visible { outline: 2px solid var(--mv-accent); outline-offset: 2px; }\n\n/* ---- header ---- */\n.mv-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }\n.mv-title { margin: 0; font-size: 20px; line-height: 28px; font-weight: 650; letter-spacing: .2px; }\n.mv-title small { font-size: 12px; font-weight: 400; color: var(--mv-faint); margin-left: 8px; }\n.mv-spacer { flex: 1; }\n.mv-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px; line-height: 20px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-pill-warn { background: var(--mv-warn-soft); color: var(--mv-text); border: 1px solid color-mix(in srgb, #f59e0b 45%, transparent); }\n.mv-pill-ok { color: var(--mv-ok); }\n.mv-icon-button { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--mv-border); background: var(--mv-bg); cursor: pointer; padding: 0; color: var(--mv-muted); }\n.mv-icon-button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-icon-button[aria-pressed="true"] { background: var(--mv-accent-soft); color: var(--mv-text); border-color: var(--mv-accent); }\n\n/* ---- popover ---- */\n.mv-pop-anchor { position: relative; display: inline-flex; }\n.mv-popover { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: min(440px, 86vw); padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-bg); border: 1px solid var(--mv-border); box-shadow: 0 12px 32px rgba(0, 0, 0, .22); font-size: 12.5px; line-height: 19px; }\n.mv-popover h3 { margin: 0 0 6px; font-size: 13px; }\n.mv-popover p { margin: 6px 0; color: var(--mv-muted); }\n.mv-popover ul { margin: 4px 0 8px; padding-left: 18px; color: var(--mv-muted); }\n.mv-keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 6px 0; }\n.mv-keys kbd { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--mv-border); background: var(--mv-surface); white-space: nowrap; justify-self: start; }\n\n/* ---- library ---- */\n.mv-section-label { font-size: 12px; font-weight: 600; color: var(--mv-faint); margin: 0 0 8px; letter-spacing: .3px; }\n.mv-library { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; margin: 0 -2px 6px; scrollbar-width: thin; }\n.mv-card { flex: 0 0 196px; min-height: 84px; text-align: left; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; position: relative; }\n.mv-card:hover { background: var(--mv-hover); }\n.mv-card[aria-pressed="true"] { border-color: var(--mv-accent); box-shadow: inset 0 0 0 1px var(--mv-accent); background: var(--mv-accent-soft); }\n.mv-card-art { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-size: 13px; font-weight: 700; background: #111; color: #ffaf5f; margin-bottom: 4px; }\n.mv-card-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-sub { font-size: 12px; color: var(--mv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-card-ghost { background: transparent; border-style: dashed; color: var(--mv-muted); align-items: center; justify-content: center; text-align: center; flex-basis: 132px; }\n.mv-card-ghost .mv-card-art { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-card-remove { position: absolute; right: 6px; top: 6px; width: 22px; height: 22px; border-radius: 999px; border: 0; background: transparent; color: var(--mv-faint); cursor: pointer; display: none; }\n.mv-card:hover .mv-card-remove, .mv-card:focus-within .mv-card-remove { display: grid; place-items: center; }\n.mv-card-remove:hover { background: var(--mv-surface-2); color: var(--mv-text); }\n\n/* ---- now playing hero ---- */\n.mv-hero { display: grid; grid-template-columns: 1fr auto; gap: 12px 16px; align-items: center; padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin-bottom: 14px; }\n.mv-hero-title { font-size: 18px; line-height: 26px; font-weight: 650; margin: 0; }\n.mv-hero-sub { color: var(--mv-muted); margin: 2px 0 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }\n.mv-hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }\n.mv-segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--mv-surface-2); gap: 2px; }\n.mv-segmented button { border: 0; background: transparent; padding: 5px 12px; border-radius: 8px; cursor: pointer; color: var(--mv-muted); white-space: nowrap; }\n.mv-segmented button:hover:not(:disabled) { color: var(--mv-text); }\n.mv-segmented button[aria-checked="true"] { background: var(--mv-bg); color: var(--mv-text); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }\n.mv-segmented button:disabled { opacity: .45; cursor: not-allowed; }\n.mv-segmented-small button { padding: 3px 10px; font-size: 12px; }\n.mv-play-big { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 20px 0 16px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); font-weight: 650; font-size: 14px; cursor: pointer; box-shadow: 0 2px 8px color-mix(in srgb, var(--mv-accent) 40%, transparent); }\n.mv-play-big:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-play-big:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }\n.mv-play-big svg { width: 18px; height: 18px; }\n.mv-hero-hint { grid-column: 1 / -1; margin: 0; font-size: 12px; color: var(--mv-muted); }\n\n/* ---- generic pieces ---- */\n.mv-caption { color: var(--mv-muted); font-size: 12px; margin: 4px 0; }\n.mv-faint { color: var(--mv-faint); }\n.mv-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 18px; padding: 1px 8px; border-radius: 999px; background: var(--mv-surface-2); color: var(--mv-muted); white-space: nowrap; }\n.mv-button { display: inline-flex; align-items: center; gap: 6px; height: 30px; border: 1px solid transparent; background: var(--mv-accent); color: var(--mv-accent-ink); border-radius: 8px; padding: 0 12px; cursor: pointer; font-weight: 600; white-space: nowrap; }\n.mv-button:hover:not(:disabled) { background: var(--mv-accent-strong); }\n.mv-button:disabled { opacity: .5; cursor: not-allowed; }\n.mv-button-secondary { background: var(--mv-bg); color: var(--mv-text); border-color: var(--mv-border); font-weight: 500; }\n.mv-button-secondary:hover:not(:disabled) { background: var(--mv-hover); }\n.mv-button-danger { background: var(--mv-bg); color: var(--mv-danger); border-color: color-mix(in srgb, var(--mv-danger) 45%, transparent); font-weight: 500; }\n.mv-button-danger:hover:not(:disabled) { background: var(--mv-danger-soft); }\n.mv-button-small { height: 26px; padding: 0 10px; font-size: 12px; }\n.mv-link { border: 0; background: none; color: var(--mv-accent-strong); cursor: pointer; padding: 0 2px; text-decoration: underline; text-underline-offset: 2px; }\n.mv-link:disabled { opacity: .5; cursor: default; }\n.mv-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }\n.mv-card-box { padding: 14px 16px; border-radius: var(--mv-radius); background: var(--mv-surface); border: 1px solid var(--mv-border); margin: 0 0 12px; }\n.mv-card-box h2 { margin: 0 0 8px; font-size: 14px; line-height: 20px; }\n\n/* Inline status / problems */\n.mv-alert { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; margin: 8px 0; border: 1px solid var(--mv-border); background: var(--mv-bg); }\n.mv-alert-icon { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; font-size: 12px; font-weight: 700; margin-top: 1px; }\n.mv-alert-body { flex: 1; min-width: 0; }\n.mv-alert-body p { margin: 0; }\n.mv-alert-body .mv-row { margin-top: 6px; }\n.mv-alert-error { border-color: color-mix(in srgb, var(--mv-danger) 40%, transparent); background: var(--mv-danger-soft); }\n.mv-alert-error .mv-alert-icon { background: var(--mv-danger); color: #fff; }\n.mv-alert-warn { border-color: color-mix(in srgb, #f59e0b 50%, transparent); background: var(--mv-warn-soft); }\n.mv-alert-warn .mv-alert-icon { background: #f59e0b; color: #1b1204; }\n.mv-alert-ok .mv-alert-icon { background: var(--mv-ok); color: #fff; }\n.mv-alert-info .mv-alert-icon { background: var(--mv-surface-2); color: var(--mv-text); }\n.mv-error { color: var(--mv-danger); white-space: pre-wrap; margin: 6px 0; }\n.mv-wrap { word-break: break-all; }\n\n/* Media source rows (canvas) */\n.mv-sources { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin: 0 0 12px; }\n.mv-source { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); min-width: 0; }\n.mv-source-icon { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--mv-surface-2); font-size: 14px; }\n.mv-source-main { flex: 1; min-width: 0; }\n.mv-source-label { font-size: 11.5px; color: var(--mv-faint); line-height: 16px; }\n.mv-source-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-source-empty .mv-source-value { color: var(--mv-muted); }\n\n/* Onboarding */\n.mv-onboard { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 16px; border-radius: var(--mv-radius); border: 1px solid color-mix(in srgb, var(--mv-accent) 45%, transparent); background: var(--mv-accent-soft); margin: 0 0 12px; }\n.mv-onboard h2 { margin: 0 0 4px; font-size: 15px; }\n.mv-onboard ol { margin: 6px 0 10px; padding-left: 18px; color: var(--mv-muted); }\n.mv-onboard-badge { width: 40px; height: 40px; border-radius: 10px; background: #111; color: #ffaf5f; display: grid; place-items: center; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; }\n\n/* Stage + player bar */\n.mv-stage-wrap { background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; outline: none; padding: 6px; position: relative; }\n.mv-stage-wrap:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); }\n.mv-stage { height: min(62vh, 720px); min-height: 340px; resize: vertical; overflow: hidden; display: flex; align-items: center; justify-content: center; }\n.mv-stage canvas { display: block; }\n.mv-fullscreen { border-radius: 0; padding: 0; width: 100vw; height: 100vh; }\n.mv-fullscreen .mv-stage { height: 100vh; resize: none; }\n.mv-playerbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); margin-bottom: 12px; }\n.mv-round { width: 38px; height: 38px; border-radius: 999px; border: 0; background: var(--mv-accent); color: var(--mv-accent-ink); display: grid; place-items: center; cursor: pointer; flex: 0 0 auto; }\n.mv-round:hover { background: var(--mv-accent-strong); }\n.mv-round svg { width: 18px; height: 18px; }\n.mv-seek-wrap { flex: 1 1 260px; display: flex; align-items: center; gap: 10px; min-width: 200px; }\n.mv-seek { flex: 1; accent-color: var(--mv-accent); }\n.mv-time { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--mv-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }\n.mv-volume { display: inline-flex; align-items: center; gap: 6px; }\n.mv-volume input { width: 84px; accent-color: var(--mv-accent); }\n.mv-stepper { display: inline-flex; align-items: center; border: 1px solid var(--mv-border); border-radius: 8px; overflow: hidden; background: var(--mv-bg); height: 28px; }\n.mv-stepper button { border: 0; background: transparent; width: 26px; height: 100%; cursor: pointer; color: var(--mv-muted); }\n.mv-stepper button:hover { background: var(--mv-hover); color: var(--mv-text); }\n.mv-stepper span { padding: 0 8px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; border-left: 1px solid var(--mv-border); border-right: 1px solid var(--mv-border); line-height: 26px; }\n\n/* Collapsible settings */\n.mv-details { border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); margin: 0 0 12px; }\n.mv-details > summary { cursor: pointer; padding: 10px 14px; list-style: none; display: flex; align-items: center; gap: 8px; font-weight: 600; user-select: none; }\n.mv-details > summary::-webkit-details-marker { display: none; }\n.mv-details > summary::before { content: "\u25B8"; color: var(--mv-faint); transition: transform .15s; display: inline-block; }\n.mv-details[open] > summary::before { transform: rotate(90deg); }\n.mv-details > summary .mv-caption { font-weight: 400; margin: 0; }\n.mv-details-body { padding: 4px 14px 14px; }\n.mv-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px 14px; margin: 6px 0; }\n.mv-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; min-width: 0; }\n.mv-field > span:first-child { color: var(--mv-muted); }\n.mv-field input, .mv-field select { height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); min-width: 0; width: 100%; }\n.mv-field input:disabled { opacity: .55; }\n.mv-field-help { font-size: 11.5px; color: var(--mv-faint); }\n.mv-field-row { display: flex; gap: 6px; }\n.mv-field-row input { flex: 1; }\n.mv-wide { grid-column: 1 / -1; }\n.mv-check { display: inline-flex; gap: 8px; align-items: center; font-size: 12.5px; align-self: end; height: 30px; }\n.mv-check input { accent-color: var(--mv-accent); width: 15px; height: 15px; }\n\n/* Confirmation */\n.mv-confirm { margin: 0 0 12px; padding: 14px 16px; border: 1px solid var(--mv-accent); border-radius: var(--mv-radius); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-confirm > strong { display: block; font-size: 14px; margin-bottom: 6px; }\n.mv-confirm ul { margin: 8px 0; padding-left: 20px; color: var(--mv-muted); }\n.mv-confirm code { word-break: break-all; }\n.mv-cmd { display: block; margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: var(--mv-surface-2); white-space: pre-wrap; word-break: break-all; }\n.mv-argv { margin: 4px 0 6px; padding-left: 24px; font-size: 12px; }\n\n/* Terminal */\n.mv-term-pane { margin: 0 0 12px; }\n.mv-term-screen { height: min(66vh, 740px); min-height: 300px; resize: vertical; overflow: hidden; padding: 6px; background: #000; border-radius: var(--mv-radius) var(--mv-radius) 0 0; }\n.mv-term-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border: 1px solid var(--mv-border); border-top: 0; border-radius: 0 0 var(--mv-radius) var(--mv-radius); background: var(--mv-surface); }\n.mv-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mv-ok); display: inline-block; }\n.mv-dot-off { background: var(--mv-faint); }\n.mv-console-list { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }\n.mv-console-item { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--mv-border); background: var(--mv-surface); font-size: 12.5px; }\n.mv-placeholder { display: grid; place-items: center; text-align: center; min-height: 140px; border-radius: var(--mv-radius); border: 1px dashed var(--mv-border); color: var(--mv-muted); background: var(--mv-surface); padding: 24px; margin: 0 0 12px; }\n.mv-placeholder b { color: var(--mv-text); font-size: 14px; }\n\n/* Import dialog */\n.mv-dialog { margin: 0 0 12px; padding: 14px 16px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-bg); box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }\n.mv-dialog h2 { margin: 0 0 6px; font-size: 14px; }\n.mv-hidden { display: none !important; }\n.mv-card-ai { border-color: var(--mv-accent); color: var(--mv-text); flex-basis: 150px; }\n.mv-card-ai .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent); }\n.mv-card-ai[aria-expanded="true"] { background: var(--mv-accent-soft); border-style: solid; }\n.mv-ai .mv-form { margin: 8px 0 10px; }\n.mv-ai textarea:disabled { opacity: .6; }\n\n/* 0.5.0 calibration editor + auto stepper + engine card */\n.mv-calib .mv-details-body { outline: none; }\n.mv-calib .mv-details-body:focus-visible { box-shadow: 0 0 0 2px var(--mv-accent); border-radius: 8px; }\n.mv-calib-tools { flex-wrap: wrap; gap: 6px; align-items: center; }\n.mv-calib-offset { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }\n.mv-calib-offset input { width: 120px; }\n.mv-calib-wave { width: 100%; height: 120px; display: block; border: 1px solid var(--mv-border); border-radius: 8px; margin-top: 8px; touch-action: none; cursor: pointer; }\n.mv-calib-hint { margin: 4px 0 6px; }\n.mv-calib-lines { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow: auto; border: 1px solid var(--mv-border); border-radius: 8px; }\n.mv-calib-lines li { display: flex; gap: 10px; align-items: center; padding: 3px 8px; font-size: 12.5px; cursor: pointer; border-left: 3px solid transparent; }\n.mv-calib-lines li:hover { background: var(--mv-hover); }\n.mv-calib-lines li.mv-uncertain { background: rgba(230, 180, 34, 0.16); border-left-color: #e6b422; }\n.mv-calib-lines li.mv-selected { border-left-color: var(--mv-accent); background: var(--mv-hover); }\n.mv-calib-lines li.mv-active .mv-calib-text { font-weight: 600; }\n.mv-calib-time { font-variant-numeric: tabular-nums; color: var(--mv-muted); min-width: 58px; }\n.mv-calib-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.mv-calib-edit { flex: 1; display: flex; gap: 6px; }\n.mv-calib-edit input { flex: 1; min-width: 0; }\n.mv-calib-flag { color: #b88a00; font-weight: 700; }\n.mv-steps { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; }\n.mv-steps li { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; }\n.mv-step-dot { width: 18px; text-align: center; flex: none; }\n.mv-steps li.mv-step-running { font-weight: 600; }\n.mv-steps li.mv-step-failed { color: var(--mv-danger, #d33); }\n.mv-steps li.mv-step-skipped, .mv-steps li.mv-step-pending { color: var(--mv-muted); }\n.mv-engine-card { border: 1px solid var(--mv-border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }\n.mv-progress { height: 6px; border-radius: 3px; background: var(--mv-border); overflow: hidden; }\n.mv-progress > span { display: block; height: 100%; background: var(--mv-accent); }\n.mv-log { max-height: 110px; overflow: auto; font: 11px/1.4 "Cascadia Mono", Consolas, monospace; white-space: pre-wrap; color: var(--mv-muted); margin: 0; }\n.mv-auto { border: 1px solid var(--mv-border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; margin: 10px 0; }\n.mv-auto .mv-check { height: auto; align-items: flex-start; align-self: auto; }\n.mv-auto .mv-check input { margin-top: 2px; flex: none; }\n.mv-auto .mv-field { min-width: 150px; }\n.mv-stage canvas.mv-pixel { width: 100%; height: 100%; }\n.mv-card-art-dshpv { font-family: var(--mv-mono, monospace); font-size: 13px; letter-spacing: .02em; background: linear-gradient(135deg, #0d1528, #1a2a6c); color: #c4d4ff; }\n\n/* 0.7.0 MV \u521B\u610F\u5DE5\u574A */\n.mv-card-ws .mv-card-art { background: var(--mv-accent-soft); color: var(--mv-accent-strong); }\n.mv-ws { display: flex; flex-direction: column; gap: 10px; }\n.mv-ws-heading { justify-content: space-between; align-items: flex-start; }\n.mv-ws-heading > h2 { flex: 1 1 220px; min-width: 0; overflow-wrap: anywhere; }\n.mv-ws-heading > h2 .mv-caption { display: block; font-weight: 400; }\n.mv-ws-heading > .mv-row { justify-content: flex-end; max-width: 100%; }\n.mv-ws-community { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); min-width: 0; }\n.mv-ws-community p { margin: 0; overflow-wrap: anywhere; }\n.mv-ws-community-heading { gap: 4px 12px; }\n.mv-ws-community-state { font-weight: 650; color: var(--mv-muted); }\n.mv-ws-community-known { color: var(--mv-text); }\n.mv-ws-community-error { color: var(--mv-danger); }\n.mv-ws-search-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(140px, auto); gap: 12px; align-items: end; }\n.mv-ws-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: 8px 12px; }\n.mv-ws-filter { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: 12px; color: var(--mv-muted); }\n.mv-ws-filter select, .mv-ws-search { height: 36px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--mv-border); background: var(--mv-bg); color: var(--mv-text); }\n.mv-ws-filter select { width: 100%; min-width: 0; max-width: 100%; }\n.mv-ws-search { width: 100%; min-width: 0; }\n.mv-ws-filter-checks .mv-check { height: auto; min-height: 32px; }\n.mv-ws-results { justify-content: space-between; }\n.mv-ws-results .mv-button { min-height: 32px; }\n.mv-ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 12px; }\n.mv-ws-card { position: relative; text-align: left; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-surface); color: var(--mv-text); min-width: 0; }\n.mv-ws-card:hover { background: var(--mv-hover); }\n.mv-ws-card-open { display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 0; margin: 0; width: 100%; min-width: 0; border: 0; border-radius: inherit; background: transparent; color: inherit; text-align: left; cursor: pointer; }\n.mv-ws-card-open:focus-visible { outline-offset: -2px; }\n.mv-ws-card-open:hover .mv-card-title { color: var(--mv-accent-strong); }\n.mv-ws-card-intro { display: flex; flex-direction: column; gap: 2px; min-width: 0; }\n.mv-ws-card-community { display: flex; flex-direction: column; gap: 8px; margin-top: auto; min-width: 0; }\n.mv-root.mv-skin-c .mv-ws-card > .mv-ws-card-open { padding: 0; }\n.mv-root.mv-skin-c .mv-ws-card-intro { padding: 0 12px; }\n.mv-ws-cover { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: #0a0c10; margin-bottom: 6px; }\n.mv-ws-cover-empty { display: grid; place-items: center; color: #ffaf5f; font-family: "Cascadia Mono", Consolas, monospace; font-weight: 700; font-size: 20px; }\n.mv-ws-badge { position: absolute; top: 14px; right: 14px; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: rgba(10, 12, 16, .78); color: #4ade80; }\n.mv-ws-badge-update { color: #ffaf5f; }\n.mv-ws-badge { pointer-events: none; }\n.mv-ws-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 10px 0; border-top: 1px solid var(--mv-border); border-bottom: 1px solid var(--mv-border); }\n.mv-ws-stats > div { flex: 1 1 0; min-width: max-content; max-width: 100%; }\n.mv-ws-stats dt { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; color: var(--mv-muted); font-size: 12px; }\n.mv-ws-stats dt svg, .mv-ws-trophy svg { flex: none; width: 16px; height: 16px; }\n.mv-ws-stats dd { margin: 4px 0 0; font-size: 18px; line-height: 24px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }\n.mv-ws-stats-compact { gap: 6px; padding: 8px 0; }\n.mv-ws-stats-compact dt { font-size: 11px; gap: 3px; }\n.mv-ws-stats-compact dt svg { width: 13px; height: 13px; }\n.mv-ws-stats-compact dd { font-size: 15px; line-height: 20px; }\n.mv-ws-award { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; min-width: 0; }\n.mv-ws-trophy { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border: 1px solid var(--mv-border); border-radius: 999px; background: var(--mv-accent-soft); color: var(--mv-accent-strong); font-size: 12px; font-weight: 650; }\n.mv-ws-award-rule { overflow-wrap: anywhere; }\n.mv-ws-detail-community { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }\n.mv-ws-detail { display: grid; grid-template-columns: minmax(220px, 380px) 1fr; gap: 16px; align-items: start; }\n@media (max-width: 720px) { .mv-ws-detail { grid-template-columns: 1fr; } }\n@container mvroot (max-width: 720px) { .mv-ws-detail { grid-template-columns: 1fr; } }\n@container mvroot (max-width: 520px) {\n  .mv-ws-search-row { grid-template-columns: minmax(0, 1fr); }\n  .mv-ws-heading > h2 { flex-basis: 100%; }\n  .mv-ws-heading > .mv-row { justify-content: flex-start; }\n}\n@media (max-width: 520px) { .mv-ws-search-row { grid-template-columns: minmax(0, 1fr); } }\n@media (prefers-reduced-motion: reduce) { .mv-root .mv-ws-card { transition: none; transform: none; } }\n.mv-ws-detail-body { min-width: 0; }\n.mv-ws-files { margin: 6px 0; padding-left: 18px; max-height: 140px; overflow: auto; }\n.mv-ws-files code { font-size: 11.5px; }\n.mv-ws-steps { padding-left: 18px; }\n.mv-ws-steps li { margin: 3px 0; }\n.mv-ws-publish { margin-top: 8px; }\na.mv-button { text-decoration: none; }\n\n/* 0.9.0: empty library \u2192 \u521B\u610F\u5DE5\u574A, one-click installs of the former presets, original-work links */\n.mv-empty-lib { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px dashed var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); }\n.mv-empty-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }\n.mv-empty-head > div { flex: 1 1 260px; min-width: 0; }\n.mv-empty-head h3 { margin: 0 0 2px; font-size: 15px; }\n.mv-empty-icon { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--mv-surface-2, var(--mv-hover)); }\n.mv-empty-icon svg { width: 22px; height: 22px; }\n.mv-presets { display: flex; flex-direction: column; gap: 6px; }\n.mv-preset { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--mv-radius); border: 1px solid var(--mv-border); background: var(--mv-bg); min-width: 0; }\n.mv-preset .mv-track-art { flex: none; width: 36px; height: 36px; }\n.mv-preset-main { display: flex; flex-direction: column; min-width: 0; flex: 1; }\n.mv-preset-main .mv-track-artist { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-ws-source a, .mv-preset a { color: var(--mv-accent, inherit); text-decoration: underline; text-underline-offset: 2px; }\n.mv-ws-source-compact { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.mv-canvas-host[hidden] { display: none !important; }\n\n/* 0.9.1: workshop packs that need a newer plugin */\n.mv-chip.mv-chip-warn { background: var(--mv-warn-soft); color: var(--mv-text); box-shadow: inset 0 0 0 1px color-mix(in srgb, #f59e0b 45%, transparent); }\n\n/* 0.9.1: workshop install location */\n.mv-ws-dir { margin-top: 12px; border: 1px solid var(--mv-border); border-radius: var(--mv-radius); background: var(--mv-surface); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }\n.mv-ws-dir-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 260px; }\n.mv-ws-dir-text code { font-size: 13px; color: var(--mv-text); word-break: break-all; }\n.mv-ws-dir-edit { flex-wrap: wrap; }\n.mv-ws-dir-edit input { flex: 1 1 280px; min-width: 0; }\n.mv-ws-dir-progress { display: flex; align-items: center; gap: 8px; }\n.mv-ws-dir-progress progress { flex: 1 1 auto; accent-color: var(--mv-accent); }\n.mv-ws-dir .mv-alert, .mv-ws-dir [role="alert"] { margin: 0; }\n';
 
 // .dsh-plugin/client/mv-skins.css
 var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-light / .mv-dark (resolved in mv-skin.mjs) and
@@ -10186,16 +10474,16 @@ var mv_skins_default = `/* 0.8.0 skins. The root gets .mv-skin-{a,b,c} plus .mv-
 `;
 
 // .dsh-plugin/client/mv-skin-ui.jsx
-var import_react8 = __toESM(require("react"), 1);
+var import_react9 = __toESM(require("react"), 1);
 function readEnv() {
   const body = globalThis.document?.body;
   const inHarness = Boolean(body && (body.hasAttribute("data-ds-dark-theme") || getComputedStyle(body).getPropertyValue("--dsw-alias-bg-base").trim()));
   return { hostDark: inHarness ? body.hasAttribute("data-ds-dark-theme") : null, systemDark: Boolean(globalThis.matchMedia?.("(prefers-color-scheme: dark)").matches) };
 }
 function useSkin() {
-  const [settings, setSettings] = import_react8.default.useState(loadSkin);
-  const [env, setEnv] = import_react8.default.useState(readEnv);
-  import_react8.default.useEffect(() => {
+  const [settings, setSettings] = import_react9.default.useState(loadSkin);
+  const [env, setEnv] = import_react9.default.useState(readEnv);
+  import_react9.default.useEffect(() => {
     const update2 = () => setEnv(readEnv());
     const observer = globalThis.MutationObserver && globalThis.document?.body ? new MutationObserver(update2) : null;
     observer?.observe(document.body, { attributes: true, attributeFilter: ["data-ds-dark-theme", "class", "style"] });
@@ -10206,10 +10494,10 @@ function useSkin() {
       media?.removeEventListener?.("change", update2);
     };
   }, []);
-  const update = import_react8.default.useCallback((change) => setSettings((current) => saveSkin({ ...current, ...change(current) })), []);
+  const update = import_react9.default.useCallback((change) => setSettings((current) => saveSkin({ ...current, ...change(current) })), []);
   const mode = settings.modes[settings.skin];
   const className = skinClasses(settings, env);
-  import_react8.default.useEffect(() => {
+  import_react9.default.useEffect(() => {
     globalThis.dispatchEvent?.(new Event(SKIN_EVENT));
   }, [className]);
   return {
@@ -10221,11 +10509,11 @@ function useSkin() {
     setMode: (value) => update((current) => ({ modes: { ...current.modes, [current.skin]: value } }))
   };
 }
-var Swatch = ({ id }) => /* @__PURE__ */ import_react8.default.createElement("span", { className: `mv-skin-swatch mv-skin-swatch-${id}`, "aria-hidden": "true" }, /* @__PURE__ */ import_react8.default.createElement("i", null), /* @__PURE__ */ import_react8.default.createElement("i", null), /* @__PURE__ */ import_react8.default.createElement("i", null));
-var PaletteIcon = () => /* @__PURE__ */ import_react8.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, /* @__PURE__ */ import_react8.default.createElement("path", { d: "M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-1.8a1.7 1.7 0 0 0-1.2 2.9A1.7 1.7 0 0 1 13.8 22z" }), /* @__PURE__ */ import_react8.default.createElement("circle", { cx: "7.5", cy: "10.5", r: "1" }), /* @__PURE__ */ import_react8.default.createElement("circle", { cx: "12", cy: "7", r: "1" }), /* @__PURE__ */ import_react8.default.createElement("circle", { cx: "16.5", cy: "10.5", r: "1" }));
+var Swatch = ({ id }) => /* @__PURE__ */ import_react9.default.createElement("span", { className: `mv-skin-swatch mv-skin-swatch-${id}`, "aria-hidden": "true" }, /* @__PURE__ */ import_react9.default.createElement("i", null), /* @__PURE__ */ import_react9.default.createElement("i", null), /* @__PURE__ */ import_react9.default.createElement("i", null));
+var PaletteIcon = () => /* @__PURE__ */ import_react9.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, /* @__PURE__ */ import_react9.default.createElement("path", { d: "M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-1.8a1.7 1.7 0 0 0-1.2 2.9A1.7 1.7 0 0 1 13.8 22z" }), /* @__PURE__ */ import_react9.default.createElement("circle", { cx: "7.5", cy: "10.5", r: "1" }), /* @__PURE__ */ import_react9.default.createElement("circle", { cx: "12", cy: "7", r: "1" }), /* @__PURE__ */ import_react9.default.createElement("circle", { cx: "16.5", cy: "10.5", r: "1" }));
 function SkinPicker({ skin }) {
   const current = SKINS.find((s) => s.id === skin.settings.skin);
-  return /* @__PURE__ */ import_react8.default.createElement(Popover, { label: "\u5916\u89C2", title: `\u5916\u89C2\uFF1A${current.title}`, className: "mv-skin-trigger", icon: /* @__PURE__ */ import_react8.default.createElement(import_react8.default.Fragment, null, /* @__PURE__ */ import_react8.default.createElement(PaletteIcon, null), /* @__PURE__ */ import_react8.default.createElement("span", null, current.name)) }, /* @__PURE__ */ import_react8.default.createElement("h3", null, "\u5916\u89C2"), /* @__PURE__ */ import_react8.default.createElement("div", { className: "mv-skin-list", role: "radiogroup", "aria-label": "\u76AE\u80A4" }, SKINS.map((s) => /* @__PURE__ */ import_react8.default.createElement("button", { key: s.id, type: "button", role: "radio", "aria-checked": s.id === skin.settings.skin, className: "mv-skin-option", onClick: () => skin.setSkin(s.id) }, /* @__PURE__ */ import_react8.default.createElement(Swatch, { id: s.id }), /* @__PURE__ */ import_react8.default.createElement("span", null, /* @__PURE__ */ import_react8.default.createElement("b", null, s.title), /* @__PURE__ */ import_react8.default.createElement("small", null, s.description))))), /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-skin-mode-label" }, "\u300C", current.title, "\u300D\u7684\u660E\u6697"), /* @__PURE__ */ import_react8.default.createElement(
+  return /* @__PURE__ */ import_react9.default.createElement(Popover, { label: "\u5916\u89C2", title: `\u5916\u89C2\uFF1A${current.title}`, className: "mv-skin-trigger", icon: /* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement(PaletteIcon, null), /* @__PURE__ */ import_react9.default.createElement("span", null, current.name)) }, /* @__PURE__ */ import_react9.default.createElement("h3", null, "\u5916\u89C2"), /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-skin-list", role: "radiogroup", "aria-label": "\u76AE\u80A4" }, SKINS.map((s) => /* @__PURE__ */ import_react9.default.createElement("button", { key: s.id, type: "button", role: "radio", "aria-checked": s.id === skin.settings.skin, className: "mv-skin-option", onClick: () => skin.setSkin(s.id) }, /* @__PURE__ */ import_react9.default.createElement(Swatch, { id: s.id }), /* @__PURE__ */ import_react9.default.createElement("span", null, /* @__PURE__ */ import_react9.default.createElement("b", null, s.title), /* @__PURE__ */ import_react9.default.createElement("small", null, s.description))))), /* @__PURE__ */ import_react9.default.createElement("p", { className: "mv-skin-mode-label" }, "\u300C", current.title, "\u300D\u7684\u660E\u6697"), /* @__PURE__ */ import_react9.default.createElement(
     Segmented,
     {
       small: true,
@@ -10234,7 +10522,7 @@ function SkinPicker({ skin }) {
       onChange: skin.setMode,
       options: [{ value: "auto", label: "\u8DDF\u968F Harness / \u7CFB\u7EDF" }, { value: "light", label: current.id === "b" ? "\u6D45\u8272\uFF08\u7EB8\u8D28\uFF09" : "\u6D45\u8272" }, { value: "dark", label: "\u6DF1\u8272" }]
     }
-  ), /* @__PURE__ */ import_react8.default.createElement("p", { className: "mv-caption" }, "\u6BCF\u4E2A\u76AE\u80A4\u5206\u522B\u8BB0\u4F4F\u660E\u6697\u8BBE\u7F6E\uFF1B\u53EA\u4FDD\u5B58\u5728\u672C\u673A\u3002"));
+  ), /* @__PURE__ */ import_react9.default.createElement("p", { className: "mv-caption" }, "\u6BCF\u4E2A\u76AE\u80A4\u5206\u522B\u8BB0\u4F4F\u660E\u6697\u8BBE\u7F6E\uFF1B\u53EA\u4FDD\u5B58\u5728\u672C\u673A\u3002"));
 }
 
 // .dsh-plugin/client/mv-host-fit.mjs
@@ -10285,16 +10573,16 @@ function fitToHost(el) {
 }
 
 // .dsh-plugin/client/mv-shell.jsx
-var import_react9 = __toESM(require("react"), 1);
-var svg2 = (children, size = 18) => /* @__PURE__ */ import_react9.default.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, children);
+var import_react10 = __toESM(require("react"), 1);
+var svg2 = (children, size = 18) => /* @__PURE__ */ import_react10.default.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, children);
 var NavIcon = {
-  library: () => svg2(/* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("path", { d: "M4 4v16M8 4v16" }), /* @__PURE__ */ import_react9.default.createElement("path", { d: "M12 5l4-1 4 15-4 1z" }))),
-  now: () => svg2(/* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("circle", { cx: "8", cy: "18", r: "3" }), /* @__PURE__ */ import_react9.default.createElement("path", { d: "M11 18V5l9-2v12" }), /* @__PURE__ */ import_react9.default.createElement("circle", { cx: "17", cy: "15", r: "3" }))),
+  library: () => svg2(/* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("path", { d: "M4 4v16M8 4v16" }), /* @__PURE__ */ import_react10.default.createElement("path", { d: "M12 5l4-1 4 15-4 1z" }))),
+  now: () => svg2(/* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("circle", { cx: "8", cy: "18", r: "3" }), /* @__PURE__ */ import_react10.default.createElement("path", { d: "M11 18V5l9-2v12" }), /* @__PURE__ */ import_react10.default.createElement("circle", { cx: "17", cy: "15", r: "3" }))),
   workshop: () => Icon.shop(),
   ai: () => Icon.spark(),
-  calib: () => svg2(/* @__PURE__ */ import_react9.default.createElement("path", { d: "M2 12h2l2-6 3 12 3-9 3 6 2-3h5" })),
-  back: () => svg2(/* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("path", { d: "M11 17l-5-5 5-5" }), /* @__PURE__ */ import_react9.default.createElement("path", { d: "M18 17l-5-5 5-5" }))),
-  forward: () => svg2(/* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement("path", { d: "M13 17l5-5-5-5" }), /* @__PURE__ */ import_react9.default.createElement("path", { d: "M6 17l5-5-5-5" })))
+  calib: () => svg2(/* @__PURE__ */ import_react10.default.createElement("path", { d: "M2 12h2l2-6 3 12 3-9 3 6 2-3h5" })),
+  back: () => svg2(/* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("path", { d: "M11 17l-5-5 5-5" }), /* @__PURE__ */ import_react10.default.createElement("path", { d: "M18 17l-5-5 5-5" }))),
+  forward: () => svg2(/* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("path", { d: "M13 17l5-5-5-5" }), /* @__PURE__ */ import_react10.default.createElement("path", { d: "M6 17l5-5-5-5" })))
 };
 var NAV = Object.freeze([
   { id: "library", label: "\u66F2\u5E93", tab: "\u66F2\u5E93" },
@@ -10304,8 +10592,8 @@ var NAV = Object.freeze([
   { id: "calib", label: "\u6B4C\u8BCD\u6821\u51C6", tab: "\u6821\u51C6" }
 ]);
 function useTransport(canvasRef, enabled) {
-  const [state, setState] = import_react9.default.useState({ t: 0, duration: 0, playing: false });
-  import_react9.default.useEffect(() => {
+  const [state, setState] = import_react10.default.useState({ t: 0, duration: 0, playing: false });
+  import_react10.default.useEffect(() => {
     if (!enabled) return void 0;
     const read = () => {
       const c = canvasRef.current;
@@ -10319,12 +10607,12 @@ function useTransport(canvasRef, enabled) {
   }, [canvasRef, enabled]);
   return state;
 }
-var Thumb = ({ cover, className = "mv-thumb" }) => /* @__PURE__ */ import_react9.default.createElement("span", { className, style: { "--mv-hue": cover.hue }, "aria-hidden": "true" }, cover.text);
+var Thumb = ({ cover, className = "mv-thumb" }) => /* @__PURE__ */ import_react10.default.createElement("span", { className, style: { "--mv-hue": cover.hue }, "aria-hidden": "true" }, cover.text);
 function SideNav({ active, go, calibOk, items, activeId, onSelect, playing }) {
-  return /* @__PURE__ */ import_react9.default.createElement("aside", { className: "mv-side", "aria-label": "\u5BFC\u822A" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-side-in" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-side-brand" }, /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-side-logo", "aria-hidden": "true" }, ">_"), /* @__PURE__ */ import_react9.default.createElement("span", null, /* @__PURE__ */ import_react9.default.createElement("b", null, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react9.default.createElement("small", null, "dsh-mv"))), /* @__PURE__ */ import_react9.default.createElement("nav", { className: "mv-side-nav" }, NAV.map((item) => {
+  return /* @__PURE__ */ import_react10.default.createElement("aside", { className: "mv-side", "aria-label": "\u5BFC\u822A" }, /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-side-in" }, /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-side-brand" }, /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-side-logo", "aria-hidden": "true" }, ">_"), /* @__PURE__ */ import_react10.default.createElement("span", null, /* @__PURE__ */ import_react10.default.createElement("b", null, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react10.default.createElement("small", null, "dsh-mv"))), /* @__PURE__ */ import_react10.default.createElement("nav", { className: "mv-side-nav" }, NAV.map((item) => {
     const Ico = NavIcon[item.id];
     const disabled = item.id === "calib" && !calibOk;
-    return /* @__PURE__ */ import_react9.default.createElement(
+    return /* @__PURE__ */ import_react10.default.createElement(
       "button",
       {
         key: item.id,
@@ -10335,15 +10623,15 @@ function SideNav({ active, go, calibOk, items, activeId, onSelect, playing }) {
         title: disabled ? "\u9009\u62E9\u4E00\u4E2A MV \u5305\uFF08\u975E\u5185\u7F6E\u9884\u8BBE\uFF09\u540E\u53EF\u7528" : item.label,
         onClick: () => go(item.id)
       },
-      /* @__PURE__ */ import_react9.default.createElement(Ico, null),
-      /* @__PURE__ */ import_react9.default.createElement("span", null, item.label)
+      /* @__PURE__ */ import_react10.default.createElement(Ico, null),
+      /* @__PURE__ */ import_react10.default.createElement("span", null, item.label)
     );
-  })), /* @__PURE__ */ import_react9.default.createElement("p", { className: "mv-side-h" }, "\u6700\u8FD1\u64AD\u653E"), /* @__PURE__ */ import_react9.default.createElement("ul", { className: "mv-side-recent" }, items.map((item) => /* @__PURE__ */ import_react9.default.createElement("li", { key: item.id }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", "aria-pressed": item.id === activeId, title: item.title, onClick: () => onSelect(item.id) }, /* @__PURE__ */ import_react9.default.createElement(Thumb, { cover: item.cover }), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-side-recent-text" }, /* @__PURE__ */ import_react9.default.createElement("b", null, item.title), /* @__PURE__ */ import_react9.default.createElement("small", null, item.sub)), item.id === activeId && playing && /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-eq", "aria-label": "\u64AD\u653E\u4E2D" }, /* @__PURE__ */ import_react9.default.createElement("i", null), /* @__PURE__ */ import_react9.default.createElement("i", null), /* @__PURE__ */ import_react9.default.createElement("i", null))))))));
+  })), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-side-h" }, "\u6700\u8FD1\u64AD\u653E"), /* @__PURE__ */ import_react10.default.createElement("ul", { className: "mv-side-recent" }, items.map((item) => /* @__PURE__ */ import_react10.default.createElement("li", { key: item.id }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", "aria-pressed": item.id === activeId, title: item.title, onClick: () => onSelect(item.id) }, /* @__PURE__ */ import_react10.default.createElement(Thumb, { cover: item.cover }), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-side-recent-text" }, /* @__PURE__ */ import_react10.default.createElement("b", null, item.title), /* @__PURE__ */ import_react10.default.createElement("small", null, item.sub)), item.id === activeId && playing && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-eq", "aria-label": "\u64AD\u653E\u4E2D" }, /* @__PURE__ */ import_react10.default.createElement("i", null), /* @__PURE__ */ import_react10.default.createElement("i", null), /* @__PURE__ */ import_react10.default.createElement("i", null))))))));
 }
 function PlayerBar({ title, artist, cover, transport, canvas, onShow }) {
   const { t, duration, playing } = transport;
   const c = () => canvas();
-  return /* @__PURE__ */ import_react9.default.createElement("footer", { className: "mv-bar", "aria-label": "\u64AD\u653E\u6761" }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-bar-now", onClick: onShow, title: "\u56DE\u5230\u753B\u9762" }, /* @__PURE__ */ import_react9.default.createElement(Thumb, { cover, className: "mv-thumb mv-thumb-lg" }), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-bar-text" }, /* @__PURE__ */ import_react9.default.createElement("b", null, title), /* @__PURE__ */ import_react9.default.createElement("small", null, artist))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-bar-mid" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-bar-transport" }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u540E\u9000 5 \u79D2", title: "\u540E\u9000 5 \u79D2", onClick: () => c()?.seekBy(-5) }, /* @__PURE__ */ import_react9.default.createElement(NavIcon.back, null)), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-bar-play", "aria-label": playing ? "\u6682\u505C" : "\u64AD\u653E", onClick: () => c()?.toggle() }, playing ? /* @__PURE__ */ import_react9.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react9.default.createElement(Icon.play, null)), /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u524D\u8FDB 5 \u79D2", title: "\u524D\u8FDB 5 \u79D2", onClick: () => c()?.seekBy(5) }, /* @__PURE__ */ import_react9.default.createElement(NavIcon.forward, null))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-bar-seek" }, /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-time" }, fmtTime(t)), /* @__PURE__ */ import_react9.default.createElement(
+  return /* @__PURE__ */ import_react10.default.createElement("footer", { className: "mv-bar", "aria-label": "\u64AD\u653E\u6761" }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-bar-now", onClick: onShow, title: "\u56DE\u5230\u753B\u9762" }, /* @__PURE__ */ import_react10.default.createElement(Thumb, { cover, className: "mv-thumb mv-thumb-lg" }), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-bar-text" }, /* @__PURE__ */ import_react10.default.createElement("b", null, title), /* @__PURE__ */ import_react10.default.createElement("small", null, artist))), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-bar-mid" }, /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-bar-transport" }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u540E\u9000 5 \u79D2", title: "\u540E\u9000 5 \u79D2", onClick: () => c()?.seekBy(-5) }, /* @__PURE__ */ import_react10.default.createElement(NavIcon.back, null)), /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-bar-play", "aria-label": playing ? "\u6682\u505C" : "\u64AD\u653E", onClick: () => c()?.toggle() }, playing ? /* @__PURE__ */ import_react10.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react10.default.createElement(Icon.play, null)), /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u524D\u8FDB 5 \u79D2", title: "\u524D\u8FDB 5 \u79D2", onClick: () => c()?.seekBy(5) }, /* @__PURE__ */ import_react10.default.createElement(NavIcon.forward, null))), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-bar-seek" }, /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-time" }, fmtTime(t)), /* @__PURE__ */ import_react10.default.createElement(
     "input",
     {
       type: "range",
@@ -10355,12 +10643,12 @@ function PlayerBar({ title, artist, cover, transport, canvas, onShow }) {
       style: { "--p": `${duration > 0 ? Math.min(100, t / duration * 100) : 0}%` },
       onChange: (event) => c()?.seek(Number(event.target.value))
     }
-  ), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-time" }, fmtTime(duration)))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "mv-bar-right" }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u5168\u5C4F", title: "\u5168\u5C4F\uFF08F\uFF09", onClick: () => c()?.fullscreen() }, /* @__PURE__ */ import_react9.default.createElement(Icon.fullscreen, null))));
+  ), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-time" }, fmtTime(duration)))), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-bar-right" }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-icon-button", "aria-label": "\u5168\u5C4F", title: "\u5168\u5C4F\uFF08F\uFF09", onClick: () => c()?.fullscreen() }, /* @__PURE__ */ import_react10.default.createElement(Icon.fullscreen, null))));
 }
 function TmuxTabs({ active, go, calibOk }) {
-  return /* @__PURE__ */ import_react9.default.createElement("nav", { className: "mv-tmux", "aria-label": "\u5BFC\u822A" }, /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-tmux-session" }, "[dsh-mv]"), NAV.map((item, i) => {
+  return /* @__PURE__ */ import_react10.default.createElement("nav", { className: "mv-tmux", "aria-label": "\u5BFC\u822A" }, /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-tmux-session" }, "[dsh-mv]"), NAV.map((item, i) => {
     const disabled = item.id === "calib" && !calibOk;
-    return /* @__PURE__ */ import_react9.default.createElement(
+    return /* @__PURE__ */ import_react10.default.createElement(
       "button",
       {
         key: item.id,
@@ -10380,13 +10668,13 @@ function TmuxTabs({ active, go, calibOk }) {
 }
 function StatusLine({ title, artist, transport, canvas, active }) {
   const { t, duration, playing } = transport;
-  const [clock, setClock] = import_react9.default.useState(() => /* @__PURE__ */ new Date());
-  import_react9.default.useEffect(() => {
+  const [clock, setClock] = import_react10.default.useState(() => /* @__PURE__ */ new Date());
+  import_react10.default.useEffect(() => {
     const id = setInterval(() => setClock(/* @__PURE__ */ new Date()), 3e4);
     return () => clearInterval(id);
   }, []);
   const hhmm = `${String(clock.getHours()).padStart(2, "0")}:${String(clock.getMinutes()).padStart(2, "0")}`;
-  return /* @__PURE__ */ import_react9.default.createElement("footer", { className: "mv-status", "aria-label": "\u72B6\u6001\u680F" }, /* @__PURE__ */ import_react9.default.createElement("button", { type: "button", className: "mv-status-mode", "aria-pressed": playing, onClick: () => canvas()?.toggle() }, playing ? /* @__PURE__ */ import_react9.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react9.default.createElement(Icon.play, null), playing ? "PLAYING" : "PAUSED"), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-status-title" }, title, /* @__PURE__ */ import_react9.default.createElement("em", null, " \u2014 ", artist)), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-status-bar", "aria-hidden": "true" }, asciiBar(t, duration)), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-status-time" }, fmtTime(t), "/", fmtTime(duration)), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-spacer" }), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-status-win" }, NAV.findIndex((item) => item.id === active), ":", NAV.find((item) => item.id === active)?.tab ?? "\u66F2\u5E93"), /* @__PURE__ */ import_react9.default.createElement("span", { className: "mv-status-clock" }, hhmm));
+  return /* @__PURE__ */ import_react10.default.createElement("footer", { className: "mv-status", "aria-label": "\u72B6\u6001\u680F" }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-status-mode", "aria-pressed": playing, onClick: () => canvas()?.toggle() }, playing ? /* @__PURE__ */ import_react10.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react10.default.createElement(Icon.play, null), playing ? "PLAYING" : "PAUSED"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-status-title" }, title, /* @__PURE__ */ import_react10.default.createElement("em", null, " \u2014 ", artist)), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-status-bar", "aria-hidden": "true" }, asciiBar(t, duration)), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-status-time" }, fmtTime(t), "/", fmtTime(duration)), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-spacer" }), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-status-win" }, NAV.findIndex((item) => item.id === active), ":", NAV.find((item) => item.id === active)?.tab ?? "\u66F2\u5E93"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-status-clock" }, hhmm));
 }
 
 // .dsh-plugin/client/mv-panel.jsx
@@ -10400,17 +10688,17 @@ function clearLegacy(storage = globalThis.localStorage) {
 }
 function About({ pack }) {
   const credits = [...pack.pack.credits ?? [], pack.pack.notice].filter(Boolean);
-  return /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("h3", null, "\u5173\u4E8E MV \u653E\u6620\u5BA4 ", /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-faint" }, "v", CLIENT_VERSION || "?")), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u975E\u5B98\u65B9\u540C\u4EBA\u5DE5\u5177\u3002\u63D2\u4EF6", /* @__PURE__ */ import_react10.default.createElement("b", null, "\u4E0D\u9644\u5E26"), "\u4EFB\u4F55\u97F3\u9891\u3001\u89C6\u9891\u6216\u6B4C\u8BCD\uFF0C\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\uFF1B\u97F3\u9891\u548C\u6B4C\u8BCD\u53EA\u5728\u672C\u673A\u8BFB\u53D6\uFF0C\u4E0D\u4F1A\u4E0A\u4F20\u3002"), /* @__PURE__ */ import_react10.default.createElement("p", null, "0.9.0 \u8D77\u63D2\u4EF6\u4E0D\u518D\u5185\u7F6E\u4EFB\u4F55 MV\uFF1A\u4EE5\u524D\u7684\u4E24\u4E2A world.execute(me) \u9884\u8BBE\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A\uFF0C\u5206\u522B\u6309\u5404\u81EA\u7684\u8BB8\u53EF\u53D1\u5E03\u2014\u2014\u573A\u666F\u79FB\u690D\u81EA ", /* @__PURE__ */ import_react10.default.createElement("a", { href: "https://github.com/yym8224961/world.execute-me-ascii", target: "_blank", rel: "noreferrer" }, "yym8224961/world.execute-me-ascii"), "\uFF08\u91CE\u751F\u5927K\uFF0C\u7ECF\u539F\u4F5C\u8005\u8BB8\u53EF\uFF09\uFF0Cdsh PV \u79FB\u690D\u81EA ", /* @__PURE__ */ import_react10.default.createElement("a", { href: "https://github.com/MisakaZentai/world-execute-me-dsh-pv", target: "_blank", rel: "noreferrer" }, "MisakaZentai/world-execute-me-dsh-pv"), "\uFF08\u4EE3\u7801 MIT\uFF0C\u9CB8\u9C7C\u5A18\u7ACB\u7ED8 CC BY-NC-SA 4.0\uFF09\u3002\u6B4C\u66F2\u4E0E\u6B4C\u8BCD\u7248\u6743\u5F52 Mili\u3002"), /* @__PURE__ */ import_react10.default.createElement("p", null, "dsh-pv \u6E32\u67D3\u5668\uFF08\u4EE3\u7801 MIT\uFF0C\xA9 MisakaZentai \u7684\u79FB\u690D\uFF09\u4ECD\u5728\u63D2\u4EF6\u91CC\uFF0C\u5B83\u7684\u6570\u636E\u548C\u7ACB\u7ED8\u968F\u5DE5\u574A\u5305\u4E0B\u8F7D\u3002"), !pack.empty && /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement("h3", null, "\u5F53\u524D MV \u5305\uFF1A", pack.pack.title), credits.length > 0 ? /* @__PURE__ */ import_react10.default.createElement("ul", null, credits.map((item) => /* @__PURE__ */ import_react10.default.createElement("li", { key: item }, item))) : /* @__PURE__ */ import_react10.default.createElement("p", null, "\u6E05\u5355\u91CC\u6CA1\u6709\u7F72\u540D\u4FE1\u606F\u3002"), pack.pack.workshop?.source && /* @__PURE__ */ import_react10.default.createElement("p", null, "\u539F\u4F5C\uFF1A", /* @__PURE__ */ import_react10.default.createElement("a", { href: pack.pack.workshop.source, target: "_blank", rel: "noreferrer" }, pack.pack.workshop.source.replace(/^https:\/\/(github\.com\/)?/, ""))), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react10.default.createElement("code", null, pack.manifestPath))), /* @__PURE__ */ import_react10.default.createElement("p", null, "\u5176\u4ED6\u6B4C\u66F2\uFF1A\u5728\u66F2\u5E93\u91CC\u6253\u5F00\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u793E\u533A\u6295\u7A3F\u7684 MV \u5305\uFF08\u4E0D\u542B\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\u64AD\u653E\uFF1B\u811A\u672C\u5728\u6C99\u7BB1\u91CC\u8FD0\u884C\uFF09\uFF0C\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Harness \u7684 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u624B\u5199\u4E00\u4E2A MV \u5305\u518D\u300C\u5BFC\u5165\u300D\u3002"));
+  return /* @__PURE__ */ import_react11.default.createElement(import_react11.default.Fragment, null, /* @__PURE__ */ import_react11.default.createElement("h3", null, "\u5173\u4E8E MV \u653E\u6620\u5BA4 ", /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-faint" }, "v", CLIENT_VERSION || "?")), /* @__PURE__ */ import_react11.default.createElement("p", null, "\u975E\u5B98\u65B9\u540C\u4EBA\u5DE5\u5177\u3002\u63D2\u4EF6", /* @__PURE__ */ import_react11.default.createElement("b", null, "\u4E0D\u9644\u5E26"), "\u4EFB\u4F55\u97F3\u9891\u3001\u89C6\u9891\u6216\u6B4C\u8BCD\uFF0C\u8BF7\u4F7F\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\uFF1B\u97F3\u9891\u548C\u6B4C\u8BCD\u53EA\u5728\u672C\u673A\u8BFB\u53D6\uFF0C\u4E0D\u4F1A\u4E0A\u4F20\u3002"), /* @__PURE__ */ import_react11.default.createElement("p", null, "0.9.0 \u8D77\u63D2\u4EF6\u4E0D\u518D\u5185\u7F6E\u4EFB\u4F55 MV\uFF1A\u4EE5\u524D\u7684\u4E24\u4E2A world.execute(me) \u9884\u8BBE\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A\uFF0C\u5206\u522B\u6309\u5404\u81EA\u7684\u8BB8\u53EF\u53D1\u5E03\u2014\u2014\u573A\u666F\u79FB\u690D\u81EA ", /* @__PURE__ */ import_react11.default.createElement("a", { href: "https://github.com/yym8224961/world.execute-me-ascii", target: "_blank", rel: "noreferrer" }, "yym8224961/world.execute-me-ascii"), "\uFF08\u91CE\u751F\u5927K\uFF0C\u7ECF\u539F\u4F5C\u8005\u8BB8\u53EF\uFF09\uFF0Cdsh PV \u79FB\u690D\u81EA ", /* @__PURE__ */ import_react11.default.createElement("a", { href: "https://github.com/MisakaZentai/world-execute-me-dsh-pv", target: "_blank", rel: "noreferrer" }, "MisakaZentai/world-execute-me-dsh-pv"), "\uFF08\u4EE3\u7801 MIT\uFF0C\u9CB8\u9C7C\u5A18\u7ACB\u7ED8 CC BY-NC-SA 4.0\uFF09\u3002\u6B4C\u66F2\u4E0E\u6B4C\u8BCD\u7248\u6743\u5F52 Mili\u3002"), /* @__PURE__ */ import_react11.default.createElement("p", null, "dsh-pv \u6E32\u67D3\u5668\uFF08\u4EE3\u7801 MIT\uFF0C\xA9 MisakaZentai \u7684\u79FB\u690D\uFF09\u4ECD\u5728\u63D2\u4EF6\u91CC\uFF0C\u5B83\u7684\u6570\u636E\u548C\u7ACB\u7ED8\u968F\u5DE5\u574A\u5305\u4E0B\u8F7D\u3002"), !pack.empty && /* @__PURE__ */ import_react11.default.createElement(import_react11.default.Fragment, null, /* @__PURE__ */ import_react11.default.createElement("h3", null, "\u5F53\u524D MV \u5305\uFF1A", pack.pack.title), credits.length > 0 ? /* @__PURE__ */ import_react11.default.createElement("ul", null, credits.map((item) => /* @__PURE__ */ import_react11.default.createElement("li", { key: item }, item))) : /* @__PURE__ */ import_react11.default.createElement("p", null, "\u6E05\u5355\u91CC\u6CA1\u6709\u7F72\u540D\u4FE1\u606F\u3002"), pack.pack.workshop?.source && /* @__PURE__ */ import_react11.default.createElement("p", null, "\u539F\u4F5C\uFF1A", /* @__PURE__ */ import_react11.default.createElement("a", { href: pack.pack.workshop.source, target: "_blank", rel: "noreferrer" }, pack.pack.workshop.source.replace(/^https:\/\/(github\.com\/)?/, ""))), /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-wrap" }, /* @__PURE__ */ import_react11.default.createElement("code", null, pack.manifestPath))), /* @__PURE__ */ import_react11.default.createElement("p", null, "\u5176\u4ED6\u6B4C\u66F2\uFF1A\u5728\u66F2\u5E93\u91CC\u6253\u5F00\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u793E\u533A\u6295\u7A3F\u7684 MV \u5305\uFF08\u4E0D\u542B\u97F3\u9891\u548C\u6B4C\u8BCD\uFF0C\u7528\u4F60\u81EA\u5DF1\u7684\u6587\u4EF6\u64AD\u653E\uFF1B\u811A\u672C\u5728\u6C99\u7BB1\u91CC\u8FD0\u884C\uFF09\uFF0C\u70B9\u300C\u7528 AI \u5236\u4F5C\u65B0 MV\u300D\u8BA9 Harness \u7684 Agent \u5E2E\u4F60\u505A\uFF0C\u6216\u300C\u65B0\u5EFA\uFF08\u6A21\u677F\uFF09\u300D\u624B\u5199\u4E00\u4E2A MV \u5305\u518D\u300C\u5BFC\u5165\u300D\u3002"));
 }
 function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = false, workshopIndex = null }) {
-  const [info, setInfo] = import_react10.default.useState({ status: "loading", value: null, error: "" });
-  const [canvasState, setCanvasState] = import_react10.default.useState({ playing: false, hasAudio: false });
-  const canvasRef = import_react10.default.useRef(null);
+  const [info, setInfo] = import_react11.default.useState({ status: "loading", value: null, error: "" });
+  const [canvasState, setCanvasState] = import_react11.default.useState({ playing: false, hasAudio: false });
+  const canvasRef = import_react11.default.useRef(null);
   const skin = useSkin();
-  import_react10.default.useEffect(() => {
+  import_react11.default.useEffect(() => {
     clearLegacy();
   }, []);
-  const reloadInfo = import_react10.default.useCallback(async () => {
+  const reloadInfo = import_react11.default.useCallback(async () => {
     try {
       const value = await loadInfo(api);
       setInfo({ status: "ready", value, error: "" });
@@ -10418,13 +10706,13 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
       setInfo({ status: "error", value: null, error: errorText(error, "\u65E0\u6CD5\u8FDE\u63A5 MV \u63D2\u4EF6\u540E\u53F0\u3002") });
     }
   }, [api]);
-  import_react10.default.useEffect(() => {
+  import_react11.default.useEffect(() => {
     void reloadInfo();
   }, [reloadInfo]);
-  const [pack, setPack] = import_react10.default.useState(() => placeholderPack(loadActive()));
-  const [recent, setRecent] = import_react10.default.useState(loadRecent);
-  const [packError, setPackError] = import_react10.default.useState("");
-  const selectPack = import_react10.default.useCallback(async (id) => {
+  const [pack, setPack] = import_react11.default.useState(() => placeholderPack(loadActive()));
+  const [recent, setRecent] = import_react11.default.useState(loadRecent);
+  const [packError, setPackError] = import_react11.default.useState("");
+  const selectPack = import_react11.default.useCallback(async (id) => {
     setPackError("");
     if (!id.startsWith("pack:")) {
       setPack(placeholderPack(id));
@@ -10441,7 +10729,7 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
       saveActive(EMPTY_ID);
     }
   }, [api]);
-  import_react10.default.useEffect(() => {
+  import_react11.default.useEffect(() => {
     const id = loadActive();
     if (id.startsWith("pack:")) void selectPack(id);
   }, [selectPack]);
@@ -10451,11 +10739,11 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
     setPackError("");
   };
   const skinId = skin.settings.skin;
-  const rootRef = import_react10.default.useRef(null);
+  const rootRef = import_react11.default.useRef(null);
   const transport = useTransport(canvasRef, skinId === "a" || skinId === "b");
-  const [navRequest, setNavRequest] = import_react10.default.useState(null);
-  const [nav, setNav] = import_react10.default.useState("library");
-  import_react10.default.useLayoutEffect(() => fitToHost(rootRef.current), []);
+  const [navRequest, setNavRequest] = import_react11.default.useState(null);
+  const [nav, setNav] = import_react11.default.useState("library");
+  import_react11.default.useLayoutEffect(() => fitToHost(rootRef.current), []);
   const calibOk = Boolean(!pack.empty && api?.packWriteText);
   const scrollTo = (selector) => requestAnimationFrame(() => rootRef.current?.querySelector(selector)?.scrollIntoView?.({ block: "start", behavior: "smooth" }));
   const go = (id) => {
@@ -10494,7 +10782,7 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
   const label = canvasState.playing ? "\u6682\u505C" : "\u64AD\u653E";
   const hint = pack.empty ? pack.moved ? `\u300C${pack.moved.title}\u300D\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A\uFF1A\u5728\u4E0A\u9762\u7684\u66F2\u5E93\u91CC\u4E00\u952E\u5B89\u88C5\u3002` : "\u66F2\u5E93\u662F\u7A7A\u7684\uFF1A\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u4E00\u4E2A MV\uFF0C\u6216\u5BFC\u5165\u4F60\u81EA\u5DF1\u7684 MV \u5305\u3002" : canvasState.hasAudio ? "\u753B\u9762\u4EE5\u97F3\u9891\u4E3A\u65F6\u949F\u9010\u5E27\u6E32\u67D3\uFF1B\u70B9\u4E00\u4E0B\u753B\u9762\u540E\u53EF\u7528\u952E\u76D8\u63A7\u5236\u3002" : "\u8FD8\u6CA1\u6709\u9009\u62E9\u97F3\u9891\uFF1A\u53EF\u4EE5\u5148\u9759\u97F3\u89C2\u770B\uFF0C\u6216\u5728\u4E0B\u65B9\u9009\u62E9\u4F60\u7684\u6B4C\u66F2\u3002";
   const renderer = { "world-execute-me": "world.execute(me) \u573A\u666F", "dsh-pv": "dsh-pv\uFF08\u5927\u80A5\u9C7C\u773C\u4E2D\u7684 world.execute(me)\uFF09", script: "\u573A\u666F\u811A\u672C\uFF08scenes.js\uFF09" }[pack.pack.canvas?.renderer] ?? "\u901A\u7528\u753B\u9762\uFF08\u9891\u8C31 + \u6B4C\u8BCD\uFF09";
-  return /* @__PURE__ */ import_react10.default.createElement("div", { ref: rootRef, className: `mv-root ${skin.className}`, "data-mv-skin": skinId }, /* @__PURE__ */ import_react10.default.createElement("style", null, mv_default + mv_skins_default), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-shell" }, skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(SideNav, { active: nav, go, calibOk, items: recentItems, activeId: pack.id, onSelect: (id) => void selectPack(id), playing: canvasState.playing }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(TmuxTabs, { active: nav, go, calibOk }) : null, /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-main" }, /* @__PURE__ */ import_react10.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react10.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react10.default.createElement(SkinPicker, { skin }), /* @__PURE__ */ import_react10.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react10.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react10.default.createElement(About, { pack }))), /* @__PURE__ */ import_react10.default.createElement(Library, { playing: canvasState.playing, onPlay: () => canvasRef.current?.toggle(), onShowPlayer: () => go("now"), navRequest, onView: onLibraryView, api, harness, info: info.value, initialAi, initialWorkshop, workshopIndex, canvas: () => canvasRef.current, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, packError)), info.status === "error" && /* @__PURE__ */ import_react10.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-wrap" }, info.error, "\uFF08\u753B\u5E03\u64AD\u653E\u4E0D\u53D7\u5F71\u54CD\uFF1BMV \u5305\u3001AI \u5236\u4F5C\u548C\u6B4C\u8BCD\u5F15\u64CE\u9700\u8981\u540E\u53F0\u3002\uFF09")), /* @__PURE__ */ import_react10.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E", style: { "--mv-hue": cover.hue }, "data-cover": cover.text }, /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-hero-art", "aria-hidden": "true" }, cover.text), /* @__PURE__ */ import_react10.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react10.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react10.default.createElement("span", null, pack.empty ? pack.moved ? "\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A" : "\u66F2\u5E93\u4E3A\u7A7A" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), !pack.empty && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, pack.pack.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305"), !pack.empty && /* @__PURE__ */ import_react10.default.createElement("span", { className: "mv-chip" }, renderer))), /* @__PURE__ */ import_react10.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react10.default.createElement("button", { type: "button", className: "mv-play-big", disabled: pack.empty, onClick: () => canvasRef.current?.toggle(), "aria-label": label }, canvasState.playing ? /* @__PURE__ */ import_react10.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react10.default.createElement(Icon.play, null), label)), /* @__PURE__ */ import_react10.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react10.default.createElement("div", { hidden: pack.empty, className: "mv-canvas-host" }, /* @__PURE__ */ import_react10.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState }))), skinId === "a" ? /* @__PURE__ */ import_react10.default.createElement(PlayerBar, { title: pack.pack.title, artist: pack.empty ? "" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", cover, transport, canvas: () => canvasRef.current, onShow: () => go("now") }) : null, skinId === "b" ? /* @__PURE__ */ import_react10.default.createElement(StatusLine, { title: pack.pack.title, artist: pack.empty ? "" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", transport, canvas: () => canvasRef.current, active: nav }) : null));
+  return /* @__PURE__ */ import_react11.default.createElement("div", { ref: rootRef, className: `mv-root ${skin.className}`, "data-mv-skin": skinId }, /* @__PURE__ */ import_react11.default.createElement("style", null, mv_default + mv_skins_default), /* @__PURE__ */ import_react11.default.createElement("div", { className: "mv-shell" }, skinId === "a" ? /* @__PURE__ */ import_react11.default.createElement(SideNav, { active: nav, go, calibOk, items: recentItems, activeId: pack.id, onSelect: (id) => void selectPack(id), playing: canvasState.playing }) : null, skinId === "b" ? /* @__PURE__ */ import_react11.default.createElement(TmuxTabs, { active: nav, go, calibOk }) : null, /* @__PURE__ */ import_react11.default.createElement("div", { className: "mv-main" }, /* @__PURE__ */ import_react11.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react11.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react11.default.createElement(SkinPicker, { skin }), /* @__PURE__ */ import_react11.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react11.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react11.default.createElement(About, { pack }))), /* @__PURE__ */ import_react11.default.createElement(Library, { playing: canvasState.playing, onPlay: () => canvasRef.current?.toggle(), onShowPlayer: () => go("now"), navRequest, onView: onLibraryView, api, harness, info: info.value, initialAi, initialWorkshop, workshopIndex, canvas: () => canvasRef.current, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react11.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-wrap" }, packError)), info.status === "error" && /* @__PURE__ */ import_react11.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-wrap" }, info.error, "\uFF08\u753B\u5E03\u64AD\u653E\u4E0D\u53D7\u5F71\u54CD\uFF1BMV \u5305\u3001AI \u5236\u4F5C\u548C\u6B4C\u8BCD\u5F15\u64CE\u9700\u8981\u540E\u53F0\u3002\uFF09")), /* @__PURE__ */ import_react11.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E", style: { "--mv-hue": cover.hue }, "data-cover": cover.text }, /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-hero-art", "aria-hidden": "true" }, cover.text), /* @__PURE__ */ import_react11.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react11.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react11.default.createElement("span", null, pack.empty ? pack.moved ? "\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A" : "\u66F2\u5E93\u4E3A\u7A7A" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), !pack.empty && /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-chip" }, pack.pack.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305"), !pack.empty && /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-chip" }, renderer))), /* @__PURE__ */ import_react11.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react11.default.createElement("button", { type: "button", className: "mv-play-big", disabled: pack.empty, onClick: () => canvasRef.current?.toggle(), "aria-label": label }, canvasState.playing ? /* @__PURE__ */ import_react11.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react11.default.createElement(Icon.play, null), label)), /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react11.default.createElement("div", { hidden: pack.empty, className: "mv-canvas-host" }, /* @__PURE__ */ import_react11.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState }))), skinId === "a" ? /* @__PURE__ */ import_react11.default.createElement(PlayerBar, { title: pack.pack.title, artist: pack.empty ? "" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", cover, transport, canvas: () => canvasRef.current, onShow: () => go("now") }) : null, skinId === "b" ? /* @__PURE__ */ import_react11.default.createElement(StatusLine, { title: pack.pack.title, artist: pack.empty ? "" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", transport, canvas: () => canvasRef.current, active: nav }) : null));
 }
 
 // .dsh-plugin/shared/mv-ai-upload.mjs
@@ -10672,7 +10960,7 @@ var PLUGIN_NAME = "dsh-mv";
 var PANEL = "dsh-mv.main";
 var inject = ["remote"];
 function MvIcon() {
-  return /* @__PURE__ */ import_react11.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" }, /* @__PURE__ */ import_react11.default.createElement("rect", { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2", stroke: "currentColor" }), /* @__PURE__ */ import_react11.default.createElement("path", { d: "M4 6l2 2-2 2M7.5 10.5H11", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" }));
+  return /* @__PURE__ */ import_react12.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true" }, /* @__PURE__ */ import_react12.default.createElement("rect", { x: "1.5", y: "2.5", width: "13", height: "11", rx: "2", stroke: "currentColor" }), /* @__PURE__ */ import_react12.default.createElement("path", { d: "M4 6l2 2-2 2M7.5 10.5H11", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" }));
 }
 function panelApi(remote) {
   const service = remote[MV_REMOTE_NAMESPACE];
@@ -10725,7 +11013,7 @@ function harnessServices(ctx) {
 var OPEN_BUTTON = Object.freeze({ border: "1px solid #ffaf5f", background: "transparent", color: "inherit", borderRadius: 6, padding: "3px 10px", cursor: "pointer", font: "inherit", fontSize: 12 });
 function OpenMvPanel({ subject, openPanel }) {
   if (subject?.kind !== "bundle" || subject.pkg?.name !== MV_REMOTE_PACKAGE) return null;
-  return /* @__PURE__ */ import_react11.default.createElement("button", { type: "button", style: OPEN_BUTTON, onClick: openPanel }, "\u6253\u5F00 MV \u653E\u6620\u5BA4");
+  return /* @__PURE__ */ import_react12.default.createElement("button", { type: "button", style: OPEN_BUTTON, onClick: openPanel }, "\u6253\u5F00 MV \u653E\u6620\u5BA4");
 }
 var UI_INJECT = ["slots", "remote", `remote.${MV_REMOTE_NAMESPACE}`, "layout"];
 function registerUi(ctx) {

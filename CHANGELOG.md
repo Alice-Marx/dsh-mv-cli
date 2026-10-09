@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.0 — 2026-10-09
+
+- Combined catalogue filters (tags, lyrics, compatibility and installation/update status), stable update/title sorting and accessible native card actions; no changes to pack downloads or mirror trust.
+- Optional, separate read-only community snapshot foundation preserves known zero versus missing metrics, cached rankings and policy-backed trophy records. The current Host does not expose a community API: production UI hides statistics, community sorts and trophy filters until a real read-only source is present. It never invents popularity.
+- Harness account integration cancelled as requested. Remove authorization-waiting messages and every voting action; no account credentials, telemetry, anonymous voting backend, global installation reporting or database are introduced. Existing verified GitHub/Huawei mirror downloads stay independent. See `docs/WORKSHOP_COMMUNITY.zh.md` for the exact released scope.
+
 ## 0.10.0 — 2026-10-08
 
 - Official Huawei HTTPS static mirror is the default fallback after eligible GitHub failures; mirror requests bypass the GitHub proxy, retain immutable commits and size/SHA-256 checks. Explicit empty configuration still disables it. Gitee remains disabled pending platform review. Dedicated low-privilege, fixed-repository pull tooling publishes the index only after complete verification; no OpenClaw changes.

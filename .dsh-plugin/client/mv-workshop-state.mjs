@@ -5,8 +5,26 @@
 import { CLIENT_VERSION, unwrapRemote } from './remote-state.mjs'
 import { decodeToChannels, sha256Hex } from './mv-wav.mjs'
 import { PRESET_PACKS, audioMatch, compareVersions, encodeFingerprint, energyFingerprint, retimeCues } from '../shared/mv-workshop.mjs'
+import { parseWorkshopCommunitySnapshot } from '../shared/mv-workshop-community.mjs'
 
 export const loadWorkshop = async (api, refresh = false) => unwrapRemote(await api.workshopIndex({ refresh }), '无法读取创意工坊。')
+/**
+ * Optional public snapshot reads only; catalogue downloads stay independent.
+ * No account feature or voting transport. Future anonymous voting needs a separate protocol.
+ */
+export const emptyWorkshopCommunity = (status = 'unavailable') => parseWorkshopCommunitySnapshot({
+  status, fetchedAt: null, viewer: { status: 'unsupported', name: null }, packs: {}, policy: null,
+})
+/** Keep legacy snapshot schema compatibility, while always discarding personal fields. */
+export const publicWorkshopCommunity = snapshot => ({
+  ...snapshot,
+  viewer: { status: 'unsupported', name: null },
+  packs: Object.fromEntries(Object.entries(snapshot.packs).map(([id, record]) => [id, { ...record, likedByViewer: null }])),
+})
+export async function loadWorkshopCommunity(api) {
+  if (typeof api?.workshopCommunity !== 'function') return emptyWorkshopCommunity()
+  return publicWorkshopCommunity(parseWorkshopCommunitySnapshot(unwrapRemote(await api.workshopCommunity({}), '\u65e0\u6cd5\u8bfb\u53d6\u793e\u533a\u7edf\u8ba1\u3002')))
+}
 export const installWorkshopPack = async (api, id) => unwrapRemote(await api.workshopInstall({ id }), '安装失败。')
 export const uninstallWorkshopPack = async (api, id) => unwrapRemote(await api.workshopUninstall({ id }), '卸载失败。')
 export const workshopCover = async (api, id) => unwrapRemote(await api.workshopCover({ id }), '')

@@ -1,6 +1,6 @@
 {
   "name": "@ljwei-stak/dsh-mv-cli",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "type": "module",
   "description": "Music video player for DeepSeek Harness Desktop: text, Canvas2D and WebGL2 3D scenes synced to your own audio. Sandboxed workshop packs can include licensed bilingual lyrics, timing and visual assets; only music is user-provided. Plugin code MIT; no song media in npm.",
   "keywords": [
@@ -68,13 +68,15 @@
     ".dsh-plugin/shared/mv-scene-host.mjs",
     ".dsh-plugin/shared/mv-template-assets.gen.mjs",
     ".dsh-plugin/shared/mv-workshop.mjs",
+    ".dsh-plugin/shared/mv-workshop-community.mjs",
     ".dsh-plugin/shared/mv-workshop-host.mjs",
     "cordis.patch.yml",
     "README.md",
     "README.zh.md",
     "NOTICE.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "docs/WORKSHOP_COMMUNITY.zh.md"
   ],
   "scripts": {
     "build:client": "node scripts/build-client.mjs",

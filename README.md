@@ -4,7 +4,9 @@ English · [简体中文](README.zh.md)
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊 / workshop](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.10.0**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.11.0**) that plays ASCII / terminal-styled, pixel 2D and WebGL2 3D **music videos** on a `<canvas>` in the workbench, rendered frame by frame with **your own audio** as the clock.
+
+**0.11.0 workshop discovery:** combined type/licence/tag/lyrics/compatibility/installation-update filters, clear filters, stable update/title sorting, native keyboard actions and narrow-panel layouts. No workshop account or Harness login integration. Shared statistics and anonymous voting are not deployed: default UI hides unavailable community metrics/rankings/trophy filters and all vote actions. Optional read-only data contracts remain available for a future trusted source; no fabricated popularity. See the [released scope and integration note](docs/WORKSHOP_COMMUNITY.zh.md).
 
 **0.9.8 workshop downloads:** fixes the HTTP CONNECT proxy path, adds bounded retries for transient download failures and supports a trusted HTTPS fallback mirror. TLS verification, commit-pinned files, size/SHA-256 checks and scene isolation remain enforced. See [Workshop network and mirrors](#workshop-network-and-mirrors-098).
 

@@ -4,7 +4,9 @@
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.10.0**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.11.0**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D 与 WebGL2 3D 的 **MV**，以**你自己的音频**为时钟逐帧渲染。
+
+**0.11.0 工坊浏览升级：** 新增类型／许可／标签／歌词／兼容性／安装与更新状态的组合筛选、清除筛选、更新时间／名称排序，以及原生键盘操作和窄面板布局。无需工坊账号；不接入 Harness 登录。共享下载统计与匿名点赞后台尚未部署，默认界面隐藏未启用的统计、热门榜、奖杯筛选和投票动作，不伪造数据。已准备可选只读数据契约，见[工坊功能与接入边界](docs/WORKSHOP_COMMUNITY.zh.md)。
 
 **0.9.8 工坊下载：** 修复 HTTP CONNECT 代理被绕过的问题，为临时网络故障增加有限重试，并支持可信 HTTPS 镜像备用源。TLS 验证、按提交下载、大小/SHA-256 校验和场景沙箱保持不变。见[工坊网络与镜像](#工坊网络与镜像098)。
 
