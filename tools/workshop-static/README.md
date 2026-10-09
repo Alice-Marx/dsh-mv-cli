@@ -100,3 +100,13 @@ No scheduled task or server timer is installed automatically.
 `pull.py` is the reviewed server-side alternative, installed alongside `activate.py` by the operator. It uses anonymous strict TLS, no environment proxy, fixed official GitHub API/raw endpoints, bounded resources and no downloaded-code execution. The maintainer's `/etc/dsh-mv-workshop-sources.json` pins already-uploaded free Corresponding Source archives; a missing archive fails closed. A dedicated `dsh-mv-mirror` nologin user may write only the public/staging/index-backup directories under the independent root, never nginx/OpenClaw/SSH configs. Suggested systemd safeguards: ProtectSystem=strict, ProtectHome=true, NoNewPrivileges, MemoryMax=256M, CPUQuota=30%, and **TimeoutStartSec=300** for a oneshot service (RuntimeMaxSec does not bound oneshot activation). Timer every 15 minutes with jitter. Verify a successful service run and public bytes before enabling defaults; future service failure leaves the catalogue unchanged.
 
 Anonymous direct verification: `node tools/workshop-static/verify.mjs SNAPSHOT_DIR HTTPS_BASE NEW_REPORT`. It checks every index resource plus independently declared source archive, with certificate verification and no proxy.
+
+The pull helper retries only transient network failures, at most three attempts;
+certificate, content-limit and SHA failures are not retried or bypassed. It
+reuses previous-publication bytes only for the same pack/path with the new
+catalogue's identical size and SHA. New downloads are verified before entering
+the private `staging/verified-cache`, capped at 4096 files / 256 MiB; this cache
+survives a failed pull, while the public index remains unchanged. Cache corruption
+or a full cache fails closed and requires scoped operator maintenance; the tool
+does not delete historical public files. This operator-only hardening does not
+change the npm plugin's runtime bytes.
