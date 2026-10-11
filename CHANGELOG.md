@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.0 — 2026-10-11
+
+- Local video renderer displays the original frames of Manim and other rendered MVs (MP4/M4V/MOV/WebM/MKV), with video as the master clock. Embedded audio or a separate local soundtrack, seek/pause/replay, volume/mute, fullscreen, PNG snapshots and optional lyric overlay share the player controls. Separate soundtracks mute embedded sound and use independent `audio.offset`; cancelled or stale play requests cannot restart audio.
+- New `dsh-mv-import-video` npm command imports an existing movie or the `manim-for-world-execute-me` output directory into a new local pack without overwriting files, executing Python or copying media. It safely reads the literal Manim `AUDIO_OFFSET` for optional lyric timing; the reference 5.16-second title card is preserved. See `docs/MANIM_VIDEO.zh.md`.
+- Manifest/schema/Host support explicit `video.file` and `video.offset`, bounded 1 GiB videos and manifest-indexed chunk reads. Video-only settings are kept separate from sandboxed script APIs; workshop validation and publishing reject local movie packs before reading resources. The plugin and workshop do not distribute song recordings or movie files.
+
 ## 0.11.0 — 2026-10-09
 
 - Combined catalogue filters (tags, lyrics, compatibility and installation/update status), stable update/title sorting and accessible native card actions; no changes to pack downloads or mirror trust.

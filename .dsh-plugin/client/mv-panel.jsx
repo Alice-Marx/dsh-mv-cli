@@ -100,8 +100,8 @@ export function MvPanel({ api, harness = null, initialAi = false, initialWorksho
   const notice = info.status === 'ready' ? versionNotice({ hostVersion: info.value?.hostVersion }) : ''
 
   const label = canvasState.playing ? '暂停' : '播放'
-  const hint = pack.empty ? (pack.moved ? `「${pack.moved.title}」已移到创意工坊：在上面的曲库里一键安装。` : '曲库是空的：到「创意工坊」安装一个 MV，或导入你自己的 MV 包。') : canvasState.hasAudio ? '画面以音频为时钟逐帧渲染；点一下画面后可用键盘控制。' : '还没有选择音频：可以先静音观看，或在下方选择你的歌曲。'
-  const renderer = { 'world-execute-me': 'world.execute(me) 场景', 'dsh-pv': 'dsh-pv（大肥鱼眼中的 world.execute(me)）', script: '场景脚本（scenes.js）' }[pack.pack.canvas?.renderer] ?? '通用画面（频谱 + 歌词）'
+  const hint = pack.empty ? (pack.moved ? `「${pack.moved.title}」已移到创意工坊：在上面的曲库里一键安装。` : '曲库是空的：到「创意工坊」安装一个 MV，或导入你自己的 MV 包。') : pack.pack.canvas?.renderer === 'video' ? '播放本地视频原画面；可使用视频内音轨，或在下方选择独立音乐。' : canvasState.hasAudio ? '画面以音频为时钟逐帧渲染；点一下画面后可用键盘控制。' : '还没有选择音频：可以先静音观看，或在下方选择你的歌曲。'
+  const renderer = { video: '本地视频 · Manim / MP4 / WebM', 'world-execute-me': 'world.execute(me) 场景', 'dsh-pv': 'dsh-pv（大肥鱼眼中的 world.execute(me)）', script: '场景脚本（scenes.js）' }[pack.pack.canvas?.renderer] ?? '通用画面（频谱 + 歌词）'
 
   return (
     <div ref={rootRef} className={`mv-root ${skin.className}`} data-mv-skin={skinId}>

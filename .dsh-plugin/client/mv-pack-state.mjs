@@ -8,6 +8,7 @@ import { MV_PACK_LIMITS, packSummary, parseManifestPath } from '../shared/mv-pac
 import { PRESET_PACKS } from '../shared/mv-workshop.mjs'
 import { TEMPLATE_FOLDER, templateFiles } from '../shared/mv-pack-template.mjs'
 import { audioMimeOf, sniffAudio } from '../shared/mv-audio-protocol.mjs'
+import { videoMime } from './mv/video-film.mjs'
 
 export const RECENT_KEY = 'dsh-mv.packs.recent.v1'
 export const ACTIVE_KEY = 'dsh-mv.packs.active.v1'
@@ -133,6 +134,14 @@ export async function fetchPackBytes(api, manifestPath, role, { onProgress = () 
 export async function fetchPackAudio(api, manifestPath, { FileClass = globalThis.File, ...options } = {}) {
   const { name, parts } = await fetchPackBytes(api, manifestPath, 'audio', options)
   return new FileClass(parts, name, { type: audioMime(parts[0]) })
+}
+
+/** Track headers can be at the end of a video container. */
+export async function fetchPackVideo(api, manifestPath, { FileClass = globalThis.File, ...options } = {}) {
+  const { name, parts } = await fetchPackBytes(api, manifestPath, 'video', options)
+  const type = videoMime(sniffAudio(parts[0] ?? new Uint8Array()))
+  if (!type) throw new Error('视频容器不受支持，请使用 MP4 / MOV / WebM / MKV。')
+  return new FileClass(parts, name, { type })
 }
 
 /** The pack's lyrics or spectrum file as text. */

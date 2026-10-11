@@ -61,7 +61,7 @@ export async function loadPack(path, { statPath = stat, readText = p => readFile
   const { manifestPath, packDir, pack } = await readPack(path, { statPath, readText })
   const warnings = []
   const files = {}
-  const media = { audio: MV_PACK_LIMITS.audioBytes, lyrics: MV_PACK_LIMITS.textFileBytes, spectrum: MV_PACK_LIMITS.textFileBytes, scene: packSceneBytes(pack), timing: MV_PACK_LIMITS.textFileBytes }
+  const media = { audio: MV_PACK_LIMITS.audioBytes, video: MV_PACK_LIMITS.videoBytes, lyrics: MV_PACK_LIMITS.textFileBytes, spectrum: MV_PACK_LIMITS.textFileBytes, scene: packSceneBytes(pack), timing: MV_PACK_LIMITS.textFileBytes }
   for (const [role, max] of Object.entries(media)) {
     const ref = roleFile(pack, role)
     if (!ref) continue
@@ -97,7 +97,7 @@ export async function loadPack(path, { statPath = stat, readText = p => readFile
 export const roleFile = (pack, role) => role === 'scene' ? pack.canvas?.script : role === 'timing' ? pack.workshop?.lyricsTiming : pack[role]?.file
 
 /**
- * Read one chunk of a file the pack's manifest names as audio, lyrics,
+ * Read one chunk of a file the pack's manifest names as audio, video, lyrics,
  * spectrum or scene script (the manifest is re-read; no other path can be
  * requested).
  */
@@ -106,7 +106,7 @@ export async function readPackFile({ manifestPath, role, offset, length, asset, 
   const ref = role === 'asset' ? assetParts(pack, asset)[part] : role === 'font' ? pack.canvas?.fonts?.[font]?.file : roleFile(pack, role)
   if (!ref) throw new Error(role === 'asset' ? `这个 MV 包的 canvas.assets 里没有 ${asset}[${part}]。` : `这个 MV 包没有配置 ${role}。`)
   const path = packFilePath(packDir, ref)
-  const max = role === 'audio' ? MV_PACK_LIMITS.audioBytes : role === 'scene' ? packSceneBytes(pack) : role === 'font' ? MV_FONT_LIMITS.fileBytes : role === 'asset' ? MV_PACK_LIMITS.assetBytes : MV_PACK_LIMITS.textFileBytes
+  const max = role === 'audio' ? MV_PACK_LIMITS.audioBytes : role === 'video' ? MV_PACK_LIMITS.videoBytes : role === 'scene' ? packSceneBytes(pack) : role === 'font' ? MV_FONT_LIMITS.fileBytes : role === 'asset' ? MV_PACK_LIMITS.assetBytes : MV_PACK_LIMITS.textFileBytes
   const state = await fileState(statPath, path, max)
   if (!state.exists) throw new Error(`${role} 文件不存在：${path}`)
   if (state.tooLarge) throw new Error(`${role} 文件超过 ${max / 1048576} MB`)

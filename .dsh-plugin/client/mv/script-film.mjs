@@ -33,7 +33,7 @@ const closeBitmap = bitmap => { try { bitmap?.close?.() } catch { /* already clo
 const invalidWorkerMessage = detail => `场景脚本返回了无效消息：${detail}`
 
 /** Opt-in panel subtitles: independent from a worker's own scene/text drawing. */
-function bitmapSubtitles(g, cue, x, y, w, h) {
+export function bitmapSubtitles(g, cue, x, y, w, h) {
   if (!cue || !(cue.en || cue.zh)) return
   const lines = [cue.en, cue.zh].filter(Boolean).map(text => String(text).slice(0, 512))
   const fontSize = Math.max(12, Math.min(40, Math.round(h / 22)))

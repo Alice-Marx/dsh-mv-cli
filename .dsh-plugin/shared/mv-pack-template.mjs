@@ -25,12 +25,12 @@ export const TEMPLATE_MANIFEST = Object.freeze({
   canvas: { renderer: 'generic' },
 })
 
-const fileRef = (description, offset) => ({
+const fileRef = (description, offset, pattern) => ({
   oneOf: [
-    { type: 'string', description },
+    { type: 'string', description, ...(pattern ? { pattern } : {}) },
     {
       type: 'object', additionalProperties: false, required: ['file'],
-      properties: { file: { type: 'string', description }, ...(offset ? { offset: { type: 'number', minimum: -30, maximum: 30, description: offset } } : {}) },
+      properties: { file: { type: 'string', description, ...(pattern ? { pattern } : {}) }, ...(offset ? { offset: { type: 'number', minimum: -30, maximum: 30, description: offset } } : {}) },
     },
   ],
 })
@@ -52,18 +52,19 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
     album: { type: 'string', maxLength: 200 },
     credits: { type: 'array', maxItems: 50, items: { type: 'string', maxLength: 500 } },
     notice: { type: 'string', maxLength: 4000 },
-    duration: { type: 'number', minimum: 1, maximum: 36000, description: 'Song length in seconds; defaults to the audio length.' },
+    duration: { type: 'number', minimum: 1, maximum: 36000, description: 'Film length in seconds; defaults to the video length for video packs, otherwise the audio length.' },
     audio: fileRef('Audio file, relative to this mv.json (no ..) or absolute.', 'Seconds added to the audio clock (sync).'),
+    video: fileRef('Local video file (MP4/M4V/MOV/WebM/MKV, at most 1 GiB); requires canvas.renderer "video". Browser codec support still applies.', 'Seconds added to the video master clock: film t = video.currentTime + offset.', '\\.(?:[Mm][Pp]4|[Mm]4[Vv]|[Mm][Oo][Vv]|[Ww][Ee][Bb][Mm]|[Mm][Kk][Vv])$'),
     lyrics: fileRef('LRC / SRT / VTT / lyrics.json ([{time,end,en,zh}]) or lyrics.js / .mjs (static LYRICS = [{t,en,cn}]; never executed). Workshop packs (0.9.4+) may include explicitly licensed, attributed lyrics via a package-relative file.', 'Seconds added to lyric times.'),
     spectrum: fileRef('Optional spectrum.json ({fps, frames: number[48][]}).'),
     canvas: {
       type: 'object', additionalProperties: false, patternProperties: { '^x-': {} },
       properties: {
-        renderer: { enum: MV_RENDERERS_BUILTIN, default: 'generic', description: 'generic | script (needs canvas.script) | dsh-pv (needs canvas.assets; used by the dsh PV workshop pack).' },
+        renderer: { enum: MV_RENDERERS_BUILTIN, default: 'generic', description: 'generic | script (needs canvas.script) | dsh-pv (needs canvas.assets) | video (needs top-level video.file, local packs only).' },
         assets: { type: 'object', description: 'Data files a renderer reads (name → relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv; since 0.9.1 scene scripts get them in setup(info).assets. Since 0.9.5 only dsh-pv font-head / font-banner may name the supported local OFL TTF files.', properties: { 'font-head': { const: 'fonts/SpaceMono-Bold.ttf' }, 'font-banner': { const: 'fonts/Anton-Regular.ttf' } }, additionalProperties: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] } },
         output: { enum: ['text', 'pixels', 'webgl'], default: 'text', description: 'text: render(t, cols, rows, ctx); pixels (0.9.1+): paint(g, t, width, height, ctx) on Canvas2D; webgl (0.9.2+): setup(info, gl), paint(gl, t, width, height, ctx) on sandbox-owned WebGL2. Bundle dependencies before importing.' },
         size: { type: 'array', items: { type: 'integer' }, minItems: 2, maxItems: 2, default: [1280, 720], description: 'Bitmap scenes: canvas size [width, height] (160–1920 × 90–1080), letterboxed in the panel.' },
-        subtitles: { type: 'boolean', default: false, description: '0.9.3+: opt-in player overlay of local or installed workshop lyric cues; only renderer "script" with output "pixels" or "webgl". Keep off if the scene draws its own subtitles.' },
+        subtitles: { type: 'boolean', default: false, description: 'Opt-in player overlay of lyric cues on renderer "video" or "script" with output "pixels" or "webgl". Keep off when the picture already contains subtitles.' },
         preroll: { type: 'number', minimum: 0, maximum: 30, default: 0, description: '0.10.0+: silent negative song-time intro before audio starts at 0. Only script bitmap output; never shifts lyrics/audio.' },
         context: { type: 'object', additionalProperties: false, description: '0.10.0+: bounded WebGL2 creation attributes. Defaults unchanged; no alpha/stencil/custom context access.', properties: {
           antialias: { type: 'boolean' }, depth: { type: 'boolean' }, premultipliedAlpha: { type: 'boolean' }, preserveDrawingBuffer: { type: 'boolean' }, powerPreference: { enum: ['default', 'low-power', 'high-performance'] },
@@ -84,7 +85,8 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
       },
       allOf: [{ if: { required: ['assets'], properties: { assets: { anyOf: [{ required: ['font-head'] }, { required: ['font-banner'] }] } } }, then: { required: ['renderer'], properties: { renderer: { const: 'dsh-pv' } } } },
         { if: { anyOf: [{ required: ['fonts'] }, { required: ['preroll'] }] }, then: { required: ['renderer', 'output'], properties: { renderer: { const: 'script' }, output: { enum: ['pixels', 'webgl'] } } } },
-        { if: { required: ['context'] }, then: { required: ['renderer', 'output'], properties: { renderer: { const: 'script' }, output: { const: 'webgl' } } } }],
+        { if: { required: ['context'] }, then: { required: ['renderer', 'output'], properties: { renderer: { const: 'script' }, output: { const: 'webgl' } } } },
+        { if: { required: ['renderer'], properties: { renderer: { const: 'video' } } }, then: { not: { anyOf: ['script', 'assets', 'output', 'size', 'fonts', 'preroll', 'context', 'bpm', 'beatOffset'].map(key => ({ required: [key] })) } } }],
     },
     'x-dsh-mv-workshop': {
       type: 'object', additionalProperties: true,
@@ -106,6 +108,10 @@ export const MV_PACK_JSON_SCHEMA = Object.freeze({
     },
     terminal: { deprecated: true, description: 'Ignored since 0.6.0: the panel no longer runs external TUI players.' },
   },
+  allOf: [
+    { if: { required: ['video'] }, then: { required: ['canvas'], properties: { canvas: { required: ['renderer'], properties: { renderer: { const: 'video' } } } } } },
+    { if: { required: ['canvas'], properties: { canvas: { required: ['renderer'], properties: { renderer: { const: 'video' } } } } }, then: { required: ['video'] } },
+  ],
 })
 
 const README_EN = `# dsh-mv MV pack template
@@ -154,16 +160,17 @@ VS Code completion and checks.
 | \`format\`, \`version\` | yes | Always \`"${MV_PACK_FORMAT}"\` and \`${MV_PACK_VERSION}\`. |
 | \`title\` | yes | Song title. \`artist\`, \`album\` are optional. |
 | \`credits\`, \`notice\` | no | Shown in the panel: who made what, rights notice. |
-| \`duration\` | no | Seconds. Defaults to the audio file's length. |
-| \`audio\` | no | \`{ "file": "song.mp3", "offset": 0 }\`. Without audio the MV plays silently. \`offset\` (±30 s) shifts the picture against the audio. |
+| \`duration\` | no | Seconds. Defaults to video length for video packs, otherwise audio length. |
+| \`audio\` | no | \`{ "file": "song.mp3", "offset": 0 }\`. Without separate audio, video packs use the video's soundtrack; other packs play silently. \`offset\` (±30 s) shifts the picture against the audio. |
+| \`video\` | for video | \`{ "file": "video.mp4", "offset": 0 }\`, local video up to 1 GiB. Requires \`canvas.renderer: "video"\`; \`offset\` (±30 s) shifts film time against the video. |
 | \`lyrics\` | no | \`{ "file": "lyrics.lrc", "offset": 0 }\`. Bilingual LRC: two lines with the same time stamp, or \`English / 中文\` on one line. |
 | \`spectrum\` | no | \`{ "file": "spectrum.json" }\` with \`{ fps, frames }\` (48 bands per frame). Without it the panel analyses the audio live. |
-| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song), \`script\` (your own scene script, see below) or \`dsh-pv\` (the dsh PV renderer; its data comes from \`canvas.assets\`, see the dsh PV pack in 创意工坊). |
+| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics), \`script\` (your own scene script), \`dsh-pv\` (data from \`canvas.assets\`) or \`video\` (your local rendered video, see below). |
 | \`canvas.script\` | no | \`scenes.js\`: the scene script for \`script\` (setting it implies \`renderer: "script"\`). |
 | \`canvas.fontSize\` | no | 8–32 px. |
 | \`canvas.bpm\`, \`canvas.beatOffset\` | no | Tempo (20–400) and first-beat time for scene scripts (\`ctx.beat\`). |
 | \`canvas.output\`, \`canvas.size\` | no | \`"pixels"\` (0.9.1+) draws Canvas2D with \`paint(g, t, width, height, ctx)\`; \`"webgl"\` (0.9.2+) draws WebGL2 with \`paint(gl, t, width, height, ctx)\`. Size defaults to \`[1280, 720]\`. \`setup(info, gl)\` receives JSON/ImageBitmap assets; WebGL also gets \`info.canvas\`, a minimal facade for an explicitly supplied Three.js context. |
-| \`canvas.subtitles\` | no | \`true\` (0.9.3+) overlays the user's local bilingual lyrics on a \`script\` bitmap (\`pixels\` / \`webgl\`). Defaults to \`false\`; leave off when the scene already draws subtitles. |
+| \`canvas.subtitles\` | no | \`true\` overlays local bilingual lyrics on \`video\` or a \`script\` bitmap (\`pixels\` / \`webgl\`). Defaults to \`false\`; leave off when the picture already contains subtitles. |
 | \`x-dsh-mv-ai.sections\` | no | Song sections \`[{ kind, label, start, end }]\` for scene scripts (\`ctx.section\`). |
 | \`x-dsh-mv-workshop\` | no | Workshop data (id, version, license, author, audio duration / fingerprint; explicit lyric terms/credits when included); written by 发布到工坊. |
 
@@ -177,6 +184,30 @@ Local \`lyrics.js\` / \`.mjs\` files may declare a static \`LYRICS\` array with
 wiers-jack's MV. Only those data literals are read; helper functions are not
 executed, and expressions or imports inside the data are not supported. Do not
 rename JavaScript to JSON.
+
+## Local rendered videos (including Manim)
+
+Render the Python project first, then point a local pack at its output. Importing
+the pack reads files; it never runs Python, Manim or another external player.
+
+\`\`\`json
+{
+  "format": "dsh-mv-pack", "version": 1, "title": "My rendered MV",
+  "video": { "file": "media/WorldExecuteMe.mp4", "offset": 0 },
+  "canvas": { "renderer": "video", "subtitles": false }
+}
+\`\`\`
+
+The video is the master clock: film time = video.currentTime + video.offset.
+If the rendered video has its own soundtrack, omit \`audio\`. For a silent render,
+add \`audio: {"file":"song.mp3","offset":0}\`; the separate audio follows film
+time with its own offset. MP4/M4V/MOV/WebM/MKV are accepted container extensions;
+the codecs must be supported by the panel's Chromium. Videos are read in bounded
+chunks and limited to 1 GiB. Use paths relative to the pack or absolute local
+paths, never URLs. Video resolution comes from the file; do not set \`canvas.size\`,
+\`script\`, \`assets\`, \`output\`, \`fonts\`, \`preroll\`, \`context\`, \`bpm\` or
+\`beatOffset\`. Optional local lyrics can be overlaid with \`canvas.subtitles: true\`.
+Video packs are local imports and cannot be published to the workshop.
 
 ## Complete workshop packs (0.9.4+)
 
@@ -321,16 +352,17 @@ VS Code 等编辑器提供补全和校验。
 | \`format\`、\`version\` | 是 | 固定为 \`"${MV_PACK_FORMAT}"\` 和 \`${MV_PACK_VERSION}\`。 |
 | \`title\` | 是 | 歌名；\`artist\`、\`album\` 可选。 |
 | \`credits\`、\`notice\` | 否 | 面板里显示的制作信息与版权说明。 |
-| \`duration\` | 否 | 秒；默认取音频长度。 |
-| \`audio\` | 否 | \`{ "file": "song.mp3", "offset": 0 }\`；没有音频时静音播放画面。\`offset\`（±30 秒）调整画面与音频的同步。 |
+| \`duration\` | 否 | 秒；视频包默认取视频长度，其他包取音频长度。 |
+| \`audio\` | 否 | \`{ "file": "song.mp3", "offset": 0 }\`；没有独立音频时，视频包使用视频内音轨，其他包静音播放。\`offset\`（±30 秒）调整画面与音频的同步。 |
+| \`video\` | 视频包是 | \`{ "file": "video.mp4", "offset": 0 }\`，本地视频限 1 GiB；必须配合 \`canvas.renderer: "video"\`。\`offset\`（±30 秒）调整视频与 MV 时间轴的同步。 |
 | \`lyrics\` | 否 | \`{ "file": "lyrics.lrc", "offset": 0 }\`；双语 LRC：同一时间戳写两行，或一行写 \`English / 中文\`。 |
 | \`spectrum\` | 否 | \`{ "file": "spectrum.json" }\`，格式 \`{ fps, frames }\`（每帧 48 个频段）；不填则实时分析音频。 |
-| \`canvas.renderer\` | 否 | \`generic\`（通用：频谱 + 标题 + 歌词，任何歌都能放）、\`script\`（你自己的场景脚本，见下）或 \`dsh-pv\`（dsh PV 渲染器，数据来自 \`canvas.assets\`，参考创意工坊里的 dsh PV 包）。 |
+| \`canvas.renderer\` | 否 | \`generic\`（频谱 + 标题 + 歌词）、\`script\`（场景脚本）、\`dsh-pv\`（数据来自 \`canvas.assets\`）或 \`video\`（本地渲染视频，见下）。 |
 | \`canvas.script\` | 否 | \`scenes.js\`：\`script\` 渲染器用的场景脚本（填了它就默认 \`renderer: "script"\`）。 |
 | \`canvas.fontSize\` | 否 | 8–32 像素。 |
 | \`canvas.bpm\`、\`canvas.beatOffset\` | 否 | 歌曲速度（20–400）和第一拍时间，供场景脚本使用（\`ctx.beat\`）。 |
 | \`canvas.output\`、\`canvas.size\` | 否 | \`"pixels"\`（0.9.1+）用 \`paint(g, t, width, height, ctx)\` 画 Canvas2D；\`"webgl"\`（0.9.2+）用 \`paint(gl, t, width, height, ctx)\` 画 WebGL2。默认大小 \`[1280, 720]\`。\`setup(info, gl)\` 接收 JSON/ImageBitmap 素材；WebGL 还收到供 Three.js 显式上下文使用的最小 \`info.canvas\` 接口。 |
-| \`canvas.subtitles\` | 否 | \`true\`（0.9.3+）在 \`script\` 的 \`pixels\` / \`webgl\` 画面上叠加用户本地双语歌词。默认 \`false\`；场景已自行画字幕时不要打开，以免重复。 |
+| \`canvas.subtitles\` | 否 | \`true\` 在 \`video\` 或 \`script\` 的 \`pixels\` / \`webgl\` 画面上叠加本地双语歌词。默认 \`false\`；视频或场景已有字幕时不要打开。 |
 | \`x-dsh-mv-ai.sections\` | 否 | 歌曲段落 \`[{ kind, label, start, end }]\`，供场景脚本使用（\`ctx.section\`）。 |
 | \`x-dsh-mv-workshop\` | 否 | 创意工坊信息（id、版本、许可、作者、音频时长 / 指纹；包含歌词时另写授权条款与署名），由「发布到工坊」写入。 |
 
@@ -340,6 +372,27 @@ VS Code 等编辑器提供补全和校验。
 本地 \`lyrics.js\` / \`.mjs\` 支持静态 \`LYRICS\` 数组中的 \`{ t, en, cn }\` 数据，
 包括 wiers-jack MV 使用的 \`export const LYRICS = [...]\`。只读取数据字面量，不执行
 后面的辅助函数，也不支持数组内的表达式或导入。无需把 JS 改名为 JSON。
+
+## 本地渲染视频（包括 Manim）
+
+先渲染 Python 项目，再用本地 MV 包指向输出视频。导入只读取文件，不运行 Python、
+Manim 或外部播放器。
+
+\`\`\`json
+{
+  "format": "dsh-mv-pack", "version": 1, "title": "我的渲染 MV",
+  "video": { "file": "media/WorldExecuteMe.mp4", "offset": 0 },
+  "canvas": { "renderer": "video", "subtitles": false }
+}
+\`\`\`
+
+视频作为主时钟：MV 时间 = video.currentTime + video.offset。视频自带音乐时省略
+\`audio\`；无声渲染可加 \`audio: {"file":"song.mp3","offset":0}\`，独立音轨按
+MV 时间和自己的偏移同步。容器扩展名支持 MP4/M4V/MOV/WebM/MKV，具体编码仍需
+面板的 Chromium 支持。读取使用受限分块，视频上限 1 GiB。可用包内相对路径或本地
+绝对路径，不能用 URL。分辨率取视频文件，不要设置 \`canvas.size\`、\`script\`、
+\`assets\`、\`output\`、\`fonts\`、\`preroll\`、\`context\`、\`bpm\` 或 \`beatOffset\`。
+另有本地歌词时可设 \`canvas.subtitles: true\` 叠加显示。视频包仅供本地导入，不能发布到工坊。
 
 ## 完整工坊包（0.9.4+）
 

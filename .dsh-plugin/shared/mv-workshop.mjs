@@ -23,6 +23,7 @@ export const WORKSHOP_INDEX_FORMAT = 'dsh-mv-workshop-index'
 export const WORKSHOP_TIMING_FORMAT = 'dsh-mv-lyrics-timing'
 export const WORKSHOP_TIMING_FILE = 'lyrics.timing.json'
 export const WORKSHOP_DEFAULT_LICENSE = 'CC-BY-NC-SA-4.0'
+export const WORKSHOP_LOCAL_VIDEO_ERROR = '本地 video MV 包不能发布到创意工坊：工坊不分发视频文件；请使用 script 场景包。'
 export const FINGERPRINT_KIND = 'energy-2hz-v1'
 
 /**
@@ -237,6 +238,11 @@ export async function validateWorkshopPack({ id, files, readText, readBytes }) {
   } catch (error) {
     errors.push(`mv.json 无效：${(error?.problems ?? [error?.message ?? String(error)]).join('；')}`)
     return { errors, warnings }
+  }
+  // Video packs refer to local media and cannot be made publishable by merely
+  // removing the movie: the renderer itself requires that file to play.
+  if (raw.video !== undefined || pack.canvas?.renderer === 'video') {
+    return { errors: [...errors, WORKSHOP_LOCAL_VIDEO_ERROR], warnings, pack }
   }
   // 0.9.2: webgl packs (declared via canvas.output) get higher caps for their .js scene scripts.
   const isWebglPack = pack.canvas?.renderer === 'script' && pack.canvas.output === 'webgl'

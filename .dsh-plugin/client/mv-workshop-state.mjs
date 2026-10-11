@@ -39,6 +39,7 @@ export function installedState(index) {
 
 /** IndexedDB slot for the user's media of a workshop pack (local packs bring their own files). */
 export function mediaSlot(pack, kind) {
+  if (pack?.pack?.canvas?.renderer === 'video' && pack.manifestPath && !pack.pack.audio) return `video:${pack.manifestPath}:${kind}`
   const id = pack?.pack?.workshop?.id
   return id && !pack?.pack?.audio ? `workshop:${id}:${kind}` : null
 }

@@ -1,8 +1,8 @@
 /**
  * "MV 包" (MV pack): a folder with an `mv.json` manifest describing one song —
- * metadata, the user's own audio / lyrics / spectrum files (paths relative to
+ * metadata, the user's own audio / video / lyrics / spectrum files (paths relative to
  * the manifest folder) and how to render it on the panel's canvas (a built-in
- * renderer or the pack's own scene script).
+ * renderer, local rendered video or the pack's own scene script).
  *
  * Pure data and validation, shared by the Host (which reads packs from disk),
  * the Desktop client and the tests. Nothing here touches
@@ -38,6 +38,9 @@
  * plays with the generic renderer; the scenes now ship as a workshop pack.
  * A "terminal" section written for versions before 0.6.0 is accepted and
  * ignored (the loader reports a warning).
+ * Local video packs use canvas.renderer "video" plus video.file/offset, with
+ * optional separate audio. The video master clock is currentTime + offset;
+ * script surfaces and resources do not apply to this renderer.
  */
 
 import { normalizeSections, SCENE_FONT_LIMITS, sceneFontFamilyValid, sceneFontUnicodeRangeValid, sceneWebglContextProblems } from './mv-scene.mjs'
@@ -46,11 +49,13 @@ export const MV_PACK_FORMAT = 'dsh-mv-pack'
 export const MV_PACK_VERSION = 1
 export const MV_PACK_MANIFEST = 'mv.json'
 export const MV_PACK_SCHEMA_FILE = 'mv.schema.json'
-export const MV_CANVAS_RENDERERS = Object.freeze(['generic', 'world-execute-me', 'dsh-pv', 'script'])
+export const MV_CANVAS_RENDERERS = Object.freeze(['generic', 'world-execute-me', 'dsh-pv', 'script', 'video'])
 /** Pack files the panel may read (only through the pack's own manifest). */
-export const MV_PACK_FILE_ROLES = Object.freeze(['audio', 'lyrics', 'spectrum', 'scene', 'timing', 'asset', 'font'])
+export const MV_PACK_FILE_ROLES = Object.freeze(['audio', 'video', 'lyrics', 'spectrum', 'scene', 'timing', 'asset', 'font'])
 /** Renderers the plugin itself implements (0.9.0 moved the world.execute(me) scenes to a workshop pack). */
-export const MV_RENDERERS_BUILTIN = Object.freeze(['generic', 'dsh-pv', 'script'])
+export const MV_RENDERERS_BUILTIN = Object.freeze(['generic', 'dsh-pv', 'script', 'video'])
+/** Local browser-decoded videos; containers still need a supported codec. */
+export const MV_VIDEO_EXTENSIONS = Object.freeze(['.mp4', '.m4v', '.mov', '.webm', '.mkv'])
 /** What a scene script draws: characters, a 2D bitmap, or a raw WebGL2 bitmap. */
 export const MV_SCENE_OUTPUTS = Object.freeze(['text', 'pixels', 'webgl'])
 export const MV_PIXEL_LIMITS = Object.freeze({ minWidth: 160, minHeight: 90, maxWidth: 1920, maxHeight: 1080, defaultSize: Object.freeze([1280, 720]) })
@@ -76,6 +81,7 @@ export const MV_PACK_LIMITS = Object.freeze({
   /** 0.9.2: webgl scenes may be larger (Three.js bundles etc.); the workshop limit is the source of truth. */
   webglSceneBytes: 2 * 1024 * 1024,
   audioBytes: 1024 * 1024 * 1024,
+  videoBytes: 1024 * 1024 * 1024,
   readChunkBytes: 512 * 1024,
   maxCredits: 50,
   maxTextChars: 4_000,
@@ -89,7 +95,7 @@ export const MV_PACK_LIMITS = Object.freeze({
   recentPacks: 50, // library entries kept (0.8.2: was 8; the list view stays compact)
 })
 
-const TOP_KEYS = new Set(['$schema', 'format', 'version', 'title', 'artist', 'album', 'credits', 'notice', 'duration', 'audio', 'lyrics', 'spectrum', 'canvas', 'terminal'])
+const TOP_KEYS = new Set(['$schema', 'format', 'version', 'title', 'artist', 'album', 'credits', 'notice', 'duration', 'audio', 'video', 'lyrics', 'spectrum', 'canvas', 'terminal'])
 
 export class MvPackError extends Error {
   constructor(problems) {
@@ -193,8 +199,13 @@ export function parseMvPack(input) {
     notice: optionalText(data, 'notice', MV_PACK_LIMITS.maxTextChars, problems),
     duration: optionalNumber(data, 'duration', 1, MV_PACK_LIMITS.maxDuration, problems),
     audio: mediaSection(data, 'audio', problems, { offset: true }),
+    video: mediaSection(data, 'video', problems, { offset: true }),
     lyrics: mediaSection(data, 'lyrics', problems, { offset: true }),
     spectrum: mediaSection(data, 'spectrum', problems),
+  }
+  if (pack.video) {
+    if (!MV_VIDEO_EXTENSIONS.includes(extOf(pack.video.file))) problems.push(`video.file 应是 ${MV_VIDEO_EXTENSIONS.join(' / ')} 本地视频文件`)
+    if (!isAbsolutePackPath(pack.video.file) && pack.video.file.includes(':')) problems.push('video.file 必须是本地路径，不能是 URL 或协议路径')
   }
   if (pack.lyrics && !MV_LYRICS_EXTENSIONS.includes(extOf(pack.lyrics.file))) problems.push(`lyrics.file 应是 ${MV_LYRICS_EXTENSIONS.join(' / ')} 文件`)
   if (pack.spectrum && extOf(pack.spectrum.file) !== '.json') problems.push('spectrum.file 应是 .json 文件（{ fps, frames }）')
@@ -204,6 +215,12 @@ export function parseMvPack(input) {
     unknownKeys(canvas, new Set(['renderer', 'fontSize', 'script', 'bpm', 'beatOffset', 'assets', 'output', 'size', 'subtitles', 'fonts', 'preroll', 'context']), 'canvas', problems)
     const renderer = canvas.renderer ?? (canvas.script ? 'script' : 'generic')
     if (!MV_CANVAS_RENDERERS.includes(renderer)) problems.push(`canvas.renderer 必须是 ${MV_CANVAS_RENDERERS.join(' / ')}`)
+    if (renderer === 'video') {
+      if (!pack.video) problems.push('canvas.renderer 为 video 时必须提供 video.file（如 "video.mp4"）')
+      for (const key of ['script', 'assets', 'output', 'size', 'fonts', 'preroll', 'context', 'bpm', 'beatOffset']) {
+        if (canvas[key] !== undefined) problems.push(`canvas.${key} 不能用于 video 渲染器`)
+      }
+    } else if (data.video !== undefined) problems.push('video 只用于 canvas.renderer "video"')
     let script
     if (canvas.script !== undefined && canvas.script !== null) {
       script = checkPackPath(canvas.script, 'canvas.script', problems)
@@ -224,7 +241,7 @@ export function parseMvPack(input) {
     if (preroll !== undefined && (renderer !== 'script' || !['pixels', 'webgl'].includes(output))) problems.push('canvas.preroll 只用于 script 位图场景，歌曲开始前静默播放，不能移动音频或歌词时间轴')
     if (canvas.subtitles !== undefined) {
       if (typeof canvas.subtitles !== 'boolean') problems.push('canvas.subtitles 必须是布尔值（true / false）')
-      else if (renderer !== 'script' || !['pixels', 'webgl'].includes(output)) problems.push('canvas.subtitles 只用于 renderer "script" 的 "pixels" / "webgl" 输出')
+      else if (renderer !== 'video' && (renderer !== 'script' || !['pixels', 'webgl'].includes(output))) problems.push('canvas.subtitles 只用于 video 渲染器或 renderer "script" 的 "pixels" / "webgl" 输出')
     }
     let size
     if (canvas.size !== undefined && canvas.size !== null) {

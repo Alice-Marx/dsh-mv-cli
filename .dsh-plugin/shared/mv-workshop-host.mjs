@@ -18,7 +18,7 @@ import { assetParts, isAbsolutePackPath } from './mv-pack.mjs'
 import { loadPack, packFilePath } from './mv-pack-host.mjs'
 import { parseLyrics } from './mv-lyrics.mjs'
 import {
-  COVER_NAMES, FINGERPRINT_KIND, WORKSHOP_DEFAULT_MIRROR, WORKSHOP_INDEX_URL, WORKSHOP_LIMITS, WORKSHOP_REPO, WORKSHOP_TIMING_FILE, WORKSHOP_TIMING_FORMAT,
+  COVER_NAMES, FINGERPRINT_KIND, WORKSHOP_DEFAULT_MIRROR, WORKSHOP_INDEX_URL, WORKSHOP_LIMITS, WORKSHOP_LOCAL_VIDEO_ERROR, WORKSHOP_REPO, WORKSHOP_TIMING_FILE, WORKSHOP_TIMING_FORMAT,
   insideDir, normalizeLyricLine, normalizeWorkshopDir, packRequires, parseWorkshopIndex, publishLinks, sameDir, validateWorkshopPack, workshopFileUrl,
 } from './mv-workshop.mjs'
 
@@ -424,6 +424,9 @@ ${hasLyrics ? `\n## Lyrics / 歌词\n\n- License / 使用条款: ${lyricsLicense
 /** Build a complete non-audio pack. Lyrics are parsed as static data, never executed. */
 export async function preparePublish(request, { publishRoot, now = () => new Date(), load = loadPack, readText = p => readFile(p, 'utf8'), readBytes = p => readFile(p) }) {
   const { manifestPath, packDir, pack } = await load(request.manifestPath)
+  if (pack.video || pack.canvas?.renderer === 'video') {
+    return { ok: false, id: request.id, dir: null, files: [], errors: [WORKSHOP_LOCAL_VIDEO_ERROR], warnings: [], stripped: [], timingLines: 0, lyricLines: 0 }
+  }
   const raw = JSON.parse(await readText(manifestPath))
   const files = new Map()
   const assetEntries = []

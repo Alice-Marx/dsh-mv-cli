@@ -2339,6 +2339,145 @@ var ScenePlayGate = class {
   }
 };
 
+// .dsh-plugin/client/mv/video-film.mjs
+function videoMime(sniff) {
+  return { mp4: "video/mp4", webm: "video/webm", mkv: "video/x-matroska" }[sniff?.format] ?? "";
+}
+var VideoFilm = class extends GenericFilm {
+  constructor(video, options) {
+    super(options);
+    this.video = video;
+    this.href = "";
+    this.ready = false;
+  }
+  async load(file, { signal, url = globalThis.URL, timeoutMs = 3e4 } = {}) {
+    this.release(url);
+    if (signal?.aborted) throw new Error("cancelled");
+    const video = this.video, href = url.createObjectURL(file);
+    this.href = href;
+    try {
+      await new Promise((resolve, reject) => {
+        const clean3 = () => {
+          clearTimeout(timer);
+          video.removeEventListener("loadeddata", loaded);
+          video.removeEventListener("error", failed);
+          signal?.removeEventListener("abort", aborted);
+        };
+        const loaded = () => {
+          clean3();
+          resolve();
+        };
+        const failed = () => {
+          clean3();
+          reject(new Error("\u89C6\u9891\u65E0\u6CD5\u89E3\u7801\uFF1B\u8BF7\u4F7F\u7528 H.264 / yuv420p MP4 \u6216\u6D4F\u89C8\u5668\u652F\u6301\u7684 WebM\u3002"));
+        };
+        const aborted = () => {
+          clean3();
+          reject(new Error("cancelled"));
+        };
+        const timer = setTimeout(() => {
+          clean3();
+          reject(new Error("\u89C6\u9891\u52A0\u8F7D\u8D85\u8FC7 30 \u79D2\u3002"));
+        }, timeoutMs);
+        video.addEventListener("loadeddata", loaded);
+        video.addEventListener("error", failed);
+        signal?.addEventListener("abort", aborted, { once: true });
+        video.src = href;
+        video.load();
+      });
+      if (signal?.aborted || this.href !== href) throw new Error("cancelled");
+      if (!(video.videoWidth > 0 && video.videoHeight > 0 && Number.isFinite(video.duration) && video.duration > 0)) throw new Error("\u6587\u4EF6\u6CA1\u6709\u53EF\u64AD\u653E\u7684\u89C6\u9891\u753B\u9762\u3002");
+      this.ready = true;
+    } catch (failure) {
+      if (this.href === href) this.release(url);
+      throw failure;
+    }
+  }
+  release(url = globalThis.URL) {
+    this.ready = false;
+    this.video.pause();
+    this.video.removeAttribute("src");
+    this.video.load?.();
+    if (this.href) url.revokeObjectURL(this.href);
+    this.href = "";
+  }
+  draw(g, t, { subtitles = false, offset = 0 } = {}) {
+    const { width: w, height: h } = g.canvas;
+    g.fillStyle = "#000";
+    g.fillRect(0, 0, w, h);
+    const video = this.video;
+    if (!this.ready || video.readyState < 2 || !video.videoWidth || !video.videoHeight) return;
+    const scale = Math.min(w / video.videoWidth, h / video.videoHeight);
+    const dw = Math.round(video.videoWidth * scale), dh = Math.round(video.videoHeight * scale);
+    const x = Math.round((w - dw) / 2), y = Math.round((h - dh) / 2);
+    g.drawImage(video, x, y, dw, dh);
+    if (subtitles) bitmapSubtitles(g, this.cue(t - offset), x, y, dw, dh);
+  }
+};
+var VideoSoundtrack = class {
+  constructor(video, audio, { onError = () => {
+  } } = {}) {
+    this.video = video;
+    this.audio = audio;
+    this.onError = onError;
+    this.offset = 0;
+    this.sequence = 0;
+    this.pending = null;
+    this.failed = false;
+    this.blocked = false;
+    this.wantsPlay = false;
+  }
+  get enabled() {
+    return Boolean(this.audio.src || this.audio.currentSrc);
+  }
+  pause() {
+    this.sequence++;
+    this.wantsPlay = false;
+    this.audio.pause();
+  }
+  reset() {
+    this.pause();
+    this.failed = false;
+    this.blocked = false;
+  }
+  async update(t, playing) {
+    const audio = this.audio, video = this.video;
+    if (!this.enabled) return;
+    const target = t - this.offset;
+    const out = target < 0 || Number.isFinite(audio.duration) && target >= audio.duration;
+    if (!playing || video.paused === true || video.seeking || video.readyState < 3 || out || this.failed) {
+      if (!this.blocked) {
+        this.pause();
+        this.blocked = true;
+      }
+      if (!playing && !out && Number.isFinite(target) && Math.abs(audio.currentTime - target) > 0.18) audio.currentTime = target;
+      return;
+    }
+    this.blocked = false;
+    this.wantsPlay = true;
+    if (Math.abs(audio.currentTime - target) > 0.18) audio.currentTime = target;
+    audio.playbackRate = video.playbackRate;
+    if (!audio.paused || this.pending?.sequence === this.sequence) return;
+    const sequence = this.sequence, source = audio.src || audio.currentSrc;
+    const pending = { sequence };
+    this.pending = pending;
+    try {
+      await audio.play();
+      if (!this.wantsPlay) audio.pause();
+    } catch (failure) {
+      if (sequence === this.sequence && (audio.src || audio.currentSrc) === source) {
+        this.failed = true;
+        this.wantsPlay = false;
+        audio.pause();
+        video.pause();
+        this.onError(failure);
+      }
+    } finally {
+      if (this.pending === pending) this.pending = null;
+    }
+  }
+};
+
 // .dsh-plugin/client/mv/dshpv/chat.mjs
 var PAGE_W = 354;
 var PAGE_H = 537;
@@ -3667,7 +3806,7 @@ function box(ctx, x0, y0, x1, y1, title, level, color, gain = 1) {
 }
 
 // .dsh-plugin/client/remote-state.mjs
-var CLIENT_VERSION = true ? "0.11.0" : "";
+var CLIENT_VERSION = true ? "0.12.0" : "";
 var STALE_HOST_MESSAGE = "MV \u63D2\u4EF6\u540E\u53F0\u7248\u672C\u4E0E\u754C\u9762\u4E0D\u4E00\u81F4\uFF0C\u8BF7\u5B8C\u5168\u9000\u51FA\u5E76\u91CD\u542F Harness\uFF08\u5305\u62EC\u6258\u76D8\u56FE\u6807\uFF09\u540E\u518D\u4F7F\u7528 MV \u653E\u6620\u5BA4\u3002";
 function isMissingRemoteMethod(message) {
   const value = String(message ?? "");
@@ -3699,9 +3838,10 @@ var MV_PACK_FORMAT = "dsh-mv-pack";
 var MV_PACK_VERSION = 1;
 var MV_PACK_MANIFEST = "mv.json";
 var MV_PACK_SCHEMA_FILE = "mv.schema.json";
-var MV_CANVAS_RENDERERS = Object.freeze(["generic", "world-execute-me", "dsh-pv", "script"]);
-var MV_PACK_FILE_ROLES = Object.freeze(["audio", "lyrics", "spectrum", "scene", "timing", "asset", "font"]);
-var MV_RENDERERS_BUILTIN = Object.freeze(["generic", "dsh-pv", "script"]);
+var MV_CANVAS_RENDERERS = Object.freeze(["generic", "world-execute-me", "dsh-pv", "script", "video"]);
+var MV_PACK_FILE_ROLES = Object.freeze(["audio", "video", "lyrics", "spectrum", "scene", "timing", "asset", "font"]);
+var MV_RENDERERS_BUILTIN = Object.freeze(["generic", "dsh-pv", "script", "video"]);
+var MV_VIDEO_EXTENSIONS = Object.freeze([".mp4", ".m4v", ".mov", ".webm", ".mkv"]);
 var MV_SCENE_OUTPUTS = Object.freeze(["text", "pixels", "webgl"]);
 var MV_PIXEL_LIMITS = Object.freeze({ minWidth: 160, minHeight: 90, maxWidth: 1920, maxHeight: 1080, defaultSize: Object.freeze([1280, 720]) });
 var MV_ASSET_EXTENSIONS = Object.freeze([".json", ".webp", ".png"]);
@@ -3721,6 +3861,7 @@ var MV_PACK_LIMITS = Object.freeze({
   /** 0.9.2: webgl scenes may be larger (Three.js bundles etc.); the workshop limit is the source of truth. */
   webglSceneBytes: 2 * 1024 * 1024,
   audioBytes: 1024 * 1024 * 1024,
+  videoBytes: 1024 * 1024 * 1024,
   readChunkBytes: 512 * 1024,
   maxCredits: 50,
   maxTextChars: 4e3,
@@ -7317,14 +7458,14 @@ var TEMPLATE_MANIFEST = Object.freeze({
   lyrics: { file: "lyrics.lrc", offset: 0 },
   canvas: { renderer: "generic" }
 });
-var fileRef = (description, offset) => ({
+var fileRef = (description, offset, pattern) => ({
   oneOf: [
-    { type: "string", description },
+    { type: "string", description, ...pattern ? { pattern } : {} },
     {
       type: "object",
       additionalProperties: false,
       required: ["file"],
-      properties: { file: { type: "string", description }, ...offset ? { offset: { type: "number", minimum: -30, maximum: 30, description: offset } } : {} }
+      properties: { file: { type: "string", description, ...pattern ? { pattern } : {} }, ...offset ? { offset: { type: "number", minimum: -30, maximum: 30, description: offset } } : {} }
     }
   ]
 });
@@ -7345,8 +7486,9 @@ var MV_PACK_JSON_SCHEMA = Object.freeze({
     album: { type: "string", maxLength: 200 },
     credits: { type: "array", maxItems: 50, items: { type: "string", maxLength: 500 } },
     notice: { type: "string", maxLength: 4e3 },
-    duration: { type: "number", minimum: 1, maximum: 36e3, description: "Song length in seconds; defaults to the audio length." },
+    duration: { type: "number", minimum: 1, maximum: 36e3, description: "Film length in seconds; defaults to the video length for video packs, otherwise the audio length." },
     audio: fileRef("Audio file, relative to this mv.json (no ..) or absolute.", "Seconds added to the audio clock (sync)."),
+    video: fileRef('Local video file (MP4/M4V/MOV/WebM/MKV, at most 1 GiB); requires canvas.renderer "video". Browser codec support still applies.', "Seconds added to the video master clock: film t = video.currentTime + offset.", "\\.(?:[Mm][Pp]4|[Mm]4[Vv]|[Mm][Oo][Vv]|[Ww][Ee][Bb][Mm]|[Mm][Kk][Vv])$"),
     lyrics: fileRef("LRC / SRT / VTT / lyrics.json ([{time,end,en,zh}]) or lyrics.js / .mjs (static LYRICS = [{t,en,cn}]; never executed). Workshop packs (0.9.4+) may include explicitly licensed, attributed lyrics via a package-relative file.", "Seconds added to lyric times."),
     spectrum: fileRef("Optional spectrum.json ({fps, frames: number[48][]})."),
     canvas: {
@@ -7354,11 +7496,11 @@ var MV_PACK_JSON_SCHEMA = Object.freeze({
       additionalProperties: false,
       patternProperties: { "^x-": {} },
       properties: {
-        renderer: { enum: MV_RENDERERS_BUILTIN, default: "generic", description: "generic | script (needs canvas.script) | dsh-pv (needs canvas.assets; used by the dsh PV workshop pack)." },
+        renderer: { enum: MV_RENDERERS_BUILTIN, default: "generic", description: "generic | script (needs canvas.script) | dsh-pv (needs canvas.assets) | video (needs top-level video.file, local packs only)." },
         assets: { type: "object", description: "Data files a renderer reads (name \u2192 relative .json/.webp/.png path, or a list of JSON shards). Used by dsh-pv; since 0.9.1 scene scripts get them in setup(info).assets. Since 0.9.5 only dsh-pv font-head / font-banner may name the supported local OFL TTF files.", properties: { "font-head": { const: "fonts/SpaceMono-Bold.ttf" }, "font-banner": { const: "fonts/Anton-Regular.ttf" } }, additionalProperties: { oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }] } },
         output: { enum: ["text", "pixels", "webgl"], default: "text", description: "text: render(t, cols, rows, ctx); pixels (0.9.1+): paint(g, t, width, height, ctx) on Canvas2D; webgl (0.9.2+): setup(info, gl), paint(gl, t, width, height, ctx) on sandbox-owned WebGL2. Bundle dependencies before importing." },
         size: { type: "array", items: { type: "integer" }, minItems: 2, maxItems: 2, default: [1280, 720], description: "Bitmap scenes: canvas size [width, height] (160\u20131920 \xD7 90\u20131080), letterboxed in the panel." },
-        subtitles: { type: "boolean", default: false, description: '0.9.3+: opt-in player overlay of local or installed workshop lyric cues; only renderer "script" with output "pixels" or "webgl". Keep off if the scene draws its own subtitles.' },
+        subtitles: { type: "boolean", default: false, description: 'Opt-in player overlay of lyric cues on renderer "video" or "script" with output "pixels" or "webgl". Keep off when the picture already contains subtitles.' },
         preroll: { type: "number", minimum: 0, maximum: 30, default: 0, description: "0.10.0+: silent negative song-time intro before audio starts at 0. Only script bitmap output; never shifts lyrics/audio." },
         context: { type: "object", additionalProperties: false, description: "0.10.0+: bounded WebGL2 creation attributes. Defaults unchanged; no alpha/stencil/custom context access.", properties: {
           antialias: { type: "boolean" },
@@ -7388,7 +7530,8 @@ var MV_PACK_JSON_SCHEMA = Object.freeze({
       allOf: [
         { if: { required: ["assets"], properties: { assets: { anyOf: [{ required: ["font-head"] }, { required: ["font-banner"] }] } } }, then: { required: ["renderer"], properties: { renderer: { const: "dsh-pv" } } } },
         { if: { anyOf: [{ required: ["fonts"] }, { required: ["preroll"] }] }, then: { required: ["renderer", "output"], properties: { renderer: { const: "script" }, output: { enum: ["pixels", "webgl"] } } } },
-        { if: { required: ["context"] }, then: { required: ["renderer", "output"], properties: { renderer: { const: "script" }, output: { const: "webgl" } } } }
+        { if: { required: ["context"] }, then: { required: ["renderer", "output"], properties: { renderer: { const: "script" }, output: { const: "webgl" } } } },
+        { if: { required: ["renderer"], properties: { renderer: { const: "video" } } }, then: { not: { anyOf: ["script", "assets", "output", "size", "fonts", "preroll", "context", "bpm", "beatOffset"].map((key) => ({ required: [key] })) } } }
       ]
     },
     "x-dsh-mv-workshop": {
@@ -7411,7 +7554,11 @@ var MV_PACK_JSON_SCHEMA = Object.freeze({
       }
     },
     terminal: { deprecated: true, description: "Ignored since 0.6.0: the panel no longer runs external TUI players." }
-  }
+  },
+  allOf: [
+    { if: { required: ["video"] }, then: { required: ["canvas"], properties: { canvas: { required: ["renderer"], properties: { renderer: { const: "video" } } } } } },
+    { if: { required: ["canvas"], properties: { canvas: { required: ["renderer"], properties: { renderer: { const: "video" } } } } }, then: { required: ["video"] } }
+  ]
 });
 var README_EN = `# dsh-mv MV pack template
 
@@ -7459,16 +7606,17 @@ VS Code completion and checks.
 | \`format\`, \`version\` | yes | Always \`"${MV_PACK_FORMAT}"\` and \`${MV_PACK_VERSION}\`. |
 | \`title\` | yes | Song title. \`artist\`, \`album\` are optional. |
 | \`credits\`, \`notice\` | no | Shown in the panel: who made what, rights notice. |
-| \`duration\` | no | Seconds. Defaults to the audio file's length. |
-| \`audio\` | no | \`{ "file": "song.mp3", "offset": 0 }\`. Without audio the MV plays silently. \`offset\` (\xB130 s) shifts the picture against the audio. |
+| \`duration\` | no | Seconds. Defaults to video length for video packs, otherwise audio length. |
+| \`audio\` | no | \`{ "file": "song.mp3", "offset": 0 }\`. Without separate audio, video packs use the video's soundtrack; other packs play silently. \`offset\` (\xB130 s) shifts the picture against the audio. |
+| \`video\` | for video | \`{ "file": "video.mp4", "offset": 0 }\`, local video up to 1 GiB. Requires \`canvas.renderer: "video"\`; \`offset\` (\xB130 s) shifts film time against the video. |
 | \`lyrics\` | no | \`{ "file": "lyrics.lrc", "offset": 0 }\`. Bilingual LRC: two lines with the same time stamp, or \`English / \u4E2D\u6587\` on one line. |
 | \`spectrum\` | no | \`{ "file": "spectrum.json" }\` with \`{ fps, frames }\` (48 bands per frame). Without it the panel analyses the audio live. |
-| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics; works for any song), \`script\` (your own scene script, see below) or \`dsh-pv\` (the dsh PV renderer; its data comes from \`canvas.assets\`, see the dsh PV pack in \u521B\u610F\u5DE5\u574A). |
+| \`canvas.renderer\` | no | \`generic\` (spectrum bars + title + lyrics), \`script\` (your own scene script), \`dsh-pv\` (data from \`canvas.assets\`) or \`video\` (your local rendered video, see below). |
 | \`canvas.script\` | no | \`scenes.js\`: the scene script for \`script\` (setting it implies \`renderer: "script"\`). |
 | \`canvas.fontSize\` | no | 8\u201332 px. |
 | \`canvas.bpm\`, \`canvas.beatOffset\` | no | Tempo (20\u2013400) and first-beat time for scene scripts (\`ctx.beat\`). |
 | \`canvas.output\`, \`canvas.size\` | no | \`"pixels"\` (0.9.1+) draws Canvas2D with \`paint(g, t, width, height, ctx)\`; \`"webgl"\` (0.9.2+) draws WebGL2 with \`paint(gl, t, width, height, ctx)\`. Size defaults to \`[1280, 720]\`. \`setup(info, gl)\` receives JSON/ImageBitmap assets; WebGL also gets \`info.canvas\`, a minimal facade for an explicitly supplied Three.js context. |
-| \`canvas.subtitles\` | no | \`true\` (0.9.3+) overlays the user's local bilingual lyrics on a \`script\` bitmap (\`pixels\` / \`webgl\`). Defaults to \`false\`; leave off when the scene already draws subtitles. |
+| \`canvas.subtitles\` | no | \`true\` overlays local bilingual lyrics on \`video\` or a \`script\` bitmap (\`pixels\` / \`webgl\`). Defaults to \`false\`; leave off when the picture already contains subtitles. |
 | \`x-dsh-mv-ai.sections\` | no | Song sections \`[{ kind, label, start, end }]\` for scene scripts (\`ctx.section\`). |
 | \`x-dsh-mv-workshop\` | no | Workshop data (id, version, license, author, audio duration / fingerprint; explicit lyric terms/credits when included); written by \u53D1\u5E03\u5230\u5DE5\u574A. |
 
@@ -7482,6 +7630,30 @@ Local \`lyrics.js\` / \`.mjs\` files may declare a static \`LYRICS\` array with
 wiers-jack's MV. Only those data literals are read; helper functions are not
 executed, and expressions or imports inside the data are not supported. Do not
 rename JavaScript to JSON.
+
+## Local rendered videos (including Manim)
+
+Render the Python project first, then point a local pack at its output. Importing
+the pack reads files; it never runs Python, Manim or another external player.
+
+\`\`\`json
+{
+  "format": "dsh-mv-pack", "version": 1, "title": "My rendered MV",
+  "video": { "file": "media/WorldExecuteMe.mp4", "offset": 0 },
+  "canvas": { "renderer": "video", "subtitles": false }
+}
+\`\`\`
+
+The video is the master clock: film time = video.currentTime + video.offset.
+If the rendered video has its own soundtrack, omit \`audio\`. For a silent render,
+add \`audio: {"file":"song.mp3","offset":0}\`; the separate audio follows film
+time with its own offset. MP4/M4V/MOV/WebM/MKV are accepted container extensions;
+the codecs must be supported by the panel's Chromium. Videos are read in bounded
+chunks and limited to 1 GiB. Use paths relative to the pack or absolute local
+paths, never URLs. Video resolution comes from the file; do not set \`canvas.size\`,
+\`script\`, \`assets\`, \`output\`, \`fonts\`, \`preroll\`, \`context\`, \`bpm\` or
+\`beatOffset\`. Optional local lyrics can be overlaid with \`canvas.subtitles: true\`.
+Video packs are local imports and cannot be published to the workshop.
 
 ## Complete workshop packs (0.9.4+)
 
@@ -7625,16 +7797,17 @@ VS Code \u7B49\u7F16\u8F91\u5668\u63D0\u4F9B\u8865\u5168\u548C\u6821\u9A8C\u3002
 | \`format\`\u3001\`version\` | \u662F | \u56FA\u5B9A\u4E3A \`"${MV_PACK_FORMAT}"\` \u548C \`${MV_PACK_VERSION}\`\u3002 |
 | \`title\` | \u662F | \u6B4C\u540D\uFF1B\`artist\`\u3001\`album\` \u53EF\u9009\u3002 |
 | \`credits\`\u3001\`notice\` | \u5426 | \u9762\u677F\u91CC\u663E\u793A\u7684\u5236\u4F5C\u4FE1\u606F\u4E0E\u7248\u6743\u8BF4\u660E\u3002 |
-| \`duration\` | \u5426 | \u79D2\uFF1B\u9ED8\u8BA4\u53D6\u97F3\u9891\u957F\u5EA6\u3002 |
-| \`audio\` | \u5426 | \`{ "file": "song.mp3", "offset": 0 }\`\uFF1B\u6CA1\u6709\u97F3\u9891\u65F6\u9759\u97F3\u64AD\u653E\u753B\u9762\u3002\`offset\`\uFF08\xB130 \u79D2\uFF09\u8C03\u6574\u753B\u9762\u4E0E\u97F3\u9891\u7684\u540C\u6B65\u3002 |
+| \`duration\` | \u5426 | \u79D2\uFF1B\u89C6\u9891\u5305\u9ED8\u8BA4\u53D6\u89C6\u9891\u957F\u5EA6\uFF0C\u5176\u4ED6\u5305\u53D6\u97F3\u9891\u957F\u5EA6\u3002 |
+| \`audio\` | \u5426 | \`{ "file": "song.mp3", "offset": 0 }\`\uFF1B\u6CA1\u6709\u72EC\u7ACB\u97F3\u9891\u65F6\uFF0C\u89C6\u9891\u5305\u4F7F\u7528\u89C6\u9891\u5185\u97F3\u8F68\uFF0C\u5176\u4ED6\u5305\u9759\u97F3\u64AD\u653E\u3002\`offset\`\uFF08\xB130 \u79D2\uFF09\u8C03\u6574\u753B\u9762\u4E0E\u97F3\u9891\u7684\u540C\u6B65\u3002 |
+| \`video\` | \u89C6\u9891\u5305\u662F | \`{ "file": "video.mp4", "offset": 0 }\`\uFF0C\u672C\u5730\u89C6\u9891\u9650 1 GiB\uFF1B\u5FC5\u987B\u914D\u5408 \`canvas.renderer: "video"\`\u3002\`offset\`\uFF08\xB130 \u79D2\uFF09\u8C03\u6574\u89C6\u9891\u4E0E MV \u65F6\u95F4\u8F74\u7684\u540C\u6B65\u3002 |
 | \`lyrics\` | \u5426 | \`{ "file": "lyrics.lrc", "offset": 0 }\`\uFF1B\u53CC\u8BED LRC\uFF1A\u540C\u4E00\u65F6\u95F4\u6233\u5199\u4E24\u884C\uFF0C\u6216\u4E00\u884C\u5199 \`English / \u4E2D\u6587\`\u3002 |
 | \`spectrum\` | \u5426 | \`{ "file": "spectrum.json" }\`\uFF0C\u683C\u5F0F \`{ fps, frames }\`\uFF08\u6BCF\u5E27 48 \u4E2A\u9891\u6BB5\uFF09\uFF1B\u4E0D\u586B\u5219\u5B9E\u65F6\u5206\u6790\u97F3\u9891\u3002 |
-| \`canvas.renderer\` | \u5426 | \`generic\`\uFF08\u901A\u7528\uFF1A\u9891\u8C31 + \u6807\u9898 + \u6B4C\u8BCD\uFF0C\u4EFB\u4F55\u6B4C\u90FD\u80FD\u653E\uFF09\u3001\`script\`\uFF08\u4F60\u81EA\u5DF1\u7684\u573A\u666F\u811A\u672C\uFF0C\u89C1\u4E0B\uFF09\u6216 \`dsh-pv\`\uFF08dsh PV \u6E32\u67D3\u5668\uFF0C\u6570\u636E\u6765\u81EA \`canvas.assets\`\uFF0C\u53C2\u8003\u521B\u610F\u5DE5\u574A\u91CC\u7684 dsh PV \u5305\uFF09\u3002 |
+| \`canvas.renderer\` | \u5426 | \`generic\`\uFF08\u9891\u8C31 + \u6807\u9898 + \u6B4C\u8BCD\uFF09\u3001\`script\`\uFF08\u573A\u666F\u811A\u672C\uFF09\u3001\`dsh-pv\`\uFF08\u6570\u636E\u6765\u81EA \`canvas.assets\`\uFF09\u6216 \`video\`\uFF08\u672C\u5730\u6E32\u67D3\u89C6\u9891\uFF0C\u89C1\u4E0B\uFF09\u3002 |
 | \`canvas.script\` | \u5426 | \`scenes.js\`\uFF1A\`script\` \u6E32\u67D3\u5668\u7528\u7684\u573A\u666F\u811A\u672C\uFF08\u586B\u4E86\u5B83\u5C31\u9ED8\u8BA4 \`renderer: "script"\`\uFF09\u3002 |
 | \`canvas.fontSize\` | \u5426 | 8\u201332 \u50CF\u7D20\u3002 |
 | \`canvas.bpm\`\u3001\`canvas.beatOffset\` | \u5426 | \u6B4C\u66F2\u901F\u5EA6\uFF0820\u2013400\uFF09\u548C\u7B2C\u4E00\u62CD\u65F6\u95F4\uFF0C\u4F9B\u573A\u666F\u811A\u672C\u4F7F\u7528\uFF08\`ctx.beat\`\uFF09\u3002 |
 | \`canvas.output\`\u3001\`canvas.size\` | \u5426 | \`"pixels"\`\uFF080.9.1+\uFF09\u7528 \`paint(g, t, width, height, ctx)\` \u753B Canvas2D\uFF1B\`"webgl"\`\uFF080.9.2+\uFF09\u7528 \`paint(gl, t, width, height, ctx)\` \u753B WebGL2\u3002\u9ED8\u8BA4\u5927\u5C0F \`[1280, 720]\`\u3002\`setup(info, gl)\` \u63A5\u6536 JSON/ImageBitmap \u7D20\u6750\uFF1BWebGL \u8FD8\u6536\u5230\u4F9B Three.js \u663E\u5F0F\u4E0A\u4E0B\u6587\u4F7F\u7528\u7684\u6700\u5C0F \`info.canvas\` \u63A5\u53E3\u3002 |
-| \`canvas.subtitles\` | \u5426 | \`true\`\uFF080.9.3+\uFF09\u5728 \`script\` \u7684 \`pixels\` / \`webgl\` \u753B\u9762\u4E0A\u53E0\u52A0\u7528\u6237\u672C\u5730\u53CC\u8BED\u6B4C\u8BCD\u3002\u9ED8\u8BA4 \`false\`\uFF1B\u573A\u666F\u5DF2\u81EA\u884C\u753B\u5B57\u5E55\u65F6\u4E0D\u8981\u6253\u5F00\uFF0C\u4EE5\u514D\u91CD\u590D\u3002 |
+| \`canvas.subtitles\` | \u5426 | \`true\` \u5728 \`video\` \u6216 \`script\` \u7684 \`pixels\` / \`webgl\` \u753B\u9762\u4E0A\u53E0\u52A0\u672C\u5730\u53CC\u8BED\u6B4C\u8BCD\u3002\u9ED8\u8BA4 \`false\`\uFF1B\u89C6\u9891\u6216\u573A\u666F\u5DF2\u6709\u5B57\u5E55\u65F6\u4E0D\u8981\u6253\u5F00\u3002 |
 | \`x-dsh-mv-ai.sections\` | \u5426 | \u6B4C\u66F2\u6BB5\u843D \`[{ kind, label, start, end }]\`\uFF0C\u4F9B\u573A\u666F\u811A\u672C\u4F7F\u7528\uFF08\`ctx.section\`\uFF09\u3002 |
 | \`x-dsh-mv-workshop\` | \u5426 | \u521B\u610F\u5DE5\u574A\u4FE1\u606F\uFF08id\u3001\u7248\u672C\u3001\u8BB8\u53EF\u3001\u4F5C\u8005\u3001\u97F3\u9891\u65F6\u957F / \u6307\u7EB9\uFF1B\u5305\u542B\u6B4C\u8BCD\u65F6\u53E6\u5199\u6388\u6743\u6761\u6B3E\u4E0E\u7F72\u540D\uFF09\uFF0C\u7531\u300C\u53D1\u5E03\u5230\u5DE5\u574A\u300D\u5199\u5165\u3002 |
 
@@ -7644,6 +7817,27 @@ VS Code \u7B49\u7F16\u8F91\u5668\u63D0\u4F9B\u8865\u5168\u548C\u6821\u9A8C\u3002
 \u672C\u5730 \`lyrics.js\` / \`.mjs\` \u652F\u6301\u9759\u6001 \`LYRICS\` \u6570\u7EC4\u4E2D\u7684 \`{ t, en, cn }\` \u6570\u636E\uFF0C
 \u5305\u62EC wiers-jack MV \u4F7F\u7528\u7684 \`export const LYRICS = [...]\`\u3002\u53EA\u8BFB\u53D6\u6570\u636E\u5B57\u9762\u91CF\uFF0C\u4E0D\u6267\u884C
 \u540E\u9762\u7684\u8F85\u52A9\u51FD\u6570\uFF0C\u4E5F\u4E0D\u652F\u6301\u6570\u7EC4\u5185\u7684\u8868\u8FBE\u5F0F\u6216\u5BFC\u5165\u3002\u65E0\u9700\u628A JS \u6539\u540D\u4E3A JSON\u3002
+
+## \u672C\u5730\u6E32\u67D3\u89C6\u9891\uFF08\u5305\u62EC Manim\uFF09
+
+\u5148\u6E32\u67D3 Python \u9879\u76EE\uFF0C\u518D\u7528\u672C\u5730 MV \u5305\u6307\u5411\u8F93\u51FA\u89C6\u9891\u3002\u5BFC\u5165\u53EA\u8BFB\u53D6\u6587\u4EF6\uFF0C\u4E0D\u8FD0\u884C Python\u3001
+Manim \u6216\u5916\u90E8\u64AD\u653E\u5668\u3002
+
+\`\`\`json
+{
+  "format": "dsh-mv-pack", "version": 1, "title": "\u6211\u7684\u6E32\u67D3 MV",
+  "video": { "file": "media/WorldExecuteMe.mp4", "offset": 0 },
+  "canvas": { "renderer": "video", "subtitles": false }
+}
+\`\`\`
+
+\u89C6\u9891\u4F5C\u4E3A\u4E3B\u65F6\u949F\uFF1AMV \u65F6\u95F4 = video.currentTime + video.offset\u3002\u89C6\u9891\u81EA\u5E26\u97F3\u4E50\u65F6\u7701\u7565
+\`audio\`\uFF1B\u65E0\u58F0\u6E32\u67D3\u53EF\u52A0 \`audio: {"file":"song.mp3","offset":0}\`\uFF0C\u72EC\u7ACB\u97F3\u8F68\u6309
+MV \u65F6\u95F4\u548C\u81EA\u5DF1\u7684\u504F\u79FB\u540C\u6B65\u3002\u5BB9\u5668\u6269\u5C55\u540D\u652F\u6301 MP4/M4V/MOV/WebM/MKV\uFF0C\u5177\u4F53\u7F16\u7801\u4ECD\u9700
+\u9762\u677F\u7684 Chromium \u652F\u6301\u3002\u8BFB\u53D6\u4F7F\u7528\u53D7\u9650\u5206\u5757\uFF0C\u89C6\u9891\u4E0A\u9650 1 GiB\u3002\u53EF\u7528\u5305\u5185\u76F8\u5BF9\u8DEF\u5F84\u6216\u672C\u5730
+\u7EDD\u5BF9\u8DEF\u5F84\uFF0C\u4E0D\u80FD\u7528 URL\u3002\u5206\u8FA8\u7387\u53D6\u89C6\u9891\u6587\u4EF6\uFF0C\u4E0D\u8981\u8BBE\u7F6E \`canvas.size\`\u3001\`script\`\u3001
+\`assets\`\u3001\`output\`\u3001\`fonts\`\u3001\`preroll\`\u3001\`context\`\u3001\`bpm\` \u6216 \`beatOffset\`\u3002
+\u53E6\u6709\u672C\u5730\u6B4C\u8BCD\u65F6\u53EF\u8BBE \`canvas.subtitles: true\` \u53E0\u52A0\u663E\u793A\u3002\u89C6\u9891\u5305\u4EC5\u4F9B\u672C\u5730\u5BFC\u5165\uFF0C\u4E0D\u80FD\u53D1\u5E03\u5230\u5DE5\u574A\u3002
 
 ## \u5B8C\u6574\u5DE5\u574A\u5305\uFF080.9.4+\uFF09
 
@@ -7873,6 +8067,12 @@ async function fetchPackBytes(api, manifestPath, role, { onProgress = () => {
 async function fetchPackAudio(api, manifestPath, { FileClass = globalThis.File, ...options } = {}) {
   const { name, parts } = await fetchPackBytes(api, manifestPath, "audio", options);
   return new FileClass(parts, name, { type: audioMime(parts[0]) });
+}
+async function fetchPackVideo(api, manifestPath, { FileClass = globalThis.File, ...options } = {}) {
+  const { name, parts } = await fetchPackBytes(api, manifestPath, "video", options);
+  const type = videoMime(sniffAudio(parts[0] ?? new Uint8Array()));
+  if (!type) throw new Error("\u89C6\u9891\u5BB9\u5668\u4E0D\u53D7\u652F\u6301\uFF0C\u8BF7\u4F7F\u7528 MP4 / MOV / WebM / MKV\u3002");
+  return new FileClass(parts, name, { type });
 }
 async function fetchPackText(api, manifestPath, role, options = {}) {
   const { name, parts } = await fetchPackBytes(api, manifestPath, role, options);
@@ -8166,6 +8366,7 @@ function installedState(index) {
   return { map, updates };
 }
 function mediaSlot(pack, kind) {
+  if (pack?.pack?.canvas?.renderer === "video" && pack.manifestPath && !pack.pack.audio) return `video:${pack.manifestPath}:${kind}`;
   const id = pack?.pack?.workshop?.id;
   return id && !pack?.pack?.audio ? `workshop:${id}:${kind}` : null;
 }
@@ -8235,6 +8436,7 @@ var HINT = "SPACE \u64AD\u653E/\u6682\u505C  \u2190/\u2192 5s  [ ] \u5B57\u5E55 
 var isGeneric = (pack) => pack?.pack?.canvas?.renderer !== "dsh-pv";
 var isDshPv = (pack) => pack?.pack?.canvas?.renderer === "dsh-pv";
 var isScript = (pack) => pack?.pack?.canvas?.renderer === "script";
+var isVideo = (pack) => pack?.pack?.canvas?.renderer === "video";
 var chaptersOf = (pack, duration) => {
   const sections = pack?.pack?.sections ?? [];
   return sections.length ? sections.map((s) => [s.start, s.label || s.kind, ""]) : genericChapters(duration);
@@ -8246,8 +8448,10 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   const canvas = import_react3.default.useRef(null);
   const pixel = import_react3.default.useRef(null);
   const audio = import_react3.default.useRef(null);
+  const video = import_react3.default.useRef(null);
   const engine = import_react3.default.useRef(null);
   const [audioInfo, setAudioInfo] = import_react3.default.useState(null);
+  const [videoInfo, setVideoInfo] = import_react3.default.useState(null);
   const [lyricsInfo, setLyricsInfo] = import_react3.default.useState(null);
   const [spectrumInfo, setSpectrumInfo] = import_react3.default.useState(null);
   const [offsets, setOffsets] = import_react3.default.useState({ audioOffset: 0, subtitleOffset: 0 });
@@ -8289,6 +8493,8 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
         }
       }),
       dshpv: new DshPvFilm({ energy: (t) => state.energy(t) }),
+      video: new VideoFilm(video.current),
+      soundtrack: new VideoSoundtrack(video.current, audio.current, { onError: (failure) => setError(`\u65E0\u6CD5\u64AD\u653E\u72EC\u7ACB\u97F3\u8F68\uFF1A${failure?.message ?? failure}`) }),
       dshpvLoad: null,
       dshpvData: null,
       dshpvFonts: null,
@@ -8323,7 +8529,17 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       const { t, ready } = frameTime(raw, state.started, state.clock.duration, state.clock.preroll);
       const playing = state.clock.playing;
       let cols = 0, rows = 0;
-      if (state.film === state.script && isBitmapSceneOutput(state.script.output)) {
+      if (isVideo(packRef.current)) {
+        const el = pixel.current;
+        const dpr = Math.min(2, globalThis.devicePixelRatio || 1);
+        const w = Math.max(64, Math.round(box2.clientWidth * dpr)), h = Math.max(36, Math.round(box2.clientHeight * dpr));
+        if (el.width !== w || el.height !== h) {
+          el.width = w;
+          el.height = h;
+        }
+        void state.soundtrack.update(raw, playing);
+        state.video.draw(el.getContext("2d"), raw, { offset: offsetsRef.current.subtitleOffset, subtitles: packRef.current.pack.canvas.subtitles === true });
+      } else if (state.film === state.script && isBitmapSceneOutput(state.script.output)) {
         const el = pixel.current;
         const dpr = Math.min(2, globalThis.devicePixelRatio || 1);
         const w = Math.max(64, Math.round(box2.clientWidth * dpr)), h = Math.max(36, Math.round(box2.clientHeight * dpr));
@@ -8366,6 +8582,12 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       state.audioOwner = null;
       state.playGate.cancel();
       state.clock.dispose();
+      state.soundtrack.reset();
+      state.video.release();
+      const audioHref = audio.current?.src;
+      audio.current?.removeAttribute("src");
+      audio.current?.load?.();
+      if (audioHref?.startsWith("blob:")) URL.revokeObjectURL(audioHref);
       disposeDshPvData(state.dshpvData);
       state.dshpvFonts?.dispose();
       state.dshpvData = null;
@@ -8383,8 +8605,11 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   const applyOffsets = import_react3.default.useCallback((next) => {
     const value = { audioOffset: roundOffset(next.audioOffset), subtitleOffset: roundOffset(next.subtitleOffset) };
     setOffsets(value);
-    if (engine.current) engine.current.clock.audioOffset = value.audioOffset;
-    if (engine.current?.sha) saveOffsets(engine.current.sha, value);
+    if (engine.current) {
+      if (isVideo(packRef.current)) engine.current.soundtrack.offset = value.audioOffset;
+      else engine.current.clock.audioOffset = value.audioOffset;
+    }
+    if (engine.current?.sha) saveOffsets(engine.current.offsetKey ?? engine.current.sha, value);
   }, []);
   const useAudioFile = import_react3.default.useCallback(async (file, { remember = true, packOffset = 0, preservePlayRequest = false } = {}) => {
     setError("");
@@ -8402,14 +8627,24 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       if (!file.type && sniff.format !== "unknown") file = new File([bytes], file.name, { type: audioMimeOf(sniff) });
       const sha = await sha256Hex(bytes);
       if (!isCurrent()) return;
+      if (isVideo(packRef.current) && !state.sha) {
+        audio.current.volume = video.current.volume;
+        audio.current.muted = video.current.muted;
+      }
       const old = audio.current.src;
       audio.current.src = URL.createObjectURL(file);
       if (old?.startsWith("blob:")) URL.revokeObjectURL(old);
       state.sha = sha;
-      const loaded = loadOffsets(sha, KNOWN_AUDIO);
+      const videoPack = isVideo(packRef.current);
+      state.offsetKey = videoPack ? `video:${packRef.current.manifestPath}:${sha}` : sha;
+      const loaded = loadOffsets(state.offsetKey, videoPack ? [] : KNOWN_AUDIO);
       if (!loaded.saved && !loaded.known && packOffset) loaded.audioOffset = packOffset;
       setOffsets({ audioOffset: loaded.audioOffset, subtitleOffset: loaded.subtitleOffset });
-      state.clock.audioOffset = loaded.audioOffset;
+      if (videoPack) {
+        state.soundtrack.reset();
+        state.soundtrack.offset = loaded.audioOffset;
+        video.current.muted = true;
+      } else state.clock.audioOffset = loaded.audioOffset;
       state.clock.reset();
       state.started = false;
       setStatus((value) => ({ ...value, t: state.clock.time(), playing: false, preroll: state.clock.inPreroll }));
@@ -8458,7 +8693,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
           if (timed.matched) use = timed.cues;
           note = timed.matched ? `\u6309\u5DE5\u574A\u65F6\u95F4\u8F74\u5BF9\u9F50 ${timed.matched}/${timed.total} \u53E5` : "\u6CA1\u6709\u4E0E\u5DE5\u574A\u65F6\u95F4\u8F74\u5339\u914D\u7684\u884C\uFF0C\u4F7F\u7528\u6B4C\u8BCD\u6587\u4EF6\u81EA\u5DF1\u7684\u65F6\u95F4";
         }
-        for (const film of [state.generic, state.script]) film.setLyrics(use);
+        for (const film of [state.generic, state.script, state.video]) film.setLyrics(use);
         cuesRef.current = use;
         setLyricsInfo({ name, count: use.length, ...note ? { note } : {} });
       }
@@ -8487,6 +8722,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   }, []);
   import_react3.default.useEffect(() => {
     let cancelled = false;
+    const abort = new AbortController();
     const state = engine.current;
     const dshpvOwner = /* @__PURE__ */ Symbol("dsh-pv pack load");
     state.sceneOwner = dshpvOwner;
@@ -8494,6 +8730,11 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     state.clock.pause();
     state.script.stop();
     clearAudio();
+    state.soundtrack.reset();
+    state.video.release();
+    setVideoInfo(null);
+    state.clock.audio = isVideo(pack) ? video.current : audio.current;
+    state.clock.audioOffset = isVideo(pack) ? pack.pack.video?.offset ?? 0 : 0;
     state.clock.reset(pack.pack.canvas?.preroll ?? 0);
     setStatus((value) => ({ ...value, t: state.clock.time(), playing: false, preroll: state.clock.inPreroll }));
     if (isScript(pack)) setScenePreparing("\u6B63\u5728\u52A0\u8F7D\u573A\u666F\u8D44\u6E90\u2026");
@@ -8522,6 +8763,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       state.help = false;
       state.generic.setLyrics([]);
       state.script.setLyrics([]);
+      state.video.setLyrics([]);
       state.dshpv.setLines([]);
       state.script.stop();
       state.energy = () => state.live.energy();
@@ -8538,7 +8780,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       fpRef.current = null;
       setPixelScene(false);
       const generic2 = isGeneric(pack);
-      state.film = generic2 ? state.generic : state.dshpv;
+      state.film = isVideo(pack) ? state.video : generic2 ? state.generic : state.dshpv;
       if (isDshPv(pack) && state.dshpvFor !== `${pack.id}@${pack.loadedAt ?? ""}`) {
         const read = dshpvReader ?? (hasDshPvAssets(pack) && api?.packRead ? packAssetReader(api, pack.manifestPath, pack.pack) : null);
         state.dshpvFor = `${pack.id}@${pack.loadedAt ?? ""}`;
@@ -8585,7 +8827,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       const dsh = state.film === state.dshpv;
       const length = dsh ? pack.pack.duration ?? DSHPV_DURATION : pack.pack.duration ?? 0;
       state.clock.duration = length || DEFAULT_DURATION;
-      for (const film of [state.generic, state.script]) {
+      for (const film of [state.generic, state.script, state.video]) {
         film.duration = length;
         film.setMeta({ title: pack.pack.title, artist: pack.pack.artist ?? "" });
       }
@@ -8595,6 +8837,25 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       if (pack.empty) {
         clearAudio();
         return;
+      }
+      if (isVideo(pack)) {
+        if (!pack.files?.video?.exists || pack.files.video.tooLarge || !api) throw new Error(`\u627E\u4E0D\u5230\u53EF\u7528\u7684\u89C6\u9891\uFF1A${pack.pack.video.file}`);
+        setPackStatus("\u6B63\u5728\u4ECE MV \u5305\u8BFB\u53D6\u89C6\u9891\u2026");
+        const file = await fetchPackVideo(api, pack.manifestPath, {
+          isCancelled: () => cancelled,
+          onProgress: (done, total) => {
+            if (!cancelled) setPackStatus(`\u6B63\u5728\u4ECE MV \u5305\u8BFB\u53D6\u89C6\u9891\u2026 ${Math.round(done / Math.max(1, total) * 100)}%`);
+          }
+        });
+        if (cancelled) return;
+        await state.video.load(file, { signal: abort.signal });
+        if (cancelled) return;
+        const videoDuration = Math.max(0.1, video.current.duration + (pack.pack.video.offset ?? 0));
+        state.clock.duration = pack.pack.duration ?? videoDuration;
+        state.video.duration = state.clock.duration;
+        setDuration(state.clock.duration);
+        setVideoInfo({ name: file.name, duration: video.current.duration, width: video.current.videoWidth, height: video.current.videoHeight });
+        setPackStatus("");
       }
       if (isScript(pack)) {
         if (!pack.files?.scene?.exists || pack.files.scene.tooLarge || !api) setSceneNote(`\u627E\u4E0D\u5230\u53EF\u7528\u7684\u573A\u666F\u811A\u672C\uFF08${pack.pack.canvas.script}\uFF09\uFF0C\u6539\u7528\u901A\u7528\u753B\u9762\u3002`);
@@ -8667,7 +8928,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
         if (l?.text && rememberedTrackApplies(pack, l, bundledLoaded.lyrics)) await useLyricsText(l.name, l.text, { remember: false });
         if (sp?.text && rememberedTrackApplies(pack, sp, bundledLoaded.spectrum)) await useSpectrumText(sp.name, sp.text, { remember: false });
         if (a?.file && !state.sha) await useAudioFile(a.file, { remember: false, preservePlayRequest: true });
-        if (!a?.file) setMatchNote({ level: "info", message: bundledLoaded.lyrics ? "\u5305\u5185\u6B4C\u8BCD\u4E0E\u8BD1\u6587\u5DF2\u81EA\u52A8\u52A0\u8F7D\uFF1B\u53EA\u9700\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u4E50\u6587\u4EF6\uFF0C\u63D2\u4EF6\u4F1A\u68C0\u67E5\u6B4C\u66F2\u65F6\u957F\u662F\u5426\u5339\u914D\u3002" : "\u8FD9\u662F\u521B\u610F\u5DE5\u574A\u7684\u5305\uFF0C\u4E0D\u5E26\u97F3\u9891\uFF1A\u8BF7\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2\u6587\u4EF6\u3002\u6CA1\u6709\u53EF\u7528\u7684\u5305\u5185\u6B4C\u8BCD\u8F68\u65F6\uFF0C\u53EF\u53E6\u9009\u672C\u5730\u6B4C\u8BCD\u3002" });
+        if (!a?.file && !isVideo(pack)) setMatchNote({ level: "info", message: bundledLoaded.lyrics ? "\u5305\u5185\u6B4C\u8BCD\u4E0E\u8BD1\u6587\u5DF2\u81EA\u52A8\u52A0\u8F7D\uFF1B\u53EA\u9700\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u4E50\u6587\u4EF6\uFF0C\u63D2\u4EF6\u4F1A\u68C0\u67E5\u6B4C\u66F2\u65F6\u957F\u662F\u5426\u5339\u914D\u3002" : "\u8FD9\u662F\u521B\u610F\u5DE5\u574A\u7684\u5305\uFF0C\u4E0D\u5E26\u97F3\u9891\uFF1A\u8BF7\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2\u6587\u4EF6\u3002\u6CA1\u6709\u53EF\u7528\u7684\u5305\u5185\u6B4C\u8BCD\u8F68\u65F6\uFF0C\u53EF\u53E6\u9009\u672C\u5730\u6B4C\u8BCD\u3002" });
         return;
       }
       if (pack.pack.audio && pack.files?.audio?.exists && !pack.files.audio.tooLarge && api) {
@@ -8692,11 +8953,15 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     })().catch((failure) => {
       if (!cancelled && state.sceneOwner === dshpvOwner) setError(`\u65E0\u6CD5\u52A0\u8F7D MV \u5305\uFF1A${failure?.message ?? failure}`);
     }).finally(() => {
-      if (!cancelled && state.sceneOwner === dshpvOwner) setScenePreparing("");
+      if (!cancelled && state.sceneOwner === dshpvOwner) {
+        setScenePreparing("");
+        setPackStatus("");
+      }
     });
     state.sceneLoad = mediaLoad;
     return () => {
       cancelled = true;
+      abort.abort();
       if (state.sceneOwner === dshpvOwner) {
         state.sceneOwner = null;
         state.playGate.cancel();
@@ -8718,8 +8983,12 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     audio.current.load?.();
     if (old?.startsWith("blob:")) URL.revokeObjectURL(old);
     engine.current.sha = "";
+    engine.current.offsetKey = "";
+    engine.current.soundtrack.reset();
+    video.current.muted = audio.current.muted;
+    video.current.volume = audio.current.volume;
     setAudioFile(null);
-    engine.current.clock.audioOffset = 0;
+    engine.current.clock.audioOffset = isVideo(packRef.current) ? packRef.current.pack.video?.offset ?? 0 : 0;
     engine.current.clock.reset();
     setAudioInfo(null);
     setOffsets({ audioOffset: 0, subtitleOffset: 0 });
@@ -8746,9 +9015,13 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     }
     try {
       await state.playGate.play(state.sceneLoad, () => !state.disposed && state.sceneOwner === owner, async () => {
+        if (isVideo(packRef.current) && !state.video.ready) throw new Error("\u89C6\u9891\u5C1A\u672A\u5C31\u7EEA\uFF0C\u8BF7\u68C0\u67E5\u6587\u4EF6\u548C\u4E0A\u65B9\u52A0\u8F7D\u63D0\u793A\u3002");
         if (state.clock.time() >= state.clock.duration - 0.5) state.clock.seek(state.clock.minimumTime);
         state.started = true;
-        await state.clock.play();
+        state.soundtrack.failed = false;
+        const played = await state.clock.play();
+        if (!played || state.disposed || state.sceneOwner !== owner) return;
+        if (isVideo(packRef.current)) await state.soundtrack.update(state.clock.time(), state.clock.playing);
       });
     } catch (failure) {
       if (state.sceneOwner === owner) setError(`\u65E0\u6CD5\u64AD\u653E\uFF1A${failure?.message ?? failure}`);
@@ -8758,7 +9031,9 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     const state = engine.current;
     state?.playGate.cancel();
     state?.clock.pause();
+    state?.soundtrack.pause();
   };
+  const soundElement = () => isVideo(packRef.current) && !engine.current?.sha ? video.current : audio.current;
   const act = (action) => {
     const state = engine.current;
     if (!state || !action) return false;
@@ -8803,12 +9078,16 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
       case "audioOffset":
         applyOffsets({ ...offsetsRef.current, audioOffset: stepOffset(offsetsRef.current.audioOffset, action.delta) });
         return true;
-      case "volume":
-        audio.current.volume = Math.min(1, Math.max(0, Math.round((audio.current.volume + action.delta) * 100) / 100));
+      case "volume": {
+        const el = soundElement();
+        el.volume = Math.min(1, Math.max(0, Math.round((el.volume + action.delta) * 100) / 100));
         return true;
-      case "mute":
-        audio.current.muted = !audio.current.muted;
+      }
+      case "mute": {
+        const el = soundElement();
+        el.muted = !el.muted;
         return true;
+      }
       case "help":
         state.help = !state.help;
         return true;
@@ -8904,12 +9183,13 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
   const previewCues = import_react3.default.useCallback((cues) => {
     const state = engine.current;
     if (!state) return;
-    for (const film of [state.generic, state.script]) film.setLyrics(cues ?? cuesRef.current);
+    for (const film of [state.generic, state.script, state.video]) film.setLyrics(cues ?? cuesRef.current);
   }, []);
   const known = audioInfo?.known;
   const generic = isGeneric(pack);
   const dshActive = isDshPv(pack) && Boolean(dshpvReader || hasDshPvAssets(pack));
-  const pixelActive = dshActive || pixelScene;
+  const videoActive = isVideo(pack);
+  const pixelActive = dshActive || pixelScene || videoActive;
   const chapterList = dshActive ? DSHPV_CHAPTERS : chaptersOf(pack, duration);
   const chapter = chapterList.reduce((current, item) => item[0] <= Math.max(0, status.t) ? item : current, chapterList[0]);
   const preroll = pack.pack.canvas?.preroll ?? 0;
@@ -8927,7 +9207,7 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     fullscreen: () => toggleFullscreen(),
     /** PNG (base64, ≤ 960 px wide) of the current frame, for a workshop cover. */
     snapshotPng: () => {
-      const source = engine.current?.film === engine.current?.dshpv || engine.current?.film === engine.current?.script && isBitmapSceneOutput(engine.current?.script.output) ? pixel.current : canvas.current;
+      const source = isVideo(packRef.current) || engine.current?.film === engine.current?.dshpv || engine.current?.film === engine.current?.script && isBitmapSceneOutput(engine.current?.script.output) ? pixel.current : canvas.current;
       if (!source?.width) return "";
       const scale = Math.min(1, 960 / source.width);
       const out = document.createElement("canvas");
@@ -8947,22 +9227,27 @@ var CanvasMv = import_react3.default.forwardRef(function CanvasMv2({ defaultFont
     }
   }), [audioFile]);
   import_react3.default.useEffect(() => {
-    onState({ playing: status.playing, hasAudio: Boolean(audioInfo) });
-  }, [status.playing, Boolean(audioInfo)]);
+    onState({ playing: status.playing, hasAudio: Boolean(audioInfo || videoInfo) });
+  }, [status.playing, Boolean(audioInfo || videoInfo)]);
   const setLevel = (level) => {
-    const el = audio.current;
+    const el = soundElement();
     el.volume = Math.min(1, Math.max(0, level));
     if (el.muted && level > 0) el.muted = false;
   };
   const resetSync = () => {
-    resetOffsets(audioInfo.sha);
-    const v = loadOffsets(audioInfo.sha, KNOWN_AUDIO);
+    const key = engine.current.offsetKey || audioInfo.sha;
+    resetOffsets(key);
+    const v = loadOffsets(key, videoActive ? [] : KNOWN_AUDIO);
+    if (videoActive) v.audioOffset = pack.pack.audio?.offset ?? 0;
     applyOffsets(v);
-    resetOffsets(audioInfo.sha);
+    resetOffsets(key);
   };
   const syncLabel = known ? `\u5DF2\u8BC6\u522B\uFF1A${known.label}` : audioInfo ? "\u672A\u8BC6\u522B\u7684\u7248\u672C\uFF1A\u542C\u7740\u4E0D\u540C\u6B65\u5C31\u7528 Alt+[ / Alt+] \u6821\u51C6" : "";
-  return /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-canvas-tab" }, !audioInfo && !packStatus && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("h2", null, pack.pack.workshop ? "\u521B\u610F\u5DE5\u574A\u7684\u5305\u4E0D\u5E26\u97F3\u9891\uFF1A\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2" : "\u8FD9\u4E2A MV \u5305\u6CA1\u6709\u53EF\u7528\u7684\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("ol", null, /* @__PURE__ */ import_react3.default.createElement("li", null, "\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08MP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV \u89C6\u9891\u7684\u97F3\u8F68\u3001Opus/Ogg\u3001FLAC\u3001WAV \u90FD\u884C\uFF0C\u6309\u5185\u5BB9\u8BC6\u522B\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\uFF1B\u5728\u672C\u673A\u89E3\u7801\uFF0C\u4E0D\u4E0A\u4F20\uFF09\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u53EF\u9009\uFF1A\u9009\u62E9\u6B4C\u8BCD\uFF08LRC / SRT / VTT / JSON / lyrics.js\uFF09\uFF0C\u753B\u9762\u4F1A\u663E\u793A\u5B57\u5E55\u3002JS \u53EA\u8BFB\u53D6\u9759\u6001 LYRICS \u6570\u636E\uFF0C\u4E0D\u6267\u884C\u4EE3\u7801\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u70B9 ", /* @__PURE__ */ import_react3.default.createElement("b", null, "\u25B6 \u64AD\u653E"), "\u3002\u4E5F\u53EF\u4EE5\u4E0D\u9009\u97F3\u9891\uFF0C\u76F4\u63A5\u9759\u97F3\u89C2\u770B\u753B\u9762\u3002")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", onClick: pickAudio }, "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => pickText(LYRICS_ACCEPT, useLyricsText) }, "\u9009\u62E9\u6B4C\u8BCD\u2026")))), packStatus && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, packStatus)), matchNote && pack.pack.workshop && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: matchNote.level === "warn" ? "warn" : matchNote.level === "ok" ? "ok" : "info", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setMatchNote(null) }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, matchNote.level === "warn" ? "\u26A0 \u97F3\u9891\u53EF\u80FD\u4E0E\u8FD9\u4E2A\u5DE5\u574A\u5305\u4E0D\u5339\u914D\uFF1A\n" : "", matchNote.message)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-sources", "aria-label": "\u5A92\u4F53\u6587\u4EF6" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${audioInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u266A"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value", title: audioInfo ? `${audioInfo.name}
-sha256 ${audioInfo.sha}` : "" }, audioInfo ? `${audioInfo.name}${audioInfo.label && audioInfo.label !== "\u672A\u77E5\u683C\u5F0F" ? ` \xB7 ${audioInfo.label}` : ""}` : "\u672A\u9009\u62E9 \xB7 \u9759\u97F3\u6A21\u5F0F")), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: pickAudio }, audioInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${lyricsInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u201C"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u6B4C\u8BCD"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, lyricsInfo ? `${lyricsInfo.name}\uFF08${lyricsInfo.count} \u53E5${lyricsInfo.note ? ` \xB7 ${lyricsInfo.note}` : ""}\uFF09` : "\u672A\u52A0\u8F7D \xB7 \u53EA\u663E\u793A [ \u95F4\u594F ]")), lyricsInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearLyrics() }, "\u79FB\u9664"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "LRC / SRT / VTT / JSON / lyrics.js\uFF08\u53EA\u8BFB\u53D6\u9759\u6001 LYRICS \u6570\u636E\uFF0C\u4E0D\u6267\u884C\u4EE3\u7801\uFF09", onClick: () => pickText(LYRICS_ACCEPT, useLyricsText) }, lyricsInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u25AE\u25AE"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u9891\u8C31"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, spectrumInfo ? spectrumInfo.name : "\u5B9E\u65F6\u5206\u6790")), spectrumInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearSpectrum() }, "\u6539\u7528\u5B9E\u65F6"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "\u53EF\u9009\uFF1Aspectrum.json", onClick: () => pickText(".json", useSpectrumText) }, spectrumInfo ? "\u66F4\u6362" : "\u6587\u4EF6\u2026"))), error && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "error", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setError("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", null, error)), sceneNote && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSceneNote("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, sceneNote)), scenePreparing && /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption", role: "status", "aria-live": "polite" }, scenePreparing, "\uFF1B\u64AD\u653E\u4F1A\u7B49\u5F85\u8D44\u6E90\u51C6\u5907\u5B8C\u6210\u3002"), decodeFail && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: decodeFail.ffmpeg && !decodeFail.confirming ? /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: decodeFail.busy, onClick: () => setDecodeFail((value) => ({ ...value, confirming: true })) }, "\u7528 ffmpeg \u8F6C\u6362\u2026")) : null }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, "\u9762\u677F\u65E0\u6CD5\u89E3\u7801\u8FD9\u4E2A\u97F3\u9891\uFF08", decodeFail.label, "\uFF09\u3002", decodeFail.ffmpeg ? "\u627E\u5230\u4E86\u4F60\u672C\u673A\u7684 ffmpeg\uFF0C\u53EF\u4EE5\u628A\u5B83\u8F6C\u6362\u6210 WAV \u7F13\u5B58\u540E\u64AD\u653E\uFF08\u539F\u6587\u4EF6\u4E0D\u53D8\uFF09\u3002" : "\u5B89\u88C5 ffmpeg\uFF08\u653E\u8FDB PATH\uFF0C\u6216 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\uFF09\u540E\u53EF\u4EE5\u81EA\u52A8\u8F6C\u6362\uFF1B\u6216\u8005\u6362\u6210 MP3 / M4A / FLAC / WAV\u3002"), decodeFail.confirming && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u7528 ffmpeg \u8F6C\u6362" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, "\u7528\u4F60\u672C\u673A\u7684 ffmpeg \u8F6C\u6362\u8FD9\u4E2A\u6587\u4EF6\uFF1F"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "Host \u5C06\u8FD0\u884C\uFF08\u4E0D\u7ECF\u8FC7 shell\uFF0C\u6700\u591A 10 \u5206\u949F\uFF09\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, displayCommand(decodeFail.ffmpeg, ffmpegArgs(decodeFail.path, "<\u63D2\u4EF6\u7F13\u5B58>\\<sha256>.wav"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: decodeFail.busy, onClick: () => void convertWithFfmpeg() }, decodeFail.busy ? decodeFail.busy : "\u786E\u8BA4\u8F6C\u6362"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(decodeFail.busy), onClick: () => setDecodeFail((value) => ({ ...value, confirming: false })) }, "\u53D6\u6D88")))), /* @__PURE__ */ import_react3.default.createElement(
+  return /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-canvas-tab" }, !audioInfo && !packStatus && !videoActive && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-onboard" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-onboard-badge" }, ">_"), /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("h2", null, pack.pack.workshop ? "\u521B\u610F\u5DE5\u574A\u7684\u5305\u4E0D\u5E26\u97F3\u9891\uFF1A\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u6B4C\u66F2" : "\u8FD9\u4E2A MV \u5305\u6CA1\u6709\u53EF\u7528\u7684\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("ol", null, /* @__PURE__ */ import_react3.default.createElement("li", null, "\u9009\u62E9\u4F60\u81EA\u5DF1\u7684\u97F3\u9891\u6216\u89C6\u9891\u6587\u4EF6\uFF08MP3\u3001M4A/AAC\u3001MP4/MOV/WebM/MKV \u89C6\u9891\u7684\u97F3\u8F68\u3001Opus/Ogg\u3001FLAC\u3001WAV \u90FD\u884C\uFF0C\u6309\u5185\u5BB9\u8BC6\u522B\uFF0C\u4E0D\u770B\u6269\u5C55\u540D\uFF1B\u5728\u672C\u673A\u89E3\u7801\uFF0C\u4E0D\u4E0A\u4F20\uFF09\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u53EF\u9009\uFF1A\u9009\u62E9\u6B4C\u8BCD\uFF08LRC / SRT / VTT / JSON / lyrics.js\uFF09\uFF0C\u753B\u9762\u4F1A\u663E\u793A\u5B57\u5E55\u3002JS \u53EA\u8BFB\u53D6\u9759\u6001 LYRICS \u6570\u636E\uFF0C\u4E0D\u6267\u884C\u4EE3\u7801\u3002"), /* @__PURE__ */ import_react3.default.createElement("li", null, "\u70B9 ", /* @__PURE__ */ import_react3.default.createElement("b", null, "\u25B6 \u64AD\u653E"), "\u3002\u4E5F\u53EF\u4EE5\u4E0D\u9009\u97F3\u9891\uFF0C\u76F4\u63A5\u9759\u97F3\u89C2\u770B\u753B\u9762\u3002")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", onClick: pickAudio }, "\u9009\u62E9\u97F3\u9891\u2026"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", onClick: () => pickText(LYRICS_ACCEPT, useLyricsText) }, "\u9009\u62E9\u6B4C\u8BCD\u2026")))), packStatus && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "info" }, /* @__PURE__ */ import_react3.default.createElement("p", null, packStatus)), matchNote && pack.pack.workshop && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: matchNote.level === "warn" ? "warn" : matchNote.level === "ok" ? "ok" : "info", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setMatchNote(null) }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap", style: { whiteSpace: "pre-wrap" } }, matchNote.level === "warn" ? "\u26A0 \u97F3\u9891\u53EF\u80FD\u4E0E\u8FD9\u4E2A\u5DE5\u574A\u5305\u4E0D\u5339\u914D\uFF1A\n" : "", matchNote.message)), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-sources", "aria-label": "\u5A92\u4F53\u6587\u4EF6" }, videoActive && /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${videoInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u25B6"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u89C6\u9891\u753B\u9762"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, videoInfo ? `${videoInfo.name} \xB7 ${videoInfo.width}\xD7${videoInfo.height}` : "\u6B63\u5728\u52A0\u8F7D\u672C\u5730\u89C6\u9891"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${audioInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u266A"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, videoActive ? "\u72EC\u7ACB\u97F3\u8F68\uFF08\u53EF\u9009\uFF09" : "\u97F3\u9891"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value", title: audioInfo ? `${audioInfo.name}
+sha256 ${audioInfo.sha}` : "" }, audioInfo ? `${audioInfo.name}${audioInfo.label && audioInfo.label !== "\u672A\u77E5\u683C\u5F0F" ? ` \xB7 ${audioInfo.label}` : ""}` : videoActive ? "\u4F7F\u7528\u89C6\u9891\u5185\u97F3\u8F68\uFF1B\u9759\u97F3\u6210\u7247\u53EF\u53E6\u9009\u97F3\u4E50" : "\u672A\u9009\u62E9 \xB7 \u9759\u97F3\u6A21\u5F0F")), videoActive && audioInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => {
+    clearAudio();
+    void deleteMedia(dbRef.current, mediaSlot(pack, "audio"));
+  } }, "\u79FB\u9664"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", onClick: pickAudio }, audioInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), /* @__PURE__ */ import_react3.default.createElement("div", { className: `mv-source${lyricsInfo ? "" : " mv-source-empty"}` }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u201C"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u6B4C\u8BCD"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, lyricsInfo ? `${lyricsInfo.name}\uFF08${lyricsInfo.count} \u53E5${lyricsInfo.note ? ` \xB7 ${lyricsInfo.note}` : ""}\uFF09` : "\u672A\u52A0\u8F7D \xB7 \u53EA\u663E\u793A [ \u95F4\u594F ]")), lyricsInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearLyrics() }, "\u79FB\u9664"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "LRC / SRT / VTT / JSON / lyrics.js\uFF08\u53EA\u8BFB\u53D6\u9759\u6001 LYRICS \u6570\u636E\uFF0C\u4E0D\u6267\u884C\u4EE3\u7801\uFF09", onClick: () => pickText(LYRICS_ACCEPT, useLyricsText) }, lyricsInfo ? "\u66F4\u6362" : "\u9009\u62E9\u2026")), !videoActive && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-source-icon", "aria-hidden": "true" }, "\u25AE\u25AE"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-main" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-label" }, "\u9891\u8C31"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-source-value" }, spectrumInfo ? spectrumInfo.name : "\u5B9E\u65F6\u5206\u6790")), spectrumInfo && /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => void clearSpectrum() }, "\u6539\u7528\u5B9E\u65F6"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary mv-button-small", title: "\u53EF\u9009\uFF1Aspectrum.json", onClick: () => pickText(".json", useSpectrumText) }, spectrumInfo ? "\u66F4\u6362" : "\u6587\u4EF6\u2026"))), videoActive && /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption" }, "\u4FDD\u7559\u539F\u89C6\u9891\u753B\u9762\u548C\u5185\u5D4C\u5B57\u5E55\uFF1B\u72EC\u7ACB\u97F3\u4E50\u4F1A\u66FF\u4EE3\u89C6\u9891\u5185\u97F3\u8F68\u3002", /Manim/i.test(pack.pack.title) ? "\u82E5\u97F3\u4E50\u53BB\u6389\u4E86 Manim \u539F\u4F5C\u7684 5.16 \u79D2\u9759\u97F3\u7247\u5934\uFF0C\u8BF7\u628A\u540C\u6B65\u8BBE\u4E3A +5.16 s\u3002" : "\u72EC\u7ACB\u97F3\u8F68\u7684\u5F00\u59CB\u4F4D\u7F6E\u53EF\u7528\u540C\u6B65\u504F\u79FB\u8C03\u6574\u3002", lyricsInfo && pack.pack.canvas.subtitles !== true ? "\u8FD9\u4E2A\u5305\u672A\u5F00\u542F\u989D\u5916\u5B57\u5E55\u53E0\u52A0\u3002" : ""), error && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "error", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setError("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", null, error)), sceneNote && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-link", onClick: () => setSceneNote("") }, "\u5173\u95ED") }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, sceneNote)), scenePreparing && /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-caption", role: "status", "aria-live": "polite" }, scenePreparing, "\uFF1B\u64AD\u653E\u4F1A\u7B49\u5F85\u8D44\u6E90\u51C6\u5907\u5B8C\u6210\u3002"), decodeFail && /* @__PURE__ */ import_react3.default.createElement(Alert, { kind: "warn", actions: decodeFail.ffmpeg && !decodeFail.confirming ? /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-small", disabled: decodeFail.busy, onClick: () => setDecodeFail((value) => ({ ...value, confirming: true })) }, "\u7528 ffmpeg \u8F6C\u6362\u2026")) : null }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "mv-wrap" }, "\u9762\u677F\u65E0\u6CD5\u89E3\u7801\u8FD9\u4E2A\u97F3\u9891\uFF08", decodeFail.label, "\uFF09\u3002", decodeFail.ffmpeg ? "\u627E\u5230\u4E86\u4F60\u672C\u673A\u7684 ffmpeg\uFF0C\u53EF\u4EE5\u628A\u5B83\u8F6C\u6362\u6210 WAV \u7F13\u5B58\u540E\u64AD\u653E\uFF08\u539F\u6587\u4EF6\u4E0D\u53D8\uFF09\u3002" : "\u5B89\u88C5 ffmpeg\uFF08\u653E\u8FDB PATH\uFF0C\u6216 D:\\Program Files\\FFmpeg\\bin\\ffmpeg.exe\uFF09\u540E\u53EF\u4EE5\u81EA\u52A8\u8F6C\u6362\uFF1B\u6216\u8005\u6362\u6210 MP3 / M4A / FLAC / WAV\u3002"), decodeFail.confirming && /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-confirm", role: "dialog", "aria-label": "\u786E\u8BA4\u7528 ffmpeg \u8F6C\u6362" }, /* @__PURE__ */ import_react3.default.createElement("strong", null, "\u7528\u4F60\u672C\u673A\u7684 ffmpeg \u8F6C\u6362\u8FD9\u4E2A\u6587\u4EF6\uFF1F"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "mv-caption" }, "Host \u5C06\u8FD0\u884C\uFF08\u4E0D\u7ECF\u8FC7 shell\uFF0C\u6700\u591A 10 \u5206\u949F\uFF09\uFF1A"), /* @__PURE__ */ import_react3.default.createElement("code", { className: "mv-cmd" }, displayCommand(decodeFail.ffmpeg, ffmpegArgs(decodeFail.path, "<\u63D2\u4EF6\u7F13\u5B58>\\<sha256>.wav"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mv-row" }, /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button", disabled: decodeFail.busy, onClick: () => void convertWithFfmpeg() }, decodeFail.busy ? decodeFail.busy : "\u786E\u8BA4\u8F6C\u6362"), /* @__PURE__ */ import_react3.default.createElement("button", { type: "button", className: "mv-button mv-button-secondary", disabled: Boolean(decodeFail.busy), onClick: () => setDecodeFail((value) => ({ ...value, confirming: false })) }, "\u53D6\u6D88")))), /* @__PURE__ */ import_react3.default.createElement(
     "div",
     {
       ref: wrap3,
@@ -8996,7 +9281,7 @@ ${syncLabel}` : ""}` }, /* @__PURE__ */ import_react3.default.createElement("but
         const length = event.currentTarget.duration;
         setAudioInfo((info) => info ? { ...info, duration: length } : info);
         const state = engine.current;
-        if (state && (state.film === state.generic || state.film === state.script) && !packRef.current?.pack?.duration && Number.isFinite(length) && length > 0) {
+        if (state && !isVideo(packRef.current) && (state.film === state.generic || state.film === state.script) && !packRef.current?.pack?.duration && Number.isFinite(length) && length > 0) {
           state.clock.duration = length;
           state.generic.duration = length;
           state.script.duration = length;
@@ -9008,6 +9293,27 @@ ${syncLabel}` : ""}` }, /* @__PURE__ */ import_react3.default.createElement("but
       },
       onVolumeChange: (event) => setVolume({ level: event.currentTarget.volume, muted: event.currentTarget.muted }),
       onEnded: () => {
+        if (engine.current) engine.current.started = true;
+      }
+    }
+  ), /* @__PURE__ */ import_react3.default.createElement(
+    "video",
+    {
+      ref: video,
+      preload: "auto",
+      playsInline: true,
+      style: { display: "none" },
+      onError: () => {
+        if (isVideo(packRef.current) && video.current?.src) {
+          pause();
+          setError("\u89C6\u9891\u65E0\u6CD5\u89E3\u7801\uFF1B\u8BF7\u4F7F\u7528 H.264 / yuv420p MP4 \u6216\u6D4F\u89C8\u5668\u652F\u6301\u7684 WebM\u3002");
+        }
+      },
+      onVolumeChange: (event) => {
+        if (isVideo(packRef.current) && !engine.current?.sha) setVolume({ level: event.currentTarget.volume, muted: event.currentTarget.muted });
+      },
+      onEnded: () => {
+        engine.current?.soundtrack.pause();
         if (engine.current) engine.current.started = true;
       }
     }
@@ -10780,8 +11086,8 @@ function MvPanel({ api, harness = null, initialAi = false, initialWorkshop = fal
   ].slice(0, 6);
   const notice = info.status === "ready" ? versionNotice({ hostVersion: info.value?.hostVersion }) : "";
   const label = canvasState.playing ? "\u6682\u505C" : "\u64AD\u653E";
-  const hint = pack.empty ? pack.moved ? `\u300C${pack.moved.title}\u300D\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A\uFF1A\u5728\u4E0A\u9762\u7684\u66F2\u5E93\u91CC\u4E00\u952E\u5B89\u88C5\u3002` : "\u66F2\u5E93\u662F\u7A7A\u7684\uFF1A\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u4E00\u4E2A MV\uFF0C\u6216\u5BFC\u5165\u4F60\u81EA\u5DF1\u7684 MV \u5305\u3002" : canvasState.hasAudio ? "\u753B\u9762\u4EE5\u97F3\u9891\u4E3A\u65F6\u949F\u9010\u5E27\u6E32\u67D3\uFF1B\u70B9\u4E00\u4E0B\u753B\u9762\u540E\u53EF\u7528\u952E\u76D8\u63A7\u5236\u3002" : "\u8FD8\u6CA1\u6709\u9009\u62E9\u97F3\u9891\uFF1A\u53EF\u4EE5\u5148\u9759\u97F3\u89C2\u770B\uFF0C\u6216\u5728\u4E0B\u65B9\u9009\u62E9\u4F60\u7684\u6B4C\u66F2\u3002";
-  const renderer = { "world-execute-me": "world.execute(me) \u573A\u666F", "dsh-pv": "dsh-pv\uFF08\u5927\u80A5\u9C7C\u773C\u4E2D\u7684 world.execute(me)\uFF09", script: "\u573A\u666F\u811A\u672C\uFF08scenes.js\uFF09" }[pack.pack.canvas?.renderer] ?? "\u901A\u7528\u753B\u9762\uFF08\u9891\u8C31 + \u6B4C\u8BCD\uFF09";
+  const hint = pack.empty ? pack.moved ? `\u300C${pack.moved.title}\u300D\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A\uFF1A\u5728\u4E0A\u9762\u7684\u66F2\u5E93\u91CC\u4E00\u952E\u5B89\u88C5\u3002` : "\u66F2\u5E93\u662F\u7A7A\u7684\uFF1A\u5230\u300C\u521B\u610F\u5DE5\u574A\u300D\u5B89\u88C5\u4E00\u4E2A MV\uFF0C\u6216\u5BFC\u5165\u4F60\u81EA\u5DF1\u7684 MV \u5305\u3002" : pack.pack.canvas?.renderer === "video" ? "\u64AD\u653E\u672C\u5730\u89C6\u9891\u539F\u753B\u9762\uFF1B\u53EF\u4F7F\u7528\u89C6\u9891\u5185\u97F3\u8F68\uFF0C\u6216\u5728\u4E0B\u65B9\u9009\u62E9\u72EC\u7ACB\u97F3\u4E50\u3002" : canvasState.hasAudio ? "\u753B\u9762\u4EE5\u97F3\u9891\u4E3A\u65F6\u949F\u9010\u5E27\u6E32\u67D3\uFF1B\u70B9\u4E00\u4E0B\u753B\u9762\u540E\u53EF\u7528\u952E\u76D8\u63A7\u5236\u3002" : "\u8FD8\u6CA1\u6709\u9009\u62E9\u97F3\u9891\uFF1A\u53EF\u4EE5\u5148\u9759\u97F3\u89C2\u770B\uFF0C\u6216\u5728\u4E0B\u65B9\u9009\u62E9\u4F60\u7684\u6B4C\u66F2\u3002";
+  const renderer = { video: "\u672C\u5730\u89C6\u9891 \xB7 Manim / MP4 / WebM", "world-execute-me": "world.execute(me) \u573A\u666F", "dsh-pv": "dsh-pv\uFF08\u5927\u80A5\u9C7C\u773C\u4E2D\u7684 world.execute(me)\uFF09", script: "\u573A\u666F\u811A\u672C\uFF08scenes.js\uFF09" }[pack.pack.canvas?.renderer] ?? "\u901A\u7528\u753B\u9762\uFF08\u9891\u8C31 + \u6B4C\u8BCD\uFF09";
   return /* @__PURE__ */ import_react11.default.createElement("div", { ref: rootRef, className: `mv-root ${skin.className}`, "data-mv-skin": skinId }, /* @__PURE__ */ import_react11.default.createElement("style", null, mv_default + mv_skins_default), /* @__PURE__ */ import_react11.default.createElement("div", { className: "mv-shell" }, skinId === "a" ? /* @__PURE__ */ import_react11.default.createElement(SideNav, { active: nav, go, calibOk, items: recentItems, activeId: pack.id, onSelect: (id) => void selectPack(id), playing: canvasState.playing }) : null, skinId === "b" ? /* @__PURE__ */ import_react11.default.createElement(TmuxTabs, { active: nav, go, calibOk }) : null, /* @__PURE__ */ import_react11.default.createElement("div", { className: "mv-main" }, /* @__PURE__ */ import_react11.default.createElement("header", { className: "mv-head" }, /* @__PURE__ */ import_react11.default.createElement("h1", { className: "mv-title" }, "MV \u653E\u6620\u5BA4"), /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-spacer" }), notice && /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-pill mv-pill-warn", role: "status", title: notice }, "\u26A0 \u540E\u53F0\u7248\u672C\u4E0D\u4E00\u81F4 \xB7 \u8BF7\u5B8C\u5168\u91CD\u542F Harness"), /* @__PURE__ */ import_react11.default.createElement(SkinPicker, { skin }), /* @__PURE__ */ import_react11.default.createElement(Popover, { label: "\u5173\u4E8E\u4E0E\u7248\u6743", icon: /* @__PURE__ */ import_react11.default.createElement(Icon.info, null) }, /* @__PURE__ */ import_react11.default.createElement(About, { pack }))), /* @__PURE__ */ import_react11.default.createElement(Library, { playing: canvasState.playing, onPlay: () => canvasRef.current?.toggle(), onShowPlayer: () => go("now"), navRequest, onView: onLibraryView, api, harness, info: info.value, initialAi, initialWorkshop, workshopIndex, canvas: () => canvasRef.current, active: pack, recent, onSelect: (id) => void selectPack(id), onLoaded, onRecent: setRecent }), packError && /* @__PURE__ */ import_react11.default.createElement(Alert, { kind: "error" }, /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-wrap" }, packError)), info.status === "error" && /* @__PURE__ */ import_react11.default.createElement(Alert, { kind: "warn" }, /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-wrap" }, info.error, "\uFF08\u753B\u5E03\u64AD\u653E\u4E0D\u53D7\u5F71\u54CD\uFF1BMV \u5305\u3001AI \u5236\u4F5C\u548C\u6B4C\u8BCD\u5F15\u64CE\u9700\u8981\u540E\u53F0\u3002\uFF09")), /* @__PURE__ */ import_react11.default.createElement("section", { className: "mv-hero", "aria-label": "\u6B63\u5728\u64AD\u653E", style: { "--mv-hue": cover.hue }, "data-cover": cover.text }, /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-hero-art", "aria-hidden": "true" }, cover.text), /* @__PURE__ */ import_react11.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-section-label", style: { margin: 0 } }, "\u6B63\u5728\u64AD\u653E"), /* @__PURE__ */ import_react11.default.createElement("h2", { className: "mv-hero-title" }, pack.pack.title), /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-hero-sub" }, /* @__PURE__ */ import_react11.default.createElement("span", null, pack.empty ? pack.moved ? "\u5DF2\u79FB\u5230\u521B\u610F\u5DE5\u574A" : "\u66F2\u5E93\u4E3A\u7A7A" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6"), !pack.empty && /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-chip" }, pack.pack.workshop ? "\u521B\u610F\u5DE5\u574A" : "MV \u5305"), !pack.empty && /* @__PURE__ */ import_react11.default.createElement("span", { className: "mv-chip" }, renderer))), /* @__PURE__ */ import_react11.default.createElement("div", { className: "mv-hero-actions" }, /* @__PURE__ */ import_react11.default.createElement("button", { type: "button", className: "mv-play-big", disabled: pack.empty, onClick: () => canvasRef.current?.toggle(), "aria-label": label }, canvasState.playing ? /* @__PURE__ */ import_react11.default.createElement(Icon.pause, null) : /* @__PURE__ */ import_react11.default.createElement(Icon.play, null), label)), /* @__PURE__ */ import_react11.default.createElement("p", { className: "mv-hero-hint" }, hint)), /* @__PURE__ */ import_react11.default.createElement("div", { hidden: pack.empty, className: "mv-canvas-host" }, /* @__PURE__ */ import_react11.default.createElement(CanvasMv, { ref: canvasRef, api, pack, defaultFontSize: info.value?.canvasFontSize ?? 14, onState: setCanvasState }))), skinId === "a" ? /* @__PURE__ */ import_react11.default.createElement(PlayerBar, { title: pack.pack.title, artist: pack.empty ? "" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", cover, transport, canvas: () => canvasRef.current, onShow: () => go("now") }) : null, skinId === "b" ? /* @__PURE__ */ import_react11.default.createElement(StatusLine, { title: pack.pack.title, artist: pack.empty ? "" : pack.pack.artist || "\u672A\u77E5\u827A\u672F\u5BB6", transport, canvas: () => canvasRef.current, active: nav }) : null));
 }
 
