@@ -4,7 +4,9 @@
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.12.0**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D、WebGL2 3D 与本地视频的 **MV**；脚本画面以**你自己的音频**为时钟，视频画面使用视频自身时钟。
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.12.1**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D、WebGL2 3D 与本地视频的 **MV**；脚本画面以**你自己的音频**为时钟，视频画面使用视频自身时钟。
+
+支持 DSH **0.2.1-rc.2**，并保留 **0.2.0-rc.1 / rc.2** 支持。如旧版插件因协议不兼容被禁用，请更新插件并重启 Harness。
 
 **0.12.0 Manim / 本地视频兼容：** 新增 `canvas.renderer: "video"` 和 `video.file`，直接显示 MP4/M4V/MOV/WebM/MKV 的原画面，支持视频内音轨、静音成片配独立音乐、播放/暂停/跳转/全屏/截图及可选字幕。独立音轨通过 `audio.offset` 对齐，选择后自动静音视频内音轨。可用 `npx --yes --package @ljwei-stak/dsh-mv-cli@0.12.0 dsh-mv-import-video "D:/MV/manim-for-world-execute-me" --out "D:/MV-packs/manim"` 生成本地包，再从「导入 MV 包」加载。目标 [Manim 原作](https://github.com/Alice-Marx/manim-for-world-execute-me)需要先渲染；保留原片数学板书、动画和内嵌字幕，5.16 秒片头与音轨/歌词的处理见 [Manim 导入指南](docs/MANIM_VIDEO.zh.md)。插件和工坊不分发成片或歌曲。
 

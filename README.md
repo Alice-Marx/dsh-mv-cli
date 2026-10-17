@@ -4,7 +4,9 @@ English · [简体中文](README.zh.md)
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊 / workshop](https://github.com/Alice-Marx/dsh-mv-workshop)
 
-**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.12.0**) that plays ASCII / terminal-styled, pixel 2D, WebGL2 3D and local rendered **music videos** on a `<canvas>` in the workbench. Script scenes use **your own audio** as the clock; local videos use their own media clock.
+**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.12.1**) that plays ASCII / terminal-styled, pixel 2D, WebGL2 3D and local rendered **music videos** on a `<canvas>` in the workbench. Script scenes use **your own audio** as the clock; local videos use their own media clock.
+
+Supports DSH **0.2.1-rc.2** and **0.2.0-rc.1 / rc.2**. If an older plugin version is disabled because of a protocol mismatch, update the plugin and restart Harness.
 
 **0.12.0 Manim / local video support:** `canvas.renderer: "video"` and `video.file` display the original MP4/M4V/MOV/WebM/MKV frames, with embedded sound or a separate local soundtrack, independent `audio.offset`, seek/pause/replay, volume/mute, fullscreen, PNG snapshots and optional lyric overlay. Run `npx --yes --package @ljwei-stak/dsh-mv-cli@0.12.0 dsh-mv-import-video "D:/MV/manim-for-world-execute-me" --out "D:/MV-packs/manim"`, then import the generated folder. Render the [upstream Manim project](https://github.com/Alice-Marx/manim-for-world-execute-me) first: its original animation and baked captions remain intact. See the [Manim import guide](docs/MANIM_VIDEO.zh.md) for the 5.16-second title card and soundtrack/lyric timing. Plugin and workshop releases contain no movies or song recordings.
 

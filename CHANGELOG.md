@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.12.1 — 2026-10-17
+
+- Extend the `@deepseek-ai/dsh-typert-protocol` peer range to accept `0.2.1-rc.2` so the plugin manager does not reject loading; retain `0.2.0-rc.1 / rc.2` support.
+- Align development dependencies with the DSH `0.2.1-rc.2` protocol, Cordis `4.0.5` and Schemastery `3.18.5` for Host and gateway regression checks.
+
 ## 0.12.0 — 2026-10-11
 
 - Local video renderer displays the original frames of Manim and other rendered MVs (MP4/M4V/MOV/WebM/MKV), with video as the master clock. Embedded audio or a separate local soundtrack, seek/pause/replay, volume/mute, fullscreen, PNG snapshots and optional lyric overlay share the player controls. Separate soundtracks mute embedded sound and use independent `audio.offset`; cancelled or stale play requests cannot restart audio.
