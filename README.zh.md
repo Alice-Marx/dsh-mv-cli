@@ -8,6 +8,28 @@
 
 支持 DSH **0.2.1-rc.2**，并保留 **0.2.0-rc.1 / rc.2** 支持。如旧版插件因协议不兼容被禁用，请更新插件并重启 Harness。
 
+## DSH 插件列表信息
+
+**一句话价值：** 为 DSH 增加 MV 放映室侧边栏，让用户用自己的音频或视频同步播放、创作音乐视频，并使用歌词、ASCII、Canvas2D 和 WebGL2 场景。
+
+**主类别（目录 11 个类别之一）：** 娱乐（音乐与媒体）。
+
+**安装命令（npm，固定版本）：**
+```sh
+dsh plugin --profile web add @ljwei-stak/dsh-mv-cli@0.12.1
+```
+也可在 **DeepSeek Harness Desktop → Plugins → Add plugin** 中输入 `@ljwei-stak/dsh-mv-cli@0.12.1` 安装。
+
+**兼容性：** 支持 DSH 协议 `0.2.1-rc.2` 和 `0.2.0-rc.1` / `0.2.0-rc.2`；Host 需要 Node.js `>=20`。WebGL 场景需要 Chromium Worker OffscreenCanvas 和 WebGL2；不支持时回退到通用渲染器。本地视频解码取决于 Chromium 编解码器。
+
+**配置文件：** 根目录 `package.json` 标识 npm 包并声明 `dsh.bundle.patch`；`cordis.patch.yml` 注册 `dsh-mv` 插件行，模块从 `.dsh-plugin/index.mjs` 导出 `apply(ctx)`。每个 MV 包使用 `mv.json`，并可用 `mv.schema.json` 做校验与编辑器补全。运行时设置在 DSH 插件配置页面管理（`canvasFontSize`、`ffmpegPath`、`lrclib`、`enginePython`、`uvPath`、`hfEndpoint`、`httpProxy`、`workshopMirror`、`workshopDir`、`agentTools`）；面板偏好另保存在 `%LOCALAPPDATA%\dsh-mv\settings.json`。
+
+**权限与外部服务：** Host 会读取用户选定的包/媒体路径，并在用户选择的文件夹或 `%LOCALAPPDATA%\dsh-mv` 下写入 MV 包和设置，遵循普通操作系统文件权限。`ffmpeg` 仅在用户确认后运行。可选歌词引擎安装会下载 Python 包和语音模型。可选 LRCLIB 查询只发送标题、艺术家、专辑和时长（不发送音频或文件名），且可关闭。工坊浏览/安装会从 GitHub 或配置的 HTTPS 镜像下载。AI 制作 MV 会打开针对本地工作区的 Harness Agent 会话；文件访问和模型服务的数据处理遵循当前 Harness 配置与审批流程。
+
+**许可证：** 插件/npm 代码采用 MIT。仓库预设、工坊包、美术、歌词、字体及其他第三方材料可能有单独条款；见 [LICENSE](LICENSE)、[NOTICE.md](NOTICE.md) 和[许可与致谢](#许可与致谢)。
+
+**截图：** 见[截图章节](#截图)，包括[曲库](docs/screenshots/library-list.png)、[工坊](docs/screenshots/workshop.png)和[场景包](docs/screenshots/ports.png)。这些图片由 `tools/ui-preview` 的独立客户端界面预览生成，使用 mock Host 和占位演示包/歌词；展示的是 UI 状态，不是连接真实 DSH Host 的端到端验证。
+
 **0.12.0 Manim / 本地视频兼容：** 新增 `canvas.renderer: "video"` 和 `video.file`，直接显示 MP4/M4V/MOV/WebM/MKV 的原画面，支持视频内音轨、静音成片配独立音乐、播放/暂停/跳转/全屏/截图及可选字幕。独立音轨通过 `audio.offset` 对齐，选择后自动静音视频内音轨。可用 `npx --yes --package @ljwei-stak/dsh-mv-cli@0.12.0 dsh-mv-import-video "D:/MV/manim-for-world-execute-me" --out "D:/MV-packs/manim"` 生成本地包，再从「导入 MV 包」加载。目标 [Manim 原作](https://github.com/Alice-Marx/manim-for-world-execute-me)需要先渲染；保留原片数学板书、动画和内嵌字幕，5.16 秒片头与音轨/歌词的处理见 [Manim 导入指南](docs/MANIM_VIDEO.zh.md)。插件和工坊不分发成片或歌曲。
 
 **0.11.0 工坊浏览升级：** 新增类型／许可／标签／歌词／兼容性／安装与更新状态的组合筛选、清除筛选、更新时间／名称排序，以及原生键盘操作和窄面板布局。无需工坊账号；不接入 Harness 登录。共享下载统计与匿名点赞后台尚未部署，默认界面隐藏未启用的统计、热门榜、奖杯筛选和投票动作，不伪造数据。已准备可选只读数据契约，见[工坊功能与接入边界](docs/WORKSHOP_COMMUNITY.zh.md)。
@@ -68,13 +90,13 @@ FrostNova 实时 3D 工坊适配使用此机制；AGPL 对应源码、原逐词/
 | ![像素场景包](docs/screenshots/ports.png) | ![安装位置](docs/screenshots/install-dir.png) |
 | 0.9.1 像素场景包：Wallpaper MV 与 Polytech Tree | 0.9.1 安装位置：更改、移动或保留 |
 
-截图使用占位演示包和占位歌词。
+截图由 `tools/ui-preview` 的独立客户端界面预览生成，使用 mock Host 和占位演示包/歌词；用于展示 UI 状态，并非连接真实 DSH Host 的端到端验证。
 
 ## 安装
 
 需要支持插件的 DeepSeek Harness Desktop（Host 端 Node ≥ 20，Harness 自带）。没有原生依赖。
 
-**从 npm 安装（推荐）：** **DeepSeek Harness Desktop → 插件 → 添加插件**，填 `@ljwei-stak/dsh-mv-cli`（最新版）或指定版本如 `@ljwei-stak/dsh-mv-cli@0.9.1`，安装并启用。
+**从 npm 安装（推荐）：** web profile 可运行 `dsh plugin --profile web add @ljwei-stak/dsh-mv-cli@0.12.1`；也可在 **DeepSeek Harness Desktop → 插件 → 添加插件** 中填入 `@ljwei-stak/dsh-mv-cli@0.12.1`，安装并启用。
 
 **用 GitHub Release 安装包：** 从 [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) 下载 `ljwei-stak-dsh-mv-cli-<版本>.tgz` 和对应的 `.sha256`，用 PowerShell 核对：
 `Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<你>\Downloads\ljwei-stak-dsh-mv-cli-<版本>.tgz'`，与 `.sha256` 文件比对，

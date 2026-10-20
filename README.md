@@ -8,6 +8,28 @@ English · [简体中文](README.zh.md)
 
 Supports DSH **0.2.1-rc.2** and **0.2.0-rc.1 / rc.2**. If an older plugin version is disabled because of a protocol mismatch, update the plugin and restart Harness.
 
+## DSH plugin listing
+
+**One-line value:** Adds an MV 放映室 sidebar for creating and playing music videos synced to your own audio or video, with lyrics and ASCII, Canvas2D, and WebGL2 scenes.
+
+**Primary category (one of the directory's 11 categories):** Entertainment (music and media).
+
+**Install command (npm, pinned):**
+```sh
+dsh plugin --profile web add @ljwei-stak/dsh-mv-cli@0.12.1
+```
+The same package can be installed from **DeepSeek Harness Desktop → Plugins → Add plugin** by entering `@ljwei-stak/dsh-mv-cli@0.12.1`.
+
+**Compatibility:** DSH protocol `0.2.1-rc.2` and `0.2.0-rc.1` / `0.2.0-rc.2`; Host Node.js `>=20`. WebGL scenes need Chromium Worker OffscreenCanvas and WebGL2; unsupported clients fall back to the generic renderer. Local video decoding depends on Chromium codecs.
+
+**Configuration files:** The root `package.json` identifies the npm package and declares `dsh.bundle.patch`; `cordis.patch.yml` registers the `dsh-mv` plugin row, whose module exports `apply(ctx)` from `.dsh-plugin/index.mjs`. Each MV pack uses `mv.json`, with `mv.schema.json` for validation and editor completion. Runtime settings are managed in the DSH plugin configuration page (`canvasFontSize`, `ffmpegPath`, `lrclib`, `enginePython`, `uvPath`, `hfEndpoint`, `httpProxy`, `workshopMirror`, `workshopDir`, `agentTools`); the panel also stores local preferences in `%LOCALAPPDATA%\dsh-mv\settings.json`.
+
+**Permissions and external services:** The Host reads user-selected pack/media paths and writes packs and settings under user-selected folders or `%LOCALAPPDATA%\dsh-mv`, subject to normal OS file permissions. `ffmpeg` runs only after confirmation. Optional lyric-engine setup downloads Python packages and speech models. Optional LRCLIB lookup sends only title, artist, album, and duration (no audio or filename) and can be disabled. Workshop browsing/install downloads from GitHub or the configured HTTPS mirror. AI pack creation opens a Harness Agent session for the local workspace; file access and model-provider handling follow the active Harness configuration and approval flow.
+
+**License:** Plugin/npm code is MIT. Repository presets, workshop packs, artwork, lyrics, fonts, and other third-party materials may have separate terms; see [LICENSE](LICENSE), [NOTICE.md](NOTICE.md), and [License and credits](#license-and-credits).
+
+**Screenshots:** See [Screenshots](#screenshots), including the [library](docs/screenshots/library-list.png), [workshop](docs/screenshots/workshop.png), and [scene packs](docs/screenshots/ports.png). These are standalone client UI previews from `tools/ui-preview` with a mock Host and placeholder demo packs/lyrics; they show UI states, not end-to-end verification against a live DSH Host.
+
 **0.12.0 Manim / local video support:** `canvas.renderer: "video"` and `video.file` display the original MP4/M4V/MOV/WebM/MKV frames, with embedded sound or a separate local soundtrack, independent `audio.offset`, seek/pause/replay, volume/mute, fullscreen, PNG snapshots and optional lyric overlay. Run `npx --yes --package @ljwei-stak/dsh-mv-cli@0.12.0 dsh-mv-import-video "D:/MV/manim-for-world-execute-me" --out "D:/MV-packs/manim"`, then import the generated folder. Render the [upstream Manim project](https://github.com/Alice-Marx/manim-for-world-execute-me) first: its original animation and baked captions remain intact. See the [Manim import guide](docs/MANIM_VIDEO.zh.md) for the 5.16-second title card and soundtrack/lyric timing. Plugin and workshop releases contain no movies or song recordings.
 
 **0.11.0 workshop discovery:** combined type/licence/tag/lyrics/compatibility/installation-update filters, clear filters, stable update/title sorting, native keyboard actions and narrow-panel layouts. No workshop account or Harness login integration. Shared statistics and anonymous voting are not deployed: default UI hides unavailable community metrics/rankings/trophy filters and all vote actions. Optional read-only data contracts remain available for a future trusted source; no fabricated popularity. See the [released scope and integration note](docs/WORKSHOP_COMMUNITY.zh.md).
@@ -73,13 +95,13 @@ source, original word/Chinese captions and OFL resources are published separatel
 | ![Pixel scene packs](docs/screenshots/ports.png) | ![Install location](docs/screenshots/install-dir.png) |
 | 0.9.1 pixel scene packs: Wallpaper MV and Polytech Tree | 0.9.1 install location: change, move or keep |
 
-Screenshots use placeholder demo packs and placeholder lyrics.
+Screenshots are captured from the standalone client UI preview in `tools/ui-preview`, which uses a mock Host plus placeholder demo packs and lyrics. They demonstrate rendered UI states and are not end-to-end verification against a live DSH Host.
 
 ## Install
 
 Requires DeepSeek Harness Desktop with plugin support and Node ≥ 20 on the Host (bundled with Harness). No native dependencies.
 
-**From npm (recommended):** in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli` (latest) or a pinned version such as `@ljwei-stak/dsh-mv-cli@0.9.1`, then install and enable it.
+**From npm (recommended):** run `dsh plugin --profile web add @ljwei-stak/dsh-mv-cli@0.12.1` for a web profile, or in **DeepSeek Harness Desktop → Plugins → Add plugin**, enter `@ljwei-stak/dsh-mv-cli@0.12.1`, then install and enable it.
 
 **From a GitHub Release archive:** download `ljwei-stak-dsh-mv-cli-<version>.tgz` and its `.sha256` from [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases). Check it in PowerShell with `Get-FileHash -Algorithm SHA256 -LiteralPath <path-to-tgz>` and compare with the `.sha256` file, then enter the archive's absolute path in **Plugins → Add plugin**.
 
