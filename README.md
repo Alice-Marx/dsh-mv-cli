@@ -4,6 +4,8 @@ English · [简体中文](README.zh.md)
 
 [![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [![dshfind](https://dshfind.com/api/badge/Alice-Marx/dsh-mv-cli?lang=en)](https://dshfind.com/en/plugins/Alice-Marx/dsh-mv-cli?ref=badge) · [![Listed on dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/alice-marx/dsh-mv-cli) · [![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊 / workshop](https://github.com/Alice-Marx/dsh-mv-workshop)
 
+[![dshfind showcase card for dsh-mv-cli](https://dshfind.com/api/card/Alice-Marx/dsh-mv-cli?lang=en)](https://dshfind.com/en/plugins/Alice-Marx/dsh-mv-cli?ref=badge)
+
 **MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.12.1**) that plays ASCII / terminal-styled, pixel 2D, WebGL2 3D and local rendered **music videos** on a `<canvas>` in the workbench. Script scenes use **your own audio** as the clock; local videos use their own media clock.
 
 Supports DSH **0.2.1-rc.2** and **0.2.0-rc.1 / rc.2**. If an older plugin version is disabled because of a protocol mismatch, update the plugin and restart Harness.
