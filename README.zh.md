@@ -2,7 +2,7 @@
 
 [English](README.md) · 简体中文
 
-[![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [![已收录于 dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/alice-marx/dsh-mv-cli) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
+[![npm](https://img.shields.io/npm/v/@ljwei-stak/dsh-mv-cli)](https://www.npmjs.com/package/@ljwei-stak/dsh-mv-cli) · [![dshfind](https://dshfind.com/api/badge/Alice-Marx/dsh-mv-cli?lang=zh)](https://dshfind.com/zh/plugins/Alice-Marx/dsh-mv-cli?ref=badge) · [![已收录于 dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/alice-marx/dsh-mv-cli) · [![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com) · [Releases](https://github.com/Alice-Marx/dsh-mv-cli/releases) · [创意工坊](https://github.com/Alice-Marx/dsh-mv-workshop)
 
 **MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.12.1**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D、WebGL2 3D 与本地视频的 **MV**；脚本画面以**你自己的音频**为时钟，视频画面使用视频自身时钟。
 
