@@ -6,9 +6,9 @@
 
 [![dshfind 展示卡：dsh-mv-cli](https://dshfind.com/api/card/Alice-Marx/dsh-mv-cli?lang=zh)](https://dshfind.com/zh/plugins/Alice-Marx/dsh-mv-cli?ref=badge)
 
-**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.12.1**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D、WebGL2 3D 与本地视频的 **MV**；脚本画面以**你自己的音频**为时钟，视频画面使用视频自身时钟。
+**MV 放映室** 是 DeepSeek Harness Desktop 插件（`@ljwei-stak/dsh-mv-cli`，profile 条目 id `dsh-mv`，当前版本 **0.12.2**）。它在工作台的 `<canvas>` 上放映 ASCII / 终端风格、像素 2D、WebGL2 3D 与本地视频的 **MV**；脚本画面以**你自己的音频**为时钟，视频画面使用视频自身时钟。
 
-支持 DSH **0.2.1-rc.2**，并保留 **0.2.0-rc.1 / rc.2** 支持。如旧版插件因协议不兼容被禁用，请更新插件并重启 Harness。
+支持 DSH **0.2.1-rc.3 / rc.2**，并保留 **0.2.0-rc.1 / rc.2** 支持。如旧版插件因协议不兼容被禁用，请更新插件并重启 Harness。
 
 ## DSH 插件列表信息
 
@@ -18,11 +18,11 @@
 
 **安装命令（npm，固定版本）：**
 ```sh
-dsh plugin --profile web add @ljwei-stak/dsh-mv-cli@0.12.1
+dsh plugin --profile web add @ljwei-stak/dsh-mv-cli@0.12.2
 ```
-也可在 **DeepSeek Harness Desktop → Plugins → Add plugin** 中输入 `@ljwei-stak/dsh-mv-cli@0.12.1` 安装。
+也可在 **DeepSeek Harness Desktop → Plugins → Add plugin** 中输入 `@ljwei-stak/dsh-mv-cli@0.12.2` 安装。
 
-**兼容性：** 支持 DSH 协议 `0.2.1-rc.2` 和 `0.2.0-rc.1` / `0.2.0-rc.2`；Host 需要 Node.js `>=20`。WebGL 场景需要 Chromium Worker OffscreenCanvas 和 WebGL2；不支持时回退到通用渲染器。本地视频解码取决于 Chromium 编解码器。
+**兼容性：** 支持 DSH 协议 `0.2.1-rc.3` / `0.2.1-rc.2` 和 `0.2.0-rc.1` / `0.2.0-rc.2`；Host 需要 Node.js `>=20`。WebGL 场景需要 Chromium Worker OffscreenCanvas 和 WebGL2；不支持时回退到通用渲染器。本地视频解码取决于 Chromium 编解码器。
 
 **配置文件：** 根目录 `package.json` 标识 npm 包并声明 `dsh.bundle.patch`；`cordis.patch.yml` 注册 `dsh-mv` 插件行，模块从 `.dsh-plugin/index.mjs` 导出 `apply(ctx)`。每个 MV 包使用 `mv.json`，并可用 `mv.schema.json` 做校验与编辑器补全。运行时设置在 DSH 插件配置页面管理（`canvasFontSize`、`ffmpegPath`、`lrclib`、`enginePython`、`uvPath`、`hfEndpoint`、`httpProxy`、`workshopMirror`、`workshopDir`、`agentTools`）；面板偏好另保存在 `%LOCALAPPDATA%\dsh-mv\settings.json`。
 

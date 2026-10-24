@@ -6,9 +6,9 @@ English · [简体中文](README.zh.md)
 
 [![dshfind showcase card for dsh-mv-cli](https://dshfind.com/api/card/Alice-Marx/dsh-mv-cli?lang=en)](https://dshfind.com/en/plugins/Alice-Marx/dsh-mv-cli?ref=badge)
 
-**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.12.1**) that plays ASCII / terminal-styled, pixel 2D, WebGL2 3D and local rendered **music videos** on a `<canvas>` in the workbench. Script scenes use **your own audio** as the clock; local videos use their own media clock.
+**MV 放映室** is a DeepSeek Harness Desktop plugin (`@ljwei-stak/dsh-mv-cli`, profile entry id `dsh-mv`, current version **0.12.2**) that plays ASCII / terminal-styled, pixel 2D, WebGL2 3D and local rendered **music videos** on a `<canvas>` in the workbench. Script scenes use **your own audio** as the clock; local videos use their own media clock.
 
-Supports DSH **0.2.1-rc.2** and **0.2.0-rc.1 / rc.2**. If an older plugin version is disabled because of a protocol mismatch, update the plugin and restart Harness.
+Supports DSH **0.2.1-rc.3 / rc.2** and **0.2.0-rc.1 / rc.2**. If an older plugin version is disabled because of a protocol mismatch, update the plugin and restart Harness.
 
 ## DSH plugin listing
 
@@ -18,11 +18,11 @@ Supports DSH **0.2.1-rc.2** and **0.2.0-rc.1 / rc.2**. If an older plugin versio
 
 **Install command (npm, pinned):**
 ```sh
-dsh plugin --profile web add @ljwei-stak/dsh-mv-cli@0.12.1
+dsh plugin --profile web add @ljwei-stak/dsh-mv-cli@0.12.2
 ```
-The same package can be installed from **DeepSeek Harness Desktop → Plugins → Add plugin** by entering `@ljwei-stak/dsh-mv-cli@0.12.1`.
+The same package can be installed from **DeepSeek Harness Desktop → Plugins → Add plugin** by entering `@ljwei-stak/dsh-mv-cli@0.12.2`.
 
-**Compatibility:** DSH protocol `0.2.1-rc.2` and `0.2.0-rc.1` / `0.2.0-rc.2`; Host Node.js `>=20`. WebGL scenes need Chromium Worker OffscreenCanvas and WebGL2; unsupported clients fall back to the generic renderer. Local video decoding depends on Chromium codecs.
+**Compatibility:** DSH protocol `0.2.1-rc.3` / `0.2.1-rc.2` and `0.2.0-rc.1` / `0.2.0-rc.2`; Host Node.js `>=20`. WebGL scenes need Chromium Worker OffscreenCanvas and WebGL2; unsupported clients fall back to the generic renderer. Local video decoding depends on Chromium codecs.
 
 **Configuration files:** The root `package.json` identifies the npm package and declares `dsh.bundle.patch`; `cordis.patch.yml` registers the `dsh-mv` plugin row, whose module exports `apply(ctx)` from `.dsh-plugin/index.mjs`. Each MV pack uses `mv.json`, with `mv.schema.json` for validation and editor completion. Runtime settings are managed in the DSH plugin configuration page (`canvasFontSize`, `ffmpegPath`, `lrclib`, `enginePython`, `uvPath`, `hfEndpoint`, `httpProxy`, `workshopMirror`, `workshopDir`, `agentTools`); the panel also stores local preferences in `%LOCALAPPDATA%\dsh-mv\settings.json`.
 

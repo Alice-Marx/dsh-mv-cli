@@ -1,6 +1,6 @@
 {
   "name": "@ljwei-stak/dsh-mv-cli",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "type": "module",
   "description": "Music video player for DeepSeek Harness Desktop: text, Canvas2D and WebGL2 3D scenes synced to your own audio. Sandboxed workshop packs can include licensed bilingual lyrics, timing and visual assets; only music is user-provided. Plugin code MIT; no song media in npm.",
   "keywords": [
@@ -24,7 +24,7 @@
   },
   "main": "./.dsh-plugin/index.mjs",
   "bin": {
-    "dsh-mv-import-video": "./.dsh-plugin/import-video.mjs"
+    "dsh-mv-import-video": ".dsh-plugin/import-video.mjs"
   },
   "exports": {
     ".": "./.dsh-plugin/index.mjs",
@@ -98,12 +98,12 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
-    "@deepseek-ai/dsh-typert-protocol": "0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.2",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.2 || 0.2.1-rc.3",
     "@deepseek-ai/schemastery": "~3.18.4"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.5",
-    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.3",
     "@deepseek-ai/schemastery": "3.18.5",
     "acorn": "8.15.0",
     "esbuild": "0.28.2",

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.2 — 2026-10-24
+
+- Extend the `@deepseek-ai/dsh-typert-protocol` peer range to accept `0.2.1-rc.3`, retaining `0.2.1-rc.2` and `0.2.0-rc.1 / rc.2` support so the plugin manager can load the plugin after a Harness upgrade.
+- Align the development protocol and lockfile with DSH `0.2.1-rc.3`; cover the registered Host service's calls and disposal under real Cordis.
+- Normalize the video-import CLI's bin path to avoid a misleading npm publish warning; the command and entry point stay the same.
+
 ## 0.12.1 — 2026-10-17
 
 - Extend the `@deepseek-ai/dsh-typert-protocol` peer range to accept `0.2.1-rc.2` so the plugin manager does not reject loading; retain `0.2.0-rc.1 / rc.2` support.
